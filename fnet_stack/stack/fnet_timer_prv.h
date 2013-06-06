@@ -62,7 +62,7 @@ void fnet_timer_reset_all( void );
 fnet_timer_desc_t fnet_timer_new( unsigned long period_ticks, void (*handler)( void *cookie ), void *cookie );
 void fnet_timer_free( fnet_timer_desc_t timer );
 void fnet_timer_ticks_inc( void );
-void fnet_timer_handler_bottom( void );
+void fnet_timer_handler_bottom(void *cookie);
 int fnet_cpu_timer_init( unsigned int period_ms );
 
 #endif

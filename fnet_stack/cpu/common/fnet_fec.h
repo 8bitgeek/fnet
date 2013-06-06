@@ -44,7 +44,7 @@
 ***************************************************************************/
 
 #include "fnet_config.h"
-#if (FNET_MCF || FNET_MK || FNET_MPC) && FNET_CFG_ETH
+#if (FNET_MCF || FNET_MK || FNET_MPC) && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 
 #include "fnet.h"
 #include "fnet_eth_prv.h"
@@ -117,13 +117,9 @@
 #define FNET_FEC_MII_CLOCK_KHZ      (2500)
 
 
-#define FNET_FEC_BUF_SIZE           (FNET_CFG_ETH_MTU+FNET_ETH_HDR_SIZE+FNET_ETH_CRC_SIZE+16) /* Ring Buffer sizes in bytes.*/
+#define FNET_FEC_BUF_SIZE           (((FNET_CFG_CPU_ETH0_MTU>FNET_CFG_CPU_ETH1_MTU)?FNET_CFG_CPU_ETH0_MTU:FNET_CFG_CPU_ETH1_MTU)+FNET_ETH_HDR_SIZE+FNET_ETH_CRC_SIZE+16) /* Ring Buffer sizes in bytes.*/
 #define FNET_FEC_TX_BUF_NUM         (FNET_CFG_CPU_ETH_TX_BUFS_MAX)
 #define FNET_FEC_RX_BUF_NUM         (FNET_CFG_CPU_ETH_RX_BUFS_MAX)
-
-#define FNET_FEC_RX_FRAME_VECTOR    (FNET_CFG_CPU_ETH_VECTOR_NUMBER)
-#define FNET_FEC_INT_LEVEL          (FNET_CFG_CPU_ETH_VECTOR_PRIORITY)   /* Interrupt priority level.*/
-
 
 
 /************************************************************************
@@ -141,7 +137,6 @@
 #define FNET_FEC_MII_REG_PSR         (0x0011)   /* Proprietary Status Register */
 #define FNET_FEC_MII_REG_PCR         (0x0012)   /* Proprietary Control Register */
 
-
 #define FNET_FEC_MII_REG_SR_LINK_STATUS (0x0004)
 #define FNET_FEC_MII_REG_SR_AN_ABILITY  (0x0008)
 #define FNET_FEC_MII_REG_SR_AN_COMPLETE (0x0020)
@@ -157,14 +152,7 @@
 #define FNET_FEC_MII_REG_CR_ANE_RESTART (0x0200)    /* Restart Auto-Negotiation bit.*/
 #define FNET_FEC_MII_REG_CR_DPLX        (0x0100)    /* Duplex Mode bit.*/
 
-
-#define FNET_FEC_MII_TIMEOUT        (0x10000)       /* Timeout counter for MII communications.*/
-
-
-
-#define FNET_FEC_PHY_ADDRESS         (0)            /* Default PHY address (for MCF52235).*/
-
-
+#define FNET_FEC_MII_TIMEOUT            (0x10000)   /* Timeout counter for MII communications.*/
 
 /************************************************************************
 *     FEC registers.
@@ -217,7 +205,7 @@ typedef struct
     fnet_uint32 ETDSR;              /* Pointer to transmit descriptor ring.*/
     fnet_uint32 EMRBR;              /* Maximum receive buffer size.*/
 
-#if FNET_MK    
+#if FNET_MK || FNET_CFG_CPU_MCF54418   
     fnet_uint32 reserved12[1];
     fnet_uint32 RSFL;               /* Receive FIFO Section Full Threshold, offset: 0x190 */
     fnet_uint32 RSEM;               /* Receive FIFO Section Empty Threshold, offset: 0x194 */
@@ -294,7 +282,7 @@ typedef struct
     fnet_uint32 IEEE_R_FDXFC;
     fnet_uint32 IEEE_R_OCTETS_OK;
 #endif
-#if 0 /* Not used. Kinetis.*/
+#if 0 /* Not used. Present in Kinetis, Modelo.*/
     fnet_uint32 RESERVED_16[71];
     fnet_uint32 ATCR;                   /* Timer Control Register, offset: 0x400 */
     fnet_uint32 ATVR;                   /* Timer Value Register, offset: 0x404 */
@@ -384,6 +372,7 @@ fnet_fec_reg_t;
 #define FNET_FEC_RCR_FCE                 (0x00000020)
 #define FNET_FEC_RCR_MAX_FL(x)           (((x)&0x000007FF)<<16)
 #define FNET_FEC_RCR_RMII_MODE           (0x00000100)
+#define FNET_FEC_RCR_RMII_10T            (0x00000200)
 
 /* Bit definitions and macros for FNET_MCF_FEC_TCR */
 #define FNET_FEC_TCR_GTS                 (0x00000001)
@@ -481,25 +470,36 @@ FNET_COMP_PACKED_END
 /* FEC/ENET Module Control data structure */
 typedef struct
 {
-    volatile fnet_fec_reg_t *reg;           /* Pointer to the eth registers */
-    fnet_fec_buf_desc_t *tx_buf_desc;       /* Tx Buffer Descriptors.*/
-    fnet_fec_buf_desc_t *tx_buf_desc_cur;   /* Points to the descriptor of the current outcoming buffer.*/
-    fnet_fec_buf_desc_t *rx_buf_desc;       /* Rx Buffer Descriptors.*/
-    fnet_fec_buf_desc_t *rx_buf_desc_cur;   /* Points to the descriptor of the current incoming buffer.*/
-    unsigned char phy_addr;
-    unsigned char tx_buf_desc_num;           /* Number of allocated Tx Buffer Descriptors.*/    
-    unsigned char rx_buf_desc_num;           /* Number of allocated Tx Buffer Descriptors.*/  
+    volatile fnet_fec_reg_t  *reg;               /* Pointer to the eth registers. */
+    volatile fnet_fec_reg_t  *reg_phy;           /* Pointer to the eth registers, used for comunication with phy. */
+    unsigned int             vector_number;      /* Vector number of the Ethernet Receive Frame interrupt.*/
+    fnet_fec_buf_desc_t      *tx_buf_desc;       /* Tx Buffer Descriptors.*/
+    fnet_fec_buf_desc_t      *tx_buf_desc_cur;   /* Points to the descriptor of the current outcoming buffer.*/
+    fnet_fec_buf_desc_t      *rx_buf_desc;       /* Rx Buffer Descriptors.*/
+    fnet_fec_buf_desc_t      *rx_buf_desc_cur;   /* Points to the descriptor of the current incoming buffer.*/
+    unsigned char            phy_addr;
+    unsigned char            tx_buf_desc_num;    /* Number of allocated Tx Buffer Descriptors.*/    
+    unsigned char            rx_buf_desc_num;    /* Number of allocated Tx Buffer Descriptors.*/  
 #if FNET_CFG_MULTICAST    
-    fnet_uint32 GALR_double;
-    fnet_uint32 GAUR_double;
-#endif /*FNET_CFG_MULTICAST*/
+    fnet_uint32              GALR_double;
+    fnet_uint32              GAUR_double;
+#endif
+    fnet_uint8 tx_buf_desc_buf[(FNET_FEC_TX_BUF_NUM * sizeof(fnet_fec_buf_desc_t)) + (FNET_FEC_BUF_DESC_DIV-1)];
+    fnet_uint8 rx_buf_desc_buf[(FNET_FEC_RX_BUF_NUM * sizeof(fnet_fec_buf_desc_t)) + (FNET_FEC_BUF_DESC_DIV-1)];
+    fnet_uint8 tx_buf[FNET_FEC_TX_BUF_NUM][FNET_FEC_BUF_SIZE + (FNET_FEC_TX_BUF_DIV-1)];
+    fnet_uint8 rx_buf[FNET_FEC_RX_BUF_NUM][FNET_FEC_BUF_SIZE + (FNET_FEC_RX_BUF_DIV-1)];    
 }
 fnet_fec_if_t;
 
 /* FEC driver API */
 extern const fnet_netif_api_t fnet_fec_api;
 /* Ethernet specific control data structure.*/
-extern fnet_fec_if_t fnet_fec0_if;
+#if FNET_CFG_CPU_ETH0
+    extern fnet_fec_if_t fnet_fec0_if;
+#endif
+#if FNET_CFG_CPU_ETH1
+    extern fnet_fec_if_t fnet_fec1_if;
+#endif
 
 /************************************************************************
 *     Function Prototypes
@@ -522,8 +522,8 @@ int fnet_fec_mii_write(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 data);
 int fnet_fec_mii_read(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 *data); 
 
 #if FNET_CFG_MULTICAST      
-    void fnet_fec_multicast_join(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
-    void fnet_fec_multicast_leave(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
+void fnet_fec_multicast_join(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
+void fnet_fec_multicast_leave(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
 #endif /* FNET_CFG_MULTICAST */
 
 /* For debug needs.*/
@@ -534,7 +534,7 @@ void fnet_fec_stop(fnet_netif_t *netif);
 void fnet_fec_resume(fnet_netif_t *netif);
 
 
-#endif /* (FNET_MCF || FNET_MK) && FNET_CFG_ETH */
+#endif /* (FNET_MCF || FNET_MK || FNET_MPC) && FNET_CFG_ETH */
 
 
 

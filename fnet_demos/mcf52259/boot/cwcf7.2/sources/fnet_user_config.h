@@ -32,21 +32,21 @@
 * At runtime it can be changed by the fnet_netif_set_address() or 
 * by the DHCP client service.
 ******************************************************************************/
-#define FNET_CFG_ETH_IP4_ADDR       (FNET_IP4_ADDR_INIT(192, 168, 0, 22))
+#define FNET_CFG_ETH0_IP4_ADDR      (FNET_IP4_ADDR_INIT(192, 168, 0, 22))
 
 /*****************************************************************************
 * IP Subnet mask for the Ethernet interface. 
 * At runtime it can be changed by the fnet_netif_set_netmask() or 
 * by the DHCP client service.
 ******************************************************************************/
-#define FNET_CFG_ETH_IP4_MASK       (FNET_IP4_ADDR_INIT(255, 255, 255, 0))
+#define FNET_CFG_ETH0_IP4_MASK      (FNET_IP4_ADDR_INIT(255, 255, 255, 0))
 
 /*****************************************************************************
 * Gateway IP address for the Ethernet interface.
 * At runtime it can be changed by the fnet_netif_set_gateway() or 
 * by the DHCP client service.
 ******************************************************************************/
-#define FNET_CFG_ETH_IP4_GW         (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+#define FNET_CFG_ETH0_IP4_GW        (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
 
 /*****************************************************************************
 * Size of the internal static heap buffer. 
@@ -91,7 +91,7 @@
 * Defines the Maximum Transmission Unit for the Ethernet interface.
 * The largest value is 1500. Recommended range is 600 - 1500
 ******************************************************************************/
-#define FNET_CFG_ETH_MTU            (700)
+#define FNET_CFG_CPU_ETH0_MTU       (700)
 
 /*****************************************************************************
 * Disable loopback interface (to save some bytes).
@@ -118,7 +118,7 @@
 ******************************************************************************/
 #define FNET_CFG_FLASH              (1)
  
-#ifdef TWRMCF52259
+#ifdef TWRMCF52259 /* TWR-SER port. */
     #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (1)
 #endif   
 

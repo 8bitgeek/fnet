@@ -46,7 +46,7 @@
 
 #include "fnet_config.h"
 
-#if FNET_CFG_ETH && FNET_CFG_IP4
+#if (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1) && FNET_CFG_IP4
 
 #include "fnet_arp.h"
 #include "fnet_eth_prv.h"
@@ -75,8 +75,7 @@ static fnet_arp_entry_t *fnet_arp_add_entry( fnet_netif_t *netif, fnet_ip4_addr_
                                             const fnet_mac_addr_t ethaddr );
 static fnet_arp_entry_t *fnet_arp_update_entry( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr,
                                             fnet_mac_addr_t ethaddr );
-static void fnet_arp_ip_duplicated(void);
-static fnet_netif_desc_t netif_dupip; /* The last netif that has Duplicated IP. */
+static void fnet_arp_ip_duplicated(void *cookie);
 
 #if FNET_CFG_DEBUG_TRACE_ARP
     static void fnet_arp_trace(char *str, fnet_arp_header_t *arp_hdr);
@@ -92,9 +91,9 @@ static fnet_netif_desc_t netif_dupip; /* The last netif that has Duplicated IP. 
 *************************************************************************/
 int fnet_arp_init( fnet_netif_t *netif )
 {
-    fnet_arp_if_t *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); 
-    int i;
-    int result;
+    fnet_arp_if_t  *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); 
+    int            i;
+    int            result= FNET_ERR;
 
     for (i = 0; i < FNET_ARP_TABLE_SIZE; i++)
       fnet_memset_zero(&(arpif->arp_table[i]), sizeof(fnet_arp_entry_t));
@@ -104,11 +103,11 @@ int fnet_arp_init( fnet_netif_t *netif )
 
     if(arpif->arp_tmr)
     {
-        /* Install SW Handler. */
-        result = fnet_event_init(FNET_EVENT_ARP, fnet_arp_ip_duplicated);
+        /* Install event Handler. */
+    	arpif->arp_event = fnet_event_init(fnet_arp_ip_duplicated, netif);
+    	if(arpif->arp_event != FNET_ERR)
+    	    result = FNET_OK;
     }
-    else
-        result = FNET_ERR;
         
     return result;
 }
@@ -333,6 +332,7 @@ void fnet_arp_resolve( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, fnet_netbuf_
 *************************************************************************/
 void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
 {
+	fnet_arp_if_t       *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if);
     fnet_arp_header_t   *arp_hdr = nb->data_ptr;
     fnet_mac_addr_t     local_addr;
     fnet_arp_entry_t    *entry;
@@ -382,9 +382,8 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
             }
             else
             {
-                netif_dupip = netif;
                 /* IP is duplicated. */
-                fnet_event_raise(FNET_EVENT_ARP);
+                fnet_event_raise(arpif->arp_event);
             }
 
             /* ARP request. If it asked for our address, we send out a reply.*/
@@ -397,7 +396,9 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
 
                 arp_hdr->targer_prot_addr = arp_hdr->sender_prot_addr;
                 arp_hdr->sender_prot_addr = netif->ip4_addr.address;
-
+                
+                fnet_arp_trace("TX Reply", arp_hdr); /* Print ARP header. */
+                
                 ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_ARP, fnet_eth_broadcast, nb);
                 return;
             }
@@ -436,6 +437,8 @@ void fnet_arp_request( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
         arp_hdr->targer_prot_addr = ipaddr;              /* Protocol address of target of this packet.*/
         arp_hdr->sender_prot_addr = netif->ip4_addr.address; /* Protocol address of sender of this packet.*/
 
+        fnet_arp_trace("TX", arp_hdr); /* Print ARP header. */        
+        
         ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_ARP, fnet_eth_broadcast, nb);
     }
 }
@@ -446,11 +449,12 @@ void fnet_arp_request( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
 * DESCRIPTION: This function is called on the IP address
 *              duplication event.
 *************************************************************************/
-static void fnet_arp_ip_duplicated(void)
+static void fnet_arp_ip_duplicated(void *cookie)
 {
+	
     FNET_DEBUG_ARP("");
     FNET_DEBUG_ARP("\33[31mARP: Duplicate IP address.\33[0m");
-    fnet_netif_dupip_handler_signal(netif_dupip);
+    fnet_netif_dupip_handler_signal((fnet_netif_t *)cookie); 
 }
 
 /************************************************************************
@@ -491,7 +495,6 @@ static void fnet_arp_trace(char *str, fnet_arp_header_t *arp_hdr)
 {
     char mac_str[FNET_MAC_ADDR_STR_SIZE];
     char ip_str[FNET_IP4_ADDR_STR_SIZE];
-    struct in_addr addr;    
 
     fnet_printf(FNET_SERIAL_ESC_FG_GREEN"%s", str); /* Print app-specific header.*/
     fnet_println("[ARP header]"FNET_SERIAL_ESC_FG_BLACK);

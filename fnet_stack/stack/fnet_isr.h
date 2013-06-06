@@ -53,32 +53,20 @@
 /************************************************************************
 *     Events
 *************************************************************************/
-typedef enum 
-{
-    FNET_EVENT_ARP,
-    FNET_EVENT_IP,
-    FNET_EVENT_IP6
-    /*
-    * Add your events here.
-    */
-}
-fnet_event_t;
-
+typedef long fnet_event_desc_t;
 
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)( void ), void (*handler_bottom)( void ), unsigned int priority );
-int fnet_event_init( fnet_event_t event_number, void (*event_handler)( void ));
-void fnet_event_raise( fnet_event_t event_number );                                   
-void fnet_isr_vector_release( unsigned int vector_number );
-void fnet_isr_lock( void );
-void fnet_isr_unlock( void );
-void fnet_isr_init( void );
-
-
-void fnet_isr_handler( int vector_number );
-int fnet_cpu_isr_install( unsigned int vector_number, unsigned int priority );
+int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)(void *cookie), void (*handler_bottom)(void *cookie), unsigned int priority, void *cookie );
+fnet_event_desc_t fnet_event_init(void (*event_handler)(void *cookie), void *cookie);
+void fnet_event_raise(fnet_event_desc_t event_number);                                   
+void fnet_isr_vector_release(unsigned int vector_number);
+void fnet_isr_lock(void);
+void fnet_isr_unlock(void);
+void fnet_isr_init(void);
+void fnet_isr_handler(int vector_number);
+int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority);
 
 #if FNET_CFG_OS_ISR
     #define FNET_ISR_HANDLER    fnet_os_isr

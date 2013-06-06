@@ -50,6 +50,7 @@
 #include "fnet_ping.h"
 #include "fnet_checksum.h"
 #include "fnet_icmp.h"
+#include "fnet_ip6_prv.h"
 
 #if FNET_CFG_DEBUG_PING    
     #define FNET_DEBUG_PING   FNET_DEBUG
@@ -93,7 +94,6 @@ typedef struct
     unsigned long           packet_size;
     unsigned char           pattern;
     struct sockaddr         target_addr; 
-    struct sockaddr         local_addr; 
 } 
 fnet_ping_if_t;
 
@@ -109,7 +109,6 @@ static fnet_ping_if_t fnet_ping_if;
 int fnet_ping_request( struct fnet_ping_params *params )
 {
     const unsigned long bufsize_option = FNET_PING_BUFFER_SIZE;
-    int                 namelen = sizeof(fnet_ping_if.local_addr);
 
     /* Check input parameters. */
     if((params == 0) || (params->packet_count==0) || fnet_socket_addr_is_unspecified(&params->target_addr))
@@ -160,20 +159,6 @@ int fnet_ping_request( struct fnet_ping_params *params )
             
     setsockopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_RCVBUF, (char *) &bufsize_option, sizeof(bufsize_option));
     setsockopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_SNDBUF, (char *) &bufsize_option, sizeof(bufsize_option));
-   
-    /* Connect.*/        
-    if(connect(fnet_ping_if.socket_foreign, &params->target_addr, sizeof(params->target_addr))== FNET_ERR) 
-    {
-        FNET_DEBUG_PING(FNET_PING_ERR_SOCKET_CONNECT);
-        goto ERROR_1;
-    }  
-                        
-    if(getsockname(fnet_ping_if.socket_foreign, &fnet_ping_if.local_addr, &namelen) == SOCKET_ERROR)
-    {
-        FNET_DEBUG_PING(FNET_PING_ERR_GETSOCKNAME);
-        goto ERROR_1;		
-    }     
-    
 
     /* Register PING service. */
     fnet_ping_if.service_descriptor = fnet_poll_service_register(fnet_ping_state_machine, (void *) &fnet_ping_if);
@@ -235,18 +220,21 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
 #if FNET_CFG_IP6
             if(ping_if->family == AF_INET6)
             {
+                fnet_ip6_addr_t   *src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(FNET_NULL, (fnet_ip6_addr_t *)ping_if->target_addr.sa_data); //TBD //DM Check result.
+
                 hdr->header.checksum = fnet_checksum_pseudo_buf(&fnet_ping_if.buffer[0], 
                                                                 (unsigned short)(sizeof(*hdr) + ping_if->packet_size), 
                                                                 FNET_HTONS(IPPROTO_ICMPV6), 
-                                                                ping_if->local_addr.sa_data,
+                                                                (char *)src_ip,
                                                                 ping_if->target_addr.sa_data, 
                                                                 sizeof(fnet_ip6_addr_t));
             }
             else
 #endif 
             {};
-            /* Send.*/    
-            send(fnet_ping_if.socket_foreign, (char*)(&fnet_ping_if.buffer[0]), (int)(sizeof(*hdr) + ping_if->packet_size), 0);
+            
+            /* Send request.*/    
+            sendto(fnet_ping_if.socket_foreign, (char*)(&fnet_ping_if.buffer[0]), (int)(sizeof(*hdr) + ping_if->packet_size), 0,  &ping_if->target_addr, sizeof(ping_if->target_addr));
             ping_if->packet_count--;
            
             fnet_ping_if.send_time = fnet_timer_ticks();        
@@ -274,7 +262,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
                 }
                 else
 #endif  
-#if FNET_CFG_IP6              
+#if 0 /* #if FNET_CFG_IP6  */ // TBD case to receive from multicast address ff02::1
                 if(ping_if->family == AF_INET6)
                 {
                      checksum = fnet_checksum_pseudo_buf(&fnet_ping_if.buffer[0], 

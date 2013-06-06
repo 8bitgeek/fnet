@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.26.0
-*
 * @brief Default platform-specific configuration.
 *
 ***************************************************************************/
@@ -64,7 +60,9 @@
  *            - @c FNET_CFG_CPU_MCF52259 = Used platform is the MCF52259.
  *            - @c FNET_CFG_CPU_MCF5282  = Used platform is the MCF5282.
  *            - @c FNET_CFG_CPU_MCF51CN128  = Used platform is the MCF51CN128.
- *            - @c FNET_CFG_CPU_MK60N512  = Used platform is the MK60N512. 
+ *            - @c FNET_CFG_CPU_MCF54418  = Used platform is the MCF54418.            
+ *            - @c FNET_CFG_CPU_MK60N512  = Used platform is the MK60N512.
+ *            - @c FNET_CFG_CPU_MK70FN1  = Used platform is the MK70FN1.  
  *            - @c FNET_CFG_CPU_MPC5668G  = Used platform is the MPC5668G. 
  *            @n @n
  *            Selected processor definition should be only one and must be defined as 1. 
@@ -87,9 +85,20 @@
 #ifndef FNET_CFG_CPU_MCF51CN128
     #define FNET_CFG_CPU_MCF51CN128 (0)
 #endif
+#ifndef FNET_CFG_CPU_MCF54418
+    #define FNET_CFG_CPU_MCF54418   (0)
+#endif
 #ifndef FNET_CFG_CPU_MK60N512
     #define FNET_CFG_CPU_MK60N512   (0)
-#endif  
+#endif 
+#ifndef FNET_CFG_CPU_MK70FN1
+    #define FNET_CFG_CPU_MK70FN1   	(0)
+#endif
+
+#ifndef FNET_CFG_CPU_MK60FN1
+    #define FNET_CFG_CPU_MK60FN1    (0)
+#endif
+   
 #ifndef FNET_CFG_CPU_MPC5668G
     #define FNET_CFG_CPU_MPC5668G   (0)
 #endif 
@@ -98,7 +107,7 @@
     #define FNET_CFG_CPU_MPC564xBC  (0)
 #endif  
 
-/*-----------*/
+/*********** MFC ********************/
 #if FNET_CFG_CPU_MCF52235 /* Kirin2 */
     #ifdef FNET_CPU_STR
         #error "More than one CPU selected FNET_CPU_XXXX"
@@ -135,6 +144,17 @@
     #define FNET_CPU_STR    "MCF51CN128"
 #endif
 
+#if FNET_CFG_CPU_MCF54418 /* Modelo */
+    #ifdef FNET_CPU_STR
+        #error "More than one CPU selected FNET_CPU_XXXX"
+    #endif
+    
+    #include "fnet_mcf54418_config.h"
+    #define FNET_CPU_STR    "MCF54418"
+#endif
+
+/*********** MK ********************/
+
 #if FNET_CFG_CPU_MK60N512 /* Kinetis */
     #ifdef FNET_CPU_STR
         #error "More than one CPU selected FNET_CPU_XXXX"
@@ -142,6 +162,24 @@
     
     #include "fnet_mk60n512_config.h"
     #define FNET_CPU_STR    "MK60N512"
+#endif
+
+#if FNET_CFG_CPU_MK70FN1 /* Kinetis */
+    #ifdef FNET_CPU_STR
+        #error "More than one CPU selected FNET_CPU_XXXX"
+    #endif
+    
+    #include "fnet_mk70fn1_config.h"
+    #define FNET_CPU_STR    "MK70FN1"
+#endif
+
+#if FNET_CFG_CPU_MK60FN1 /* Kinetis*/
+    #ifdef FNET_CPU_STR
+        #error "More than one CPU selected FNET_CPU_XXXX"
+    #endif
+    
+    #include "fnet_mk60fn1_config.h"
+    #define FNET_CPU_STR    "MK60FN1"
 #endif
 
 /*********** MPC ********************/
@@ -226,7 +264,7 @@
  * @brief    System frequency in Hz. @n
  *           This parameter used by FNET for correct initialization of 
  *           Ethernet, Serial and Timer modules. @n
- *           The CPU clock initialization must be done by user-application 
+ *           The CPU system clock initialization must be done by user-application 
  *           startup code.
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_CLOCK_HZ 
@@ -320,13 +358,244 @@
 #endif
 
 /**************************************************************************/ /*!
- * @def      FNET_CFG_CPU_ETH_VECTOR_NUMBER
+ * @def      FNET_CFG_CPU_CACHE
+ * @brief    Cache invalidation:
+ *               - @c 1 = is enabled (for MCF5282).
+ *               - @c 0 = is disabled. For platforms that do not have cache.
+ *  @n @n NOTE: User application should not change this parameter.
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_CACHE
+    #define FNET_CFG_CPU_CACHE              (0)
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_FLASH
+ * @brief    On-chip Flash Module:
+ *               - @c 1 = Current platform has the On-chip Flash Module 
+ *                        (CFM for ColdFire, FTFL for Kinetis).
+ *               - @c 0 = Current platform does not have the On-chip Flash Module. @n
+ *                        MPC flash module is not supported.
+ *              @n @n NOTE: User application should not change this parameter.
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_FLASH
+    #define FNET_CFG_CPU_FLASH              (0)
+#endif
+
+/**************************************************************************/ /*!
+ * @def     FNET_CFG_CPU_FLASH_ADDRESS
+ * @brief   On-chip Flash memory start address. @n
+ *          It is not used by the FNET, but can be useful for an application.
+ ******************************************************************************/ 
+#ifndef FNET_CFG_CPU_FLASH_ADDRESS 
+    #define FNET_CFG_CPU_FLASH_ADDRESS      (0x0)
+#endif 
+
+/**************************************************************************/ /*!
+ * @def     FNET_CFG_CPU_FLASH_SIZE
+ * @brief   On-chip Flash memory size (in bytes). @n
+ *          It is not used by the FNET stack, but can be useful for an application.
+ *          @n @n NOTE: User application should not change this parameter.
+ ******************************************************************************/  
+#ifndef FNET_CFG_CPU_FLASH_SIZE
+    #define FNET_CFG_CPU_FLASH_SIZE         (0)  
+#endif 
+
+/**************************************************************************/ /*!
+ * @def     FNET_CFG_CPU_FLASH_PAGE_SIZE
+ * @brief   Erase-page size of the on-chip Flash memory (in bytes). @n
+ *          Flash logical blocks are divided into multiple logical pages that can be
+ *          erased separately. @n
+ *          It is not possible to read from any flash logical block while the same 
+ *          logical block is being erased, programmed, or verified.
+ *          @n @n NOTE: User application should not change this parameter.
+ ******************************************************************************/    
+#ifndef FNET_CFG_CPU_FLASH_PAGE_SIZE
+    #define FNET_CFG_CPU_FLASH_PAGE_SIZE    (0)
+#endif 
+
+/**************************************************************************/ /*!
+ * @def     FNET_CFG_CPU_FLASH_PROGRAM_SIZE
+ * @brief   Size of block that can be written to the on-chip Flash memory (in bytes). @n
+ *          For MCF and K60 it is set to 4. For K70 it is set to 8.
+ *          @n @n NOTE: User application should not change this parameter.
+ ******************************************************************************/    
+#ifndef FNET_CFG_CPU_FLASH_PROGRAM_SIZE
+    #define FNET_CFG_CPU_FLASH_PROGRAM_SIZE (0)
+#endif 
+
+/**************************************************************************/ /*!
+ * @def     FNET_CFG_CPU_SRAM_ADDRESS
+ * @brief   On-chip SRAM memory start address. @n
+ *          It is not used by the FNET stack, but can be useful for an application.
+ ******************************************************************************/ 
+#ifndef FNET_CFG_CPU_SRAM_ADDRESS 
+    #define FNET_CFG_CPU_SRAM_ADDRESS       (0x0)
+#endif 
+          
+/**************************************************************************/ /*!
+ * @def     FNET_CFG_CPU_SRAM_SIZE
+ * @brief   On-chip SRAM memory size (in bytes). @n
+ *          It is not used by the FNET stack, but can be useful for an application.
+ *          @n @n NOTE: User application should not change this parameter.
+ ******************************************************************************/  
+#ifndef FNET_CFG_CPU_SRAM_SIZE
+    #define FNET_CFG_CPU_SRAM_SIZE          (0)  
+#endif 
+
+/*! @} */
+    
+
+/*! @addtogroup fnet_platform_eth_config  */
+/*! @{ */   
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH0
+ * @brief    Ethernet-0 interface:
+ *               - @b @c 1 = is enabled (default value). .
+ *               - @c 0 = is disabled. @n 
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH0
+    #define FNET_CFG_CPU_ETH0        	(1)
+#endif
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH1
+ * @brief    Ethernet-1 interface:
+ *               - @c 1 = is enabled. @n
+ *                        Supported only by Modelo platform.
+ *               - @b @c 0 = is disabled (default value). @n 
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH1
+    #define FNET_CFG_CPU_ETH1        	(0)
+#endif
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH0_PHY_ADDR
+ * @brief    Default PHY address used by the Ethernet-0 module. @n
+ *           Specifies one of up to 32 attached PHY devices.
+ * @see FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER           
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH0_PHY_ADDR
+    #define FNET_CFG_CPU_ETH0_PHY_ADDR	(0)
+#endif    
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH1_PHY_ADDR
+ * @brief    Default PHY address used by the Ethernet-1 module. @n
+ *           Specifies one of up to 32 attached PHY devices.
+ * @see FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER           
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH1_PHY_ADDR
+    #define FNET_CFG_CPU_ETH1_PHY_ADDR	(1)
+#endif      
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER
+ * @brief    PHY address discover:
+ *               - @c 1 = is enabled (default value). @n
+ *                        Ethernet driver trying to discover a valid PHY address.
+ *               - @c 0 = is disabled (for MCF52235).@n
+ *                        PHY address is set to FNET_CFG_CPU_ETHx_PHY_ADDR.
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER
+    #define FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER	(1)
+#endif   
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH0_MAC_ADDR
+ * @brief    Defines the default MAC address of the Ethernet-0 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_hw_addr().
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH0_MAC_ADDR
+    #define FNET_CFG_CPU_ETH0_MAC_ADDR         ("00:04:9F:" __TIME__)
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH1_MAC_ADDR
+ * @brief    Defines the default MAC address of the Ethernet-1 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_hw_addr().
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH1_MAC_ADDR
+    #define FNET_CFG_CPU_ETH1_MAC_ADDR        ("00:04:8F:" __TIME__)
+#endif    
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH0_MTU
+ * @brief    Defines the Maximum Transmission Unit for the Ethernet-0 interface.
+ *           The largest value is 1500. The Internet Minimum MTU is 576.
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH0_MTU
+    #define FNET_CFG_CPU_ETH0_MTU            (1500)
+#endif
+#if !defined(__DOXYGEN__)  
+#if (FNET_CFG_CPU_ETH0_MTU > 1500) /* Limit maximum size.*/
+    #undef FNET_CFG_CPU_ETH0_MTU
+    #define FNET_CFG_CPU_ETH0_MTU            (1500)
+#endif    
+
+#if !FNET_CFG_CPU_ETH0
+    #undef FNET_CFG_CPU_ETH0_MTU
+    #define FNET_CFG_CPU_ETH0_MTU            (0)
+#endif 
+#endif    
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH1_MTU
+ * @brief    Defines the Maximum Transmission Unit for the Ethernet-1 interface.
+ *           The largest value is 1500. The Internet Minimum MTU is 576.
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH1_MTU
+    #define FNET_CFG_CPU_ETH1_MTU            (1500)
+#endif    
+
+#if !defined(__DOXYGEN__)  
+#if (FNET_CFG_CPU_ETH1_MTU > 1500) /* Limit maximum size.*/
+    #undef FNET_CFG_CPU_ETH1_MTU
+    #define FNET_CFG_CPU_ETH1_MTU            (1500)
+#endif      
+
+#if !FNET_CFG_CPU_ETH1
+    #undef FNET_CFG_CPU_ETH1_MTU
+    #define FNET_CFG_CPU_ETH1_MTU            (0)
+#endif 
+#endif    
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH0_VECTOR_NUMBER
  * @brief    Vector number of the Ethernet Receive Frame interrupt.
  *           @n @n NOTE: User application should not change this parameter. 
  ******************************************************************************/
-#ifndef FNET_CFG_CPU_ETH_VECTOR_NUMBER
-    #error "FNET_CFG_CPU_ETH_VECTOR_NUMBER is not defined."
+#if defined(__DOXYGEN__)    
+    #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER (0)
+#endif    
+#if FNET_CFG_CPU_ETH0    
+#ifndef FNET_CFG_CPU_ETH0_VECTOR_NUMBER
+    #error "FNET_CFG_CPU_ETH0_VECTOR_NUMBER is not defined."
 #endif
+#endif
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH1_VECTOR_NUMBER
+ * @brief    Vector number of the Ethernet Receive Frame interrupt.
+ *           @n @n NOTE: User application should not change this parameter. 
+ ******************************************************************************/
+#if defined(__DOXYGEN__)    
+    #define FNET_CFG_CPU_ETH1_VECTOR_NUMBER (0)
+#endif    
+#if FNET_CFG_CPU_ETH1    
+#ifndef FNET_CFG_CPU_ETH1_VECTOR_NUMBER
+    #error "FNET_CFG_CPU_ETH1_VECTOR_NUMBER is not defined."
+#endif
+#endif    
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_ETH_VECTOR_PRIORITY
@@ -343,14 +612,14 @@
 #if (FNET_CFG_CPU_ETH_VECTOR_PRIORITY<1)||(FNET_CFG_CPU_ETH_VECTOR_PRIORITY>7)
     #error "FNET_CFG_CPU_ETH_VECTOR_PRIORITY must be from 1 to 7."
 #endif
-
-
+    
+    
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_ETH_TX_BUFS_MAX
  * @brief    Defines the maximum number of outgoing frames that may 
  *           be buffered by the Ethernet module.
  *           As a result  
- *           ((@ref FNET_CFG_ETH_MTU+18) * @ref FNET_CFG_CPU_ETH_TX_BUFS_MAX) 
+ *           ((FNET_CFG_CPU_ETHx_MTU+18) * @ref FNET_CFG_CPU_ETH_TX_BUFS_MAX) 
  *           bytes will be allocated.
  * @showinitializer
  ******************************************************************************/
@@ -358,16 +627,24 @@
     #define FNET_CFG_CPU_ETH_TX_BUFS_MAX        (2)
 #endif
 
+#if (FNET_CFG_CPU_ETH_TX_BUFS_MAX < 2)
+    #error "FNET_CFG_CPU_ETH_TX_BUFS_MAX is less than 2, minimal required value is 2 - see errata MCF5235"
+#endif
+
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_ETH_RX_BUFS_MAX
  * @brief    Defines the maximum number of incoming frames that may 
  *           be buffered by the Ethernet module.
  *           As a result 
- *           ((@ref FNET_CFG_ETH_MTU+18) * @ref FNET_CFG_CPU_ETH_RX_BUFS_MAX) 
+ *           ((FNET_CFG_CPU_ETHx_MTU+18) * @ref FNET_CFG_CPU_ETH_RX_BUFS_MAX) 
  *           bytes will be allocated.
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH_RX_BUFS_MAX
     #define FNET_CFG_CPU_ETH_RX_BUFS_MAX        (2)
+#endif
+
+#if (FNET_CFG_CPU_ETH_RX_BUFS_MAX < 2)
+    #error "FNET_CFG_CPU_ETH_RX_BUFS_MAX is less than 2, minimal required value is 2 - see errata MCF5235"
 #endif
 
 /**************************************************************************/ /*!
@@ -392,7 +669,7 @@
  * @def      FNET_CFG_CPU_ETH_PROMISCUOUS
  * @brief    The Ethernet interface promiscuous mode:
  *               - @c 1 = is enabled. An interface will capture all packets on the LAN.
- *               - @c 0 = is disabled (default value). @n 
+ *               - @b @c 0 = is disabled (default value). @n 
  *                        An interface will only capture packets destined to your interface
  *                        (not all packets on your LAN), to reduce CPU load.
  *  @n @n NOTE: This mode is used mainly for testing needs.
@@ -413,13 +690,28 @@
     #define FNET_CFG_CPU_ETH_FULL_DUPLEX        (1)
 #endif
 
-#if (FNET_CFG_CPU_ETH_TX_BUFS_MAX < 2)
-    #error "FNET_CFG_CPU_ETH_TX_BUFS_MAX is less than 2, minimal required value is 2 - see errata MCF5235"
-#endif
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH_RMII
+ * @brief    The Reduced Media Independent Interface (RMII) mode for MAC:
+ *               - @c 1 = is enabled (Default value for Kinetis and Modelo). 
+ *               - @c 0 = is disabled (Default value for MCF MCUs).@n
+ *                        In this case, it is configured Media Independent Interface (MII) mode. 
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH_RMII
+    #define FNET_CFG_CPU_ETH_RMII        		(0)
+#endif    
 
-#if (FNET_CFG_CPU_ETH_RX_BUFS_MAX < 2)
-    #error "FNET_CFG_CPU_ETH_RX_BUFS_MAX is less than 2, minimal required value is 2 - see errata MCF5235"
-#endif
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_CPU_ETH_RMII_10T
+ * @brief     10-Mbps mode of the RMII:
+ *               - @c 1 = is enabled. @n 10 Mbps operation.
+ *               - @b @c 0 = is disabled (Default value).@n
+ *                        100 Mbps operation. 
+ *              @n NOTE: Valid only if @ref FNET_CFG_CPU_ETH_RMII is set.
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH_RMII_10T
+    #define FNET_CFG_CPU_ETH_RMII_10T           (0)
+#endif 
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_ETH_MIB
@@ -499,82 +791,9 @@
 #ifndef FNET_CFG_CPU_ETH_HW_RX_MAC_ERR
     #define FNET_CFG_CPU_ETH_HW_RX_MAC_ERR              (0)
 #endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_CPU_CACHE
- * @brief    Cache invalidation:
- *               - @c 1 = is enabled (for MCF5282).
- *               - @c 0 = is disabled. For platforms that do not have cache.
- *  @n @n NOTE: User application should not change this parameter.
- ******************************************************************************/
-#ifndef FNET_CFG_CPU_CACHE
-    #define FNET_CFG_CPU_CACHE              (0)
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_CPU_FLASH
- * @brief    On-chip Flash Module:
- *               - @c 1 = Current platform has the On-chip Flash Module 
- *                        (CFM for ColdFire, FTFL for Kinetis).
- *               - @c 0 = Current platform does not have the On-chip Flash Module. @n
- *                        MPC flash module is not supported.
- *              @n @n NOTE: User application should not change this parameter.
- ******************************************************************************/
-#ifndef FNET_CFG_CPU_FLASH
-    #define FNET_CFG_CPU_FLASH              (0)
-#endif
-
-/**************************************************************************/ /*!
- * @def     FNET_CFG_CPU_FLASH_ADDRESS
- * @brief   On-chip Flash memory start address. @n
- *          It is not used by the FNET, but can be useful for an application.
- ******************************************************************************/ 
-#ifndef FNET_CFG_CPU_FLASH_ADDRESS 
-    #define FNET_CFG_CPU_FLASH_ADDRESS      (0x0)
-#endif 
-
-/**************************************************************************/ /*!
- * @def     FNET_CFG_CPU_FLASH_SIZE
- * @brief   On-chip Flash memory size (in bytes). @n
- *          It is not used by the FNET stack, but can be useful for an application.
- *          @n @n NOTE: User application should not change this parameter.
- ******************************************************************************/  
-#ifndef FNET_CFG_CPU_FLASH_SIZE
-    #define FNET_CFG_CPU_FLASH_SIZE         (0)  
-#endif 
-
-/**************************************************************************/ /*!
- * @def     FNET_CFG_CPU_FLASH_PAGE_SIZE
- * @brief   Erase-page size of the on-chip Flash memory (in bytes). @n
- *          Flash logical blocks are divided into multiple logical pages that can be
- *          erased separately. @n
- *          It is not possible to read from any flash logical block while the same 
- *          logical block is being erased, programmed, or verified.
- *          @n @n NOTE: User application should not change this parameter.
- ******************************************************************************/    
-#ifndef FNET_CFG_CPU_FLASH_PAGE_SIZE
-    #define FNET_CFG_CPU_FLASH_PAGE_SIZE    (0)
-#endif 
-
-/**************************************************************************/ /*!
- * @def     FNET_CFG_CPU_SRAM_ADDRESS
- * @brief   On-chip SRAM memory start address. @n
- *          It is not used by the FNET stack, but can be useful for an application.
- ******************************************************************************/ 
-#ifndef FNET_CFG_CPU_SRAM_ADDRESS 
-    #define FNET_CFG_CPU_SRAM_ADDRESS       (0x0)
-#endif 
-          
-/**************************************************************************/ /*!
- * @def     FNET_CFG_CPU_SRAM_SIZE
- * @brief   On-chip SRAM memory size (in bytes). @n
- *          It is not used by the FNET stack, but can be useful for an application.
- *          @n @n NOTE: User application should not change this parameter.
- ******************************************************************************/  
-#ifndef FNET_CFG_CPU_SRAM_SIZE
-    #define FNET_CFG_CPU_SRAM_SIZE          (0)  
-#endif 
+    
 
 /*! @} */
+    
 
 #endif /* _FNET_CPU_CONFIG_H_ */

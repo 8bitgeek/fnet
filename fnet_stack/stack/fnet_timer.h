@@ -185,5 +185,13 @@ void fnet_timer_delay( unsigned long delay_ticks );
 
 /*! @} */
 
+#if FNET_CFG_OS_TIMER
+    #define FNET_HW_TIMER_INIT    fnet_os_timer_init
+    #define FNET_HW_TIMER_RELEASE fnet_os_timer_release
+#else /* By default */
+    #define FNET_HW_TIMER_INIT    fnet_cpu_timer_init
+    #define FNET_HW_TIMER_RELEASE fnet_cpu_timer_release
+#endif /* FNET_CFG_OS_TIMER */
 
-#endif
+
+#endif /* _FNET_TIMER_H */

@@ -62,6 +62,8 @@
 
 #define FNET_CFG_CPU_FLASH_PAGE_SIZE    (2*1024)
 
+/* The platform does not have second Ethernet Module.*/
+#define FNET_CFG_CPU_ETH1        		(0)
 
 /* Defines the maximum number of incoming frames that may 
  *           be buffered by the Ethernet module.*/

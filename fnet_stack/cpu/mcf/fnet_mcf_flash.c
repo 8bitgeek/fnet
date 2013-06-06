@@ -47,12 +47,15 @@
 
 #if FNET_MCF && FNET_CFG_CPU_FLASH
 
+#if (FNET_CFG_CPU_FLASH_PROGRAM_SIZE != 4) 
+    #error "MCF Flash driver supports only 4 and 8 size of program-block"
+#endif 
+
 /************************************************************************
 * NAME: cfm_command
 *
 * DESCRIPTION: CFM command 
 ************************************************************************/
-
 /* == Should be in the RAM ==*/
 #if FNET_CFG_COMP_CW
     __declspec(data) 
@@ -138,9 +141,9 @@ void fnet_cpu_flash_erase( void *flash_page_addr)
 *
 * DESCRIPTION:
 ************************************************************************/
-void fnet_cpu_flash_write( unsigned long *dest, unsigned long data)
+void fnet_cpu_flash_write(unsigned char *dest, unsigned char *data)
 {
-    cfm_command(FNET_MCF_CFM_CFMCMD_WORD_PROGRAM, dest, data);
+    cfm_command(FNET_MCF_CFM_CFMCMD_WORD_PROGRAM, (unsigned long *)dest, *((unsigned long *)data));
 }
 
-#endif
+#endif /* FNET_MCF && FNET_CFG_CPU_FLASH */

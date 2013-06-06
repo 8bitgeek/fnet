@@ -46,8 +46,6 @@
 
 #if FNET_MCF
 
-
-#if FNET_OS == 0
 /************************************************************************
 * NAME: fnet_cpu_cache_invalidate
 *
@@ -63,6 +61,5 @@
     {}   
 #endif    
 
-#endif 
         
 #endif /*FNET_MCF*/

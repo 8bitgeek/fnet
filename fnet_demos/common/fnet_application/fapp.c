@@ -144,11 +144,12 @@ void fapp_shell_init(fnet_shell_desc_t desc);
 static void fapp_boot_mode_go(fnet_shell_desc_t desc);
 static void fapp_boot_mode_script(fnet_shell_desc_t desc);
 #endif
-
+#if FAPP_CFG_GO_CMD || FAPP_CFG_BOOTLOADER || FAPP_CFG_SETGET_CMD_BOOT
+static void fapp_go (fnet_shell_desc_t desc, unsigned long address);
+#endif
 #if FAPP_CFG_REINIT_CMD 
 void fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 #endif
-
 #if FAPP_CFG_DEBUG_CMD 
 void fapp_debug_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 #endif
@@ -162,6 +163,12 @@ const struct fnet_shell_command fapp_cmd_table [] =
 #if FAPP_CFG_SETGET_CMD
     { FNET_SHELL_CMD_TYPE_NORMAL, "set",        0, 2, (void *)fapp_set_cmd,     "Set parameter", "[<parameter> <value>]"},
     { FNET_SHELL_CMD_TYPE_NORMAL, "get",        0, 1, (void *)fapp_get_cmd,     "Get parameters", "[<parameter>]" },
+#endif  
+#if FAPP_CFG_BIND_CMD && FNET_CFG_IP6
+    { FNET_SHELL_CMD_TYPE_NORMAL, "bind",       1, 1, (void *)fapp_bind_cmd,    "Bind IPv6 Address", "<IP6 address>"},
+#endif
+#if FAPP_CFG_UNBIND_CMD && FNET_CFG_IP6
+    { FNET_SHELL_CMD_TYPE_NORMAL, "unbind",     1, 1, (void *)fapp_unbind_cmd,  "Unbind IPv6 Address", "<IP6 address>"},
 #endif    
 #if FAPP_CFG_INFO_CMD
     { FNET_SHELL_CMD_TYPE_NORMAL, "info",       0, 0, (void *)fapp_info_cmd,    "Show detailed status", ""},
@@ -313,11 +320,7 @@ const struct boot_mode *fapp_boot_mode_by_name (char *name)
 ************************************************************************/
 static void fapp_boot_mode_go(fnet_shell_desc_t desc)
 {
-    (void)desc;
-    
-    fnet_release(); /* Release FNET stack (it's optional).*/
-    
-    (( void(*)() )FNET_CPU_INSTRUCTION_ADDR(fapp_params_boot_config.go_address))();
+    fapp_go (desc, fapp_params_boot_config.go_address);
 }
 
 /************************************************************************
@@ -468,38 +471,36 @@ static void fapp_init(void)
     /* Init FNET stack */
     if(fnet_init(&init_params) != FNET_ERR)
     {
-        if((fapp_default_netif = fnet_netif_get_default()) != 0)
+        if((fapp_default_netif = fnet_netif_get_default()) == FNET_NULL)
         {
-            #if FAPP_CFG_PARAMS_READ_FLASH
-                /* During bootup, the most recently stored customer configuration data will be read and used to configure the interfaces.*/
-                if(fapp_params_from_flash() == FNET_OK)
-                {
-                    fnet_printf(FAPP_PARAMS_LOAD_STR);
-                }
-            #endif
+            fnet_printf(FAPP_NET_ERR);
+        }
+
+    #if FAPP_CFG_PARAMS_READ_FLASH
+        /* During bootup, the most recently stored customer configuration data will be read and used to configure the interfaces.*/
+        if(fapp_params_from_flash() == FNET_OK)
+        {
+            fnet_printf(FAPP_PARAMS_LOAD_STR);
+        }
+    #endif
             
-           #if (FAPP_CFG_EXP_CMD && FNET_CFG_FS) || (FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP)   
-                fapp_fs_mount(); /* Init FS and mount FS Image. */
-            #endif   
+    #if (FAPP_CFG_EXP_CMD && FNET_CFG_FS) || (FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP)   
+        fapp_fs_mount(); /* Init FS and mount FS Image. */
+    #endif   
             
-            /* Init main shell. */
-            shell_params.shell = &fapp_shell;
-            shell_params.cmd_line_buffer = fapp_cmd_line_buffer;
-            shell_params.cmd_line_buffer_size = sizeof(fapp_cmd_line_buffer);
-            shell_params.stream = FNET_SERIAL_STREAM_DEFAULT;
-            shell_params.echo = 1;
+        /* Init main shell. */
+        shell_params.shell = &fapp_shell;
+        shell_params.cmd_line_buffer = fapp_cmd_line_buffer;
+        shell_params.cmd_line_buffer_size = sizeof(fapp_cmd_line_buffer);
+        shell_params.stream = FNET_SERIAL_STREAM_DEFAULT;
+        shell_params.echo = 1;
             
-            if((fapp_shell_desc = fnet_shell_init(&shell_params)) != FNET_ERR)
-            {
-                  
-                fapp_boot(fapp_shell_desc);
- 
-            }
-            else
-                fnet_printf(FAPP_INIT_ERR, "Shell");
+        if((fapp_shell_desc = fnet_shell_init(&shell_params)) != FNET_ERR)
+        {
+            fapp_boot(fapp_shell_desc);
         }
         else
-            fnet_printf(FAPP_NET_ERR);
+            fnet_printf(FAPP_INIT_ERR, "Shell");
     }
     else
         fnet_printf(FAPP_INIT_ERR, "FNET");
@@ -756,7 +757,8 @@ void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 	if (argc == 2)
 	{
 		address = fnet_strtoul(argv[1],&p,16);
-		if ((address == 0) && (p == argv[1]))
+		
+		if (p == argv[1])
         {
             fnet_shell_println(desc, FAPP_PARAM_ERR, argv[1] );     
             return;
@@ -765,11 +767,31 @@ void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
     else
         address = fapp_params_boot_config.go_address;
   
-    fnet_shell_println(desc, FAPP_GO_STR, address);
- 
-    fnet_release(); /* Release the FNET stack.*/
+	fapp_go(desc, address);	
+}
+#endif
+
+/************************************************************************
+* NAME: fapp_go
+*
+* DESCRIPTION:   Jump to application entry point.
+************************************************************************/
+#if FAPP_CFG_GO_CMD || FAPP_CFG_BOOTLOADER || FAPP_CFG_SETGET_CMD_BOOT
+static void fapp_go ( fnet_shell_desc_t desc, unsigned long address )
+{
+    if((fapp_params_boot_config.go_address == 0) || (*(fnet_uint32*)address == 0xffffffff))
+    {
+        fnet_printf("\nThere is no code on user application startup vector.\n");
+    }
+    else
+    {    
+        
+      fnet_shell_println(desc, FAPP_GO_STR, address);
    
-    (( void(*)() )FNET_CPU_INSTRUCTION_ADDR(address))(); /* Jump. */
+      fnet_release(); /* Release the FNET stack.*/
+     
+      (( void(*)() )FNET_CPU_INSTRUCTION_ADDR(address))(); /* Jump. */
+    }
 }
 #endif
 
@@ -825,6 +847,55 @@ void fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
     fapp_init();        /* FAPP reinit.*/
 }
 #endif
+
+/************************************************************************
+* NAME: fapp_bind_cmd
+*
+* DESCRIPTION: Binds IPv6 address to the default interface. 
+************************************************************************/
+#if FAPP_CFG_BIND_CMD && FNET_CFG_IP6
+void fapp_bind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+{
+    fnet_netif_desc_t   netif = fapp_default_netif;
+    fnet_ip6_addr_t     addr;
+    
+    FNET_COMP_UNUSED_ARG(argc);
+    
+    if(fnet_inet_pton(AF_INET6, argv[1], &addr, sizeof(addr)) == FNET_OK)
+    {
+        fnet_netif_bind_ip6_addr(netif, &addr, FNET_NETIF_IP6_ADDR_TYPE_MANUAL);
+    }
+    else
+    {
+        fnet_shell_println(desc, FAPP_PARAM_ERR, argv[1]);
+    }
+}
+#endif
+
+/************************************************************************
+* NAME: fapp_unbind_cmd
+*
+* DESCRIPTION: Unbinds IPv6 address from the default interface. 
+************************************************************************/
+#if FAPP_CFG_UNBIND_CMD && FNET_CFG_IP6
+void fapp_unbind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+{
+    fnet_netif_desc_t   netif = fapp_default_netif;
+    fnet_ip6_addr_t     addr;
+    
+    FNET_COMP_UNUSED_ARG(argc);
+    
+    if(fnet_inet_pton(AF_INET6, argv[1], &addr, sizeof(addr)) == FNET_OK)
+    {
+        fnet_netif_unbind_ip6_addr(netif, &addr);
+    }
+    else
+    {
+        fnet_shell_println(desc, FAPP_PARAM_ERR, argv[1]);
+    }
+}
+#endif
+
 
 
 

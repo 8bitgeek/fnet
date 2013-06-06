@@ -88,6 +88,10 @@
     #define FNET_CFG_COMP_UV   (0)
 #endif
 
+/* GNU GCC */
+#ifndef FNET_CFG_COMP_GNUC
+    #define FNET_CFG_COMP_GNUC   (0)
+#endif
 
 #if FNET_CFG_COMP_CW
     #define FNET_COMP_STR    "CW"
@@ -95,6 +99,8 @@
     #define FNET_COMP_STR    "IAR"
 #elif FNET_CFG_COMP_UV
     #define FNET_COMP_STR    "UV"
+#elif FNET_CFG_COMP_GNUC
+   #define FNET_COMP_STR     "GCC"
 #else
     #if (defined(__MWERKS__) || defined(__CODEWARRIOR__))
         #undef FNET_CFG_COMP_CW
@@ -104,12 +110,14 @@
         #undef FNET_CFG_COMP_IAR 
         #define FNET_CFG_COMP_IAR   (1)
         #define FNET_COMP_STR       "IAR"
+    #elif (defined(__GNUC__))
+        #undef FNET_CFG_COMP_GNUC
+        #define FNET_CFG_COMP_GNUC  (1)
+		#define FNET_COMP_STR       "GCC"
     #elif (defined(__DCC__))
         #error "DIAB compiler is not supported."
     #elif (defined(__ghs__))
         #error "GREEN-HILLS compiler is not supported."
-    #elif (defined(__GNUC__))
-        #error "GCC compiler is not supported."
     #else
         #error "It is not possible to define the compiler. Please set a FNET_CFG_COMP_XXXX parameter."
     #endif

@@ -50,8 +50,24 @@
 
 #define _FNET_PING_CONFIG_H_
 
-/*! @addtogroup fnet_services_config */
+/*! @addtogroup fnet_ping_config */
 /*! @{ */
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_PING
+ * @brief    PING service support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ ******************************************************************************/
+#ifndef FNET_CFG_PING
+    #define FNET_CFG_PING           (0)
+#endif
+
+#if FNET_CFG_PING 
+    /* Force RAW sockets, if PING is defined. */
+    #undef FNET_CFG_RAW
+    #define FNET_CFG_RAW            (1)
+#endif
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_PING_PACKET_MAX

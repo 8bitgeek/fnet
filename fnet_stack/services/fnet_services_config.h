@@ -58,82 +58,12 @@
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_POLL_MAX
- * @brief   Maximum number of registered services in the polling list.@n
+ * @brief   Maximum number of registered services in the service-polling list.@n
  *          Default value is @b @c 5.
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_POLL_MAX
     #define FNET_CFG_POLL_MAX   (5)
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_DHCP
- * @brief    DHCP Client service support:
- *               - @c 1 = is enabled.
- *               - @b @c 0 = is disabled (Default value).
- ******************************************************************************/
-#ifndef FNET_CFG_DHCP
-    #define FNET_CFG_DHCP       (0)
-#endif
-
-#if FNET_CFG_DHCP 
-    #include "fnet_dhcp_config.h"
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_HTTP
- * @brief    HTTP Server service support:
- *               - @c 1 = is enabled.
- *               - @b @c 0 = is disabled (Default value).
- ******************************************************************************/
-#ifndef FNET_CFG_HTTP
-    #define FNET_CFG_HTTP       (0)
-#endif
-
-#if FNET_CFG_HTTP
-    /* Force FS if HTTP is defined. */
-    #undef FNET_CFG_FS
-    #define FNET_CFG_FS         (1)
-
-    #include "fnet_http_config.h"
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_FS
- * @brief    File System Interface support:
- *               - @c 1 = is enabled.
- *               - @b @c 0 = is disabled (Default value).
- ******************************************************************************/
-#ifndef FNET_CFG_FS
-    #define FNET_CFG_FS         (0) 
-#endif
-
-#if FNET_CFG_FS 
-    #include "fnet_fs_config.h"
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_TFTP_CLN
- * @brief    TFTP Client support:
- *               - @c 1 = is enabled.
- *               - @b @c 0 = is disabled (Default value).
- ******************************************************************************/
-#ifndef FNET_CFG_TFTP_CLN
-    #define FNET_CFG_TFTP_CLN   (0)
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_TFTP_SRV
- * @brief    TFTP Server support:
- *               - @c 1 = is enabled.
- *               - @b @c 0 = is disabled (Default value).
- ******************************************************************************/
-#ifndef FNET_CFG_TFTP_SRV
-    #define FNET_CFG_TFTP_SRV   (0)
-#endif
-
-#if FNET_CFG_TFTP_CLN || FNET_CFG_TFTP_SRV  
-    #include "fnet_tftp_config.h"
 #endif
 
 /**************************************************************************/ /*!
@@ -146,62 +76,16 @@
     #define FNET_CFG_FLASH      (0)
 #endif
 
-/**************************************************************************/ /*!
- * @def      FNET_CFG_TELNET
- * @brief    Telnet server support:
- *               - @c 1 = is enabled.
- *               - @b @c 0 = is disabled (Default value).
- ******************************************************************************/
-#ifndef FNET_CFG_TELNET
-    #define FNET_CFG_TELNET     (0)
-#endif
-
-#if FNET_CFG_TELNET 
-    #include "fnet_telnet_config.h"
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_DNS_RESOLVER
- * @brief    DNS client/resolver support:
- *               - @c 1 = is enabled.
- *               - @b @c 0 = is disabled (Default value).
- ******************************************************************************/
-#ifndef FNET_CFG_DNS_RESOLVER
-    #define FNET_CFG_DNS_RESOLVER   (0)
-#endif
-
-
-#if FNET_CFG_DNS_RESOLVER 
-    #include "fnet_dns_config.h"
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_PING
- * @brief    PING service support:
- *               - @c 1 = is enabled.
- *               - @b @c 0 = is disabled (Default value).
- ******************************************************************************/
-#ifndef FNET_CFG_PING
-    #define FNET_CFG_PING           (0)
-#endif
-
-#if FNET_CFG_PING 
-    /* Force RAW sockets, if PING is defined. */
-    #undef FNET_CFG_RAW
-    #define FNET_CFG_RAW            (1)
-
-
-    #include "fnet_ping_config.h"
-#endif
-
-
-/* Include Serial Library default configuration. */
+#include "fnet_dhcp_config.h"
+#include "fnet_http_config.h"
+#include "fnet_fs_config.h"
+#include "fnet_tftp_config.h"
+#include "fnet_telnet_config.h"
+#include "fnet_dns_config.h"
+#include "fnet_ping_config.h"
 #include "fnet_serial_config.h"
-
-/* Include Shell Library default configuration. */
 #include "fnet_shell_config.h"
-
 
 /*! @} */
 
-#endif
+#endif /* _FNET_SERVICES_CONFIG_H_ */

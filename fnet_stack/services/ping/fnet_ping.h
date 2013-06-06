@@ -49,8 +49,7 @@
 #include "fnet_config.h"
 
 
-#if FNET_CFG_PING
-
+#if FNET_CFG_PING || defined(__DOXYGEN__)
 
 #include "fnet.h"
 #include "fnet_poll.h"

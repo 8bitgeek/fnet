@@ -55,22 +55,23 @@
 *************************************************************************/
 typedef struct fnet_isr_entry
 {
-    struct fnet_isr_entry   *next;                      /* Next isr in chain */
-    unsigned int            vector_number;              /* Vector number */
-    void                    (*handler_top)( void );     /* "Critical handler" - it will 
-                                                        * be called every time on interrupt event, 
-                                                        * (e.g. user can put here clear flags etc.)*/
+    struct fnet_isr_entry   *next;                           /* Next isr in chain */
+    unsigned int            vector_number;                   /* Vector number */
+    void                    (*handler_top)(void *cookie);    /* "Critical handler" - it will 
+                                                              * be called every time on interrupt event, 
+                                                              * (e.g. user can put here clear flags etc.)*/
 
-    void                    (*handler_bottom)( void ); /* "Bottom half handler" - it will be called after 
-                                                        *  isr_handler_top() in case NO SW lock 
-                                                        *  or on SW unlock.*/
-    unsigned int            pended;                    /* indicates interrupt pending */
+    void                    (*handler_bottom)(void *cookie); /* "Bottom half handler" - it will be called after 
+                                                              *  isr_handler_top() in case NO SW lock 
+                                                              *  or on SW unlock.*/
+    unsigned int            pended;                          /* indicates interrupt pending */
+    void                    *cookie;                         /* Handler Cookie. */
 } fnet_isr_entry_t;
 
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(void), void (*handler_bottom)( void ));
+static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(void *cookie), void (*handler_bottom)(void *cookie), void *cookie);
 
 
 /************************************************************************
@@ -79,6 +80,7 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
 static unsigned long fnet_locked = 0;
 static fnet_isr_entry_t *fnet_isr_table = 0;
 
+static fnet_event_desc_t fnet_event_desc_last = FNET_EVENT_VECTOR_NUMBER;
 
 /************************************************************************
 * NAME: fnet_isr_handler
@@ -105,7 +107,7 @@ void fnet_isr_handler( int vector_number )
         if(isr_cur->vector_number == vector_number) /* we got it. */
         {
             if(isr_cur->handler_top)
-                isr_cur->handler_top();         /* Call "top half" handler; */
+                isr_cur->handler_top(isr_cur->cookie);         /* Call "top half" handler; */
 
             if(fnet_locked)
             {
@@ -116,7 +118,7 @@ void fnet_isr_handler( int vector_number )
                 isr_cur->pended = 0;
 
                 if(isr_cur->handler_bottom)
-                    isr_cur->handler_bottom(); /* Call "bottom half" handler;*/
+                    isr_cur->handler_bottom(isr_cur->cookie); /* Call "bottom half" handler;*/
             }
 
             break;
@@ -131,8 +133,8 @@ void fnet_isr_handler( int vector_number )
 *              'vector_number' at the internal vector queue and interrupt 
 *              handler 'fnet_cpu_isr' at the real vector table
 *************************************************************************/
-int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)( void ),
-                                   void (*handler_bottom)( void ), unsigned int priority )
+int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)(void *cookie),
+                                   void (*handler_bottom)(void *cookie), unsigned int priority, void *cookie )
 {
     int result;
 
@@ -141,7 +143,7 @@ int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)( void 
 
     if(result == FNET_OK)
     {
-        result = fnet_isr_register(vector_number, handler_top, handler_bottom);
+        result = fnet_isr_register(vector_number, handler_top, handler_bottom, cookie);
     }
 
     return result;
@@ -152,14 +154,16 @@ int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)( void 
 *
 * DESCRIPTION: Register the event handler.
 *************************************************************************/
-int fnet_event_init( fnet_event_t event_number, void (*event_handler)( void ))
+fnet_event_desc_t fnet_event_init( void (*event_handler)(void *cookie), void *cookie)
 {
-    int             result;
-    unsigned int    vector_number = (unsigned int)(FNET_EVENT_VECTOR_NUMBER + event_number);
+    unsigned int    vector_number = (unsigned int)(fnet_event_desc_last++);
 
-    result = fnet_isr_register(vector_number, 0, event_handler);
-
-    return result;
+    if( fnet_isr_register(vector_number, 0, event_handler, cookie) == FNET_ERR)
+    {
+    	return FNET_ERR;    	
+    }
+    else
+    	return (fnet_event_desc_t)vector_number;
 }
 
 /************************************************************************
@@ -167,7 +171,7 @@ int fnet_event_init( fnet_event_t event_number, void (*event_handler)( void ))
 *
 * DESCRIPTION: Register 'handler' at the isr table.
 *************************************************************************/
-static int fnet_isr_register( unsigned int vector_number, void (*handler_top)( void ), void (*handler_bottom)( void ) )
+static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(void *cookie), void (*handler_bottom)(void *cookie), void *cookie )
 {
     int                 result;
     fnet_isr_entry_t    *isr_temp;
@@ -177,10 +181,11 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)( v
     if(isr_temp)
     {
         isr_temp->vector_number = vector_number;
-        isr_temp->handler_top = (void (*)(void))handler_top;
-        isr_temp->handler_bottom = (void (*)(void))handler_bottom;
+        isr_temp->handler_top = (void (*)(void *cookie))handler_top;
+        isr_temp->handler_bottom = (void (*)(void *cookie))handler_bottom;
         isr_temp->next = fnet_isr_table;
         isr_temp->pended = 0;
+        isr_temp->cookie = cookie;
         fnet_isr_table = isr_temp;
         
         result = FNET_OK;
@@ -318,7 +323,7 @@ void fnet_isr_unlock( void )
                 isr_temp->pended = 0;
 
                 if(isr_temp->handler_bottom)
-                    isr_temp->handler_bottom();
+                    isr_temp->handler_bottom(isr_temp->cookie);
             }
 
             isr_temp = isr_temp->next;
@@ -332,9 +337,9 @@ void fnet_isr_unlock( void )
 *
 * DESCRIPTION: This function raise registerted event. 
 *************************************************************************/
-void fnet_event_raise( fnet_event_t event_number )
+void fnet_event_raise( fnet_event_desc_t event_number )
 {
-    unsigned int        vector_number = (unsigned int)(FNET_EVENT_VECTOR_NUMBER + event_number);
+    unsigned int        vector_number = (unsigned int)(event_number);
     fnet_isr_entry_t    *isr_temp;
 
     isr_temp = fnet_isr_table;
@@ -346,14 +351,14 @@ void fnet_event_raise( fnet_event_t event_number )
         if(isr_temp->vector_number == vector_number)
         {
             if(isr_temp->handler_top)
-                isr_temp->handler_top();
+                isr_temp->handler_top(isr_temp->cookie);
 
             if(fnet_locked == 1)
             {
                 isr_temp->pended = 0;
 
                 if(isr_temp->handler_bottom)
-                    isr_temp->handler_bottom();
+                    isr_temp->handler_bottom(isr_temp->cookie);
             }
             else
                 isr_temp->pended = 1;

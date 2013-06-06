@@ -39,7 +39,7 @@
 * @version 0.0.2.0
 *
 * @brief Default BRTOS-specific configuration. @n
-* Experental. Not supported.
+*        Experimental. Not supported.
 *
 ***************************************************************************/
 
@@ -50,9 +50,11 @@
 #ifndef _FNET_BRTOS_CONFIG_H_
 #define _FNET_BRTOS_CONFIG_H_
 
-
-#define FNET_CFG_OS_ISR     (1)
-#define FNET_CFG_OS_MUTEX   (1)
-
+#ifndef FNET_CFG_OS_ISR
+    #define FNET_CFG_OS_ISR     (1)
+#endif
+#ifndef FNET_CFG_OS_MUTEX
+    #define FNET_CFG_OS_MUTEX   (1)
+#endif
 
 #endif /* _FNET_BRTOS_CONFIG_H_ */

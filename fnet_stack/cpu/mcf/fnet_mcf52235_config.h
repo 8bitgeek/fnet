@@ -1,5 +1,6 @@
 /**************************************************************************
 * 
+* Copyright 2012-2013 by Andrey Butok. FNET Community.
 * Copyright 2005-2009 by Andrey Butok. Freescale Semiconductor, Inc. 
 *
 ***************************************************************************
@@ -20,10 +21,6 @@
 *
 * @file fnet_mcf52235_config.h
 *
-* @date Mar-27-2012
-*
-* @version 0.1.13.0
-*
 * @brief MCF5223x specific configuration file.
 *
 ***************************************************************************/
@@ -39,24 +36,27 @@
 #define FNET_MCF                        (1)
 
 /* Maximum Transmission Unit */
-#ifndef FNET_CFG_ETH_MTU
-#define FNET_CFG_ETH_MTU                (800)
+#ifndef FNET_CFG_CPU_ETH0_MTU
+    #define FNET_CFG_CPU_ETH0_MTU       (800)
 #endif
 
 /* Size of the internal static heap buffer. */
 #ifndef FNET_CFG_HEAP_SIZE
-#define FNET_CFG_HEAP_SIZE              (15 * 1024)
+    #define FNET_CFG_HEAP_SIZE          (15 * 1024)
 #endif
 
 /* System frequency in Hz. */
 #ifndef FNET_CFG_CPU_CLOCK_HZ
-#define FNET_CFG_CPU_CLOCK_HZ           (60000000)
+    #define FNET_CFG_CPU_CLOCK_HZ       (60000000)
 #endif
+
+/* The platform does not have second Ethernet Module.*/
+#define FNET_CFG_CPU_ETH1        		(0)
 
 /* Defines the maximum number of incoming frames that may 
  *           be buffered by the Ethernet module.*/
 #ifndef FNET_CFG_CPU_ETH_RX_BUFS_MAX
-#define FNET_CFG_CPU_ETH_RX_BUFS_MAX    (3)
+    #define FNET_CFG_CPU_ETH_RX_BUFS_MAX    (3)
 #endif
 
 /* The platform has ColdFire Flash Module.*/
@@ -71,6 +71,10 @@
 /* It has On-chip Ethernet Physical Transceiver. */
 #undef FNET_CFG_MCF_ETH_PHY
 #define FNET_CFG_MCF_ETH_PHY            (1)
+
+/* PHY address discovery is not needed.*/
+#define FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER (0)
+#define FNET_CFG_CPU_ETH0_PHY_ADDR	       (0)
 
 /* Flash size.*/
 #define FNET_CFG_CPU_FLASH_SIZE         (1024 * 256)    /* 256 KB */

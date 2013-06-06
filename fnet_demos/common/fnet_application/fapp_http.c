@@ -294,7 +294,7 @@ static int fapp_http_cgi_stdata_handle(char * query, long *cookie)
     fnet_netif_get_statistics(fapp_default_netif, &statistics);
 
 	/* Write to the temprorary buffer. */
-    fnet_snprintf(fapp_http_cgi_buffer, sizeof(fapp_http_cgi_buffer), "({ \"time\":\"%02d:%02d:%02d\",\"tx\":%d,\"rx\":%d})", 
+    fnet_snprintf(fapp_http_cgi_buffer, sizeof(fapp_http_cgi_buffer), "({\"time\":\"%02d:%02d:%02d\",\"tx\":%d,\"rx\":%d})", 
                              t_hour, t_min, t_sec, statistics.tx_packet, statistics.rx_packet);
 
     *cookie = (long)fapp_http_cgi_buffer; /* Save fapp_http_cgi_buffer as cookie.*/

@@ -64,6 +64,17 @@
 /*! @addtogroup fnet_socket */
 /*! @{ */
 
+/* native Flash controller align */
+#if FNET_CFG_CPU_FLASH
+	#if (FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 8)
+	  #define FNET_COMP_PACKED_NATIVE         FNET_COMP_PACKED_8
+	#elif (FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 4)
+	  #define FNET_COMP_PACKED_NATIVE         FNET_COMP_PACKED_4
+	#else
+	  #error The macro FNET_CFG_CPU_FLASH_PROGRAM_SIZE must be set to correct value.
+	#endif
+#endif
+
 /************************************************************************
 *     For doing byte order conversions between CPU 
 *     and the independent "network" order.
@@ -361,18 +372,19 @@ void fnet_cpu_flash_erase(void *flash_page_addr);
  *
  * @param dest            Destination address in the Flash to write to.
  *
- * @param data            32-bit value containing the 
- *                        data to write to the Flash memory.
+ * @param data            Pointer to the block of data to write to the Flash memory
+ *                        Size of the data block must be equal to 
+ *                        @ref FNET_CFG_CPU_FLASH_PROGRAM_SIZE.
  *
  * @see fnet_cpu_flash_erase()
  *
  ******************************************************************************
  *
- * This function copies four bytes of @c data
+ * This function copies @ref FNET_CFG_CPU_FLASH_PROGRAM_SIZE bytes pointed by @c data
  * to the Flash memory pointed by @c dest.
  *
  ******************************************************************************/
-void fnet_cpu_flash_write(unsigned long *dest, unsigned long data);
+void fnet_cpu_flash_write(unsigned char *dest, unsigned char *data);
 
 /***************************************************************************/ /*!
  *

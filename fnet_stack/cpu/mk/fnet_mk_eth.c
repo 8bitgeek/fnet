@@ -43,7 +43,7 @@
 ***************************************************************************/
 
 #include "fnet_config.h"
-#if FNET_MK && FNET_CFG_ETH
+#if FNET_MK && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 
 #include "fnet_fec.h"
 
@@ -53,8 +53,9 @@
 *************************************************************************/
 fnet_eth_if_t fnet_mk_eth0_if =
 {
-    &fnet_fec0_if,              /* Points to CPU-specific control data structure of the interface. */
-    fnet_fec_output
+    &fnet_fec0_if               /* Points to CPU-specific control data structure of the interface. */
+    ,0
+    ,fnet_fec_output
 #if FNET_CFG_MULTICAST
     ,      
     fnet_fec_multicast_join,
@@ -67,7 +68,7 @@ fnet_netif_t fnet_eth0_if =
 	0,                          /* Pointer to the next net_if structure.*/
 	0,                          /* Pointer to the previous net_if structure.*/
 	"eth0",                     /* Network interface name.*/
-	FNET_CFG_ETH_MTU,           /* Maximum transmission unit.*/
+	FNET_CFG_CPU_ETH0_MTU,      /* Maximum transmission unit.*/
 	&fnet_mk_eth0_if,           /* Points to interface specific data structure.*/
 	&fnet_fec_api               /* Interface API */
 };
@@ -79,7 +80,7 @@ fnet_netif_t fnet_eth0_if =
 *************************************************************************/
 void fnet_eth_io_init() 
 {
-#if FNET_CFG_CPU_MK60N512
+#if FNET_CFG_CPU_MK60N512 || FNET_CFG_CPU_MK70FN1 || FNET_CFG_CPU_MK60FN1
   
     FNET_MK_PORT_MemMapPtr pctl;
     FNET_MK_SIM_MemMapPtr  sim  = (FNET_MK_SIM_MemMapPtr)FNET_MK_SIM_BASE_PTR;

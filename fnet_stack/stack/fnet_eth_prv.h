@@ -49,7 +49,7 @@
 
 #include "fnet_config.h"
 
-#if FNET_CFG_ETH
+#if (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 
 #include "fnet_eth.h"
 #include "fnet_arp.h"
@@ -97,22 +97,21 @@ FNET_COMP_PACKED_END
 typedef struct fnet_eth_if
 {
     void                *if_cpu_ptr;  /* Points to CPU-specific control data structure of the interface. */
-    void ( *output)(fnet_netif_t *netif, unsigned short type, const fnet_mac_addr_t dest_addr, fnet_netbuf_t* nb);
+    unsigned int        mac_number;   /* MAC module number [0-1]. */
+    void                ( *output)(fnet_netif_t *netif, unsigned short type, const fnet_mac_addr_t dest_addr, fnet_netbuf_t* nb);
 #if FNET_CFG_MULTICAST      
-    void ( *multicast_join)(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
-    void ( *multicast_leave)(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
+    void                ( *multicast_join)(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
+    void                ( *multicast_leave)(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
 #endif /* FNET_CFG_MULTICAST */
-    int connection_flag;
+    /* Internal parameters.*/
+    int                 connection_flag;
     fnet_timer_desc_t   eth_timer;    /* Optional ETH timer.*/
-
 #if FNET_CFG_IP4    
     fnet_arp_if_t       arp_if;
 #endif   
-
 #if FNET_CFG_IP6   
     fnet_nd6_if_t       nd6_if;
 #endif 
- 
 #if !FNET_CFG_CPU_ETH_MIB     
     struct fnet_netif_statistics statistics;
 #endif    
@@ -125,9 +124,16 @@ typedef struct fnet_eth_if
 *************************************************************************/
 extern const fnet_mac_addr_t fnet_eth_null_addr;
 extern const fnet_mac_addr_t fnet_eth_broadcast;
-extern fnet_netif_t fnet_eth0_if;
 
-#define FNET_ETH_IF (&fnet_eth0_if)
+#if FNET_CFG_CPU_ETH0 
+    extern fnet_netif_t fnet_eth0_if;
+    #define FNET_ETH0_IF ((fnet_netif_desc_t)(&fnet_eth0_if))
+#endif
+#if FNET_CFG_CPU_ETH1 
+    extern fnet_netif_t fnet_eth1_if;
+    #define FNET_ETH1_IF ((fnet_netif_desc_t)(&fnet_eth1_if))
+#endif    
+    
 
 /************************************************************************
 *     Function Prototypes

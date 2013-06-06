@@ -81,6 +81,8 @@ void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_save_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_reset_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_bind_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_unbind_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family, fnet_netif_desc_t netif, int print_type);
 
 extern fnet_netif_desc_t fapp_default_netif;

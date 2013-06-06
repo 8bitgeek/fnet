@@ -365,7 +365,8 @@ static char *fnet_inet_ntop_ip4 ( fnet_ip4_addr_t *addr, char *str, int str_len)
 #if FNET_CFG_IP6 
 static char *fnet_inet_ntop_ip6 (fnet_ip6_addr_t *addr, char *str, int str_len)
 {
-    char tmp[FNET_IP6_ADDR_STR_SIZE], *tp;
+    char    tmp[FNET_IP6_ADDR_STR_SIZE];
+    char    *tp;
     struct { int base, len; } best, cur;
 	
     unsigned long words[16 / 2];

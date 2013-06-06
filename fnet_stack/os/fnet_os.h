@@ -1,7 +1,6 @@
 /**************************************************************************
 * 
 * Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -35,17 +34,13 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.7.0
-*
-* @brief FNET Mutex API.
+* @brief FNET OS API.
 *
 ***************************************************************************/
 
-#ifndef _FNET_MUTEX_H_
+#ifndef _FNET_OS_H_
 
-#define _FNET_MUTEX_H_
+#define _FNET_OS_H_
 
 #include "fnet_config.h"
 
@@ -77,4 +72,9 @@
     #define fnet_os_event_raise()       {}
 #endif
 
-#endif
+//#if FNET_CFG_OS_TIMER
+    int fnet_os_timer_init(unsigned int period_ms);
+    void fnet_os_timer_release(void);
+//#endif
+
+#endif /* _FNET_OS_H_ */

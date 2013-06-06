@@ -50,13 +50,24 @@
 
 #define _FNET_HTTP_CONFIG_H_
 
-#if !FNET_CFG_FS
-    #error The HTTP server uses the File System Interface. Please enable the FNET_CFG_FS in the user configuration. 
-    #undef FNET_CFG_HTTP
+/*! @addtogroup fnet_http_config */
+/*! @{ */
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_HTTP
+ * @brief    HTTP Server service support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ ******************************************************************************/
+#ifndef FNET_CFG_HTTP
+    #define FNET_CFG_HTTP       (0)
 #endif
 
-/*! @addtogroup fnet_services_config */
-/*! @{ */
+#if FNET_CFG_HTTP
+    /* Force FS if HTTP is defined. */
+    #undef FNET_CFG_FS
+    #define FNET_CFG_FS         (1)
+#endif
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_HTTP_MAX

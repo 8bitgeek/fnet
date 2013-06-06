@@ -233,7 +233,7 @@ void fnet_netif_get_name( fnet_netif_desc_t netif, char *name, unsigned char nam
  *
  * @param netif     Network interface descriptor to be assigned as default.
  *
- * @see fnet_netif_get_default()
+ * @see fnet_netif_get_default(), FNET_CFG_DEFAULT_IF
  *
  ******************************************************************************
  *
@@ -252,7 +252,7 @@ void fnet_netif_set_default( fnet_netif_desc_t netif );
  *
  * @return   This function returns the descriptor of the default network interface.
  *
- * @see fnet_netif_set_default()
+ * @see fnet_netif_set_default(), FNET_CFG_DEFAULT_IF
  *
  ******************************************************************************
  *
@@ -639,7 +639,7 @@ void fnet_netif_leave_ip4_multicast ( fnet_netif_desc_t netif, fnet_ip4_addr_t m
 
 
 
-#if FNET_CFG_IP6
+#if FNET_CFG_IP6 || defined(__DOXYGEN__)
   
 /***************************************************************************/ /*!
  *
@@ -705,6 +705,61 @@ void fnet_netif_leave_ip6_multicast ( fnet_netif_desc_t netif, fnet_ip6_addr_t *
  *
  ******************************************************************************/
 int fnet_netif_get_ip6_addr ( fnet_netif_desc_t netif_desc, unsigned int n, fnet_netif_ip6_addr_info_t *addr_info );
+
+/***************************************************************************/ /*!
+ *
+ * @brief    Binds the IPv6 address to the specified network interface.
+ *
+ * @param netif_desc    Network interface descriptor.
+ *
+ * @param addr        The IPv6 address for the network interface.
+ *
+ * @param addr_type   The IPv6 address type that defines the way the IPv6 
+ *                    address to be assigned to the interface.
+ *
+ * @return This function returns:
+ *   - @ref FNET_OK if no error occurs.
+ *   - @ref FNET_FALSE in case of error.
+ *
+ * @see fnet_netif_unbind_ip6_addr()
+ *
+ ******************************************************************************
+ *
+ * This function binds the IPv6 address to the @c netif interface.@n
+ * The @c addr_type parameter defines the way the IPv6 address is assigned 
+ * to the interface:
+ *   - @c FNET_NETIF_IP6_ADDR_TYPE_MANUAL:  value of the @c addr parameter 
+ *             defines the whole IPv6 address to be bind to the interface.
+ *   - @c FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE: value of the @c addr 
+ *             parameter defines the first 64bits of the bind IPv6 address. 
+ *            The last 64bits of the IPv6 address are overwritten with the 
+ *            Interface Identifier. In case of Ethernet interface, 
+ *            the Interface Identifier is formed from 48-bit MAC address, 
+ *            according to [RFC2464]. 
+ *
+ ******************************************************************************/
+int fnet_netif_bind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr, fnet_netif_ip6_addr_type_t addr_type);
+
+/***************************************************************************/ /*!
+ *
+ * @brief    Unbinds the IPv6 address from the specified network interface.
+ *
+ * @param netif_desc    Network interface descriptor.
+ *
+ * @param addr        The IPv6 address to unbind.
+ *
+ * @return This function returns:
+ *   - @ref FNET_OK if successful.
+ *   - @ref FNET_FALSE if failed.
+ *
+ * @see fnet_netif_bind_ip6_addr()
+ *
+ ******************************************************************************
+ *
+ * This function unbinds the IPv6 address from the @c netif interface.
+ *
+ ******************************************************************************/
+int fnet_netif_unbind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr);
 
 #endif /* FNET_CFG_IP6 */
 

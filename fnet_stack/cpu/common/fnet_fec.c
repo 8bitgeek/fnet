@@ -44,7 +44,7 @@
 ***************************************************************************/
 
 #include "fnet_config.h"
-#if (FNET_MCF || FNET_MK || FNET_MPC) && FNET_CFG_ETH
+#if (FNET_MCF || FNET_MK || FNET_MPC) && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 
 #include "fnet_fec.h"
 
@@ -63,34 +63,21 @@
 
 #define FNET_FEC_ALIGN_DIV(div, x)     (((fnet_uint32)(x) + ((fnet_uint32)(div)-1))  & (~((fnet_uint32)(div)-1)))
 
-/* FEC buffers structure. */
-FNET_COMP_PACKED_BEGIN
-typedef struct 
-{   
-    fnet_uint8 tx_buf_desc[(FNET_FEC_TX_BUF_NUM * sizeof(fnet_fec_buf_desc_t)) + (FNET_FEC_BUF_DESC_DIV-1)] FNET_COMP_PACKED;
-    fnet_uint8 rx_buf_desc[(FNET_FEC_RX_BUF_NUM * sizeof(fnet_fec_buf_desc_t)) + (FNET_FEC_BUF_DESC_DIV-1)] FNET_COMP_PACKED;
-    fnet_uint8 tx_buf[FNET_FEC_TX_BUF_NUM][FNET_FEC_BUF_SIZE + (FNET_FEC_TX_BUF_DIV-1)] FNET_COMP_PACKED;
-    fnet_uint8 rx_buf[FNET_FEC_RX_BUF_NUM][FNET_FEC_BUF_SIZE + (FNET_FEC_RX_BUF_DIV-1)] FNET_COMP_PACKED; 
-}
-fnet_fec_buf_memory_t;
-FNET_COMP_PACKED_END
-
-
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
 int fnet_fec_init(fnet_netif_t *netif);
 void fnet_fec_release(fnet_netif_t *netif);
 void fnet_fec_input(fnet_netif_t *netif);
-void fnet_fec_rx_buf_next( fnet_fec_if_t *ethif);
+static void fnet_fec_rx_buf_next( fnet_fec_if_t *ethif);
 
 /* FEC rx frame interrup handler. */
-static void fnet_fec_isr_rx_handler_top(void);
-static void fnet_fec_isr_rx_handler_bottom(void);
+static void fnet_fec_isr_rx_handler_top(void *cookie);
+static void fnet_fec_isr_rx_handler_bottom(void *cookie);
 
 static void fnet_fec_get_mac_addr(fnet_fec_if_t *ethif, fnet_mac_addr_t *mac_addr);
 
-void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif);
+static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned int phy_addr_start);
 void fnet_fec_debug_mii_print_regs(fnet_netif_t *netif) ;
 
 #if FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM && FNET_FEC_HW_TX_PROTOCOL_CHECKSUM_FIX
@@ -101,11 +88,14 @@ static void fnet_fec_checksum_clear(unsigned short type, char *datagram, unsigne
 *     Global Data Structures
 *************************************************************************/
 
-/* Ethernet specific control data structure.*/
-fnet_fec_if_t fnet_fec0_if;
+/* Ethernet specific control data structures.*/
+#if FNET_CFG_CPU_ETH0
+    fnet_fec_if_t fnet_fec0_if;  /*eth0*/
+#endif
+#if FNET_CFG_CPU_ETH1
+    fnet_fec_if_t fnet_fec1_if;  /*eth1*/
+#endif
 
-/* FEC buffer structure. */
-static fnet_fec_buf_memory_t fnet_fec_buf_memory;
 
 /*****************************************************************************
  * FEC general API structure.
@@ -127,19 +117,16 @@ const fnet_netif_api_t fnet_fec_api =
 	fnet_fec_get_statistics
 #if FNET_CFG_MULTICAST 
     #if FNET_CFG_IP4
-        ,	
-	    fnet_eth_multicast_join_ip4,
-	    fnet_eth_multicast_leave_ip4
+        ,fnet_eth_multicast_join_ip4
+	    ,fnet_eth_multicast_leave_ip4
     #endif
     #if FNET_CFG_IP6
-        ,
-	    fnet_eth_multicast_join_ip6,
-	    fnet_eth_multicast_leave_ip6
+        ,fnet_eth_multicast_join_ip6
+	    ,fnet_eth_multicast_leave_ip6
     #endif    
 #endif
 #if FNET_CFG_IP6
-    ,
-    fnet_eth_output_ip6            /* IPv6 Transmit function.*/
+    ,fnet_eth_output_ip6            /* IPv6 Transmit function.*/
 #endif	
 };
 
@@ -155,19 +142,42 @@ const fnet_netif_api_t fnet_fec_api =
 *************************************************************************/
 int fnet_fec_init(fnet_netif_t *netif)
 {
-    fnet_fec_if_t *ethif;
-    int i;
-    int result;
+    fnet_fec_if_t  *ethif;
+    int            i;
+    int            result;
     
     ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
-        
-    ethif->reg = (volatile fnet_fec_reg_t *)FNET_FEC_BASE_ADDR; /* Set base address of FEC registers.*/
+    
+    /* Set the base address of FEC registers and other parameters, based on MAC number.*/
+    switch (((fnet_eth_if_t *)(netif->if_ptr))->mac_number)
+    {
+        #if FNET_CFG_CPU_ETH0 
+    	case 0:
+    		ethif->reg = (volatile fnet_fec_reg_t *)FNET_FEC0_BASE_ADDR;  /* Set FEC module base refister pointer.*/
+    		ethif->reg_phy = (volatile fnet_fec_reg_t *)FNET_FEC0_BASE_ADDR;
+    		ethif->vector_number = FNET_CFG_CPU_ETH0_VECTOR_NUMBER;       /* Set RX Frame interrupt number.*/
+         	ethif->phy_addr = FNET_CFG_CPU_ETH0_PHY_ADDR;                 /* Set default PHY address */
+    		break;
+        #endif    		
+        #if FNET_CFG_CPU_ETH1 		
+    	case 1:
+    		ethif->reg = (volatile fnet_fec_reg_t *)FNET_FEC1_BASE_ADDR;  /* Set FEC module base refister pointer.*/
+    		ethif->reg_phy = (volatile fnet_fec_reg_t *)FNET_FEC0_BASE_ADDR;
+    		ethif->vector_number = FNET_CFG_CPU_ETH1_VECTOR_NUMBER;       /* Set RX Frame interrupt number.*/
+         	ethif->phy_addr = FNET_CFG_CPU_ETH1_PHY_ADDR;                 /* Set default PHY address */    		
+    		break;
+       #endif    		
+    	default:
+    		result = FNET_ERR;
+    		goto ERROR;
+    }
         
     fnet_eth_io_init();
         
     /* Reset FEC.*/
     ethif->reg->ECR = FNET_FEC_ECR_RESET;            /* Reset the Ethernet controller.*/
-    while (ethif->reg->ECR & FNET_FEC_ECR_RESET){};  /* Wait for the reset sequence to complete.*/
+    while (ethif->reg->ECR & FNET_FEC_ECR_RESET)
+    {};  /* Wait for the reset sequence to complete.*/
         
     /* Disable FEC interrupts.*/
     ethif->reg->EIMR = 0;
@@ -176,8 +186,8 @@ int fnet_fec_init(fnet_netif_t *netif)
     ethif->reg->EIR = 0xFFFFFFFF;
         
     /* ======== Ethernet buffers initialisation ===============*/
-    ethif->tx_buf_desc = (fnet_fec_buf_desc_t *)FNET_FEC_ALIGN_DIV(FNET_FEC_BUF_DESC_DIV, fnet_fec_buf_memory.tx_buf_desc);
-    ethif->rx_buf_desc = (fnet_fec_buf_desc_t *)FNET_FEC_ALIGN_DIV(FNET_FEC_BUF_DESC_DIV, fnet_fec_buf_memory.rx_buf_desc);
+    ethif->tx_buf_desc = (fnet_fec_buf_desc_t *)FNET_FEC_ALIGN_DIV(FNET_FEC_BUF_DESC_DIV, ethif->tx_buf_desc_buf);
+    ethif->rx_buf_desc = (fnet_fec_buf_desc_t *)FNET_FEC_ALIGN_DIV(FNET_FEC_BUF_DESC_DIV, ethif->rx_buf_desc_buf);
         
         
     ethif->tx_buf_desc_cur=ethif->tx_buf_desc;
@@ -189,7 +199,7 @@ int fnet_fec_init(fnet_netif_t *netif)
         ethif->tx_buf_desc[i].status = FNET_HTONS(FNET_FEC_TX_BD_L | FNET_FEC_TX_BD_TC);
         ethif->tx_buf_desc[i].length = FNET_HTONS(0);
             
-        ethif->tx_buf_desc[i].buf_ptr = (unsigned char *)fnet_htonl(FNET_FEC_ALIGN_DIV(FNET_FEC_TX_BUF_DIV, fnet_fec_buf_memory.tx_buf[i]));
+        ethif->tx_buf_desc[i].buf_ptr = (unsigned char *)fnet_htonl(FNET_FEC_ALIGN_DIV(FNET_FEC_TX_BUF_DIV, ethif->tx_buf[i]));
     }
 
     ethif->tx_buf_desc_num=FNET_FEC_TX_BUF_NUM;
@@ -200,7 +210,7 @@ int fnet_fec_init(fnet_netif_t *netif)
         ethif->rx_buf_desc[i].status = FNET_HTONS(FNET_FEC_RX_BD_E);
         ethif->rx_buf_desc[i].length = FNET_HTONS(0);
             
-        ethif->rx_buf_desc[i].buf_ptr = (unsigned char *)fnet_htonl(FNET_FEC_ALIGN_DIV(FNET_FEC_RX_BUF_DIV, fnet_fec_buf_memory.rx_buf[i]));
+        ethif->rx_buf_desc[i].buf_ptr = (unsigned char *)fnet_htonl(FNET_FEC_ALIGN_DIV(FNET_FEC_RX_BUF_DIV, ethif->rx_buf[i]));
     }
 
     ethif->rx_buf_desc_num = FNET_FEC_RX_BUF_NUM;
@@ -208,10 +218,11 @@ int fnet_fec_init(fnet_netif_t *netif)
     /* Set the Wrap bit on the last one in the ring.*/
     ethif->tx_buf_desc[FNET_FEC_TX_BUF_NUM - 1].status |= FNET_HTONS(FNET_FEC_TX_BD_W);
     ethif->rx_buf_desc[FNET_FEC_RX_BUF_NUM - 1].status |= FNET_HTONS(FNET_FEC_RX_BD_W);
-
  
     /*======== END of Ethernet buffers initialisation ========*/
-    result = fnet_isr_vector_init(FNET_FEC_RX_FRAME_VECTOR, fnet_fec_isr_rx_handler_top, fnet_fec_isr_rx_handler_bottom, FNET_FEC_INT_LEVEL);
+    
+    /* Install RX Frame interrupt handler.*/
+    result = fnet_isr_vector_init(ethif->vector_number, fnet_fec_isr_rx_handler_top, fnet_fec_isr_rx_handler_bottom, FNET_CFG_CPU_ETH_VECTOR_PRIORITY, (void *)netif);
         
     if( result == FNET_OK)
     {
@@ -238,12 +249,15 @@ int fnet_fec_init(fnet_netif_t *netif)
          * made 128-bit aligned (evenly divisible by 16).*/
         ethif->reg->ETDSR = (unsigned long)ethif->tx_buf_desc;
     
-        /* Set the tranceiver interface to MII mode (for MCF).*/
+        /* Set the transceiver interface.*/
         ethif->reg->RCR = FNET_FEC_RCR_MII_MODE | FNET_FEC_RCR_MAX_FL(FNET_FEC_BUF_SIZE)
-								#if FNET_MK /*Kinetis*/
-						            /* Set the tranceiver interface to RMII mode (for Kinetis).*/ //TBD Set it by config. param.
-						            | FNET_FEC_RCR_RMII_MODE 
-					            #endif 
+								#if FNET_CFG_CPU_ETH_RMII /*Kinetis, Modelo*/
+						            /* Set the transceiver interface to RMII mode (for Kinetis).*/ //TBD Set it by config. param.
+						            | FNET_FEC_RCR_RMII_MODE
+                                #if FNET_CFG_CPU_ETH_RMII_10T
+                                    |FNET_FEC_RCR_RMII_10T 
+                                #endif
+					            #endif /* FNET_CFG_CPU_ETH_RMII */
 					            #if FNET_CFG_CPU_ETH_PROMISCUOUS
 					                |FNET_FEC_RCR_PROM  /* Enable promiscuous mode.*/
 					            #endif
@@ -254,10 +268,10 @@ int fnet_fec_init(fnet_netif_t *netif)
         /* Configure the transmit block.*/
         ethif->reg->TCR = 0
 			    	    #if FNET_CFG_CPU_ETH_FULL_DUPLEX
-			                |FNET_FEC_TCR_FDEN  /* Enable Half duplex.*/
+			                |FNET_FEC_TCR_FDEN  /* Enable Full duplex.*/
 			            #endif  
                         ;
-#if FNET_MK 
+#if FNET_CFG_CPU_ETH_HW_TX_IP_CHECKSUM || FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM || FNET_CFG_CPU_ETH_HW_RX_IP_CHECKSUM || FNET_CFG_CPU_ETH_HW_RX_PROTOCOL_CHECKSUM || FNET_CFG_CPU_ETH_HW_RX_MAC_ERR
         /* Transmit Accelerator Function Configuration. */
         ethif->reg->TACC = 0
                         #if FNET_CFG_CPU_ETH_HW_TX_IP_CHECKSUM
@@ -312,14 +326,12 @@ int fnet_fec_init(fnet_netif_t *netif)
                 #endif
                 ;
 
-#endif /* FNET_MK */
-        
-
+#endif /* FNET_CFG_CPU_ETH_HW_TX_IP_CHECKSUM || FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM || FNET_CFG_CPU_ETH_HW_RX_IP_CHECKSUM || FNET_CFG_CPU_ETH_HW_RX_PROTOCOL_CHECKSUM || FNET_CFG_CPU_ETH_HW_RX_MAC_ERR */
+    
         /*The MII_SPEED field must be programmed with a value to provide
         * an EMDC frequency of less than or equal to 2.5 MHz to be compliant
         * with the IEEE 802.3 MII specification.*/
-        ethif->reg->MSCR = FNET_FEC_MSCR_MII_SPEED((FNET_FEC_CLOCK_KHZ/FNET_FEC_MII_CLOCK_KHZ) + 1) & ~1;
-             
+        ethif->reg_phy->MSCR = FNET_FEC_MSCR_MII_SPEED((FNET_FEC_CLOCK_KHZ/FNET_FEC_MII_CLOCK_KHZ) + 1) & ~1;
             
         /* Enable interrupts (Receive frame interrupt).*/
     #if FNET_FEC_INTERRUPT_ENABLE 
@@ -328,8 +340,10 @@ int fnet_fec_init(fnet_netif_t *netif)
             
         /* Enable FEC */
         ethif->reg->ECR = FNET_FEC_ECR_ETHER_EN;
-
-        fnet_fec_phy_discover_addr(ethif);
+        
+	#if FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER
+        fnet_fec_phy_discover_addr(ethif, ethif->phy_addr);
+	#endif    
             
         fnet_eth_phy_init(ethif);
 
@@ -379,7 +393,7 @@ int fnet_fec_init(fnet_netif_t *netif)
         /* Indicate that there have been empty receive buffers produced.*/
         ethif->reg->RDAR=FNET_FEC_RDAR_R_DES_ACTIVE;    
     }
-   
+ERROR:   
     return result;
 }
 
@@ -392,7 +406,7 @@ void fnet_fec_release(fnet_netif_t *netif)
 {
     fnet_fec_if_t * ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
 
-    /* Note: Sometimes I could not communicate with the Ethernet PHY, 
+    /* Note: Sometimes it is not possible communicate with the Ethernet PHY, 
      * all reads come back as 0xFFFF. It appears that the problem is 
      * that we need to disable the MDC clock by writing 0 to MSCR 
      * before disabling the FEC: */
@@ -403,9 +417,8 @@ void fnet_fec_release(fnet_netif_t *netif)
     ethif->reg->EIMR = 0x0;         /* Disable FEC interrupts. */
 
     ethif->reg->EIR = 0xFFFFFFFF;   /* Clear any pending FEC interrupt flags. */
-   
     
-    fnet_isr_vector_release(FNET_FEC_RX_FRAME_VECTOR);
+    fnet_isr_vector_release(ethif->vector_number);
 
     fnet_eth_release(netif); /* Common Ethernet-interface release.*/
 }
@@ -619,7 +632,7 @@ static void fnet_fec_rx_buf_next( fnet_fec_if_t * ethif)
 * DESCRIPTION: This is WORKAROUND.
 * If an IP frame with a known protocol is transmitted, the checksum 
 * is inserted automatically into the frame. 
-* !!!! The checksum field MUST be cleared, otherwise the checksum will be currapted. !!!!
+* !!!! The checksum field MUST be cleared, otherwise the checksum will be corrupted. !!!!
 *************************************************************************/
 #if FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM && FNET_FEC_HW_TX_PROTOCOL_CHECKSUM_FIX
 static void fnet_fec_checksum_clear(unsigned short type, char *datagram, unsigned long datagram_size)
@@ -635,7 +648,7 @@ static void fnet_fec_checksum_clear(unsigned short type, char *datagram, unsigne
         /* If NOT fragmented. The MF bit or fragment offset are zero.*/
         if((((fnet_ip_header_t *)ip_hdr)->flags_fragment_offset & ~FNET_HTONS(FNET_IP_DF)) == 0) 
         {
-            ip_hdr_size = (((fnet_ip_header_t *)ip_hdr)->version__header_length & 0x0F)<< 2;
+            ip_hdr_size = (unsigned long)((((fnet_ip_header_t *)ip_hdr)->version__header_length & 0x0F)<< 2);
             protocol = ((fnet_ip_header_t *)ip_hdr)->protocol;
         }
     }
@@ -765,7 +778,7 @@ void fnet_fec_output_frame(fnet_netif_t *netif, char* frame, int frame_size)
         else
             ethif->tx_buf_desc_cur++;
        
-        while(ethif->reg->TDAR) /* Workaround.*/
+        while(ethif->reg->TDAR) /* Workaround for ENET module.*/
         {};
 
         ethif->reg->TDAR=FNET_FEC_TDAR_X_DES_ACTIVE; /* Indicate that there has been a transmit buffer produced.*/
@@ -861,7 +874,7 @@ static void fnet_fec_get_mac_addr(fnet_fec_if_t *ethif, fnet_mac_addr_t *mac_add
 *
 * DESCRIPTION: Returns Ethernet statistics information 
 *************************************************************************/
-int fnet_fec_get_statistics(struct fnet_netif *netif, struct fnet_netif_statistics * statistics)
+int fnet_fec_get_statistics(fnet_netif_t *netif, struct fnet_netif_statistics * statistics)
 {
     fnet_fec_if_t *ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
     int result;
@@ -890,9 +903,9 @@ int fnet_fec_get_statistics(struct fnet_netif *netif, struct fnet_netif_statisti
 * DESCRIPTION: Top Ethernet receive frame interrupt handler. 
 *              Clear event flag
 *************************************************************************/
-static void fnet_fec_isr_rx_handler_top (void) 
+static void fnet_fec_isr_rx_handler_top (void *cookie) 
 {
-    fnet_fec_if_t * ethif = ((fnet_eth_if_t *)(fnet_eth0_if.if_ptr))->if_cpu_ptr;
+    fnet_fec_if_t *ethif = ((fnet_eth_if_t *)(((fnet_netif_t *)cookie)->if_ptr))->if_cpu_ptr;
     
     /* Clear FEC RX Event from the Event Register (by writing 1).*/
     ethif->reg->EIR = FNET_FEC_EIR_RXF;
@@ -904,11 +917,13 @@ static void fnet_fec_isr_rx_handler_top (void)
 * DESCRIPTION: This function implements the Ethernet receive 
 *              frame interrupt handler. 
 *************************************************************************/
-static void fnet_fec_isr_rx_handler_bottom (void) 
+static void fnet_fec_isr_rx_handler_bottom (void *cookie) 
 {
-    fnet_isr_lock();
+    fnet_netif_t *netif = (fnet_netif_t *)cookie;
+	
+	fnet_isr_lock();
 
-    fnet_fec_input(FNET_ETH_IF);
+    fnet_fec_input(netif);
     
     fnet_isr_unlock();
 }
@@ -923,68 +938,26 @@ static void fnet_fec_isr_rx_handler_bottom (void)
 *
 * DESCRIPTION: Looking for a valid PHY address.
 *************************************************************************/
-void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif)
+#if FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER
+static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned int phy_addr_start)
 { 
-    #if FNET_CFG_CPU_MCF52235   //TBD Control it by config. param.     
+	unsigned char i;
         
-        /* Set phy address */
-        ethif->phy_addr = FNET_FEC_PHY_ADDRESS;
-    
-    #else
-        
-        unsigned char i;
-        
-        for (i = 0; i < 32; i++) 
+    for (i = (unsigned char)phy_addr_start; i < 32; i++) 
+    {
+        fnet_uint16 id;
+          
+        ethif->phy_addr = i;
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_IDR1, &id);
+          
+        if (!(id == 0 || id == 0xffff || id == 0x7fff))
         {
-            fnet_uint16 id;
-          
-            ethif->phy_addr = i;
-            fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_IDR1, &id);
-          
-            if (!(id == 0 || id == 0xffff || id == 0x7fff))
-            {
-                ethif->phy_addr = (unsigned char)i;
-                break;
-            }
-        } 
+            ethif->phy_addr = (unsigned char)i;
+            break;
+        }
+    } 
 
-    #endif
 } 
-
-/************************************************************************
-* NAME: fnet_fec_mii_print_regs
-*
-* DESCRIPTION: Prints all MII register. Used only for debug needs.
-*************************************************************************/
-#if 0 /* For debug needs only.*/
-static void fnet_fec_mii_print_regs(fnet_eth_if_t *ethif) 
-{
-    fnet_uint16 reg_value;
-
-    fnet_println(" === MII registers ===");
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_CR, &reg_value);
-    fnet_println("\tCR = 0x%04X", reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_SR, &reg_value);
-    fnet_println("\tSR = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_IDR1, &reg_value);
-    fnet_println("\tIDR1 = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_IDR2, &reg_value);
-    fnet_println("\tIDR2 = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_ANAR, &reg_value);
-    fnet_println("\tANAR = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_ANLPAR, &reg_value);
-    fnet_println("\tANLPAR = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_ANER, &reg_value);
-    fnet_println("\tANER = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_ANNPTR, &reg_value);
-    fnet_println("\tANNPTR = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_ICR, &reg_value);
-    fnet_println("\tICR = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_PSR, &reg_value);
-    fnet_println("\tPSR = 0x%04X",reg_value );
-    fnet_eth_mii_read(ethif, FNET_FEC_MII_REG_PCR, &reg_value);
-    fnet_println("\tPCR = 0x%04X",reg_value );
-}
 #endif
 
 /************************************************************************
@@ -997,19 +970,19 @@ static void fnet_fec_mii_print_regs(fnet_eth_if_t *ethif)
 *************************************************************************/ 
 int fnet_fec_mii_read(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 *data) 
 {
-    int timeout;
-    fnet_uint32 eimr;
-    int result;
-
+    int          timeout;
+    fnet_uint32  eimr;
+    int          result;
+    
     /* Clear the MII interrupt bit */
-     ethif->reg->EIR = FNET_FEC_EIR_MII;
+     ethif->reg_phy->EIR = FNET_FEC_EIR_MII;
 
     /* Mask the MII interrupt */
-    eimr = ethif->reg->EIMR;
-    ethif->reg->EIMR &= (unsigned long)(~FNET_FEC_EIMR_MII); 
+    eimr = ethif->reg_phy->EIMR;
+    ethif->reg_phy->EIMR &= (unsigned long)(~FNET_FEC_EIMR_MII); 
 
     /* Kick-off the MII read */
-    ethif->reg->MMFR = (fnet_vuint32)(0 
+    ethif->reg_phy->MMFR = (fnet_vuint32)(0 
             | FNET_FEC_MMFR_ST_01
             | FNET_FEC_MMFR_OP_READ
             | FNET_FEC_MMFR_PA(ethif->phy_addr)
@@ -1019,15 +992,15 @@ int fnet_fec_mii_read(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 *data)
     /* Poll for the MII interrupt */
     for (timeout = 0; timeout < FNET_FEC_MII_TIMEOUT; timeout++)
     {
-        if(ethif->reg->EIR & FNET_FEC_EIR_MII)
+        if(ethif->reg_phy->EIR & FNET_FEC_EIR_MII)
             break;
     }
 
     /* Clear the MII interrupt bit */
-    ethif->reg->EIR = FNET_FEC_EIR_MII;
+    ethif->reg_phy->EIR = FNET_FEC_EIR_MII;
 
     /* Restore the EIMR */
-    ethif->reg->EIMR = eimr;
+    ethif->reg_phy->EIMR = eimr;
     
     if(timeout == FNET_FEC_MII_TIMEOUT)
     {
@@ -1035,7 +1008,7 @@ int fnet_fec_mii_read(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 *data)
     }
     else
     {
-        *data = (fnet_uint16)(ethif->reg->MMFR & 0xFFFF);
+        *data = (fnet_uint16)(ethif->reg_phy->MMFR & 0xFFFF);
         result = FNET_OK;
     }
 
@@ -1058,14 +1031,14 @@ int fnet_fec_mii_write(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 data)
     int result;
 
     /* Clear the MII interrupt bit */
-    ethif->reg->EIR = FNET_FEC_EIR_MII;
+    ethif->reg_phy->EIR = FNET_FEC_EIR_MII;
 
     /* Mask the MII interrupt */
-    eimr = ethif->reg->EIMR;
-    ethif->reg->EIMR &= (unsigned long)(~FNET_FEC_EIMR_MII); 
+    eimr = ethif->reg_phy->EIMR;
+    ethif->reg_phy->EIMR &= (unsigned long)(~FNET_FEC_EIMR_MII); 
 
     /* Kick-off the MII write */
-    ethif->reg->MMFR = (fnet_vuint32)(0 
+    ethif->reg_phy->MMFR = (fnet_vuint32)(0 
             | FNET_FEC_MMFR_ST_01
             | FNET_FEC_MMFR_OP_WRITE
             | FNET_FEC_MMFR_PA(ethif->phy_addr)
@@ -1076,15 +1049,15 @@ int fnet_fec_mii_write(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 data)
     /* Poll for the MII interrupt */
     for (timeout = 0; timeout < FNET_FEC_MII_TIMEOUT; timeout++)
     {
-        if(ethif->reg->EIR & FNET_FEC_EIR_MII)
+        if(ethif->reg_phy->EIR & FNET_FEC_EIR_MII)
             break;
     }
 
     /* Clear the MII interrupt bit */
-    ethif->reg->EIR = FNET_FEC_EIR_MII;
+    ethif->reg_phy->EIR = FNET_FEC_EIR_MII;
 
     /* Restore the EIMR */
-    ethif->reg->EIMR = eimr;
+    ethif->reg_phy->EIMR = eimr;
     
     if(timeout == FNET_FEC_MII_TIMEOUT)
     {
@@ -1266,8 +1239,6 @@ void fnet_fec_debug_mii_print_regs(fnet_netif_t *netif)
         fnet_printf("\tPCR = 0x%04X\n",reg_value );
     }
 }
-
-
 
 #endif /* (FNET_MCF || FNET_MK) && FNET_CFG_ETH */
 

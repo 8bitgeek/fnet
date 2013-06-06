@@ -51,9 +51,18 @@
 
 #define _FNET_DHCP_CONFIG_H_
 
-/*! @addtogroup fnet_services_config */
+/*! @addtogroup fnet_dhcp_config */
 /*! @{ */
 
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_DHCP
+ * @brief    DHCP Client service support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ ******************************************************************************/
+#ifndef FNET_CFG_DHCP
+    #define FNET_CFG_DHCP       (0)
+#endif
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_DHCP_BOOTP

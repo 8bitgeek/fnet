@@ -56,10 +56,12 @@ preferred way to configure stack features). @n
 @par The stack provides following protocols and services:
 @n 
 - Supported Platforms:
-	- @b ARM Cortex-M4:
-		- @b Kinetis - MK60N512 (TWR-K60N512 board)
+	- @b ARM Cortex-M4, Kinetis:
+		- @b MK60N512 (TWR-K60N512 board)
+		- @b MK70FN1M (TWR-K70F120M board)
 	- @b ColdFire: 
 		- Reindeer - MCF5282 (M5282EVB board).
+		- Modelo - MCF54418 (TWR-MCF5441x board).
 		- Kirin2 - MCF52235 (M52235EVB board).
 		- @b Kirin3 - MCF52259 (M52259EVB, M52259DEMO and TWR-MCF52259 boards).
 		- Lasko - MCF51CN128 (TWR-MCF51CN board). 
@@ -68,11 +70,11 @@ preferred way to configure stack features). @n
 
 - Supported Compilers:
 	- @b IAR:
-		- Embedded Workbench for ARM, version 6.4 (MK60N512).
+		- Embedded Workbench for ARM, version 6.5 (MK60N512, MK70FN1M).
 	- @b ARM:
-		- Keil uVision, version 4.5 (MK60N512).
+		- Keil uVision, version 4.7 (MK60N512).
 	- @b Freescale:
-		- CodeWarrior Development Studio for Microcontrollers, version 10.2 (MK60N512, MCF52259).
+		- CodeWarrior Development Studio for Microcontrollers, version 10.4 (MK60N512, MK70FN1M, MCF52259, MCF54418).
 		- CodeWarrior for ColdFire, version 7.2.2 (MCF5282, MCF52235, MCF52259).
 		- CodeWarrior for Microcontrollers, version 6.3 (MCF51CN128).
 		- CodeWarrior Development Studio for MPC55xx/MPC56xx, version 2.10  (MPC5668G).
@@ -224,15 +226,27 @@ The following table summarizes the supported demo applications, platforms and co
  </tr>
 <tr>
  <td class="fnet_td_grey">MCF52259 (Kirin3)</td>
- <td ALIGN=CENTER>CW10.3<br/>CW7.2</td>
- <td ALIGN=CENTER>CW10.3<br/>CW7.2</td>
- <td ALIGN=CENTER>CW10.3<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.4<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.4<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.4<br/>CW7.2</td>
  </tr>
 <tr>
+ <td class="fnet_td_grey">MCF54418 (Modelo)</td>
+ <td ALIGN=CENTER>CW10.4</td>
+ <td ALIGN=CENTER>x</td>
+ <td ALIGN=CENTER>x</td>
+</tr>
+<tr>
  <td class="fnet_td_grey">MK60N512 (Kinetis)</td>
- <td ALIGN=CENTER>CW10.3<br/>IAR6.5<br/>uV4.6</td>
- <td ALIGN=CENTER>CW10.3<br/>IAR6.5<br/>uV4.6</td>
- <td ALIGN=CENTER>CW10.3<br/>IAR6.5<br/>uV4.6</td>
+ <td ALIGN=CENTER>CW10.4<br/>IAR6.5<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.4<br/>IAR6.5<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.4<br/>IAR6.5<br/>uV4.7</td>
+ </tr>
+<tr>
+ <td class="fnet_td_grey">MK70FN1M (Kinetis)</td>
+ <td ALIGN=CENTER>CW10.4<br/>IAR6.5</td>
+ <td ALIGN=CENTER>CW10.4<br/>IAR6.5</td>
+ <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MPC5668G (Qorriva)</td>
@@ -1562,6 +1576,27 @@ Press any key to continue . . .
 
 FNET public releases:
 
+- Version 2.5.0:
+	- Added support of Kinetis K70FN1M0 (TWR-K70F120M board).
+	- Added support of Modelo MCF54418 (TWR-MCF5441x board).
+	- Added support of two Ethernet modules by FEC driver (for MCF54418).
+	- Added support of uCOS-III, thanks to Jon Elliott.
+	- Added "bind/unbind" IPv6 address commands to the Shell Demo.
+	- Added "cookie" parameter to interrupt handlers.
+	- New/renamed configuration parameters:
+		- @ref FNET_CFG_CPU_ETH_RMII enables/disables RMII mode. 
+		- @ref FNET_CFG_CPU_ETH_RMII_10T sets 10Mbps or 100Mbps in RMII mode.
+		- FNET_CFG_CPU_ETHx enables/disables Externet-x module.
+		- FNET_CFG_CPU_ETHx_MAC_ADDR defines default MAC address of Externet-x module. 
+		- FNET_CFG_CPU_ETHx_MTU defines default MTU of Externet-x module.
+		- FNET_CFG_CPU_ETHx_PHY_ADDR defines default PHY address used by Ethernet-x module.
+		- @ref FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER enables/disables PHY addresses discover.
+		- @ref FNET_CFG_DEFAULT_IF defines default interface.
+		- @ref FNET_CFG_OS_TIMER enables/disables OS-specific timer initialization/release.
+		- Others.
+	- Other internal changes. 
+
+
 - Version 2.4.0:
 	- Added multiple-session support to the HTTP server.	
 	- Added HW Checksum Calculation support by ENET module (for K60).
@@ -2009,8 +2044,9 @@ which includes all platform-specific configuration files.
 *        configuration parameters.
 *			- @ref fnet_mk60n512_config.h = MK60N512-specific configuration parameters.
 * 	- @ref fnet_os_config.h = The OS-specific default configuration parameters.
-*		- @ref fnet_brtos_config.h = BRTOS configuration (not supported – just for reference)
-* 		- @ref fnet_ucosII_config.h = uC/OS-II configuration (not supported – just for reference).
+*		- @ref fnet_brtos_config.h = BRTOS configuration (not supported just for reference)
+* 		- @ref fnet_ucosIII_config.h = uC/OS-III configuration (not supported just for reference).
+* 		- @ref fnet_freertos_config.h = FreeRTOS configuration (not supported just for reference).
 * 	- @ref fnet_services_config.h = Service-specific configuration file 
 which includes all service-specific configuration files. 
 *		- @ref fnet_http_config.h = HTTP-Server-specific configuration.
@@ -2185,6 +2221,16 @@ which includes all service-specific configuration files.
 *     application-specific configuration file @c fnet_user_config.h.
 */
 
+/*! 
+*	@defgroup fnet_platform_stack_ip4_config IPv4-Specific Configuration Parameters
+*	@ingroup fnet_stack_config 
+*	This section describes parameters that are specific only 
+*     for IPv4. @n
+*     The user may override and change the default values in the 
+*     application-specific configuration file @c fnet_user_config.h.
+*/
+
+
 
 /*! 
 *	@defgroup fnet_platform_config Platform-Specific Configuration Parameters
@@ -2196,7 +2242,17 @@ which includes all service-specific configuration files.
 */
 
 /*! 
-*	@defgroup fnet_platform_mcf_config ColdFire-Specific Configuration Parameters
+*	@defgroup fnet_platform_eth_config Ethernet Module Configuration Parameters
+*	@ingroup fnet_platform_config 
+*	This section describes parameters that are specific 
+*     for the Ethernet module. @n
+*     The user may override and change the default values in the 
+*     application-specific configuration file @c fnet_user_config.h.
+*/
+
+
+/*! 
+*	@defgroup fnet_platform_mcf_config ColdFire Platform Configuration Parameters
 *	@ingroup fnet_platform_config 
 *	This section describes parameters that are specific only 
 *     for the ColdFire platform. @n
@@ -2205,7 +2261,7 @@ which includes all service-specific configuration files.
 */
 
 /*! 
-*	@defgroup fnet_os_config OS-Specific Configuration Parameters
+*	@defgroup fnet_os_config OS Configuration Parameters
 *	@ingroup fnet_platform_config 
 *	This section describes parameters that are specific for used
 *     Operation System.
@@ -2222,6 +2278,88 @@ which includes all service-specific configuration files.
 *   The user may override and change the default values in the application-specific 
 *   configuration file @c fnet_user_config.h.
 */
+
+/*! 
+*	@defgroup fnet_dhcp_config DHCP Client Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the DHCP client.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+/*! 
+*	@defgroup fnet_dns_config DNS Client Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the DNS client.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+
+/*! 
+*	@defgroup fnet_fs_config File System Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the File System library.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+
+/*! 
+*	@defgroup fnet_http_config HTTP Server Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the HTTP Server.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+
+/*! 
+*	@defgroup fnet_ping_config PING Service Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the PING Service.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+
+/*! 
+*	@defgroup fnet_serial_config Serial Library Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the Serial Library.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+
+/*! 
+*	@defgroup fnet_shell_config Shell Service Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the Shell Service.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+
+/*! 
+*	@defgroup fnet_telnet_config Telnet Server Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the Telnet Server.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+
+/*! 
+*	@defgroup fnet_tftp_config TFTP Server and Client Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the TFTP Server and Client.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
+
+
 
 
 //***********************************************************************

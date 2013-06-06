@@ -51,9 +51,28 @@
 
 #define _FNET_TFTP_CONFIG_H_
 
-/*! @addtogroup fnet_services_config */
+/*! @addtogroup fnet_tftp_config */
 /*! @{ */
 
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_TFTP_CLN
+ * @brief    TFTP Client support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ ******************************************************************************/
+#ifndef FNET_CFG_TFTP_CLN
+    #define FNET_CFG_TFTP_CLN   (0)
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_TFTP_SRV
+ * @brief    TFTP Server support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ ******************************************************************************/
+#ifndef FNET_CFG_TFTP_SRV
+    #define FNET_CFG_TFTP_SRV   (0)
+#endif
 
 /****************************************************************************** 
  *              TFTP-client service config parameters
@@ -81,7 +100,6 @@
 #ifndef FNET_CFG_TFTP_CLN_TIMEOUT
     #define FNET_CFG_TFTP_CLN_TIMEOUT           (10) /*sec*/
 #endif
-
 
 /****************************************************************************** 
  *              TFTP-server service config parameters

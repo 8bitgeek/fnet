@@ -51,8 +51,18 @@
 
 #define _FNET_DNS_CONFIG_H_
 
-/*! @addtogroup fnet_services_config */
+/*! @addtogroup fnet_dns_config */
 /*! @{ */
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_DNS_RESOLVER
+ * @brief    DNS client/resolver support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ ******************************************************************************/
+#ifndef FNET_CFG_DNS_RESOLVER
+    #define FNET_CFG_DNS_RESOLVER                   (0)
+#endif
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_DNS_PORT

@@ -65,71 +65,6 @@ const fnet_mac_addr_t fnet_eth_broadcast =
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-/* Number of initialised ethernet devices.*/
-unsigned int fnet_eth_number = 0;
-
-/************************************************************************
-*     List of Network Layer Protocols used by Ethernet Interface.
-*************************************************************************/
-static const fnet_eth_prot_if_t fnet_eth_prot_if_list[] =
-{
-#if FNET_CFG_IP4
-    { /* ARP */ 
-        FNET_HTONS(FNET_ETH_TYPE_ARP),  /* Protocol number */
-        fnet_arp_input                  /* Protocol input function.*/
-    },
-    {   /* IPv4 */
-        FNET_HTONS(FNET_ETH_TYPE_IP4),  /* Protocol number */
-        fnet_ip_input                   /* Protocol input function.*/
-    }
-#endif /* FNET_CFG_IP4 */
-#if FNET_CFG_IP6
-    #if FNET_CFG_IP4
-        ,
-    #endif /* FNET_CFG_IP4 */
-    {   /* IPv4 */
-        FNET_HTONS(FNET_ETH_TYPE_IP6),   /* Protocol number */
-        fnet_ip6_input                   /* Protocol input function.*/
-    }
-#endif /* FNET_CFG_IP6 */
-    /* ADD HERE YOUR NETWORK LAYER PROTOCOL */
-};
-
-#define FNET_ETH_PROT_IF_LIST_SIZE  (sizeof(fnet_eth_prot_if_list)/sizeof(fnet_eth_prot_if_t))
-
-/************************************************************************
- * Ethernet Multicast Address
- ***********************************************************************/
-/* RFC1112 6.4: An IP host group address is mapped to an Ethernet multicast address
- * by placing the low-order 23-bits of the IP address into the low-order
- * 23 bits of the Ethernet multicast address 01-00-5E-00-00-00 (hex).
- */
-#define FNET_ETH_MULTICAST_IP4_TO_MAC(ip4_addr, mac_addr)  \
-            (mac_addr)[0] = 0x01, \
-            (mac_addr)[1] = 0x00, \
-            (mac_addr)[2] = 0x5E, \
-            (mac_addr)[3] = (unsigned char)(((unsigned char *)(&ip4_addr))[1] & 0x7F), \
-            (mac_addr)[4] = ((unsigned char *)(&ip4_addr))[2], \
-            (mac_addr)[5] = ((unsigned char *)(&ip4_addr))[3]
-
-/* For IPv6 */
-#define FNET_ETH_MULTICAST_IP6_TO_MAC(ip6_addr, mac_addr)        \
-            (mac_addr)[0] = 0x33,               \
-            (mac_addr)[1] = 0x33,               \
-            (mac_addr)[2] = ip6_addr->addr[12], \
-            (mac_addr)[3] = ip6_addr->addr[13], \
-            (mac_addr)[4] = ip6_addr->addr[14], \
-            (mac_addr)[5] = ip6_addr->addr[15]
-
-
-
-/******************************************************************************
-*     Function Prototypes
-*******************************************************************************/
-#define FNET_ETH_TIMER_PERIOD (4000) /*ms*/
-static void fnet_eth_timer( void *cookie );
-
-
 /************************************************************************
 * NAME: fnet_mac_to_str
 *
@@ -210,6 +145,77 @@ ERROR:
     return (FNET_ERR);
 }
 
+
+
+#if (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
+
+
+/* Number of initialised ethernet devices.*/
+unsigned int fnet_eth_number = 0;
+
+/************************************************************************
+*     List of Network Layer Protocols used by Ethernet Interface.
+*************************************************************************/
+static const fnet_eth_prot_if_t fnet_eth_prot_if_list[] =
+{
+#if FNET_CFG_IP4
+    { /* ARP */ 
+        FNET_HTONS(FNET_ETH_TYPE_ARP),  /* Protocol number */
+        fnet_arp_input                  /* Protocol input function.*/
+    },
+    {   /* IPv4 */
+        FNET_HTONS(FNET_ETH_TYPE_IP4),  /* Protocol number */
+        fnet_ip_input                   /* Protocol input function.*/
+    }
+#endif /* FNET_CFG_IP4 */
+#if FNET_CFG_IP6
+    #if FNET_CFG_IP4
+        ,
+    #endif /* FNET_CFG_IP4 */
+    {   /* IPv4 */
+        FNET_HTONS(FNET_ETH_TYPE_IP6),   /* Protocol number */
+        fnet_ip6_input                   /* Protocol input function.*/
+    }
+#endif /* FNET_CFG_IP6 */
+    /* ADD HERE YOUR NETWORK LAYER PROTOCOL */
+};
+
+#define FNET_ETH_PROT_IF_LIST_SIZE  (sizeof(fnet_eth_prot_if_list)/sizeof(fnet_eth_prot_if_t))
+
+/************************************************************************
+ * Ethernet Multicast Address
+ ***********************************************************************/
+/* RFC1112 6.4: An IP host group address is mapped to an Ethernet multicast address
+ * by placing the low-order 23-bits of the IP address into the low-order
+ * 23 bits of the Ethernet multicast address 01-00-5E-00-00-00 (hex).
+ */
+#define FNET_ETH_MULTICAST_IP4_TO_MAC(ip4_addr, mac_addr)  \
+            (mac_addr)[0] = 0x01, \
+            (mac_addr)[1] = 0x00, \
+            (mac_addr)[2] = 0x5E, \
+            (mac_addr)[3] = (unsigned char)(((unsigned char *)(&ip4_addr))[1] & 0x7F), \
+            (mac_addr)[4] = ((unsigned char *)(&ip4_addr))[2], \
+            (mac_addr)[5] = ((unsigned char *)(&ip4_addr))[3]
+
+/* For IPv6 */
+#define FNET_ETH_MULTICAST_IP6_TO_MAC(ip6_addr, mac_addr)        \
+            (mac_addr)[0] = 0x33,               \
+            (mac_addr)[1] = 0x33,               \
+            (mac_addr)[2] = ip6_addr->addr[12], \
+            (mac_addr)[3] = ip6_addr->addr[13], \
+            (mac_addr)[4] = ip6_addr->addr[14], \
+            (mac_addr)[5] = ip6_addr->addr[15]
+
+
+
+/******************************************************************************
+*     Function Prototypes
+*******************************************************************************/
+#define FNET_ETH_TIMER_PERIOD (4000) /*ms*/
+static void fnet_eth_timer( void *cookie );
+
+
+
 /************************************************************************
 * NAME: fnet_eth_prot_input
 *
@@ -248,18 +254,11 @@ void fnet_eth_prot_input( fnet_netif_t *netif, fnet_netbuf_t *nb, unsigned short
 int fnet_eth_init( fnet_netif_t *netif)
 {
     int result;
-    fnet_mac_addr_t macaddr = {0x00,0x11,0x22,0x33,0x44,0x55};
 
 #if !FNET_CFG_CPU_ETH_MIB 
     /* Clear Ethernet statistics. */
     fnet_memset_zero(&((fnet_eth_if_t *)(netif->if_ptr))->statistics, sizeof(struct fnet_netif_statistics));
 #endif 
-    
-    /* Set MAC Address.*/
-    fnet_str_to_mac( FNET_CFG_ETH_MAC_ADDR, macaddr);
-    macaddr[5]+= fnet_eth_number;  
-    fnet_netif_set_hw_addr(netif, macaddr, sizeof(fnet_mac_addr_t));
-  
 
 #if FNET_CFG_IP4   
     result = fnet_arp_init(netif); /* Init ARP for this interface.*/
@@ -271,7 +270,6 @@ int fnet_eth_init( fnet_netif_t *netif)
     {
 
     #if FNET_CFG_IP6  
-        
         #if FNET_CFG_IP6_PMTU_DISCOVERY  
             fnet_netif_pmtu_init(netif);
         #endif
@@ -310,9 +308,7 @@ int fnet_eth_init( fnet_netif_t *netif)
              */
             fnet_nd6_rd_start(netif); 
         }    
-
     #endif /* FNET_CFG_IP6 */
-        
         
         /* Set connection flag. */
         ((fnet_eth_if_t *)(netif->if_ptr))->connection_flag = fnet_netif_connected(netif);
@@ -325,8 +321,6 @@ int fnet_eth_init( fnet_netif_t *netif)
     
     return result;
 }
-
-
 
 /************************************************************************
 * NAME: fnet_eth_release
@@ -353,7 +347,6 @@ void fnet_eth_release( fnet_netif_t *netif)
 #endif
 
     fnet_eth_number--;
-
 }
 
 /************************************************************************
@@ -671,4 +664,6 @@ void fnet_eth_trace(char *str, fnet_eth_header_t *eth_hdr)
 }
 
 #endif /* FNET_CFG_DEBUG_TRACE_ETH */
+
+#endif /* FNET_CFG_ETH */
 

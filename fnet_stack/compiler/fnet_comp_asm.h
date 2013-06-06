@@ -233,5 +233,54 @@ after the END directive.*/
 
 
 
+/* --------------- GCC ----------------------*/
+#if FNET_CFG_COMP_GNUC
+
+/* Code section. */
+/* GCC compiler adds leading underscores to assembly symbols.*/
+#define FNET_COMP_ASM_PREFIX(x) _##x
+
+/* Macro for the equate directive. */
+.macro FNET_COMP_ASM_EQU label, value
+   \label   .equ    \value
+   .endm
+
+/* Extern. */
+.macro FNET_COMP_ASM_EXTERN value
+   .extern \value
+   .endm
+
+/* Global.*/
+.macro FNET_COMP_ASM_GLOBAL label
+   .global \label
+   .endm
+
+/* Align. */
+.macro FNET_COMP_ASM_ALIGN value
+   .align \value
+   .endm
+
+/* DC.W */
+.macro FNET_COMP_ASM_DC16 value
+   .word \value
+   .endm
+
+/* DC.L */
+.macro FNET_COMP_ASM_DC32 value
+   .long \value
+   .endm
+
+#define FNET_COMP_ASM_LABEL(x)    FNET_COMP_ASM_PREFIX(x):
+
+
+/* Code section. */
+#define FNET_COMP_ASM_CODE  .text
+
+/* No END in CW.*/
+#define FNET_COMP_ASM_END
+
+#endif /* FNET_CFG_COMP_GNUC */
+
+
 #endif /* _FNET_COMP_ASM_H_ */
 

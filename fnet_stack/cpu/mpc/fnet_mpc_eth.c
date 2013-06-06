@@ -46,7 +46,7 @@
 
 
 #include "fnet_config.h"
-#if FNET_MPC && FNET_CFG_ETH
+#if FNET_MPC && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 #include "fnet_fec.h"
 #include "fnet_eth_prv.h"
 
@@ -55,12 +55,12 @@
 *************************************************************************/
 struct fnet_eth_if fnet_mpc_eth0_if =
 {
-    &fnet_fec0_if,
-    fnet_fec_output
+    &fnet_fec0_if
+    ,0                             /* MAC module number.*/
+    ,fnet_fec_output
 #if FNET_CFG_MULTICAST
-    ,      
-    fnet_fec_multicast_join,
-    fnet_fec_multicast_leave,
+    ,fnet_fec_multicast_join
+    ,fnet_fec_multicast_leave
 #endif /* FNET_CFG_MULTICAST */    
 };
 
@@ -69,7 +69,7 @@ fnet_netif_t fnet_eth0_if =
 	0,                      /* Pointer to the next net_if structure.*/
 	0,                      /* Pointer to the previous net_if structure.*/
 	"eth0",                 /* Network interface name.*/
-	FNET_CFG_ETH_MTU,       /* Maximum transmission unit.*/
+	FNET_CFG_CPU_ETH0_MTU,  /* Maximum transmission unit.*/
 	&fnet_mpc_eth0_if,      /* Points to interface specific data structure.*/
 	&fnet_fec_api           /* Interface API */  
 };

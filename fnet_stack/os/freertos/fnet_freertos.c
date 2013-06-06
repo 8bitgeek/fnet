@@ -34,12 +34,8 @@
 *
 * @author Christophe Graulle, Andrey Butok
 *
-* @date Jan-16-2013
-*
-* @version 0.1.3.0
-*
 * @brief Default FreeRTOS-specific functions. @n
-*           Experental. Not supported.
+*        Experimental. Not supported.
 *
 ***************************************************************************/ 
 

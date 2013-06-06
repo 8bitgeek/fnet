@@ -48,6 +48,12 @@
 /*  "ping" command.*/
 #define FAPP_CFG_PING_CMD               (1) 
 
+/*  "bind" command.*/
+#define FAPP_CFG_BIND_CMD               (1) 
+
+/*  "unbind" command.*/
+#define FAPP_CFG_UNBIND_CMD             (1)
+
 /* Reading of the configuration parameters from the Flash 
  * memory during the application bootup.*/
 #define FAPP_CFG_PARAMS_READ_FLASH      (1)

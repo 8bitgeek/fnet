@@ -60,13 +60,13 @@
  *  NOTE: User application should not change this parameter. 
  ******************************************************************************/
 /*! @cond */
-#ifndef FNET_CFG_CPU_ETH_VECTOR_NUMBER
+#ifndef FNET_CFG_CPU_ETH0_VECTOR_NUMBER
 
 #if FNET_CFG_CPU_MPC564xBC
-	#define FNET_CFG_CPU_ETH_VECTOR_NUMBER      (245)
+	#define FNET_CFG_CPU_ETH0_VECTOR_NUMBER      (245)
 #endif
 #if FNET_CFG_CPU_MPC5668G
-	#define FNET_CFG_CPU_ETH_VECTOR_NUMBER      (299)
+	#define FNET_CFG_CPU_ETH0_VECTOR_NUMBER      (299)
 #endif
 
 #endif

@@ -52,8 +52,18 @@
 #define _FNET_TELNET_CONFIG_H_
 
 
-/** @addtogroup fnet_services_config */
+/** @addtogroup fnet_telnet_config */
 /** @{ */
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_TELNET
+ * @brief    Telnet server support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ ******************************************************************************/
+#ifndef FNET_CFG_TELNET
+    #define FNET_CFG_TELNET                     (0)
+#endif
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_TELNET_MAX

@@ -69,4 +69,4 @@
 
 #include "fnet_services_config.h"       /* Default services configuration. */
 
-#endif
+#endif /* _FNET_CONFIG_H_ */

@@ -202,7 +202,7 @@ extern fnet_netif_t *fnet_netif_list;   /* The list of network interfaces.*/
 *************************************************************************/
 int fnet_netif_init_all( void );
 void fnet_netif_release_all( void );
-int fnet_netif_init( fnet_netif_t *netif );
+int fnet_netif_init(fnet_netif_t *netif, unsigned char *hw_addr, unsigned int hw_addr_size);
 void fnet_netif_release( fnet_netif_t *netif );
 void fnet_netif_drain( void );
 void fnet_netif_set_ip4_addr_automatic( fnet_netif_desc_t netif );
@@ -213,7 +213,7 @@ void fnet_netif_dupip_handler_signal( fnet_netif_desc_t netif );
     fnet_netif_ip6_addr_t *fnet_netif_get_ip6_addr_info(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr);
     int fnet_netif_bind_ip6_addr_prv( fnet_netif_t *netifnetif_desc, fnet_ip6_addr_t *addr, fnet_netif_ip6_addr_type_t addr_type, 
                                         unsigned long lifetime /*in seconds*/, unsigned long prefix_length /* bits */ );
-    void fnet_netif_unbind_ip6_addr_prv ( fnet_netif_t *netif, fnet_netif_ip6_addr_t *if_addr );                                        
+    int fnet_netif_unbind_ip6_addr_prv ( fnet_netif_t *netif, fnet_netif_ip6_addr_t *if_addr );                                        
     int fnet_netif_is_my_ip6_addr(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr);
     fnet_netif_desc_t fnet_netif_get_by_ip6_addr( fnet_ip6_addr_t *ip_addr );
     int fnet_netif_is_my_ip6_solicited_multicast_addr(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr);

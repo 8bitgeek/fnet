@@ -56,7 +56,7 @@
 * DESCRIPTION: Top interrupt handler. Increment fnet_current_time 
 *              and interrupt flag. 
 *************************************************************************/
-static void fnet_cpu_timer_handler_top( void )
+static void fnet_cpu_timer_handler_top( void *cookie )
 {
     /* Clear the PIT timer flag. */
     FNET_MK_PIT_TFLG(FNET_CFG_CPU_TIMER_NUMBER) |= FNET_MK_PIT_TFLG_TIF_MASK;
@@ -83,7 +83,7 @@ int fnet_cpu_timer_init( unsigned int period_ms )
     /* Imstall interrupt handler and enable interrupt in NVIC.
     */
     result = fnet_isr_vector_init(FNET_CFG_CPU_TIMER_VECTOR_NUMBER, fnet_cpu_timer_handler_top,
-                                              fnet_timer_handler_bottom, FNET_CFG_CPU_TIMER_VECTOR_PRIORITY);
+                                              fnet_timer_handler_bottom, FNET_CFG_CPU_TIMER_VECTOR_PRIORITY, 0);
     if(result == FNET_OK)
     {  
         /* Initialize the PIT timer to generate an interrupt every period_ms */
@@ -118,7 +118,7 @@ void fnet_cpu_timer_release( void )
   
     /* Uninstall interrupt handler.
      */
-    fnet_isr_vector_release(FNET_CFG_CPU_TIMER_NUMBER);
+    fnet_isr_vector_release(FNET_CFG_CPU_TIMER_VECTOR_NUMBER);
 }
 
 

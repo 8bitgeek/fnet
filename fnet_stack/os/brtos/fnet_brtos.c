@@ -39,7 +39,7 @@
 * @version 0.1.3.0
 *
 * @brief Default BRTOS-specific functions. @n
-* Experental. Not supported.
+*        Experimental. Not supported.
 *
 ***************************************************************************/
 

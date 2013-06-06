@@ -49,7 +49,7 @@
 
 #include "fnet_config.h"
 
-#if FNET_CFG_ETH && FNET_CFG_IP4
+#if (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1) && FNET_CFG_IP4
 
 #include "fnet.h"
 #include "fnet_netif_prv.h"
@@ -107,8 +107,9 @@ typedef struct
 
 typedef struct
 {
-    fnet_arp_entry_t arp_table[FNET_ARP_TABLE_SIZE]; /**< ARP cach.*/
-    fnet_timer_desc_t arp_tmr;                       /**< ARP timer.*/
+    fnet_arp_entry_t arp_table[FNET_ARP_TABLE_SIZE]; /* ARP cach.*/
+    fnet_timer_desc_t arp_tmr;                       /* ARP timer.*/
+    fnet_event_desc_t arp_event;                     /* ARP event - duplicate address event.*/
 } fnet_arp_if_t;
 
 /************************************************************************

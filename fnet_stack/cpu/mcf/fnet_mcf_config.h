@@ -76,8 +76,8 @@
  *  Vector number of the Ethernet Receive Frame interrupt.
  *  NOTE: User application should not change this parameter. 
  ******************************************************************************/
-#ifndef FNET_CFG_CPU_ETH_VECTOR_NUMBER
-    #define FNET_CFG_CPU_ETH_VECTOR_NUMBER      (27+0x40)
+#ifndef FNET_CFG_CPU_ETH0_VECTOR_NUMBER
+    #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER     (27+0x40)
 #endif
 
 /**************************************************************************/ /*!
@@ -109,7 +109,6 @@
     #define FNET_CFG_MCF_TIMER_DTIM             (0)
 #endif
 
-
 /**************************************************************************/ /*!
  * @def      FNET_CFG_MCF_TIMER_RTC8
  * @brief    The 8-bit Real-Time Counter (RTC) module:
@@ -122,7 +121,6 @@
 #ifndef FNET_CFG_MCF_TIMER_RTC8
     #define FNET_CFG_MCF_TIMER_RTC8             (0)
 #endif
-
 
 /******************************************************************************
  *  Timer number used by the FNET. It can range from 0 to 3 for DTIM timer 
@@ -143,7 +141,11 @@
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_TIMER_VECTOR_NUMBER
 #if FNET_CFG_MCF_TIMER_DTIM
-    #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER    (19+FNET_CFG_CPU_TIMER_NUMBER+0x40)
+	#if FNET_CFG_CPU_MCF54418
+		
+	#else /* Other MCFs */
+    	#define FNET_CFG_CPU_TIMER_VECTOR_NUMBER    (19+FNET_CFG_CPU_TIMER_NUMBER+0x40)
+	#endif
 #endif
 #if FNET_CFG_MCF_TIMER_PIT
     #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER    (55+FNET_CFG_CPU_TIMER_NUMBER+0x40)
@@ -256,6 +258,8 @@
 #ifndef FNET_CFG_MCF_SCI
     #define FNET_CFG_MCF_SCI                    (0)
 #endif
+
+#define FNET_CFG_CPU_FLASH_PROGRAM_SIZE         (4) /* Bytes.*/
 
 
 /*! @} */

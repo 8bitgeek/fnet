@@ -47,10 +47,9 @@
 #include "fnet_stdlib.h"
 
 
-
 #if FNET_CFG_FLASH
 
-static void fnet_flash_write_low( unsigned long *dest, unsigned long *src, unsigned int n_blocks );
+static void fnet_flash_write_low( unsigned char *dest, unsigned char *src, unsigned int n_blocks );
 
 /************************************************************************
 * NAME: fnet_flash_erase
@@ -82,13 +81,13 @@ void fnet_flash_erase( void *flash_addr, unsigned bytes)
 *
 * DESCRIPTION:
 ************************************************************************/
-static void fnet_flash_write_low( unsigned long *dest, unsigned long *src, unsigned int n_blocks  )
+static void fnet_flash_write_low( unsigned char *dest, unsigned char *src, unsigned int n_blocks  )
 {
     while (n_blocks)
     {
-        fnet_cpu_flash_write(dest, *src);
-        dest++;
-        src++;
+        fnet_cpu_flash_write(dest, src);
+        dest+= FNET_CFG_CPU_FLASH_PROGRAM_SIZE;
+        src+=FNET_CFG_CPU_FLASH_PROGRAM_SIZE;
         n_blocks--;
     }
 }
@@ -100,72 +99,63 @@ static void fnet_flash_write_low( unsigned long *dest, unsigned long *src, unsig
 ************************************************************************/
 void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_VAR const void *src, unsigned n  )
 {
-    int i;
-    union 
-    {
-      unsigned char b_data[4];  
-      unsigned long l_data;
-    }
-    data;    
-
-    unsigned long bytes;
-    unsigned long longs;
-    unsigned long count;
+    int             i;
+    unsigned char   data[FNET_CFG_CPU_FLASH_PROGRAM_SIZE];    
+    unsigned long   bytes;
+    unsigned long   blocks;
+    unsigned long   count;
     
     if(n)
     {
-        count = (unsigned long)flash_addr & 0x3;
+        count = (unsigned long)flash_addr & (FNET_CFG_CPU_FLASH_PROGRAM_SIZE-1);
         
         /* Align dest. */
         if(count)
         {   
             flash_addr = (unsigned long *) ((unsigned long)flash_addr - count);
-            bytes=4-count;
+            bytes=FNET_CFG_CPU_FLASH_PROGRAM_SIZE-count;
 
             if(bytes > n)
                 bytes = n;
 
-            data.l_data = 0xFFFFFFFF;            
+            fnet_memset(data, 0xFF, FNET_CFG_CPU_FLASH_PROGRAM_SIZE);
             for(i=(int)(count); i<count+bytes; i++)
             {
-                data.b_data[i] = *((unsigned char *)src); 
+                data[i] = *((unsigned char *)src); 
                 src = (unsigned char *) ((unsigned long)src + 1);
             }
             
-            fnet_flash_write_low( (unsigned long *)flash_addr, &data.l_data, 1 );
+            fnet_flash_write_low( (unsigned char *)flash_addr, data, 1 );
             
-            flash_addr = (unsigned long *) ((unsigned long)flash_addr + 4);
+            flash_addr = (unsigned char *) ((unsigned long)flash_addr + FNET_CFG_CPU_FLASH_PROGRAM_SIZE);
             
             n-=bytes;   
         }
         
         if(n)
         {
-            bytes = (n & 0x3);
-		    longs = (n - bytes) >> 2;
+            bytes = n & (FNET_CFG_CPU_FLASH_PROGRAM_SIZE-1);
+		    blocks = (n - bytes) / FNET_CFG_CPU_FLASH_PROGRAM_SIZE;
 
-            fnet_flash_write_low((unsigned long *)flash_addr, (unsigned long *)src, longs );
+            fnet_flash_write_low((unsigned char *)flash_addr, (unsigned char *)src, blocks );
 			
-			flash_addr = (unsigned long *) ((unsigned long)flash_addr + 4*longs);
-			src = (unsigned long *) ((unsigned long)src + 4*longs);
+			flash_addr = (unsigned char *) ((unsigned long)flash_addr + (FNET_CFG_CPU_FLASH_PROGRAM_SIZE*blocks));
+			src = (unsigned char *) ((unsigned long)src + (FNET_CFG_CPU_FLASH_PROGRAM_SIZE*blocks));
             
             if(bytes)
             {
-                data.l_data = 0xFFFFFFFF;
+                fnet_memset(data, 0xFF, FNET_CFG_CPU_FLASH_PROGRAM_SIZE);
                 
                 for(i=0;i<bytes;i++)
                 {
-                    data.b_data[i] = *((unsigned char *)src); 
+                    data[i] = *((unsigned char *)src); 
                     src = (unsigned char *) ((unsigned long)src + 1);
                 }
 
-    		    fnet_flash_write_low((unsigned long *)flash_addr, &data.l_data, 1 );
+    		    fnet_flash_write_low((unsigned char *)flash_addr, data, 1 );
             }
-        
         }
-    
     }
-
 }
 
-#endif
+#endif /* FNET_CFG_FLASH */

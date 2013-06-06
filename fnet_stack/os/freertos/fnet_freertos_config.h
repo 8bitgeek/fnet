@@ -34,12 +34,8 @@
 *
 * @author Christophe Graulle, Andrey Butok
 *
-* @date Nov-6-2012
-*
-* @version 0.1.2.0
-*
 * @brief Default FreeRTOS-specific configuration. @n
-*           Experental. Not supported.
+*        Experimental. Not supported.
 *
 ***************************************************************************/ 
 
@@ -47,8 +43,14 @@
 #ifndef FNET_FREERTOS_CONFIG_H_
 #define FNET_FREERTOS_CONFIG_H_
 
-#define FNET_CFG_OS_ISR     (0)
-#define FNET_CFG_OS_MUTEX   (0)
-#define FNET_CFG_OS_EVENT   (1)
+#ifndef FNET_CFG_OS_ISR
+    #define FNET_CFG_OS_ISR     (0)
+#endif
+#ifndef FNET_CFG_OS_MUTEX
+    #define FNET_CFG_OS_MUTEX   (0)
+#endif
+#ifndef FNET_CFG_OS_EVENT
+    #define FNET_CFG_OS_EVENT   (1)
+#endif
 
 #endif /* FNET_FREERTOS_CONFIG_H_ */

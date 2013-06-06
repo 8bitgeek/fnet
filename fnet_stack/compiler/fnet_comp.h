@@ -90,6 +90,12 @@
     #define FNET_COMP_PACKED_VAR    __packed
 #endif
 
+#if FNET_CFG_COMP_GNUC
+   #define FNET_COMP_PACKED_BEGIN  _Pragma("pack(1)")
+   #define FNET_COMP_PACKED_END    _Pragma("pack(8)")
+   //#define FNET_COMP_PACKED __attribute__((aligned(1),packed))
+#endif
+
 /* Changes the current alignment mode for one member in a structure
  *  so that member will be packed on a 1-byte boundary */
 #ifndef FNET_COMP_PACKED

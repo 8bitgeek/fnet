@@ -79,7 +79,7 @@ int fnet_timer_init( unsigned int period_ms )
    int result;
    
    fnet_current_time = 0;           /* Reset RTC counter. */
-   result = fnet_cpu_timer_init(period_ms);  /* Start HW timer. */
+   result = FNET_HW_TIMER_INIT(period_ms);  /* Start HW timer. */
    
    return result;
 }
@@ -94,7 +94,7 @@ void fnet_timer_release( void )
 {
     struct fnet_net_timer *tmp_tl;
 
-    fnet_cpu_timer_release();
+    FNET_HW_TIMER_RELEASE();
     
     while(fnet_tl_head != 0)
     {
@@ -158,12 +158,12 @@ void fnet_timer_ticks_inc( void )
 * DESCRIPTION: Handles timer interrupts 
 *              
 *************************************************************************/
-void fnet_timer_handler_bottom( void )
+void fnet_timer_handler_bottom(void *cookie)
 {
-    struct fnet_net_timer *timer;
-
-    timer = fnet_tl_head;
-
+    struct fnet_net_timer *timer = fnet_tl_head;
+    
+    FNET_COMP_UNUSED_ARG(cookie);
+    
     while(timer)
     {
         if(fnet_timer_get_interval(timer->timer_cnt, fnet_current_time) >= timer->timer_rv)
@@ -289,7 +289,7 @@ void fnet_timer_delay( unsigned long delay_ticks )
 /************************************************************************
 * NAME: fnet_timer_ms2ticks
 *
-* DESCRIPTION: Convert millisecons to timer ticks.
+* DESCRIPTION: Convert milliseconds to timer ticks.
 *              
 *************************************************************************/
 unsigned long fnet_timer_ms2ticks( unsigned long time_ms )

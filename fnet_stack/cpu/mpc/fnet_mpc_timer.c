@@ -62,14 +62,14 @@
 * DESCRIPTION: Top interrupt handler. Increment fnet_current_time 
 *              and interrupt flag. 
 *************************************************************************/
-static void fnet_cpu_timer_handler_top( void )
+static void fnet_cpu_timer_handler_top( void *cookie )
 {
-    /* Clear timer event condition.
-     */
+    FNET_COMP_UNUSED_ARG(cookie);
+    
+    /* Clear timer event condition.*/
    	FNET_MPC_PITRTI_TFLG(FNET_TIMER_NUMBER) = 0x1;
     
-    /* Update RTC counter. 
-     */
+    /* Update RTC counter.*/
     fnet_timer_ticks_inc(); 
 }
 
@@ -86,7 +86,7 @@ int fnet_cpu_timer_init( unsigned int period_ms )
     /* Install interrupt handler.
      */
     result = fnet_isr_vector_init(FNET_TIMER_VECTOR_NUMBER, fnet_cpu_timer_handler_top,
-                                              fnet_timer_handler_bottom, FNET_TIMER_INT_LEVEL);
+                                              fnet_timer_handler_bottom, FNET_TIMER_INT_LEVEL, 0);
     
     if(result == FNET_OK)
     {

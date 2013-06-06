@@ -71,7 +71,8 @@
     static fnet_timer_desc_t ip_timer_ptr;
 #endif
 
-static fnet_ip_queue_t ip_queue;
+static fnet_ip_queue_t   ip_queue;
+static fnet_event_desc_t ip_event;
 
 #if FNET_CFG_MULTICAST
     fnet_ip_multicast_list_entry_t fnet_ip_multicast_list[FNET_CFG_MULTICAST_MAX];
@@ -81,7 +82,7 @@ static fnet_ip_queue_t ip_queue;
 *     Function Prototypes
 *************************************************************************/
 static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t* nb, int do_not_route);
-void fnet_ip_input_low( void );
+void fnet_ip_input_low( void *cookie );
 
 #if FNET_CFG_IP4_FRAGMENTATION
     fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr );
@@ -107,7 +108,7 @@ void fnet_ip_input_low( void );
 *************************************************************************/
 int fnet_ip_init( void )
 {
-    int result;
+    int result = FNET_ERR;
 
 #if FNET_CFG_IP4_FRAGMENTATION
 
@@ -117,18 +118,19 @@ int fnet_ip_init( void )
     if(ip_timer_ptr)
     {
 #endif
-        /* Install SW Interrupt handler. */
-        result = fnet_event_init(FNET_EVENT_IP, fnet_ip_input_low);
         
     #if FNET_CFG_MULTICAST
         /* Clear the multicast list.*/
         fnet_memset_zero( fnet_ip_multicast_list, sizeof(fnet_ip_multicast_list_entry_t)*FNET_CFG_MULTICAST_MAX );
-    #endif /* FNET_CFG_MULTICAST */        
+    #endif /* FNET_CFG_MULTICAST */
+        
+        /* Install SW Interrupt handler. */
+    	ip_event = fnet_event_init(fnet_ip_input_low, 0);
+    	if(ip_event != FNET_ERR)
+    		result = FNET_OK;
         
 #if FNET_CFG_IP4_FRAGMENTATION
     }
-    else
-        result = FNET_ERR;
 #endif    
     
     return result;
@@ -464,7 +466,7 @@ void fnet_ip_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
         }
 
         /* Initiate S/W Interrupt*/
-        fnet_event_raise(FNET_EVENT_IP);
+        fnet_event_raise(ip_event);
     }
 }
 
@@ -473,7 +475,7 @@ void fnet_ip_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
 *
 * DESCRIPTION: This function performs handling of incoming datagrams.
 *************************************************************************/
-void fnet_ip_input_low( void )
+void fnet_ip_input_low( void *cookie )
 {
     fnet_ip_header_t    *hdr;
     fnet_netbuf_t       *ip4_nb;
@@ -486,6 +488,8 @@ void fnet_ip_input_low( void )
     unsigned long       total_length;
     unsigned long       header_length;
 
+    FNET_COMP_UNUSED_ARG(cookie);
+    
     fnet_isr_lock();
  
     while((nb = fnet_ip_queue_read(&ip_queue, &netif)) != 0)

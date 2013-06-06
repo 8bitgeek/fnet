@@ -61,6 +61,13 @@
 #if FNET_MK
 
 /**************************************************************************
+ *  Reduced Media Independent Interface (RMII) support.
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_ETH_RMII
+    #define FNET_CFG_CPU_ETH_RMII        			(1)
+#endif 
+
+/**************************************************************************
  *  Default serial port number.
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_SERIAL_PORT_DEFAULT
@@ -85,8 +92,8 @@
  *  Vector number of the Ethernet Receive Frame vector number.
  *  NOTE: User application should not change this parameter. 
  ******************************************************************************/
-#ifndef FNET_CFG_CPU_ETH_VECTOR_NUMBER
-    #define FNET_CFG_CPU_ETH_VECTOR_NUMBER          (93)
+#ifndef FNET_CFG_CPU_ETH0_VECTOR_NUMBER
+    #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER        (93)
 #endif
 
 /*****************************************************************************
@@ -110,6 +117,11 @@
     #define FNET_CFG_CPU_SRAM_ADDRESS   ((unsigned long)(0x20000000 - (FNET_CFG_CPU_SRAM_SIZE/2))) /* SRAM_L = [0x2000_0000–(SRAM_size/2)]*/
 #endif
 #endif
+
+
+#ifndef FNET_CFG_CPU_FLASH_PROGRAM_SIZE
+    #define FNET_CFG_CPU_FLASH_PROGRAM_SIZE         (4)
+#endif 
 
 #endif /* FNET_MK */
 

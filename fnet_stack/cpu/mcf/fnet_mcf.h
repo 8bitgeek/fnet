@@ -165,7 +165,11 @@ void fnet_mcf_nop(void);
 *********************************************************************/
 
 /* Register read/write macros */
-#define FNET_FEC_BASE_ADDR                   ((fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x001004]))
+#if FNET_CFG_CPU_MCF54418
+
+#else /* Other MCFs */
+#define FNET_FEC0_BASE_ADDR                   ((fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x001004]))
+#endif
 
 #if 0 /* Only for reference */
     #define FNET_MCF_FEC_EIMR                  (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x001008]))
@@ -254,9 +258,11 @@ void fnet_mcf_nop(void);
 *
 *********************************************************************/
 /* Register read/write macros */
+#if FNET_CFG_CPU_MCF52235
 #define FNET_MCF_EPHY_EPHYCTL0                    (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x1E0000]))
 #define FNET_MCF_EPHY_EPHYCTL1                    (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x1E0001]))
 #define FNET_MCF_EPHY_EPHYSR                      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x1E0002]))
+#endif
 
 
 /* Bit definitions and macros for MCF_EPHY_EPHYCTL0 */
@@ -285,88 +291,37 @@ void fnet_mcf_nop(void);
 *********************************************************************/
 
 /* Register read/write macros */
+#if FNET_CFG_CPU_MCF54418
+
+#define FNET_MCF_INTC0_IPRH                       (*(fnet_vuint32*)(0xFC048000))
+#define FNET_MCF_INTC0_IPRL                       (*(fnet_vuint32*)(0xFC048004))
+#define FNET_MCF_INTC0_IMRH                       (*(fnet_vuint32*)(0xFC048008))
+#define FNET_MCF_INTC0_IMRL                       (*(fnet_vuint32*)(0xFC04800C))
+#define FNET_MCF_INTC0_IMR(x)                     (*(fnet_vuint32*)(0xFC04800C-((x)*0x4)))
+#define FNET_MCF_INTC0_INTFRCH                    (*(fnet_vuint32*)(0xFC048010))
+#define FNET_MCF_INTC0_INTFRCL                    (*(fnet_vuint32*)(0xFC048014))
+#define FNET_MCF_INTC0_ICR0                       (*(fnet_vuint8 *)(0xFC048040))
+/*...*/
+#define FNET_MCF_INTC0_ICR63                      (*(fnet_vuint8 *)(0xFC04807F))
+#define FNET_MCF_INTC0_ICR(x)                     (*(fnet_vuint8 *)(0xFC048040 + ((x)*0x001)))
+#define FNET_MCF_INTC0_SWIACK                     (*(fnet_vuint8 *)(0xFC0480E0))
+
+#else /* Other MCFs */
+
 #define FNET_MCF_INTC0_IPRH         (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000C00]))
 #define FNET_MCF_INTC0_IPRL         (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000C04]))
 #define FNET_MCF_INTC0_IMRH         (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000C08]))
 #define FNET_MCF_INTC0_IMRL         (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000C0C]))
+#define FNET_MCF_INTC0_IMR(x)       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000C0C-((x)*0x4)]))
 #define FNET_MCF_INTC0_INTFRCH      (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000C10]))
 #define FNET_MCF_INTC0_INTFRCL      (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000C14]))
-#define FNET_MCF_INTC0_IRLR         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C18]))
-#define FNET_MCF_INTC0_IACKLPR      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C19]))
 #define FNET_MCF_INTC0_ICR0         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C40]))
-#define FNET_MCF_INTC0_ICR1         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C41]))
-#define FNET_MCF_INTC0_ICR2         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C42]))
-#define FNET_MCF_INTC0_ICR3         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C43]))
-#define FNET_MCF_INTC0_ICR4         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C44]))
-#define FNET_MCF_INTC0_ICR5         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C45]))
-#define FNET_MCF_INTC0_ICR6         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C46]))
-#define FNET_MCF_INTC0_ICR7         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C47]))
-#define FNET_MCF_INTC0_ICR8         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C48]))
-#define FNET_MCF_INTC0_ICR9         (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C49]))
-#define FNET_MCF_INTC0_ICR10        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C4A]))
-#define FNET_MCF_INTC0_ICR11        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C4B]))
-#define FNET_MCF_INTC0_ICR12        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C4C]))
-#define FNET_MCF_INTC0_ICR13        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C4D]))
-#define FNET_MCF_INTC0_ICR14        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C4E]))
-#define FNET_MCF_INTC0_ICR15        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C4F]))
-#define FNET_MCF_INTC0_ICR16        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C50]))
-#define FNET_MCF_INTC0_ICR17        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C51]))
-#define FNET_MCF_INTC0_ICR18        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C52]))
-#define FNET_MCF_INTC0_ICR19        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C53]))
-#define FNET_MCF_INTC0_ICR20        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C54]))
-#define FNET_MCF_INTC0_ICR21        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C55]))
-#define FNET_MCF_INTC0_ICR22        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C56]))
-#define FNET_MCF_INTC0_ICR23        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C57]))
-#define FNET_MCF_INTC0_ICR24        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C58]))
-#define FNET_MCF_INTC0_ICR25        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C59]))
-#define FNET_MCF_INTC0_ICR26        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C5A]))
-#define FNET_MCF_INTC0_ICR27        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C5B]))
-#define FNET_MCF_INTC0_ICR28        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C5C]))
-#define FNET_MCF_INTC0_ICR29        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C5D]))
-#define FNET_MCF_INTC0_ICR30        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C5E]))
-#define FNET_MCF_INTC0_ICR31        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C5F]))
-#define FNET_MCF_INTC0_ICR32        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C60]))
-#define FNET_MCF_INTC0_ICR33        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C61]))
-#define FNET_MCF_INTC0_ICR34        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C62]))
-#define FNET_MCF_INTC0_ICR35        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C63]))
-#define FNET_MCF_INTC0_ICR36        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C64]))
-#define FNET_MCF_INTC0_ICR37        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C65]))
-#define FNET_MCF_INTC0_ICR38        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C66]))
-#define FNET_MCF_INTC0_ICR39        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C67]))
-#define FNET_MCF_INTC0_ICR40        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C68]))
-#define FNET_MCF_INTC0_ICR41        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C69]))
-#define FNET_MCF_INTC0_ICR42        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C6A]))
-#define FNET_MCF_INTC0_ICR43        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C6B]))
-#define FNET_MCF_INTC0_ICR44        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C6C]))
-#define FNET_MCF_INTC0_ICR45        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C6D]))
-#define FNET_MCF_INTC0_ICR46        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C6E]))
-#define FNET_MCF_INTC0_ICR47        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C6F]))
-#define FNET_MCF_INTC0_ICR48        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C70]))
-#define FNET_MCF_INTC0_ICR49        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C71]))
-#define FNET_MCF_INTC0_ICR50        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C72]))
-#define FNET_MCF_INTC0_ICR51        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C73]))
-#define FNET_MCF_INTC0_ICR52        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C74]))
-#define FNET_MCF_INTC0_ICR53        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C75]))
-#define FNET_MCF_INTC0_ICR54        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C76]))
-#define FNET_MCF_INTC0_ICR55        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C77]))
-#define FNET_MCF_INTC0_ICR56        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C78]))
-#define FNET_MCF_INTC0_ICR57        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C79]))
-#define FNET_MCF_INTC0_ICR58        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C7A]))
-#define FNET_MCF_INTC0_ICR59        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C7B]))
-#define FNET_MCF_INTC0_ICR60        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C7C]))
-#define FNET_MCF_INTC0_ICR61        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C7D]))
-#define FNET_MCF_INTC0_ICR62        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C7E]))
+/*...*/
 #define FNET_MCF_INTC0_ICR63        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C7F]))
-#define FNET_MCF_INTC0_ICRn(x)      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C40+((x)*0x001)]))
+#define FNET_MCF_INTC0_ICR(x)       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000C40+((x)*0x001)]))
 #define FNET_MCF_INTC0_SWIACK       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CE0]))
-#define FNET_MCF_INTC0_L1IACK       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CE4]))
-#define FNET_MCF_INTC0_L2IACK       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CE8]))
-#define FNET_MCF_INTC0_L3IACK       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CEC]))
-#define FNET_MCF_INTC0_L4IACK       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CF0]))
-#define FNET_MCF_INTC0_L5IACK       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CF4]))
-#define FNET_MCF_INTC0_L6IACK       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CF8]))
-#define FNET_MCF_INTC0_L7IACK       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CFC]))
-#define FNET_MCF_INTC0_LnIACK(x)    (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000CE4+((x)*0x004)]))
+
+#endif
 
 /* Bit definitions and macros for FNET_MCF_INTC0_IPRH */
 #define FNET_MCF_INTC0_IPRH_INT32          (0x00000001)
@@ -581,7 +536,7 @@ void fnet_mcf_nop(void);
 #define FNET_MCF_INTC0_ICRn_IP(x)          (((x)&0x07)<<0)
 #define FNET_MCF_INTC0_ICRn_IL(x)          (((x)&0x07)<<3)
 
-#define FNET_MCF_INTC0_IMR(x)               (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000C0C-((x)*0x4)]))
+
 #define FNET_MCF_INTC0_IMR_INT_MASK(x)      (0x00000001<<(x%32))
 
 /*********************************************************************
@@ -591,12 +546,15 @@ void fnet_mcf_nop(void);
 *********************************************************************/
 
 /* Register read/write macros */
+#if FNET_CFG_CPU_MCF54418
+#else /* Other MCFs */
 #define FNET_MCF_EPORT_EPPAR    (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x130000]))
 #define FNET_MCF_EPORT_EPDDR    (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x130002]))
 #define FNET_MCF_EPORT_EPIER    (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x130003]))
 #define FNET_MCF_EPORT_EPDR     (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x130004]))
 #define FNET_MCF_EPORT_EPPDR    (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x130005]))
 #define FNET_MCF_EPORT_EPFR     (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x130006]))
+#endif
 
 /* Bit definitions and macros for FNET_MCF_EPORT_EPPAR */
 #define FNET_MCF_EPORT_EPPAR_EPPA1(x)         (((x)&0x0003)<<2)
@@ -665,61 +623,50 @@ void fnet_mcf_nop(void);
 *********************************************************************/
 
 /* Register read/write macros */
-#define FNET_MCF_TIMER_DTMR0       (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x000400]))
-#define FNET_MCF_TIMER_DTXMR0      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000402]))
-#define FNET_MCF_TIMER_DTER0       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000403]))
-#define FNET_MCF_TIMER_DTRR0       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000404]))
-#define FNET_MCF_TIMER_DTCR0       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000408]))
-#define FNET_MCF_TIMER_DTCN0       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x00040C]))
-#define FNET_MCF_TIMER_DTMR1       (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x000440]))
-#define FNET_MCF_TIMER_DTXMR1      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000442]))
-#define FNET_MCF_TIMER_DTER1       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000443]))
-#define FNET_MCF_TIMER_DTRR1       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000444]))
-#define FNET_MCF_TIMER_DTCR1       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000448]))
-#define FNET_MCF_TIMER_DTCN1       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x00044C]))
-#define FNET_MCF_TIMER_DTMR2       (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x000480]))
-#define FNET_MCF_TIMER_DTXMR2      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000482]))
-#define FNET_MCF_TIMER_DTER2       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000483]))
-#define FNET_MCF_TIMER_DTRR2       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000484]))
-#define FNET_MCF_TIMER_DTCR2       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000488]))
-#define FNET_MCF_TIMER_DTCN2       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x00048C]))
-#define FNET_MCF_TIMER_DTMR3       (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x0004C0]))
-#define FNET_MCF_TIMER_DTXMR3      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x0004C2]))
-#define FNET_MCF_TIMER_DTER3       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x0004C3]))
-#define FNET_MCF_TIMER_DTRR3       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x0004C4]))
-#define FNET_MCF_TIMER_DTCR3       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x0004C8]))
-#define FNET_MCF_TIMER_DTCN3       (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x0004CC]))
-#define FNET_MCF_TIMER_DTMR(x)     (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x000400+((x)*0x040)]))
-#define FNET_MCF_TIMER_DTXMR(x)    (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000402+((x)*0x040)]))
-#define FNET_MCF_TIMER_DTER(x)     (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000403+((x)*0x040)]))
-#define FNET_MCF_TIMER_DTRR(x)     (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000404+((x)*0x040)]))
-#define FNET_MCF_TIMER_DTCR(x)     (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000408+((x)*0x040)]))
-#define FNET_MCF_TIMER_DTCN(x)     (*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x00040C+((x)*0x040)]))
+#if FNET_CFG_CPU_MCF54418
 
-/* Bit definitions and macros for FNET_MCF_TIMER_DTMR */
-#define FNET_MCF_TIMER_DTMR_RST          (0x0001)
-#define FNET_MCF_TIMER_DTMR_CLK(x)       (((x)&0x0003)<<1)
-#define FNET_MCF_TIMER_DTMR_FRR          (0x0008)
-#define FNET_MCF_TIMER_DTMR_ORRI         (0x0010)
-#define FNET_MCF_TIMER_DTMR_OM           (0x0020)
-#define FNET_MCF_TIMER_DTMR_CE(x)        (((x)&0x0003)<<6)
-#define FNET_MCF_TIMER_DTMR_PS(x)        (((x)&0x00FF)<<8)
-#define FNET_MCF_TIMER_DTMR_CE_ANY       (0x00C0)
-#define FNET_MCF_TIMER_DTMR_CE_FALL      (0x0080)
-#define FNET_MCF_TIMER_DTMR_CE_RISE      (0x0040)
-#define FNET_MCF_TIMER_DTMR_CE_NONE      (0x0000)
-#define FNET_MCF_TIMER_DTMR_CLK_DTIN     (0x0006)
-#define FNET_MCF_TIMER_DTMR_CLK_DIV16    (0x0004)
-#define FNET_MCF_TIMER_DTMR_CLK_DIV1     (0x0002)
-#define FNET_MCF_TIMER_DTMR_CLK_STOP     (0x0000)
+#define FNET_MCF_DTIM_DTMR(x)		(*(fnet_vuint16*)(0xFC070000 + ((x)*0x4000)))
+#define FNET_MCF_DTIM_DTXMR(x) 		(*(fnet_vuint8 *)(0xFC070002 + ((x)*0x4000)))
+#define FNET_MCF_DTIM_DTER(x)      	(*(fnet_vuint8 *)(0xFC070003 + ((x)*0x4000)))
+#define FNET_MCF_DTIM_DTRR(x)     	(*(fnet_vuint32*)(0xFC070004 + ((x)*0x4000)))
+#define FNET_MCF_DTIM_DTCR(x)      	(*(fnet_vuint32*)(0xFC070008 + ((x)*0x4000)))
+#define FNET_MCF_DTIM_DTCN(x)      	(*(fnet_vuint32*)(0xFC07000C + ((x)*0x4000)))
 
-/* Bit definitions and macros for FNET_MCF_TIMER_DTXMR */
-#define FNET_MCF_TIMER_DTXMR_MODE16      (0x01)
-#define FNET_MCF_TIMER_DTXMR_DMAEN       (0x80)
+#else /* Other MCFs */
 
-/* Bit definitions and macros for FNET_MCF_TIMER_DTER */
-#define FNET_MCF_TIMER_DTER_CAP          (0x01)
-#define FNET_MCF_TIMER_DTER_REF          (0x02)
+#define FNET_MCF_DTIM_DTMR(x)     	(*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x000400+((x)*0x040)]))
+#define FNET_MCF_DTIM_DTXMR(x)    	(*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000402+((x)*0x040)]))
+#define FNET_MCF_DTIM_DTER(x)     	(*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x000403+((x)*0x040)]))
+#define FNET_MCF_DTIM_DTRR(x)     	(*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000404+((x)*0x040)]))
+#define FNET_MCF_DTIM_DTCR(x)     	(*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x000408+((x)*0x040)]))
+#define FNET_MCF_DTIM_DTCN(x)     	(*(fnet_vuint32*)(&FNET_CFG_MCF_IPSBAR[0x00040C+((x)*0x040)]))
+
+#endif
+
+/* Bit definitions and macros for FNET_MCF_DTIM_DTMR */
+#define FNET_MCF_DTIM_DTMR_RST          (0x0001)
+#define FNET_MCF_DTIM_DTMR_CLK(x)       (((x)&0x0003)<<1)
+#define FNET_MCF_DTIM_DTMR_FRR          (0x0008)
+#define FNET_MCF_DTIM_DTMR_ORRI         (0x0010)
+#define FNET_MCF_DTIM_DTMR_OM           (0x0020)
+#define FNET_MCF_DTIM_DTMR_CE(x)        (((x)&0x0003)<<6)
+#define FNET_MCF_DTIM_DTMR_PS(x)        (((x)&0x00FF)<<8)
+#define FNET_MCF_DTIM_DTMR_CE_ANY       (0x00C0)
+#define FNET_MCF_DTIM_DTMR_CE_FALL      (0x0080)
+#define FNET_MCF_DTIM_DTMR_CE_RISE      (0x0040)
+#define FNET_MCF_DTIM_DTMR_CE_NONE      (0x0000)
+#define FNET_MCF_DTIM_DTMR_CLK_DTIN     (0x0006)
+#define FNET_MCF_DTIM_DTMR_CLK_DIV16    (0x0004)
+#define FNET_MCF_DTIM_DTMR_CLK_DIV1     (0x0002)
+#define FNET_MCF_DTIM_DTMR_CLK_STOP     (0x0000)
+
+/* Bit definitions and macros for FNET_MCF_DTIM_DTXMR */
+#define FNET_MCF_DTIM_DTXMR_MODE16      (0x01)
+#define FNET_MCF_DTIM_DTXMR_DMAEN       (0x80)
+
+/* Bit definitions and macros for FNET_MCF_DTIM_DTER */
+#define FNET_MCF_DTIM_DTER_CAP          (0x01)
+#define FNET_MCF_DTIM_DTER_REF          (0x02)
 
 /*********************************************************************
 *
@@ -728,6 +675,8 @@ void fnet_mcf_nop(void);
 *********************************************************************/
 
 /* Register read/write macros */
+#if FNET_CFG_CPU_MCF54418
+#else /* Other MCFs */
 #define FNET_MCF_PIT0_PCSR                        (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x00150000]))
 #define FNET_MCF_PIT0_PMR                         (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x00150002]))
 #define FNET_MCF_PIT0_PCNTR                       (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x00150004]))
@@ -739,7 +688,7 @@ void fnet_mcf_nop(void);
 #define FNET_MCF_PIT_PCSR(x)                      (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x00150000 + ((x)*0x10000)]))
 #define FNET_MCF_PIT_PMR(x)                       (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x00150002 + ((x)*0x10000)]))
 #define FNET_MCF_PIT_PCNTR(x)                     (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x00150004 + ((x)*0x10000)]))
-
+#endif
 
 /* Bit definitions and macros for FNET_MCF_PIT_PCSR */
 #define FNET_MCF_PIT_PCSR_EN                      (0x1)
@@ -765,56 +714,25 @@ void fnet_mcf_nop(void);
 *********************************************************************/
 
 /* Register read/write macros */
-#define FNET_MCF_UART0_UMR1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x200]))
-#define FNET_MCF_UART0_UMR2                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x200]))
-#define FNET_MCF_UART0_USR                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x204]))
-#define FNET_MCF_UART0_UCSR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x204]))
-#define FNET_MCF_UART0_UCR                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x208]))
-#define FNET_MCF_UART0_URB                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x20C]))
-#define FNET_MCF_UART0_UTB                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x20C]))
-#define FNET_MCF_UART0_UIPCR                      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x210]))
-#define FNET_MCF_UART0_UACR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x210]))
-#define FNET_MCF_UART0_UIMR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x214]))
-#define FNET_MCF_UART0_UISR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x214]))
-#define FNET_MCF_UART0_UBG1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x218]))
-#define FNET_MCF_UART0_UBG2                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x21C]))
-#define FNET_MCF_UART0_UIP                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x234]))
-#define FNET_MCF_UART0_UOP1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x238]))
-#define FNET_MCF_UART0_UOP0                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x23C]))
+#if FNET_CFG_CPU_MCF54418
 
-#define FNET_MCF_UART1_UMR1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x240]))
-#define FNET_MCF_UART1_UMR2                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x240]))
-#define FNET_MCF_UART1_USR                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x244]))
-#define FNET_MCF_UART1_UCSR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x244]))
-#define FNET_MCF_UART1_UCR                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x248]))
-#define FNET_MCF_UART1_URB                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x24C]))
-#define FNET_MCF_UART1_UTB                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x24C]))
-#define FNET_MCF_UART1_UIPCR                      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x250]))
-#define FNET_MCF_UART1_UACR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x250]))
-#define FNET_MCF_UART1_UIMR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x254]))
-#define FNET_MCF_UART1_UISR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x254]))
-#define FNET_MCF_UART1_UBG1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x258]))
-#define FNET_MCF_UART1_UBG2                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x25C]))
-#define FNET_MCF_UART1_UIP                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x274]))
-#define FNET_MCF_UART1_UOP1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x278]))
-#define FNET_MCF_UART1_UOP0                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x27C]))
+#define FNET_MCF_UART_UMR(x)                      (*(fnet_vuint8 *)(0xEC060000 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_USR(x)                      (*(fnet_vuint8 *)(0xEC060004 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UCSR(x)                     (*(fnet_vuint8 *)(0xEC060004 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UCR(x)                      (*(fnet_vuint8 *)(0xEC060008 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_URB(x)                      (*(fnet_vuint8 *)(0xEC06000C + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UTB(x)                      (*(fnet_vuint8 *)(0xEC06000C + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UACR(x)                     (*(fnet_vuint8 *)(0xEC060010 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UIPCR(x)                    (*(fnet_vuint8 *)(0xEC060010 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UIMR(x)                     (*(fnet_vuint8 *)(0xEC060014 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UISR(x)                     (*(fnet_vuint8 *)(0xEC060014 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UBG1(x)                     (*(fnet_vuint8 *)(0xEC060018 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UBG2(x)                     (*(fnet_vuint8 *)(0xEC06001C + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UIP(x)                      (*(fnet_vuint8 *)(0xEC060034 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UOP1(x)                     (*(fnet_vuint8 *)(0xEC060038 + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
+#define FNET_MCF_UART_UOP0(x)                     (*(fnet_vuint8 *)(0xEC06003C + (((x)<4)? (0x10000000 + ((x)*0x4000)) : ((x-4)*0x4000))))
 
-#define FNET_MCF_UART2_UMR1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x280]))
-#define FNET_MCF_UART2_UMR2                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x280]))
-#define FNET_MCF_UART2_USR                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x284]))
-#define FNET_MCF_UART2_UCSR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x284]))
-#define FNET_MCF_UART2_UCR                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x288]))
-#define FNET_MCF_UART2_URB                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x28C]))
-#define FNET_MCF_UART2_UTB                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x28C]))
-#define FNET_MCF_UART2_UIPCR                      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x290]))
-#define FNET_MCF_UART2_UACR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x290]))
-#define FNET_MCF_UART2_UIMR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x294]))
-#define FNET_MCF_UART2_UISR                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x294]))
-#define FNET_MCF_UART2_UBG1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x298]))
-#define FNET_MCF_UART2_UBG2                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x29C]))
-#define FNET_MCF_UART2_UIP                        (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x2B4]))
-#define FNET_MCF_UART2_UOP1                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x2B8]))
-#define FNET_MCF_UART2_UOP0                       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x2BC]))
+#else /* Other MCFs */
 
 #define FNET_MCF_UART_UMR(x)                      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x200 + ((x)*0x40)]))
 #define FNET_MCF_UART_USR(x)                      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x204 + ((x)*0x40)]))
@@ -831,6 +749,8 @@ void fnet_mcf_nop(void);
 #define FNET_MCF_UART_UIP(x)                      (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x234 + ((x)*0x40)]))
 #define FNET_MCF_UART_UOP1(x)                     (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x238 + ((x)*0x40)]))
 #define FNET_MCF_UART_UOP0(x)                     (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x23C + ((x)*0x40)]))
+
+#endif
 
 /* Bit definitions and macros for MCF_UART_UMR */
 #define FNET_MCF_UART_UMR_BC(x)                   (((x)&0x3)<<0)
@@ -947,6 +867,8 @@ void fnet_mcf_nop(void);
 *********************************************************************/
 
 /* Register read/write macros */
+#if FNET_CFG_CPU_MCF54418
+#else /* Other MCFs */
 #define FNET_MCF_CFM_CFMMCR                       (*(fnet_vuint16 *)(&FNET_CFG_MCF_IPSBAR[0x001D0000]))
 #define FNET_MCF_CFM_CFMCLKD                      (*(fnet_vuint8  *)(&FNET_CFG_MCF_IPSBAR[0x001D0002]))
 #define FNET_MCF_CFM_CFMSEC                       (*(fnet_vuint32 *)(&FNET_CFG_MCF_IPSBAR[0x001D0008]))
@@ -956,7 +878,7 @@ void fnet_mcf_nop(void);
 #define FNET_MCF_CFM_CFMUSTAT                     (*(fnet_vuint8  *)(&FNET_CFG_MCF_IPSBAR[0x001D0020]))
 #define FNET_MCF_CFM_CFMCMD                       (*(fnet_vuint8  *)(&FNET_CFG_MCF_IPSBAR[0x001D0024]))
 #define FNET_MCF_CFM_CFMCLKSEL                    (*(fnet_vuint16 *)(&FNET_CFG_MCF_IPSBAR[0x001D004A]))
-
+#endif
 
 /* Bit definitions and macros for FNET_MCF_CFM_CFMMCR */
 #define FNET_MCF_CFM_CFMMCR_KEYACC                (0x20)
@@ -1011,8 +933,13 @@ void fnet_mcf_nop(void);
 *********************************************************************/
 
 /* Register read/write macros */
+#if FNET_CFG_CPU_MCF54418
+#define FNET_MCF_RCM_RCR                          (*(fnet_vuint8 *)(0xEC090000))
+#define FNET_MCF_RCM_RSR                          (*(fnet_vuint8 *)(0xEC090001))
+#else /* Other MCFs */
 #define FNET_MCF_RCM_RCR                          (*(fnet_vuint8  *)(&FNET_CFG_MCF_IPSBAR[0x00110000]))
 #define FNET_MCF_RCM_RSR                          (*(fnet_vuint8  *)(&FNET_CFG_MCF_IPSBAR[0x00110001]))
+#endif
 
 
 /* Bit definitions and macros for MCF_RCM_RCR */
@@ -1078,8 +1005,8 @@ void fnet_mcf_nop(void);
 
 
     /* Redefine pointers to the registers for V1 */
-    #undef FNET_FEC_BASE_ADDR
-    #define FNET_FEC_BASE_ADDR        ((fnet_vuint32*)(0xFFFFE004))
+    #undef FNET_FEC0_BASE_ADDR
+    #define FNET_FEC0_BASE_ADDR        ((fnet_vuint32*)(0xFFFFE004))
 
     #undef FNET_MCF_CFM_CFMUSTAT
     #define FNET_MCF_CFM_CFMUSTAT                     (*(fnet_vuint8  *)(0xFFFF82E5))
@@ -2324,8 +2251,34 @@ extern volatile FNET_MCF_SCGC2STR _FNET_MCF_SCGC2 @FNET_MCF_SCGC2_PTR;
 
 
 
+/*********************************************************************
+*
+* Power Management (PMM)
+*
+*********************************************************************/
+#if FNET_CFG_CPU_MCF54418
+/* Register read/write macros */
+#define FNET_MCF_PMM_PPMLR0                       (*(fnet_vuint32*)(0xFC040034))
+#define FNET_MCF_PMM_PPMLR1                       (*(fnet_vuint32*)(0xFC04003C))
 
+#define FNET_MCF_PMM_PPMLR0_CD18                  (0x40000)
+#define FNET_MCF_PMM_PPMLR0_CD19                  (0x80000)
+#define FNET_MCF_PMM_PPMLR0_CD20                  (0x100000)
+#define FNET_MCF_PMM_PPMLR0_CD24                  (0x1000000)
+#define FNET_MCF_PMM_PPMLR0_CD25                  (0x2000000)
+#define FNET_MCF_PMM_PPMLR0_CD26                  (0x4000000)
+#define FNET_MCF_PMM_PPMLR0_CD27                  (0x8000000)
+#define FNET_MCF_PMM_PPMLR0_CD28                  (0x10000000)
+#define FNET_MCF_PMM_PPMLR0_CD29                  (0x20000000)
+#define FNET_MCF_PMM_PPMLR0_CD30                  (0x40000000)
+#define FNET_MCF_PMM_PPMLR0_CD31                  (0x80000000)
 
+#define FNET_MCF_PMM_PPMLR1_CD24                  (0x1000000)
+#define FNET_MCF_PMM_PPMLR1_CD25                  (0x2000000)
+#define FNET_MCF_PMM_PPMLR1_CD26                  (0x4000000)
+#define FNET_MCF_PMM_PPMLR1_CD27                  (0x8000000)
+
+#endif /* FNET_CFG_CPU_MCF54418 */
 
 
 /*********************************************************************
@@ -2334,14 +2287,14 @@ extern volatile FNET_MCF_SCGC2STR _FNET_MCF_SCGC2 @FNET_MCF_SCGC2_PTR;
 *
 *********************************************************************/
 
-/*MCF5282*/
+/**************** MCF5282 ****************/
 #define FNET_MCF5282_GPIO_PEHLPAR       (*(fnet_vuint8  *)(&FNET_CFG_MCF_IPSBAR[0x100058]))
 #define FNET_MCF5282_GPIO_PASPAR        (*(fnet_vuint16 *)(&FNET_CFG_MCF_IPSBAR[0x100056]))
 
-/*MCF523x*/
+/**************** MCF523x ****************/
 #define FNET_MCF523x_GPIO_PAR_FECI2C    (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x100047]))
 
-/*MCF5225x*/
+/**************** MCF5225x ****************/
 #define FNET_MCF5225X_GPIO_PNQPAR       (*(fnet_vuint16*)(&FNET_CFG_MCF_IPSBAR[0x100068]))
 #define FNET_MCF5225X_GPIO_PTIPAR       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x100064]))
 #define FNET_MCF5225X_GPIO_PTJPAR       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x100066]))
@@ -2367,7 +2320,7 @@ extern volatile FNET_MCF_SCGC2STR _FNET_MCF_SCGC2 @FNET_MCF_SCGC2_PTR;
 #define FNET_MCF522XX_GPIO_PUAPAR_URXD0_URXD0           (0x4)
 #define FNET_MCF522XX_GPIO_PUAPAR_UTXD0_UTXD0           (0x1)
 
-/*MCF5223x*/
+/**************** MCF5223x ****************/
 #define FNET_MCF5223X_GPIO_PLDPAR       (*(fnet_vuint8 *)(&FNET_CFG_MCF_IPSBAR[0x100075]))
 /* Bit definitions and macros for MCF_GPIO_PLDPAR */
 #define FNET_MCF5223X_GPIO_PLDPAR_ACTLED_ACTLED        (0x1)
@@ -2377,6 +2330,79 @@ extern volatile FNET_MCF_SCGC2STR _FNET_MCF_SCGC2 @FNET_MCF_SCGC2_PTR;
 #define FNET_MCF5223X_GPIO_PLDPAR_COLLED_COLLED        (0x10)
 #define FNET_MCF5223X_GPIO_PLDPAR_RXLED_RXLED          (0x20)
 #define FNET_MCF5223X_GPIO_PLDPAR_TXLED_TXLED          (0x40)
+
+/**************** MCF5441x ****************/
+#define FNET_MCF5441X_GPIO_PAR_DSPIOWH                  (*(fnet_vuint8 *)(0xEC09404E))
+#define FNET_MCF5441X_GPIO_PAR_TIMER                    (*(fnet_vuint8 *)(0xEC094050))
+#define FNET_MCF5441X_GPIO_PAR_UART2                    (*(fnet_vuint8 *)(0xEC094051))
+#define FNET_MCF5441X_GPIO_PAR_UART1                    (*(fnet_vuint8 *)(0xEC094052))
+#define FNET_MCF5441X_GPIO_PAR_UART0                    (*(fnet_vuint8 *)(0xEC094053))
+#define FNET_MCF5441X_GPIO_PAR_FEC                      (*(fnet_vuint8 *)(0xEC09405E))
+
+#define FNET_MCF5441X_GPIO_SRCR_FEC                     (*(fnet_vuint8 *)(0xEC09406D))
+
+#define FNET_MCF5441X_GPIO_PODR_G                       (*(fnet_vuint8 *)(0xEC094006))
+#define FNET_MCF5441X_GPIO_PDDR_G                       (*(fnet_vuint8 *)(0xEC094012))
+
+
+#define FNET_MCF5441X_GPIO_PAR_UART0_PAR_TXD_U0TXD      (0x3)
+#define FNET_MCF5441X_GPIO_PAR_UART0_PAR_RXD_U0RXD      (0xC)
+#define FNET_MCF5441X_GPIO_PAR_UART0_PAR_RTS_U4RXD      (0x20)
+#define FNET_MCF5441X_GPIO_PAR_UART0_PAR_CTS_U4TXD      (0x80)
+
+#define FNET_MCF5441X_GPIO_PAR_UART1_PAR_TXD_U1TXD      (0x3)
+#define FNET_MCF5441X_GPIO_PAR_UART1_PAR_RXD_U1RXD      (0xC)
+#define FNET_MCF5441X_GPIO_PAR_UART1_PAR_RTS_U5RXD      (0x20)
+#define FNET_MCF5441X_GPIO_PAR_UART1_PAR_CTS_U5TXD      (0x80)
+
+#define FNET_MCF5441X_GPIO_PAR_UART2_PAR_TXD_U2TXD      (0x3)
+#define FNET_MCF5441X_GPIO_PAR_UART2_PAR_RXD_U2RXD      (0xC)
+#define FNET_MCF5441X_GPIO_PAR_UART2_PAR_RTS_U6RXD      (0x20)
+#define FNET_MCF5441X_GPIO_PAR_UART2_PAR_CTS_U6TXD      (0x80)
+
+#define FNET_MCF5441X_GPIO_PAR_DSPIOWH_PAR_SOUT_U3TXD   (0x20)
+#define FNET_MCF5441X_GPIO_PAR_DSPIOWH_PAR_SIN_U3RXD    (0x80)
+
+/* Bit definitions and macros for FNET_MCF5441X_GPIO_PAR_TIMER */
+#define FNET_MCF5441X_GPIO_PAR_TIMER_T0OUT     (0x2)
+#define FNET_MCF5441X_GPIO_PAR_TIMER_T0IN      (0x3)
+#define FNET_MCF5441X_GPIO_PAR_TIMER_T1OUT     (0x8)
+#define FNET_MCF5441X_GPIO_PAR_TIMER_T1IN      (0xC)
+#define FNET_MCF5441X_GPIO_PAR_TIMER_T2OUT     (0x20)
+#define FNET_MCF5441X_GPIO_PAR_TIMER_T2IN      (0x30)
+#define FNET_MCF5441X_GPIO_PAR_TIMER_T3OUT     (0x80)
+#define FNET_MCF5441X_GPIO_PAR_TIMER_T3IN      (0xC0)
+
+/* Bit definitions and macros for FNET_MCF5441X_GPIO_PAR_FEC */
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_MII_FULL       				(0)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_MII_NON_FULL         		(0x1)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_RMII1_FULL 			(0x3)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_RMII1_NON_FULL 		(0x4)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_FULL_RMII1_NON_FULL	(0x5)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_NON_FULL_RMII1_FULL 	(0x6)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_FULL   				(0x7)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_FULL_ULPI 				(0x8)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_NON_MII 				(0x9)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_NON_MII_ULPI 			(0xA)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII1_FULL   				(0xB)
+#define FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII1_NON_MII 				(0xC)
+
+/* Bit definitions and macros for FNET_MCF5441X_GPIO_SRCR_FEC */
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII1(x)         (((x)&0x3)<<0)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII1_SR_LOWEST  (0)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII1_SR_LOW     (0x1)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII1_SR_HIGH    (0x2)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII1_SR_HIGHEST (0x3)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII0(x)         (((x)&0x3)<<0x2)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII0_SR_LOWEST  (0)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII0_SR_LOW     (0x4)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII0_SR_HIGH    (0x8)
+#define FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII0_SR_HIGHEST (0xC)
+
+/* Bit definitions and macros for GPIO_G */
+#define FNET_MCF5441X_GPIO_PDDR_G_PDDR_G4                (0x10)
+#define FNET_MCF5441X_GPIO_PODR_G_PODR_G4                (0x10)
+
 
 #endif /* FNET_MCF */
 #endif

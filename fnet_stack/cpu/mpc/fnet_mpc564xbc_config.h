@@ -51,10 +51,12 @@
 #define FNET_CFG_HEAP_SIZE              (30 * 1024)
 #endif
 
-/* The platform has ColdFire Flash Module.*/
+/* MPC Flash Module is not supported.*/
 #define FNET_CFG_CPU_FLASH              (0)
-
 #define FNET_CFG_CPU_FLASH_PAGE_SIZE    (2*1024)
+
+/* The platform does not have second Ethernet Module.*/
+#define FNET_CFG_CPU_ETH1        		(0)
 
 /* Default system bus frequency in Hz */
 #ifndef FNET_CFG_CPU_CLOCK_HZ

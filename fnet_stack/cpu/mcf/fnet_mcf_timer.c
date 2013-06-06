@@ -64,7 +64,9 @@
 
     #if (FNET_TIMER_PERIOD_MS>0xFF)
         #error "FNET_TIMER_PERIOD_MS must be less than 0xFF (HW limitation)."
-    #endif    
+    #endif
+    
+    #define FNET_TIMER_NUMBER    0    
 
 #endif
 
@@ -109,7 +111,11 @@
     
 #endif  /* FNET_CFG_MCF_TIMER_PIT */
 
-
+/************************************************************************
+*     Function Prototypes
+*************************************************************************/    
+static void fnet_cpu_timer_handler_top( void *cookie );
+    
 
 /************************************************************************
 * NAME: fnet_cpu_timer_handler_top
@@ -117,8 +123,10 @@
 * DESCRIPTION: Top interrupt handler. Increment fnet_current_time 
 *              and interrupt flag. 
 *************************************************************************/
-static void fnet_cpu_timer_handler_top( void )
+static void fnet_cpu_timer_handler_top( void *cookie )
 {
+    FNET_COMP_UNUSED_ARG(cookie);
+    
 #if FNET_CFG_MCF_TIMER_RTC8     /* 8-bit RTC (Lasko) */
     /* Clear the interrupt flag. 
      */
@@ -128,7 +136,7 @@ static void fnet_cpu_timer_handler_top( void )
 #if FNET_CFG_MCF_TIMER_DTIM     /* DMA Timer (Default for MCF) */  
     /* Clear timer event condition.
      */
-    FNET_MCF_TIMER_DTER(FNET_TIMER_NUMBER) = FNET_MCF_TIMER_DTER_REF; 
+    FNET_MCF_DTIM_DTER(FNET_TIMER_NUMBER) = FNET_MCF_DTIM_DTER_REF; 
 #endif    
 
 #if FNET_CFG_MCF_TIMER_PIT     /* PIT Timer */  
@@ -157,6 +165,44 @@ static void fnet_cpu_timer_handler_top( void )
 #endif 
 }
 
+/********************************************************************/
+static inline void fnet_cpu_timer_gpio_init(long timer_number) 
+{
+    
+#if FNET_CFG_CPU_MCF54418 && FNET_CFG_MCF_TIMER_DTIM
+	/* Set GPIO port register to enable PSC(port) signals */
+	switch( timer_number )
+	{
+		case 0:
+			FNET_MCF5441X_GPIO_PAR_TIMER &= ~FNET_MCF5441X_GPIO_PAR_TIMER_T0IN;
+			FNET_MCF5441X_GPIO_PAR_TIMER |= FNET_MCF5441X_GPIO_PAR_TIMER_T0OUT;
+			FNET_MCF_PMM_PPMLR0 &= ~(FNET_MCF_PMM_PPMLR0_CD28);	/* Enable clock */
+	    	break;
+		case 1:
+			FNET_MCF5441X_GPIO_PAR_TIMER &= ~FNET_MCF5441X_GPIO_PAR_TIMER_T1IN;
+			FNET_MCF5441X_GPIO_PAR_TIMER |= FNET_MCF5441X_GPIO_PAR_TIMER_T1OUT;
+			FNET_MCF_PMM_PPMLR0 &= ~(FNET_MCF_PMM_PPMLR0_CD29);	/* Enable clock */
+			break;
+		case 2:
+			FNET_MCF5441X_GPIO_PAR_TIMER &= ~FNET_MCF5441X_GPIO_PAR_TIMER_T2IN;
+			FNET_MCF5441X_GPIO_PAR_TIMER |= FNET_MCF5441X_GPIO_PAR_TIMER_T2OUT;
+			FNET_MCF_PMM_PPMLR0 &= ~(FNET_MCF_PMM_PPMLR0_CD30);	/* Enable clock */
+			break;
+		case 3:
+			FNET_MCF5441X_GPIO_PAR_TIMER &= ~FNET_MCF5441X_GPIO_PAR_TIMER_T3IN;
+			FNET_MCF5441X_GPIO_PAR_TIMER |= FNET_MCF5441X_GPIO_PAR_TIMER_T3OUT;
+			FNET_MCF_PMM_PPMLR0 &= ~(FNET_MCF_PMM_PPMLR0_CD31);	/* Enable clock */
+			break;		
+
+	}
+#endif	/* FNET_CFG_CPU_MCF54418 && FNET_CFG_MCF_TIMER_DTIM */
+	
+
+    (void)timer_number;
+}
+
+
+
 /************************************************************************
 * NAME: fnet_cpu_timer_init
 *
@@ -171,7 +217,9 @@ int fnet_cpu_timer_init( unsigned int period_ms )
     /* Install interrupt handler.
      */
     result = fnet_isr_vector_init(FNET_TIMER_VECTOR_NUMBER, fnet_cpu_timer_handler_top,
-                                              fnet_timer_handler_bottom, FNET_TIMER_INT_LEVEL);
+                                              fnet_timer_handler_bottom, FNET_TIMER_INT_LEVEL, 0);
+
+    fnet_cpu_timer_gpio_init(FNET_TIMER_NUMBER);
     
     if(result == FNET_OK)
     {
@@ -185,9 +233,9 @@ int fnet_cpu_timer_init( unsigned int period_ms )
         
         /* Enables the internal reference clock for use as MCGIRCLK (for RTC). 
          */
-        FNET_MCF_MCGC1_IRCLKEN = 1;
+      FNET_MCF_MCGC1_IRCLKEN = 1;
         
-        FNET_MCF_RTCSC_RTCLKS = 0;  /* RTC source is the 1-kHz low power oscillator (LPO). 
+      FNET_MCF_RTCSC_RTCLKS = 0;  /* RTC source is the 1-kHz low power oscillator (LPO). 
                                      */
     	FNET_MCF_RTCSC_RTCPS = 8;   /* Prescaler = 1. 
     	                             */
@@ -199,22 +247,22 @@ int fnet_cpu_timer_init( unsigned int period_ms )
 
     #if FNET_CFG_MCF_TIMER_DTIM     /* DMA Timer (Default for MCF) */  
 
-        FNET_MCF_TIMER_DTMR(FNET_TIMER_NUMBER) = FNET_MCF_TIMER_DTMR_CE_NONE;
-        FNET_MCF_TIMER_DTRR(FNET_TIMER_NUMBER) = period_ms * FNET_TIMER_CLKIN_PER_MS;
-        FNET_MCF_TIMER_DTER(FNET_TIMER_NUMBER) = FNET_MCF_TIMER_DTER_REF | FNET_MCF_TIMER_DTER_CAP;
-        FNET_MCF_TIMER_DTCN(FNET_TIMER_NUMBER) = 0;
+    	FNET_MCF_DTIM_DTMR(FNET_TIMER_NUMBER) = FNET_MCF_DTIM_DTMR_CE_NONE;
+    	FNET_MCF_DTIM_DTRR(FNET_TIMER_NUMBER) = period_ms * FNET_TIMER_CLKIN_PER_MS;
+    	FNET_MCF_DTIM_DTER(FNET_TIMER_NUMBER) = FNET_MCF_DTIM_DTER_REF | FNET_MCF_DTIM_DTER_CAP;
+    	FNET_MCF_DTIM_DTCN(FNET_TIMER_NUMBER) = 0;
       
-        FNET_MCF_TIMER_DTMR(FNET_TIMER_NUMBER) = (FNET_TIMER_TMR_PS_VAL << 8) 
-                                                | FNET_MCF_TIMER_DTMR_RST 
-                                                | FNET_MCF_TIMER_DTMR_CLK_DIV1
-                                                | FNET_MCF_TIMER_DTMR_ORRI
-                                                | FNET_MCF_TIMER_DTMR_FRR;
+    	FNET_MCF_DTIM_DTMR(FNET_TIMER_NUMBER) = (FNET_TIMER_TMR_PS_VAL << 8) 
+                                                | FNET_MCF_DTIM_DTMR_RST 
+                                                | FNET_MCF_DTIM_DTMR_CLK_DIV1
+                                                | FNET_MCF_DTIM_DTMR_ORRI
+                                                | FNET_MCF_DTIM_DTMR_FRR;
     #endif
     
     #if FNET_CFG_MCF_TIMER_PIT     /* PIT Timer */  
-        FNET_MCF_PIT_PCSR(FNET_TIMER_NUMBER) = (fnet_uint16)(FNET_MCF_PIT_PCSR_PRE(FNET_MCF_PIT_PCSR_PRE_VALUE));
-		FNET_MCF_PIT_PMR(FNET_TIMER_NUMBER) = (fnet_uint16)((FNET_CPU_CLOCK_KHZ >> (FNET_MCF_PIT_PCSR_PRE_VALUE+1)) * period_ms - 1) ;
-		FNET_MCF_PIT_PCSR(FNET_TIMER_NUMBER) |=	FNET_MCF_PIT_PCSR_DBG   /* PIT function stopped in debug mode. */
+      FNET_MCF_PIT_PCSR(FNET_TIMER_NUMBER) = (fnet_uint16)(FNET_MCF_PIT_PCSR_PRE(FNET_MCF_PIT_PCSR_PRE_VALUE));
+		  FNET_MCF_PIT_PMR(FNET_TIMER_NUMBER) = (fnet_uint16)((FNET_CPU_CLOCK_KHZ >> (FNET_MCF_PIT_PCSR_PRE_VALUE+1)) * period_ms - 1) ;
+		  FNET_MCF_PIT_PCSR(FNET_TIMER_NUMBER) |=	FNET_MCF_PIT_PCSR_DBG   /* PIT function stopped in debug mode. */
 		                                        | FNET_MCF_PIT_PCSR_OVW 
 		                                        | FNET_MCF_PIT_PCSR_PIE /* PIF interrupt requests enabled. */
 		                                        | FNET_MCF_PIT_PCSR_PIF
@@ -230,7 +278,7 @@ int fnet_cpu_timer_init( unsigned int period_ms )
 /************************************************************************
 * NAME: fnet_cpu_timer_release
 *
-* DESCRIPTION: Relaeses TCP/IP hardware timer.
+* DESCRIPTION: Releases TCP/IP hardware timer.
 *              
 *************************************************************************/
 void fnet_cpu_timer_release( void )
@@ -245,9 +293,9 @@ void fnet_cpu_timer_release( void )
     
 #if FNET_CFG_MCF_TIMER_DTIM     /* DMA Timer (Default for MCF) */  
 
-    FNET_MCF_TIMER_DTMR(FNET_TIMER_NUMBER) = FNET_MCF_TIMER_DTMR_CE_NONE; /* Disable timer. */
-    FNET_MCF_TIMER_DTER(FNET_TIMER_NUMBER) = FNET_MCF_TIMER_DTER_REF | FNET_MCF_TIMER_DTER_CAP; /* Clear event conditions. */
-    
+    FNET_MCF_DTIM_DTMR(FNET_TIMER_NUMBER) = FNET_MCF_DTIM_DTMR_CE_NONE; /* Disable timer. */
+    FNET_MCF_DTIM_DTER(FNET_TIMER_NUMBER) = FNET_MCF_DTIM_DTER_REF | FNET_MCF_DTIM_DTER_CAP; /* Clear event conditions. */
+
 #endif    
     
     /* Free interrupt handler res.

@@ -1067,6 +1067,8 @@ typedef struct FNET_MK_PORT_MemMap {
 #define FNET_MK_PORTD_BASE_PTR                           ((FNET_MK_PORT_MemMapPtr)0x4004C000u)
 /* Peripheral PORTE base pointer */
 #define FNET_MK_PORTE_BASE_PTR                           ((FNET_MK_PORT_MemMapPtr)0x4004D000u)
+/* Peripheral PORTF base pointer */
+#define FNET_MK_PORTF_BASE_PTR                           ((FNET_MK_PORT_MemMapPtr)0x4004E000u)
 
 /* ----------------------------------------------------------------------------
    -- PORT - Register accessor macros
@@ -1268,13 +1270,52 @@ typedef struct FNET_MK_PORT_MemMap {
 #define FNET_MK_PORTE_DFER                               FNET_MK_PORT_DFER_REG(FNET_MK_PORTE_BASE_PTR)
 #define FNET_MK_PORTE_DFCR                               FNET_MK_PORT_DFCR_REG(FNET_MK_PORTE_BASE_PTR)
 #define FNET_MK_PORTE_DFWR                               FNET_MK_PORT_DFWR_REG(FNET_MK_PORTE_BASE_PTR)
-
+/* PORTF */
+#define FNET_MK_PORTF_PCR0                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,0)
+#define FNET_MK_PORTF_PCR1                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,1)
+#define FNET_MK_PORTF_PCR2                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,2)
+#define FNET_MK_PORTF_PCR3                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,3)
+#define FNET_MK_PORTF_PCR4                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,4)
+#define FNET_MK_PORTF_PCR5                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,5)
+#define FNET_MK_PORTF_PCR6                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,6)
+#define FNET_MK_PORTF_PCR7                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,7)
+#define FNET_MK_PORTF_PCR8                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,8)
+#define FNET_MK_PORTF_PCR9                               FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,9)
+#define FNET_MK_PORTF_PCR10                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,10)
+#define FNET_MK_PORTF_PCR11                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,11)
+#define FNET_MK_PORTF_PCR12                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,12)
+#define FNET_MK_PORTF_PCR13                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,13)
+#define FNET_MK_PORTF_PCR14                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,14)
+#define FNET_MK_PORTF_PCR15                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,15)
+#define FNET_MK_PORTF_PCR16                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,16)
+#define FNET_MK_PORTF_PCR17                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,17)
+#define FNET_MK_PORTF_PCR18                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,18)
+#define FNET_MK_PORTF_PCR19                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,19)
+#define FNET_MK_PORTF_PCR20                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,20)
+#define FNET_MK_PORTF_PCR21                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,21)
+#define FNET_MK_PORTF_PCR22                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,22)
+#define FNET_MK_PORTF_PCR23                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,23)
+#define FNET_MK_PORTF_PCR24                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,24)
+#define FNET_MK_PORTF_PCR25                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,25)
+#define FNET_MK_PORTF_PCR26                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,26)
+#define FNET_MK_PORTF_PCR27                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,27)
+#define FNET_MK_PORTF_PCR28                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,28)
+#define FNET_MK_PORTF_PCR29                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,29)
+#define FNET_MK_PORTF_PCR30                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,30)
+#define FNET_MK_PORTF_PCR31                              FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,31)
+#define FNET_MK_PORTF_GPCLR                              FNET_MK_PORT_GPCLR_REG(FNET_MK_PORTF_BASE_PTR)
+#define FNET_MK_PORTF_GPCHR                              FNET_MK_PORT_GPCHR_REG(FNET_MK_PORTF_BASE_PTR)
+#define FNET_MK_PORTF_ISFR                               FNET_MK_PORT_ISFR_REG(FNET_MK_PORTF_BASE_PTR)
+#define FNET_MK_PORTF_DFER                               FNET_MK_PORT_DFER_REG(FNET_MK_PORTF_BASE_PTR)
+#define FNET_MK_PORTF_DFCR                               FNET_MK_PORT_DFCR_REG(FNET_MK_PORTF_BASE_PTR)
+#define FNET_MK_PORTF_DFWR                               FNET_MK_PORT_DFWR_REG(FNET_MK_PORTF_BASE_PTR)
 /* PORT - Register array accessors */
 #define FNET_MK_PORTA_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTA_BASE_PTR,index)
 #define FNET_MK_PORTB_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTB_BASE_PTR,index)
 #define FNET_MK_PORTC_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTC_BASE_PTR,index)
 #define FNET_MK_PORTD_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTD_BASE_PTR,index)
 #define FNET_MK_PORTE_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTE_BASE_PTR,index)
+#define FNET_MK_PORTF_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,index)
 
 /* ----------------------------------------------------------------------------
    -- NVIC
@@ -2604,6 +2645,7 @@ typedef struct FNET_MK_FTFL_MemMap {
 #define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_CHECK          (0x02)
 #define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_RESOURCE          (0x03)
 #define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_LONGWORD       (0x06) 
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PHRASE         (0x07) /*Program 8 bytes in a program flash block or a data flash block. FTFE K70 */ 
 #define FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_BLOCK            (0x08)
 #define FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_SECTOR           (0x09)
 #define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_SECTION        (0x0B)
@@ -2903,7 +2945,7 @@ typedef struct FNET_MK_SCB_MemMap {
 /*********************************************************************
 * Fast Ethernet Controller (FEC)
 *********************************************************************/
-#define FNET_FEC_BASE_ADDR                  (0x400C0004u)
+#define FNET_FEC0_BASE_ADDR                             (0x400C0004u)
 
 
 #endif /* FNET_MK */

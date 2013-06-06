@@ -51,8 +51,18 @@
 
 #define _FNET_FS_CONFIG_H_
 
-/** @addtogroup fnet_services_config */
+/** @addtogroup fnet_fs_config */
 /** @{ */
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_FS
+ * @brief    File System Interface support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ ******************************************************************************/
+#ifndef FNET_CFG_FS
+    #define FNET_CFG_FS         (0) 
+#endif
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_FS_MOUNT_MAX

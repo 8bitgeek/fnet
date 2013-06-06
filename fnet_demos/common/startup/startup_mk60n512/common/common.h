@@ -21,6 +21,8 @@
  */
 #include "arm_cm4.h"
 
+#include "fnet.h"
+
 /* 
  * Include the platform specific header file 
  */
@@ -42,7 +44,6 @@
  * Include common utilities
  */
 #include "startup.h"
-#include "stdlib.h"
 
 #if FNET_CFG_COMP_IAR
   #include "intrinsics.h"

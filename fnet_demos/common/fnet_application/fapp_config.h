@@ -140,19 +140,19 @@
 *************************************************************************/
 /* FNET TCP/IP stack default parameters ROM. */
 #ifndef FAPP_CFG_PARAMS_IP_ADDR
-    #define FAPP_CFG_PARAMS_IP_ADDR             FNET_CFG_ETH_IP4_ADDR    /* Defined by FNET */
+    #define FAPP_CFG_PARAMS_IP_ADDR             FNET_CFG_ETH0_IP4_ADDR    /* Defined by FNET */
 #endif
 
 #ifndef FAPP_CFG_PARAMS_IP_MASK
-    #define FAPP_CFG_PARAMS_IP_MASK             FNET_CFG_ETH_IP4_MASK    /* Defined by FNET */
+    #define FAPP_CFG_PARAMS_IP_MASK             FNET_CFG_ETH0_IP4_MASK    /* Defined by FNET */
 #endif
 
 #ifndef FAPP_CFG_PARAMS_IP_GW
-    #define FAPP_CFG_PARAMS_IP_GW               FNET_CFG_ETH_IP4_GW      /* Defined by FNET */
+    #define FAPP_CFG_PARAMS_IP_GW               FNET_CFG_ETH0_IP4_GW      /* Defined by FNET */
 #endif
 
 #ifndef FAPP_CFG_PARAMS_IP_DNS
-    #define FAPP_CFG_PARAMS_IP_DNS              FNET_CFG_ETH_IP4_DNS     /* Defined by FNET */
+    #define FAPP_CFG_PARAMS_IP_DNS              FNET_CFG_ETH0_IP4_DNS     /* Defined by FNET */
 #endif
 
 #ifndef FAPP_CFG_PARAMS_MAC_ADDR
@@ -328,6 +328,20 @@
 *************************************************************************/
 #ifndef FAPP_CFG_DNS_CMD
     #define FAPP_CFG_DNS_CMD            (0)
+#endif
+
+/************************************************************************
+*    "bind" command.
+*************************************************************************/
+#ifndef FAPP_CFG_BIND_CMD
+    #define FAPP_CFG_BIND_CMD           (0)
+#endif
+
+/************************************************************************
+*    "unbind" command.
+*************************************************************************/
+#ifndef FAPP_CFG_UNBIND_CMD
+    #define FAPP_CFG_UNBIND_CMD         (0)
 #endif
 
 /************************************************************************

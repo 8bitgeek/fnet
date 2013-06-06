@@ -51,21 +51,11 @@
 
 #define _FNET_STACK_CONFIG_H_
 
-/*! @addtogroup fnet_stack_config */
+/*****************************************************************************
+*     IP6-specific parameters.
+******************************************************************************/
+/*! @addtogroup fnet_platform_stack_ip6_config  */
 /*! @{ */
-
-/**************************************************************************/ /*!
- * @def     FNET_CFG_IP4
- * @brief   IPv4 protocol support:
- *               - @b @c 1 = is enabled (Default value).
- *               - @c 0 = is disabled.@n
- * 
- * @see FNET_CFG_IP6
- * @showinitializer 
- ******************************************************************************/
-#ifndef FNET_CFG_IP4
-    #define FNET_CFG_IP4                    (1)
-#endif
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_IP6
@@ -77,23 +67,8 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_IP6
-    #define FNET_CFG_IP6                    (0)
+    #define FNET_CFG_IP6                        (0)
 #endif
-
-
-#if !FNET_CFG_IP4 && !FNET_CFG_IP6
-    #error "Please enable IPv4 or/and IPv6, by FNET_CFG_IP4 or/and FNET_CFG_IP6."
-#endif
-/*! @} */
-
-
-
-/*****************************************************************************
-*     IP6-specific parameters.
-******************************************************************************/
-/*! @addtogroup fnet_platform_stack_ip6_config  */
-/*! @{ */
-
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE
@@ -196,6 +171,166 @@
  
 /*! @} */
 
+/*! @addtogroup fnet_platform_stack_ip4_config  */
+/*! @{ */
+
+/**************************************************************************/ /*!
+ * @def     FNET_CFG_IP4
+ * @brief   IPv4 protocol support:
+ *               - @b @c 1 = is enabled (Default value).
+ *               - @c 0 = is disabled.@n
+ * 
+ * @see FNET_CFG_IP6
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_IP4
+    #define FNET_CFG_IP4                        (1)
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_IP4_FRAGMENTATION
+ * @brief    IP fragmentation:
+ *               - @c 1 = is enabled. The IP will attempt
+ *                        to reassemble the IP packet fragments and will be able to
+ *                        generate fragmented IP packets.
+ *               - @b @c 0 = is disabled (Default value). The IP will
+ *                        silently discard the fragmented IP packets..
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_IP4_FRAGMENTATION
+    #define FNET_CFG_IP4_FRAGMENTATION          (0)
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_ETH0_IP4_ADDR
+ * @brief    Defines the default IP address for the Ethernet-0 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_addr().
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_ETH0_IP4_ADDR
+    #define FNET_CFG_ETH0_IP4_ADDR        (FNET_IP4_ADDR_INIT(192, 168, 0, 20))
+#endif
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_ETH0_IP4_MASK
+ * @brief    Defines the default IP Subnetmask for the Ethernet-0 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_subnet_mask().
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_ETH0_IP4_MASK
+    #define FNET_CFG_ETH0_IP4_MASK        (FNET_IP4_ADDR_INIT(255, 255, 255, 0))
+#endif
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_ETH0_IP4_GW
+ * @brief    Defines the default Gateway IP address for the Ethernet-0 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_gateway().
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_ETH0_IP4_GW
+    #define FNET_CFG_ETH0_IP4_GW          (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_ETH0_IP4_DNS
+ * @brief    Defines the default DNS IP address for the Ethernet-0 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_dns().
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_ETH0_IP4_DNS
+    #define FNET_CFG_ETH0_IP4_DNS        (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_ETH1_IP4_ADDR
+ * @brief    Defines the default IP address for the Ethernet-1 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_addr().
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_ETH1_IP4_ADDR
+    #define FNET_CFG_ETH1_IP4_ADDR        (FNET_IP4_ADDR_INIT(192, 168, 0, 21))
+#endif
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_ETH1_IP4_MASK
+ * @brief    Defines the default IP Subnetmask for the Ethernet-1 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_subnet_mask().
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FNET_CFG_ETH1_IP4_MASK
+    #define FNET_CFG_ETH1_IP4_MASK        (FNET_IP4_ADDR_INIT(255, 255, 255, 0))
+#endif
+    
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_ETH1_IP4_GW
+ * @brief    Defines the default Gateway IP address for the Ethernet-1 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_gateway().
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_ETH1_IP4_GW
+    #define FNET_CFG_ETH1_IP4_GW          (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_ETH1_IP4_DNS
+ * @brief    Defines the default DNS IP address for the Ethernet-1 interface.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_dns().
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_ETH1_IP4_DNS
+    #define FNET_CFG_ETH1_IP4_DNS        (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+#endif
+
+
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_LOOPBACK_IP4_ADDR
+ * @brief    Defines the IP address for the Loopback interface.
+ *           By default it is set to 127.0.0.1.
+ *           At runtime, it can be changed by @ref fnet_netif_set_ip4_addr().
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_LOOPBACK_IP4_ADDR
+    #define FNET_CFG_LOOPBACK_IP4_ADDR   (FNET_IP4_ADDR_INIT(127, 0, 0, 1))
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_IGMP
+ * @brief    Internet Group Management Protocol (IGMP) support:
+ *               - @c 1 = is enabled. It sets @ref FNET_CFG_MULTICAST to 1 automatically.
+ *               - @b @c 0 = is disabled (Default value).@n
+ * @see FNET_CFG_IGMP_VERSION
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_IGMP
+    #define FNET_CFG_IGMP                   (0)
+#endif
+
+#if FNET_CFG_IGMP
+    /* IGMP requires IPv4 multicast support.*/
+    #undef FNET_CFG_MULTICAST
+    #define  FNET_CFG_MULTICAST             (1)
+#endif
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_IGMP_VERSION
+ * @brief    Internet Group Management Protocol (IGMP) version:
+ *               - @c 1 = IGMPv1 - RFC1112.
+ *               - @b @c 2 = IGMPv2 - RFC2236 (Default value).@n
+ * @see FNET_CFG_IGMP 
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_IGMP_VERSION
+    #define FNET_CFG_IGMP_VERSION           (2)
+#endif
+
+#if (FNET_CFG_IGMP_VERSION < 1) || (FNET_CFG_IGMP_VERSION > 2)
+    #error "FNET_CFG_IGMP_VERSION must be set to 1 or to 2"
+#endif
+
+
+/*! @} */
+
 /*! @addtogroup fnet_stack_config */
 /*! @{ */
 
@@ -216,85 +351,6 @@
 #ifndef FNET_CFG_TCP
     #define FNET_CFG_TCP                    (1)
 #endif
-
-
-/****************************************************************************
- * Supported Data-link Interfaces.
- ****************************************************************************/
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_ETH
- * @brief    Ethernet interface:
- *               - @b @c 1 = is enabled (Default value).
- *               - @c 0 = is disabled.
- * @showinitializer
- ******************************************************************************/
-#ifndef FNET_CFG_ETH
-    #define FNET_CFG_ETH                    (1)
-#endif
-
-#if FNET_CFG_ETH || defined(__DOXYGEN__)
-/**************************************************************************/ /*!
- * @def      FNET_CFG_ETH_IP4_ADDR
- * @brief    Defines the default IP address for the Ethernet interface.
- *           At runtime, it can be changed by @ref fnet_netif_set_ip4_addr().
- * @showinitializer
- ******************************************************************************/
-    #ifndef FNET_CFG_ETH_IP4_ADDR
-        #define FNET_CFG_ETH_IP4_ADDR        (FNET_IP4_ADDR_INIT(192, 168, 0, 100))
-    #endif
-    
-/**************************************************************************/ /*!
- * @def      FNET_CFG_ETH_IP4_MASK
- * @brief    Defines the default IP Subnetmask for the Ethernet interface.
- *           At runtime, it can be changed by @ref fnet_netif_set_ip4_subnet_mask().
- * @showinitializer
- ******************************************************************************/
-    #ifndef FNET_CFG_ETH_IP4_MASK
-        #define FNET_CFG_ETH_IP4_MASK        (FNET_IP4_ADDR_INIT(255, 255, 255, 0))
-    #endif
-    
-/**************************************************************************/ /*!
- * @def      FNET_CFG_ETH_IP4_GW
- * @brief    Defines the default Gateway IP address for the Ethernet interface.
- *           At runtime, it can be changed by @ref fnet_netif_set_ip4_gateway().
- * @showinitializer 
- ******************************************************************************/
-    #ifndef FNET_CFG_ETH_IP4_GW
-        #define FNET_CFG_ETH_IP4_GW          (FNET_IP4_ADDR_INIT(192, 168, 0, 1))
-    #endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_ETH_IP4_DNS
- * @brief    Defines the default DNS IP address for the Ethernet interface.
- *           At runtime, it can be changed by @ref fnet_netif_set_ip4_dns().
- * @showinitializer 
- ******************************************************************************/
-    #ifndef FNET_CFG_ETH_IP4_DNS
-        #define FNET_CFG_ETH_IP4_DNS        (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
-    #endif
-    
-/**************************************************************************/ /*!
- * @def      FNET_CFG_ETH_MAC_ADDR
- * @brief    Defines the default MAC address of the Ethernet interface.
- *           At runtime, it can be changed by @ref fnet_netif_set_hw_addr().
- * @showinitializer
- ******************************************************************************/
-    #ifndef FNET_CFG_ETH_MAC_ADDR
-        #define FNET_CFG_ETH_MAC_ADDR       ("00:04:9F:" __TIME__)
-    #endif
-    
-/**************************************************************************/ /*!
- * @def      FNET_CFG_ETH_MTU
- * @brief    Defines the Maximum Transmission Unit for the Ethernet interface.
- *           The largest value is 1500. The Internet Minimum MTU is 576.
- * @showinitializer 
- ******************************************************************************/
-    #ifndef FNET_CFG_ETH_MTU
-        #define FNET_CFG_ETH_MTU            (1500)
-    #endif
-    
-#endif /* FNET_CFG_ETH */
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_LOOPBACK
@@ -336,19 +392,6 @@
 #ifndef FNET_CFG_LOOPBACK_BROADCAST
     #define FNET_CFG_LOOPBACK_BROADCAST     (0)
 #endif
-
-
-#if FNET_CFG_LOOPBACK || defined(__DOXYGEN__)
-/**************************************************************************/ /*!
- * @def      FNET_CFG_LOOPBACK_IP4_ADDR
- * @brief    Defines the IP address for the Loopback interface.
- *           By default it is set to 127.0.0.1.
- *           At runtime, it can be changed by @ref fnet_netif_set_ip4_addr().
- * @showinitializer 
- ******************************************************************************/
-    #ifndef FNET_CFG_LOOPBACK_IP4_ADDR
-        #define FNET_CFG_LOOPBACK_IP4_ADDR   (FNET_IP4_ADDR_INIT(127, 0, 0, 1))
-    #endif
     
 /**************************************************************************/ /*!
  * @def      FNET_CFG_LOOPBACK_MTU
@@ -356,33 +399,28 @@
  *           By default, it is set to 1576.
  * @showinitializer 
  ******************************************************************************/
-    #ifndef FNET_CFG_LOOPBACK_MTU
-        #define FNET_CFG_LOOPBACK_MTU           (1576)
-    #endif
-    
-#endif /* FNET_CFG_LOOPBACK */
-
-
-/*****************************************************************************
- * Default Network Interface.
- *****************************************************************************/
-#if FNET_CFG_ETH
-
-    #define FNET_DEFAULT_IF             (FNET_ETH_IF)
-    #define FNET_DEFAULT_IF_MTU         (FNET_CFG_ETH_MTU)
-
-#elif FNET_CFG_LOOPBACK
-
-    #define FNET_DEFAULT_IF             (FNET_LOOP_IF)
-    #define FNET_DEFAULT_IF_MTU         (FNET_CFG_LOOPBACK_MTU)
-
-#else
-
-    #define FNET_DEFAULT_IF             (0)
-    #define FNET_DEFAULT_IF_MTU         (0)
-
+#ifndef FNET_CFG_LOOPBACK_MTU
+    #define FNET_CFG_LOOPBACK_MTU           (1576)
 #endif
 
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_DEFAULT_IF
+ * @brief    Descriptor of a default network interface set during stack initialisation.@n
+ *           For example, it can be set to FNET_ETH0_IF, FNET_ETH1_IF or FNET_LOOP_IF. @n
+ *           During run time it can be changed by ref@ fnet_netif_set_default().
+ * @see fnet_netif_get_default(), net_netif_set_default()           
+ ******************************************************************************/
+#ifndef FNET_CFG_DEFAULT_IF
+	#if FNET_CFG_CPU_ETH0
+		#define FNET_CFG_DEFAULT_IF             (FNET_ETH0_IF)
+	#elif FNET_CFG_CPU_ETH1
+		#define FNET_CFG_DEFAULT_IF             (FNET_ETH1_IF)
+	#elif FNET_CFG_LOOPBACK
+		#define FNET_CFG_DEFAULT_IF             (FNET_LOOP_IF)
+	#else
+		#define FNET_CFG_DEFAULT_IF             ((fnet_netif_desc_t)FNET_NULL)
+	#endif
+#endif
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_MULTICAST
@@ -426,42 +464,8 @@
 #endif
 
 /**************************************************************************/ /*!
- * @def      FNET_CFG_IGMP
- * @brief    Internet Group Management Protocol (IGMP) support:
- *               - @c 1 = is enabled. It sets @ref FNET_CFG_MULTICAST to 1 automatically.
- *               - @b @c 0 = is disabled (Default value).@n
- * @see FNET_CFG_IGMP_VERSION
- * @showinitializer 
- ******************************************************************************/
-#ifndef FNET_CFG_IGMP
-    #define FNET_CFG_IGMP                   (0)
-#endif
-
-#if FNET_CFG_IGMP
-    /* IGMP requires IPv4 multicast support.*/
-    #undef FNET_CFG_MULTICAST
-    #define  FNET_CFG_MULTICAST             (1)
-#endif
-
-/**************************************************************************/ /*!
- * @def      FNET_CFG_IGMP_VERSION
- * @brief    Internet Group Management Protocol (IGMP) version:
- *               - @c 1 = IGMPv1 - RFC1112.
- *               - @b @c 2 = IGMPv2 - RFC2236 (Default value).@n
- * @see FNET_CFG_IGMP 
- * @showinitializer 
- ******************************************************************************/
-#ifndef FNET_CFG_IGMP_VERSION
-    #define FNET_CFG_IGMP_VERSION           (2)
-#endif
-
-#if (FNET_CFG_IGMP_VERSION < 1) || (FNET_CFG_IGMP_VERSION > 2)
-    #error "FNET_CFG_IGMP_VERSION must be set to 1 or to 2"
-#endif
-
-/**************************************************************************/ /*!
  * @def      FNET_CFG_DNS
- * @brief    DNS address support, by network interface:
+ * @brief    DNS IPv4 address support, by network interface:
  *               - @c 1 = is enabled.
  *               - @b @c 0 = is disabled (Default value).@n
  * @showinitializer 
@@ -536,19 +540,6 @@
     #define FNET_CFG_RAW                        (0)
 #endif
 
-/**************************************************************************/ /*!
- * @def      FNET_CFG_IP4_FRAGMENTATION
- * @brief    IP fragmentation:
- *               - @c 1 = is enabled. The IP will attempt
- *                        to reassemble the IP packet fragments and will be able to
- *                        generate fragmented IP packets.
- *               - @b @c 0 = is disabled (Default value). The IP will
- *                        silently discard the fragmented IP packets..
- * @showinitializer 
- ******************************************************************************/
-#ifndef FNET_CFG_IP4_FRAGMENTATION
-    #define FNET_CFG_IP4_FRAGMENTATION          (0)
-#endif
 
 /*****************************************************************************
 * 	TCP/IP stack parameters.
@@ -577,23 +568,23 @@
 /**************************************************************************/ /*!
  * @def      FNET_CFG_SOCKET_TCP_MSS
  * @brief    The default value of the @ref TCP_MSS option 
- *           (TCP Maximum Segment Size).@n
- * The TCP Maximum Segment Size (MSS) defines the maximum amount 
- * of data that a host is willing to accept in a single TCP segment.@n
- * This Maximum Segment Size (MSS) announcement is sent from the
- * data receiver to the data sender and says "I can accept TCP segments
- * up to size X". The size (X) may be larger or smaller than the
- * default.@n
- * The MSS counts only data octets in the segment, it does not count the
- * TCP header or the IP header.@n
- * This option can be set to:
- *     - @b @c 0 = This is the default value. The selection of the MSS is 
+ *           (TCP Maximum Segment Size).
+ *      The TCP Maximum Segment Size (MSS) defines the maximum amount 
+ *      of data that a host is willing to accept in a single TCP segment.@n
+ *      This Maximum Segment Size (MSS) announcement is sent from the
+ *      data receiver to the data sender and says "I can accept TCP segments
+ *      up to size X". The size (X) may be larger or smaller than the
+ *      default.@n
+ *      The MSS counts only data octets in the segment, it does not count the
+ *      TCP header or the IP header.@n
+ *      This option can be set to:
+ *          - @b @c 0 = This is the default value. The selection of the MSS is 
  *              automatic and is based on the MTU of the outgoing 
  *              interface minus 40 (does not include 
  *              the 20 byte IP header and the 20 byte TCP header).@n
  *              It is done to assist in avoiding of IP fragmentation 
  *              at the endpoints of the TCP connection.
- *     - Non-zero value (up to 64K) = The TCP segment could be as large as 64K 
+ *          - Non-zero value (up to 64K) = The TCP segment could be as large as 64K 
  *              (the maximum IP datagram size), but it could be fragmented 
  *              at the IP layer in order to be transmitted 
  *              across the network to the receiving host.
@@ -690,6 +681,12 @@
 #ifndef FNET_CFG_OVERLOAD_MEMCPY
     #define FNET_CFG_OVERLOAD_MEMCPY            (0)
 #endif
+
+/* IPv4 and/or IPv6 must enaqbled.*/
+#if !FNET_CFG_IP4 && !FNET_CFG_IP6
+    #error "Please enable IPv4 or/and IPv6, by FNET_CFG_IP4 or/and FNET_CFG_IP6."
+#endif
+
 
 /*****************************************************************************
  * DEBUGING INFO OUTPUT
@@ -848,6 +845,33 @@
     #undef  FNET_CFG_DEBUG_TRACE_TCP
     #define FNET_CFG_DEBUG_TRACE_TCP    (0)    
 #endif
+
+
+/******************************************************************************
+ * Obsolete configuration parameters
+ ******************************************************************************/
+#ifdef FNET_CFG_ETH_IP4_ADDR  
+	#error "FNET_CFG_ETH_IP4_ADDR parameter is obsolete, use FNET_CFG_ETH0_IP4_ADDR ."
+#endif
+#ifdef FNET_CFG_ETH_IP4_MASK  
+	#error "FNET_CFG_ETH_IP4_MASK parameter is obsolete, use FNET_CFG_ETH0_IP4_MASK ."
+#endif
+#ifdef FNET_CFG_ETH_IP4_GW  
+	#error "FNET_CFG_ETH_IP4_GW parameter is obsolete, use FNET_CFG_ETH0_IP4_GW ."
+#endif
+#ifdef FNET_CFG_ETH_IP4_DNS  
+	#error "FNET_CFG_ETH_IP4_DNS parameter is obsolete, use FNET_CFG_ETH0_IP4_DNS ."
+#endif
+#ifdef FNET_CFG_ETH  
+	#error "FNET_CFG_ETH parameter is obsolete, use FNET_CFG_CPU_ETH0 ."
+#endif
+#ifdef FNET_CFG_ETH_MAC_ADDR  
+	#error "FNET_CFG_ETH_MAC_ADDR parameter is obsolete, use FNET_CFG_CPU_ETH0_MAC_ADDR ."
+#endif
+#ifdef FNET_CFG_ETH_MTU  
+	#error "FNET_CFG_ETH_MTU parameter is obsolete, use FNET_CFG_CPU_ETH0_MTU ."
+#endif
+
 
 
 /**************************************************************************/ /*!

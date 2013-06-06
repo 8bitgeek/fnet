@@ -1,5 +1,6 @@
 /**************************************************************************
 * 
+* Copyright 2012-2013 by Andrey Butok. FNET Community.
 * Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -85,7 +86,7 @@ int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority)
             if((div >= 0) && (div < 2)) /* So far only upto 64 irq_number (INTC0). TBD*/
             {
                 /* Set interrupt level.*/
-                FNET_MCF_INTC0_ICRn(irq_number) = (fnet_uint8)FNET_MCF_INTC0_ICRn_IL(priority) | FNET_MCF_INTC0_ICRn_IP(7);
+                FNET_MCF_INTC0_ICR(irq_number) = (fnet_uint8)FNET_MCF_INTC0_ICRn_IL(priority) | FNET_MCF_INTC0_ICRn_IP(7);
                 /* Clear mask all interrupts.*/
                 FNET_MCF_INTC0_IMRL &= ~FNET_MCF_INTC0_IMRL_MASKALL;
                 /* Unmask proper interrupt.*/

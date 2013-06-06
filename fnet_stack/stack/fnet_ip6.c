@@ -147,6 +147,7 @@ const fnet_ip6_if_policy_entry_t fnet_ip6_if_policy_table[] =
 
 
 static fnet_ip_queue_t ip6_queue;
+static fnet_event_desc_t ip6_event;
 
 #if FNET_CFG_IP6_FRAGMENTATION
     static fnet_ip6_frag_list_t *ip6_frag_list_head;
@@ -166,7 +167,7 @@ const fnet_ip6_addr_t fnet_ip6_addr_linklocal_allv2routers = FNET_IP6_ADDR_LINKL
 const fnet_ip6_addr_t fnet_ip6_addr_linklocal_prefix = FNET_IP6_ADDR_LINKLOCAL_PREFIX_INIT;
 
 
-static void fnet_ip6_input_low( void );
+static void fnet_ip6_input_low( void *cookie );
 
 
 /************************************************************************
@@ -176,7 +177,7 @@ static void fnet_ip6_input_low( void );
 *************************************************************************/
 int fnet_ip6_init( void )
 {
-    int result;
+    int result = FNET_ERR;
 
 #if FNET_CFG_IP6_FRAGMENTATION
 
@@ -188,12 +189,13 @@ int fnet_ip6_init( void )
     {
 #endif
         /* Install IPv6 event handler. */
-        result = fnet_event_init(FNET_EVENT_IP6, fnet_ip6_input_low);
+    	ip6_event = fnet_event_init(fnet_ip6_input_low, 0);
+    	
+    	if(ip6_event != FNET_ERR)
+    		result = FNET_OK;
         
 #if FNET_CFG_IP6_FRAGMENTATION
     }
-    else
-         result = FNET_ERR;
 #endif    
     
     return result;
@@ -490,7 +492,7 @@ void fnet_ip6_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
         }
 
         /* Raise IPv6 event.*/
-        fnet_event_raise(FNET_EVENT_IP6);
+        fnet_event_raise(ip6_event);
     }    
 }
 
@@ -499,7 +501,7 @@ void fnet_ip6_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
 *
 * DESCRIPTION: This function performs handling of incoming IPv6 datagrams.
 *************************************************************************/
-static void fnet_ip6_input_low( void )
+static void fnet_ip6_input_low( void *cookie )
 {
     fnet_ip6_header_t   *hdr;
     fnet_netif_t        *netif;
@@ -510,6 +512,8 @@ static void fnet_ip6_input_low( void )
     fnet_ip6_addr_t     *destination_addr;
     unsigned short      payload_length;    
 
+    FNET_COMP_UNUSED_ARG(cookie);    
+    
     fnet_isr_lock();
  
     while((nb = fnet_ip_queue_read(&ip6_queue, &netif)) != 0)

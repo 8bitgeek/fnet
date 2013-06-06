@@ -43,35 +43,68 @@
 ***************************************************************************/
 
 #include "fnet_config.h"
-#if FNET_MCF && FNET_CFG_ETH
+#if FNET_MCF && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 #include "fnet_fec.h"
 #include "fnet_eth_prv.h"
 
 
+#if FNET_CFG_CPU_ETH0
 /************************************************************************
-* Ethernet interface structure.
+* FEC0 interface structure.
 *************************************************************************/
-
 struct fnet_eth_if fnet_mcf_eth0_if =
 {
-    &fnet_fec0_if,
-    fnet_fec_output
+    &fnet_fec0_if
+    ,0                             /* MAC module number.*/
+    ,fnet_fec_output
 #if FNET_CFG_MULTICAST
-    ,      
-    fnet_fec_multicast_join,
-    fnet_fec_multicast_leave,
-#endif /* FNET_CFG_MULTICAST */    
+    ,fnet_fec_multicast_join
+    ,fnet_fec_multicast_leave
+#endif    
 };
-
+/************************************************************************
+* eth0 Interface structure.
+*************************************************************************/
 fnet_netif_t fnet_eth0_if =
 {
-	0,                      /* pointer to the next net_if structure.*/
-	0,                      /* pointer to the previous net_if structure.*/
-	"eth0",                 /* network interface name.*/
-	FNET_CFG_ETH_MTU,       /* maximum transmission unit.*/
-	&fnet_mcf_eth0_if,      /* points to interface specific data structure.*/
+	0,                      /* Pointer to the next net_if structure.*/
+	0,                      /* Pointer to the previous net_if structure.*/
+	"eth0",                 /* Network interface name.*/
+	FNET_CFG_CPU_ETH0_MTU,  /* Maximum transmission unit.*/
+	&fnet_mcf_eth0_if,      /* Points to interface specific data structure.*/
 	&fnet_fec_api           /* Interface API */  
 };
+#endif /*FNET_CFG_CPU_ETH0*/
+
+#if FNET_CFG_CPU_ETH1
+/************************************************************************
+* FEC1 interface structure.
+*************************************************************************/
+struct fnet_eth_if fnet_mcf_eth1_if =
+{
+    &fnet_fec1_if
+    ,1                  	/* MAC module number.*/
+    ,fnet_fec_output
+#if FNET_CFG_MULTICAST
+    ,fnet_fec_multicast_join
+    ,fnet_fec_multicast_leave
+#endif    
+};
+/************************************************************************
+* eth1 Interface structure.
+*************************************************************************/
+fnet_netif_t fnet_eth1_if =
+{
+	0,                      /* Pointer to the next net_if structure.*/
+	0,                      /* Pointer to the previous net_if structure.*/
+	"eth1",                 /* Network interface name.*/
+	FNET_CFG_CPU_ETH1_MTU,  /* Maximum transmission unit.*/
+	&fnet_mcf_eth1_if,      /* Points to interface specific data structure.*/
+	&fnet_fec_api           /* Interface API */  
+};
+#endif /*FNET_CFG_CPU_ETH0*/
+
+
 
 /************************************************************************
 * NAME: fnet_eth_io_init
@@ -136,6 +169,25 @@ void fnet_eth_io_init()
   FNET_MCF_PTBIFE = 0xf4;
   FNET_MCF_PTCIFE = 1;
       
+#endif
+  
+  
+#if FNET_CFG_CPU_MCF54418 /* Modelo */
+       
+	/* FEC Pin Assignment. */
+#if FNET_CFG_CPU_ETH_RMII /* Default, RMII on both MACs */
+	FNET_MCF5441X_GPIO_PAR_FEC = FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_RMII0_RMII1_FULL;
+#else /* In this case only MAC0 works. MAC1 is not functional.*/
+	FNET_MCF5441X_GPIO_PAR_FEC = FNET_MCF5441X_GPIO_PAR_FEC_PAR_FEC_MII_FULL;
+#endif
+	
+	/* Set slew rate to highest, otherwise data will be corrupted (checked on practice).*/
+	FNET_MCF5441X_GPIO_SRCR_FEC = FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII1_SR_HIGHEST | FNET_MCF5441X_GPIO_SRCR_FEC_SRE_RMII0_SR_HIGHEST;
+	
+	/* Needed for RMMI1 */
+    FNET_MCF5441X_GPIO_PDDR_G |= FNET_MCF5441X_GPIO_PDDR_G_PDDR_G4; 	/* Set GPIO4 as output.*/
+    FNET_MCF5441X_GPIO_PODR_G &= ~FNET_MCF5441X_GPIO_PODR_G_PODR_G4; 	/* Clear GPIO4 pin to enable RMMI1 on the QS3VH16233PAG QUICKSWITCH*/
+
 #endif
 
 }
@@ -205,7 +257,7 @@ void fnet_eth_phy_init(fnet_fec_if_t *ethif)
         fnet_uint8 tmp_ptjpar;
         
         fnet_timer_delay(3);
-        /* Workarround for PHY reset */
+        /* Workaround for PHY reset */
         tmp_ptipar = FNET_MCF5225X_GPIO_PTIPAR; /* Save current state */
         tmp_ptjpar = FNET_MCF5225X_GPIO_PTJPAR;	
         FNET_MCF5225X_GPIO_PTIPAR = 0x00;		/* Ethernet signals now GPIO*/

@@ -68,7 +68,7 @@
 
 extern fnet_netif_t fnet_loop_if;
 
-#define FNET_LOOP_IF    (&fnet_loop_if)
+#define FNET_LOOP_IF    ((fnet_netif_desc_t)(&fnet_loop_if))
 
 /************************************************************************
 *     Function Prototypes

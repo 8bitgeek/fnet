@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.40.3.54103</state>
+          <state>6.50.6.4952</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1056,7 +1056,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.40.3.54103</state>
+          <state>6.50.6.4952</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -2163,15 +2163,6 @@
     </group>
     <group>
       <name>os</name>
-      <group>
-        <name>ucosII</name>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\os\ucosII\fnet_ucosII_config.h</name>
-        </file>
-        <file>
-          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\os\ucosII\fnet_ucosII_isr.asm</name>
-        </file>
-      </group>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\fnet_stack\os\fnet_os.h</name>
       </file>

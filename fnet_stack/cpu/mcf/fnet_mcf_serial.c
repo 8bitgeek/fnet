@@ -61,8 +61,7 @@ void fnet_cpu_serial_putchar( long port_number, int character)
 #endif    
 
 #if FNET_CFG_MCF_UART  
-    /* Wait until space is available in the FIFO.
-     */
+    /* Wait until space is available in the FIFO. */
     while(!(FNET_MCF_UART_USR(port_number) & FNET_MCF_UART_USR_TXRDY))
     {};
     /* Send the character */
@@ -75,15 +74,13 @@ void fnet_cpu_serial_putchar( long port_number, int character)
 int fnet_cpu_serial_getchar( long port_number )
 {
 #if FNET_CFG_MCF_SCI /* Lasko */  
-    /* If character received 
-     */
+    /* If character received. */
     if(FNET_MCF_SCI_S1_RDRF(port_number))
         return FNET_MCF_SCI_D(port_number);
 #endif    
 
 #if FNET_CFG_MCF_UART  
-    /* If character received 
-     */
+    /* If character received. */
     if(FNET_MCF_UART_USR(port_number) & FNET_MCF_UART_USR_RXRDY)
         return FNET_MCF_UART_URB(port_number);
 #endif    
@@ -118,42 +115,86 @@ static inline void fnet_cpu_serial_gpio_init(long port_number)
                 | FNET_MCF522XX_GPIO_PUAPAR_URXD0_URXD0
                 | FNET_MCF522XX_GPIO_PUAPAR_UTXD0_UTXD0;
     }
-#endif
+#endif /* FNET_CFG_CPU_MCF52259 || FNET_CFG_CPU_MCF52235 */
+
+#if FNET_CFG_CPU_MCF54418 /* Modelo */
+	/* Set GPIO port register to enable PSC(port) signals */
+	switch( port_number )
+	{
+		default:
+		case 0:
+			FNET_MCF5441X_GPIO_PAR_UART0 = (0
+				| FNET_MCF5441X_GPIO_PAR_UART0_PAR_TXD_U0TXD
+				| FNET_MCF5441X_GPIO_PAR_UART0_PAR_RXD_U0RXD);
+			FNET_MCF_PMM_PPMLR0 &= ~(FNET_MCF_PMM_PPMLR0_CD24);	/* Enable clock */
+	    	break;
+		case 1:
+			FNET_MCF5441X_GPIO_PAR_UART1 = (0
+				| FNET_MCF5441X_GPIO_PAR_UART1_PAR_TXD_U1TXD
+				| FNET_MCF5441X_GPIO_PAR_UART1_PAR_RXD_U1RXD);
+			FNET_MCF_PMM_PPMLR0 &= ~(FNET_MCF_PMM_PPMLR0_CD25);	/* Enable clock */
+			break;
+		case 2:
+			FNET_MCF5441X_GPIO_PAR_UART2 = (0
+				| FNET_MCF5441X_GPIO_PAR_UART2_PAR_TXD_U2TXD
+				| FNET_MCF5441X_GPIO_PAR_UART2_PAR_RXD_U2RXD);
+			FNET_MCF_PMM_PPMLR0 &= ~(FNET_MCF_PMM_PPMLR0_CD26);	/* Enable clock */
+			break;
+		case 3:
+			FNET_MCF5441X_GPIO_PAR_DSPIOWH = (0
+				| FNET_MCF5441X_GPIO_PAR_DSPIOWH_PAR_SOUT_U3TXD
+				| FNET_MCF5441X_GPIO_PAR_DSPIOWH_PAR_SIN_U3RXD);
+			FNET_MCF_PMM_PPMLR0 &= ~(FNET_MCF_PMM_PPMLR0_CD27);	/* Enable clock */
+			break;		
+		case 4:
+			FNET_MCF5441X_GPIO_PAR_UART0 = (0
+				| FNET_MCF5441X_GPIO_PAR_UART0_PAR_CTS_U4TXD
+				| FNET_MCF5441X_GPIO_PAR_UART0_PAR_RTS_U4RXD);
+			FNET_MCF_PMM_PPMLR1 &= ~(FNET_MCF_PMM_PPMLR1_CD24);	/* Enable clock */
+			break;	
+		case 5:
+			FNET_MCF5441X_GPIO_PAR_UART1 = (0
+				| FNET_MCF5441X_GPIO_PAR_UART1_PAR_CTS_U5TXD
+				| FNET_MCF5441X_GPIO_PAR_UART1_PAR_RTS_U5RXD);
+			FNET_MCF_PMM_PPMLR1 &= ~(FNET_MCF_PMM_PPMLR1_CD25);	/* Enable clock */
+			break;	
+		case 6:
+			FNET_MCF5441X_GPIO_PAR_UART2 = (0
+				| FNET_MCF5441X_GPIO_PAR_UART2_PAR_CTS_U6TXD
+				| FNET_MCF5441X_GPIO_PAR_UART2_PAR_RTS_U6RXD);
+			FNET_MCF_PMM_PPMLR1 &= ~(FNET_MCF_PMM_PPMLR1_CD26);	/* Enable clock */
+			break;			
+	}
+#endif	/* FNET_CFG_CPU_MCF54418 */
+	
     
 #if FNET_CFG_MCF_SCI /* V1 Lasco */  
        
     switch (port_number)
     {
         case 2:  /* Not tested.*/
-            /* Enable pins 
-            */
+            /* Enable pins. */
             FNET_MCF_PTEPF1_E6 = 3;
             FNET_MCF_PTEPF1_E7 = 3;    
 
-            /* Enable bus clock to the SCI3 module.
-            */
+            /* Enable bus clock to the SCI3 module.*/
             FNET_MCF_SCGC2_SCI3 = 1;
             break;
         default:
         /* case 1: */
-            /* Enable pins 
-            */
+            /* Enable pins. */
             FNET_MCF_PTDPF2_D2 = 2;
             FNET_MCF_PTDPF2_D3 = 2;  
 
-            /* eNABLE bus clock to the SCI2 module.
-            */
+            /* eNABLE bus clock to the SCI2 module.*/
             FNET_MCF_SCGC1_SCI2 = 1;
-
             break;
         case 0:
-           /* Enable pins 
-            */
+            /* Enable pins. */
             FNET_MCF_PTDPF2_D0 = 0x2;   /* Set PTD0 as TXD1 */
             FNET_MCF_PTDPF2_D1 = 0x2;   /* Set PTD1 as RXD1 */	 
 
-            /* Enable bus clock to the SCI1 module.
-            */
+            /* Enable bus clock to the SCI1 module.*/
             FNET_MCF_SCGC1_SCI1 = 1;
             break;
     }
@@ -162,7 +203,6 @@ static inline void fnet_cpu_serial_gpio_init(long port_number)
     
     (void)port_number;
 }
-
 
 /********************************************************************/
 void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
@@ -177,38 +217,26 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
     
 
 #if FNET_CFG_MCF_UART  
-	/*
-	 * Reset Transmitter
-	 */
+	/* Reset Transmitter. */
 	FNET_MCF_UART_UCR(port_number) = FNET_MCF_UART_UCR_RESET_TX;
 
-	/*
-	 * Reset Receiver
-	 */
+	/* Reset Receiver. */
 	FNET_MCF_UART_UCR(port_number) = FNET_MCF_UART_UCR_RESET_RX;
 
-	/*
-	 * Reset Mode Register
-	 */
+	/* Reset Mode Register. */
 	FNET_MCF_UART_UCR(port_number) = FNET_MCF_UART_UCR_RESET_MR;
 
-	/*
-	 * No parity, 8-bits per character
-	 */
+	/* No parity, 8-bits per character. */
 	FNET_MCF_UART_UMR(port_number) = (0
 		| FNET_MCF_UART_UMR_PM_NONE
 		| FNET_MCF_UART_UMR_BC_8 );
 
-	/*
-	 * No echo or loopback, 1 stop bit
-	 */
+	/* No echo or loopback, 1 stop bit. */
 	FNET_MCF_UART_UMR(port_number) = (0
 		| FNET_MCF_UART_UMR_CM_NORMAL
 		| FNET_MCF_UART_UMR_SB_STOP_BITS_1);
 
-	/*
-	 * Set Rx and Tx baud by SYSTEM CLOCK
-	 */
+	/* Set Rx and Tx baud by SYSTEM CLOCK. */
 	FNET_MCF_UART_UCSR(port_number) = (0
 		| FNET_MCF_UART_UCSR_RCS_SYS_CLK
 		| FNET_MCF_UART_UCSR_TCS_SYS_CLK);
@@ -224,14 +252,14 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
 
 	ubgs = (fnet_uint16)(FNET_CFG_CPU_CLOCK_HZ/(baud_rate * 32));
 
-	FNET_MCF_UART_UBG1(port_number) = (fnet_uint8)((ubgs & 0xFF00) >> 8);
-	FNET_MCF_UART_UBG2(port_number) = (fnet_uint8)(ubgs & 0x00FF);
+	FNET_MCF_UART_UBG1(port_number) = (fnet_uint8)((ubgs >> 8) & 0xFF);
+	FNET_MCF_UART_UBG2(port_number) = (fnet_uint8)(ubgs & 0xFF);
 
 
 	/*
 	 * Enable receiver and transmitter
 	 */
-	FNET_MCF_UART_UCR(port_number) = (0
+	FNET_MCF_UART_UCR(port_number) = (fnet_uint8)(0
 		| FNET_MCF_UART_UCR_TX_ENABLED
 		| FNET_MCF_UART_UCR_RX_ENABLED);
 

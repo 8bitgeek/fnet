@@ -2,7 +2,8 @@
 #define _DOXYGEN_USER_CONFIG_H_
 
 #define FNET_CFG_COMP_CW            (1)
-#define FNET_CFG_CPU_MCF52259       (1)
+#define FNET_CFG_CPU_MCF52259       (0)
+#define FNET_CFG_CPU_MCF54418		(1)
 
 #define FNET_CFG_TCP                (1)
 #define FNET_CFG_TCP_URGENT         (1)
@@ -15,8 +16,10 @@
 #define FNET_CFG_IP4_FRAGMENTATION   (1)
 
 
-#define FNET_CFG_ETH_MTU            (1500)
-
+#define FNET_CFG_CPU_ETH0_MTU       (1500)
+#define FNET_CFG_CPU_ETH1_MTU       (1500)
+#define FNET_CFG_CPU_ETH0_VECTOR_NUMBER     (0)
+#define FNET_CFG_CPU_ETH1_VECTOR_NUMBER     (0)
 
 #define FNET_CFG_DHCP               (1)
 #define FNET_CFG_DHCP_BROADCAST     (1)
@@ -54,7 +57,8 @@
 #define FNET_CFG_CPU_LITTLE_ENDIAN      (1)
 #define FNET_MCF                        (1)
 #define FNET_MK                         (1)
-#define FNET_CFG_ETH                    (1)
+#define FNET_CFG_CPU_ETH0               (1)
+#define FNET_CFG_CPU_ETH1               (1)
 #define FNET_CFG_MULTICAST              (1)
 #define FNET_CFG_PING                   (1)
 #define FNET_CFG_RAW                    (1)

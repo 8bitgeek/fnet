@@ -51,7 +51,7 @@
 
 #define _FNET_SHELL_CONFIG_H_
 
-/*! @addtogroup fnet_services_config */
+/*! @addtogroup fnet_shell_config */
 /*! @{ */
 
 /**************************************************************************/ /*!

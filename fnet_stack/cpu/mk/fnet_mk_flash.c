@@ -46,6 +46,12 @@
 
 #if FNET_MK && FNET_CFG_CPU_FLASH
 
+
+#if (FNET_CFG_CPU_FLASH_PROGRAM_SIZE != 4) && (FNET_CFG_CPU_FLASH_PROGRAM_SIZE != 8)
+    #error "MK Flash driver supports only 4 and 8 size of program-block"
+#endif 
+
+
 /************************************************************************
 * NAME: fnet_ftfl_command_lunch_inram
 *
@@ -76,12 +82,15 @@ void fnet_ftfl_command_lunch_inram(void)
 *
 * DESCRIPTION: FTFL command 
 ************************************************************************/
-static void fnet_ftfl_command( unsigned char command, unsigned long *address, unsigned long data )
+static void fnet_ftfl_command( unsigned char command, unsigned long *address, unsigned char *data )
 {
     fnet_cpu_irq_desc_t irq_desc;
     
-    #if 1 /* This problem exists in first-released-version product (mask set: 0M33Z). */
-  
+    #if FNET_CFG_CPU_MK60N512 /* This problem exists in first-released-version product (mask set: 0M33Z). */
+        
+    	fnet_uint32 fmc_pfb0cr_reg = FNET_MK_FMC_PFB0CR;
+    	fnet_uint32 fmc_pfb1cr_reg = FNET_MK_FMC_PFB1CR;
+        
         /* Workaround:  Allow pflash_only or pflash_only with pflash_swap 
          * configurations but disable speculation when in these configurations 
          * (via programming PFB0CR and PFB1CR's [2:1] bits to 2'h0."*/
@@ -127,8 +136,6 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, un
             FNET_MK_FMC_PFB0CR &= 0xFFFFFFEF; /* Data Cache disable. */
             FNET_MK_FMC_PFB1CR &= 0xFFFFFFEF; /* Data Cache disable. */
           #endif
-    #else
-        
     #endif
       
     irq_desc = fnet_cpu_irq_disable();
@@ -156,13 +163,28 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, un
     FNET_MK_FTFL_FCCOB2 = (fnet_uint8)(((fnet_uint32)address) >> 8);    /* Flash address [15:8] */
     FNET_MK_FTFL_FCCOB3 = (fnet_uint8)((fnet_uint32)address);           /* Flash address [7:0] */
     /* Data.*/
-    FNET_MK_FTFL_FCCOB4 = (fnet_uint8)(data >> 24);    /* Data Byte 0.*/                       
-    FNET_MK_FTFL_FCCOB5 = (fnet_uint8)(data >> 16);    /* Data Byte 1.*/
-    FNET_MK_FTFL_FCCOB6 = (fnet_uint8)(data >> 8);     /* Data Byte 2.*/
-    FNET_MK_FTFL_FCCOB7 = (fnet_uint8)(data);          /* Data Byte 3.*/
+
+    FNET_MK_FTFL_FCCOB4 = (fnet_uint8)(*(data+3));    /* Data Byte 0.*/                       
+    FNET_MK_FTFL_FCCOB5 = (fnet_uint8)(*(data+2));    /* Data Byte 1.*/
+    FNET_MK_FTFL_FCCOB6 = (fnet_uint8)(*(data+1));    /* Data Byte 2.*/
+    FNET_MK_FTFL_FCCOB7 = (fnet_uint8)(*data);        /* Data Byte 3.*/
+#if FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 8 /* K70 */
+	if(command == FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PHRASE)
+	{
+    	FNET_MK_FTFL_FCCOB8 = (fnet_uint8)(*(data+7));                   
+    	FNET_MK_FTFL_FCCOB9 = (fnet_uint8)(*(data+6));    
+    	FNET_MK_FTFL_FCCOBA = (fnet_uint8)(*(data+5));     
+    	FNET_MK_FTFL_FCCOBB = (fnet_uint8)(*(data+4));  
+	}
+#endif
 
     fnet_ftfl_command_lunch_inram();
 
+#if FNET_CFG_CPU_MK60N512 /* Restore FMC registers.*/
+    FNET_MK_FMC_PFB0CR = fmc_pfb0cr_reg;
+    FNET_MK_FMC_PFB1CR = fmc_pfb1cr_reg;
+#endif
+    
     fnet_cpu_irq_enable(irq_desc);
 }
 
@@ -181,9 +203,13 @@ void fnet_cpu_flash_erase( void *flash_page_addr)
 *
 * DESCRIPTION:
 ************************************************************************/
-void fnet_cpu_flash_write( unsigned long *dest, unsigned long data)
+void fnet_cpu_flash_write( unsigned char *dest, unsigned char *data)
 {
-    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_LONGWORD, dest, data);
+#if FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 4 /* K60 */
+    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_LONGWORD, (unsigned long *)dest, data);
+#else /* FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 8 K70 */
+    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PHRASE, (unsigned long *)dest, data);
+#endif
 }
 
 

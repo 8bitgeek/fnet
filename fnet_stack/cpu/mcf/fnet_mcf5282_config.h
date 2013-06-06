@@ -1,5 +1,6 @@
 /**************************************************************************
 * 
+* Copyright 2012-2013 by Andrey Butok. FNET Community.
 * Copyright 2005-2009 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -21,10 +22,6 @@
 *
 * @file fnet_mcf5282_config.h
 *
-* @date Mar-25-2013
-*
-* @version 0.1.12.0
-*
 * @brief MCF528x specific configuration file.
 *
 ***************************************************************************/
@@ -37,36 +34,39 @@
 
 #define _FNET_MCF528X_CONFIG_H_
 
-#define FNET_MCF                        (1)
+#define FNET_MCF                        	(1)
 
 /* Size of the internal static heap buffer. */
 #ifndef FNET_CFG_HEAP_SIZE
-#define FNET_CFG_HEAP_SIZE              (31 * 1024)
+	#define FNET_CFG_HEAP_SIZE              (30 * 1024)
 #endif
 
 /* The platform has ColdFire Flash Module.*/
-#define FNET_CFG_CPU_FLASH              (1)
+#define FNET_CFG_CPU_FLASH              	(1)
 
-#define FNET_CFG_CPU_FLASH_PAGE_SIZE    (2*1024)
+#define FNET_CFG_CPU_FLASH_PAGE_SIZE    	(2*1024)
 
 /* Default system bus frequency in Hz */
 #ifndef FNET_CFG_CPU_CLOCK_HZ
-#define FNET_CFG_CPU_CLOCK_HZ           (64000000)
+	#define FNET_CFG_CPU_CLOCK_HZ           (64000000)
 #endif
+
+/* The platform does not have second Ethernet Module.*/
+#define FNET_CFG_CPU_ETH1        			(0)
 
 /* Defines the maximum number of incoming frames that may 
  *           be buffered by the Ethernet module.*/
 #ifndef FNET_CFG_CPU_ETH_RX_BUFS_MAX
-#define FNET_CFG_CPU_ETH_RX_BUFS_MAX    (4)
+	#define FNET_CFG_CPU_ETH_RX_BUFS_MAX    (4)
 #endif
 
 /* There is cache. */
-#define FNET_CFG_CPU_CACHE              (1)
+#define FNET_CFG_CPU_CACHE              	(1)
 
 /* Flash size.*/
-#define FNET_CFG_CPU_FLASH_SIZE         (1024 * 512)    /* 512 KB */
+#define FNET_CFG_CPU_FLASH_SIZE         	(1024 * 512)    /* 512 KB */
 
 /* SRAM size.*/
-#define FNET_CFG_CPU_SRAM_SIZE          (1024 * 64)     /* 64 KB */  
+#define FNET_CFG_CPU_SRAM_SIZE          	(1024 * 64)     /* 64 KB */  
 
 #endif

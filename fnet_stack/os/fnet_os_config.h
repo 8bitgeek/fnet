@@ -35,12 +35,8 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.10.0
-*
 * @brief Default OS-specific configuration. @n
-* Experental. Not supported.
+*        Experimental. Not supported.
 *
 ***************************************************************************/
 
@@ -69,7 +65,7 @@
  * @brief    This is the set of the @c FNET_CFG_OS_[operation_system_type] definitions that 
  *           define a currently used operation system. @n
  *           Current version of the FNET supports the following OS definitions:
- *            - @c FNET_CFG_OS_UCOSII   = Used OS is the uCOS-II.
+ *            - @c FNET_CFG_OS_UCOSIII  = Used OS is the uCOS-III.
  *            - @c FNET_CFG_OS_BRTOS    = Used OS is the BRTOS (http://code.google.com/p/brtos/).
  *            - @c FNET_CFG_OS_FREERTOS = Used OS is the FreeRTOS. 
  *            @n @n
@@ -82,22 +78,26 @@
 #if FNET_CFG_OS
 
 	/*-----------*/
-	#ifndef FNET_CFG_OS_UCOSII
-		#define FNET_CFG_OS_UCOSII  (0)
+	#ifndef FNET_CFG_OS_UCOSIII
+		#define FNET_CFG_OS_UCOSIII  (0)
 	#endif    
 
 	#ifndef FNET_CFG_OS_BRTOS
-		#define FNET_CFG_OS_BRTOS   (0)
+		#define FNET_CFG_OS_BRTOS    (0)
 	#endif 
+	
+	#ifndef FNET_CFG_OS_FREERTOS
+		#define FNET_CFG_OS_FREERTOS (0)
+	#endif	
 
 	/*-----------*/
-    #if FNET_CFG_OS_UCOSII /* uCOS-II */
+    #if FNET_CFG_OS_UCOSIII /* uCOS-III */
         #ifdef FNET_OS_STR
             #error "More than one OS selected FNET_OS_XXXX"
         #endif
 	   
-        #include "fnet_ucosII_config.h"
-        #define FNET_OS_STR    "uCOS-II"
+        #include "fnet_ucosIII_config.h"
+        #define FNET_OS_STR    "uCOS-III"
     #endif
     
     #if FNET_CFG_OS_BRTOS /* BRTOS */
@@ -124,11 +124,15 @@
 #ifndef FNET_OS_STR
     #define FNET_OS_STR    "NONE"
     
-    #undef  FNET_CFG_OS_UCOSII
-    #define FNET_CFG_OS_UCOSII      (0)
+    #undef  FNET_CFG_OS_UCOSIII
+    #define FNET_CFG_OS_UCOSIII     (0)
 
     #undef  FNET_CFG_OS_BRTOS
-    #define FNET_CFG_OS_BRTOS       (0)    
+    #define FNET_CFG_OS_BRTOS       (0)  
+
+    #undef  FNET_CFG_OS_FREERTOS
+    #define FNET_CFG_OS_FREERTOS    (0)
+
 #endif
 
 /**************************************************************************/ /*!
@@ -163,6 +167,17 @@
 	#define FNET_CFG_OS_EVENT   (0)
 #endif
 
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_OS_TIMER
+ * @brief    OS-specific timer initialization/release:
+ *               - @c 1 = is enabled.@n
+ *                        The fnet_os_timer_init() initialization is called instead of fnet_cpu_timer_init(),
+ *                        and fnet_os_timer_relaese() is called instead of fnet_cpu_timer_release() .
+ *               - @b @c 0 = is disabled (Default value). 
+ ******************************************************************************/
+#ifndef FNET_CFG_OS_TIMER
+	#define FNET_CFG_OS_TIMER   (0)
+#endif
 
 /*! @} */
 
