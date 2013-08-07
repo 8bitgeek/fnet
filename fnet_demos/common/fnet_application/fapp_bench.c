@@ -114,7 +114,7 @@ struct fapp_bench_tx_params
 *************************************************************************/
 static void fapp_bench_print_results (fnet_shell_desc_t desc);
 static void fapp_bench_tcp_rx (fnet_shell_desc_t desc, fnet_address_family_t family);
-static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t family, fnet_ip4_addr_t multicast_address);
+static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t family, struct sockaddr *multicast_address /* optional, set to 0*/);
 static void fapp_bench_tcp_tx (struct fapp_bench_tx_params *params);
 static void fapp_bench_udp_tx (struct fapp_bench_tx_params *params);
 
@@ -293,7 +293,7 @@ ERROR_1:
 *
 * DESCRIPTION: Start Benchmark UDP server. 
 ************************************************************************/
-static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t family, fnet_ip4_addr_t multicast_address /* optional, set to 0*/)
+static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t family, struct sockaddr *multicast_address /* optional, set to 0*/)
 {
 	struct sockaddr         local_addr;
 	const unsigned long     bufsize_option = FAPP_BENCH_SOCKET_BUF_SIZE;
@@ -339,17 +339,39 @@ static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t fam
     /* Join multicast group, if set. */
     if(multicast_address)
     {
-        struct ip_mreq mreq; /* Multicast group information.*/
-        
-        mreq.imr_multiaddr.s_addr = multicast_address;
-        mreq.imr_interface.s_addr = FNET_HTONL(INADDR_ANY); /* Default Interface.*/
-        
-        /* Join multicast group. */
-        if(setsockopt(fapp_bench.socket_listen, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) == SOCKET_ERROR) 
-	    {
-        	FNET_DEBUG("BENCH: Joining to multicast group is failed.\n");
-            goto ERROR_2;		
+    
+    #if FNET_CFG_IP4
+        if(multicast_address->sa_family == AF_INET)
+        {
+            struct ip_mreq mreq; /* Multicast group information.*/
+            
+            mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)multicast_address)->sin_addr.s_addr;
+            mreq.imr_interface.s_addr = FNET_HTONL(INADDR_ANY); /* Default Interface.*/
+            
+            /* Join multicast group. */
+            if(setsockopt(fapp_bench.socket_listen, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) == SOCKET_ERROR) 
+    	    {
+            	FNET_DEBUG("BENCH: Joining to multicast group is failed.\n");
+                goto ERROR_2;		
+        	}
     	}
+    #endif
+    #if FNET_CFG_IP6
+        if(multicast_address->sa_family == AF_INET6)
+        {
+            struct ipv6_mreq mreq6; /* Multicast group information.*/
+            
+            FNET_IP6_ADDR_COPY(&((struct sockaddr_in6*)multicast_address)->sin6_addr.s6_addr, &mreq6.ipv6imr_multiaddr.s6_addr);
+            mreq6.ipv6imr_interface = ((struct sockaddr_in6*)multicast_address)->sin6_scope_id;
+            
+            /* Join multicast group. */
+            if(setsockopt(fapp_bench.socket_listen, IPPROTO_IPV6, IPV6_JOIN_GROUP, (char *)&mreq6, sizeof(mreq6)) == SOCKET_ERROR) 
+    	    {
+            	FNET_DEBUG("BENCH: Joining to multicast group is failed.\n");
+                goto ERROR_2;		
+        	}
+        }
+    #endif    	
         
     }
     
@@ -360,7 +382,7 @@ static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t fam
     fapp_netif_addr_print(desc, family, fapp_default_netif, FNET_FALSE);
     if(multicast_address)
     {
-        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Multicast Group", fnet_inet_ntoa(*(struct in_addr *)(&multicast_address), ip_str) );    
+        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Multicast Group", fnet_inet_ntop(multicast_address->sa_family, (char*)(multicast_address->sa_data), ip_str, sizeof(ip_str)) );
     }       
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "Local Port", FNET_NTOHS(FAPP_BENCH_PORT));
     fnet_shell_println(desc, FAPP_TOCANCEL_STR);
@@ -469,18 +491,23 @@ void fapp_benchrx_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     /* UDP */
     else if(((argc == 2) || (argc == 3)) && fnet_strcasecmp("udp", argv[1]) == 0) 
     {
-        fnet_ip4_addr_t multicast_address = 0;
-        
+        struct sockaddr multicast_address;
+        struct sockaddr *multicast_address_p = FNET_NULL;
+       
         if(argc == 3) /* Multicast group address.*/
         {
-            if((fnet_inet_aton(argv[2], (struct in_addr *) &multicast_address) == FNET_ERR) || !FNET_IP4_ADDR_IS_MULTICAST(multicast_address))
+            if((fnet_inet_ptos(argv[2], &multicast_address) == FNET_ERR)    /* Convert from string to address.*/
+                || !fnet_socket_addr_is_multicast(&multicast_address)       /* Check if address is multicast.*/
+                || !(family & multicast_address.sa_family) )                /* Check supported family.*/
             {
                 fnet_shell_println(desc, FAPP_PARAM_ERR, argv[2]);
                 return;
-            }
+            }   
+            
+            multicast_address_p = &multicast_address;
         }
         
-        fapp_bench_udp_rx(desc, family, multicast_address);
+        fapp_bench_udp_rx(desc, family, multicast_address_p);
     }
     else
     {

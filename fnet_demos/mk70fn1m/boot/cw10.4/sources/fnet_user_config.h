@@ -126,7 +126,7 @@
 ******************************************************************************/
 #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (2) 
 
-#warning "The K70 bootloader with CW10.4 does work properly in go mode/command. You can use IAR compiler so far."
+#warning "The K70 bootloader with CW10.4 does not work properly in go mode/command. You can use IAR compiler so far."
 
 #endif /* _FNET_USER_CONFIG_H_ */
 

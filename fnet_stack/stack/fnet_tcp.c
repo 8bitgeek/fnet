@@ -524,7 +524,7 @@ static int fnet_tcp_attach( fnet_socket_t *sk )
 #endif
 
 #if FNET_CFG_IP6    
-    sk->options.ip6_opt.unicast_hops = 0; /* Defined by ND.*/ 
+    sk->options.ip6_opt.hops_unicast = 0; /* Defined by ND.*/ 
 #endif
     
 
@@ -3246,7 +3246,7 @@ static int fnet_tcp_sendseg(struct fnet_tcp_segment *segment)
                                 &((struct sockaddr_in6 *)(&segment->src_addr))->sin6_addr.s6_addr, 
                                 &((struct sockaddr_in6 *)(&segment->dest_addr))->sin6_addr.s6_addr, 
                                 FNET_IP_PROTOCOL_TCP, 
-                                (unsigned char)(segment->sockoption ? segment->sockoption->ip6_opt.unicast_hops : 0 /*default*/),
+                                (unsigned char)(segment->sockoption ? segment->sockoption->ip6_opt.hops_unicast : 0 /*default*/),
                                 nb, 
                                 checksum_p );
     }

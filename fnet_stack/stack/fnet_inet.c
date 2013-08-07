@@ -144,12 +144,32 @@ int fnet_inet_ptos (char *str, struct sockaddr *addr)
 {   
 #if FNET_CFG_IP4    
     if(fnet_inet_pton(AF_INET, str, addr->sa_data, sizeof(addr->sa_data)) == FNET_OK)
+    {
         addr->sa_family = AF_INET;
+    }
     else 
 #endif /* FNET_CFG_IP4 */
 #if FNET_CFG_IP6 
     if(fnet_inet_pton(AF_INET6, str, addr->sa_data, sizeof(addr->sa_data)) == FNET_OK)
+    {
         addr->sa_family = AF_INET6;
+        /* Scope ID.*/
+        {
+            unsigned long   scope_id;
+            char            *p = fnet_strrchr(str, '%'); /* Find "%<scope id>".*/
+            
+            if(p != FNET_NULL)
+            {
+                scope_id = fnet_strtoul((p+1), 0, 10);
+            }
+            else
+            {
+                scope_id = 0; /* Default interface.*/
+            }
+            
+            ((struct sockaddr_in6 *)addr)->sin6_scope_id = scope_id;
+        }
+    }
     else    
 #endif /* FNET_CFG_IP6 */ 
         return FNET_ERR;

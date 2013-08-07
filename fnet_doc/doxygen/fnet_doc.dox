@@ -92,6 +92,7 @@ preferred way to configure stack features). @n
 	- @b IPv6. 
 		- Passed the "IPv6 Ready Logo" Phase-2 IPv6 Core Protocols Conformance Tests, for host.
 		- @b ICMPv6 (Internet Control Message Protocol).
+		- @b MLDv1 (Multicast Listener Discovery).
 		- Neighbor Discovery for IPv6.
 		- IPv6 Stateless Address Autoconfiguration.
 		- Path MTU Discovery for IPv6
@@ -1575,6 +1576,15 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+
+- Version 2.6.0:
+	- Added Multicast Listener Discovery Version 1 (MLDv1), enabled by @ref FNET_CFG_MLD.
+	- New IPv6 socket options:
+		- @ref IPV6_MULTICAST_HOPS changes the hop limit to use for outgoing multicast IPv6 packets.
+       	- @ref IPV6_JOIN_GROUP joins a multicast group on a specified local interface.
+		- @ref IPV6_LEAVE_GROUP leaves a multicast group on a specified interface.
+	- Other minor changes. 
+
 
 - Version 2.5.0:
 	- Added support of Kinetis K70FN1M0 (TWR-K70F120M board).

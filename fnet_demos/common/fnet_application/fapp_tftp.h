@@ -108,6 +108,7 @@ FNET_COMP_PACKED_END
 
 /* TFTP SREC TX handler control structure. */
 #define FAPP_TFTP_BIN_DATA_MAX     (252)
+
 FNET_COMP_PACKED_BEGIN
 struct fapp_tftp_tx_handler_bin
 {
@@ -123,6 +124,8 @@ struct fapp_tftp_tx_handler_bin
     unsigned char *data_end 	FNET_COMP_PACKED;
 };
 FNET_COMP_PACKED_END
+
+
 
 /********************** SREC **************************************/
 
@@ -174,6 +177,7 @@ struct fapp_tftp_rx_handler_srec
     }	FNET_COMP_PACKED;
 };
 FNET_COMP_PACKED_END
+
 /* TFTP SREC TX handler control structure. */
 #define FAPP_TFTP_SREC_DATA_MAX     (28)
 FNET_COMP_PACKED_BEGIN

@@ -1057,7 +1057,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.40.3.54103</state>
+          <state>6.50.6.4952</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -2457,6 +2457,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mempool.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mld.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mld.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_nd6.c</name>

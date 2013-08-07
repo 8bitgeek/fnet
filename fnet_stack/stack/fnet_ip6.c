@@ -63,6 +63,7 @@
 #include "fnet_igmp.h"
 #include "fnet_prot.h"
 #include "fnet_raw.h"
+#include "fnet_mld.h"
     
 /******************************************************************
 * Ext. header handler results.
@@ -92,6 +93,7 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_fragment
 static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_routing_header(fnet_netif_t *netif, unsigned char **next_header_p, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t **nb_p, fnet_netbuf_t *ip6_nb);
 static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_options (fnet_netif_t *netif, unsigned char **next_header_p, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t **nb_p, fnet_netbuf_t *ip6_nb);
 static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_no_next_header (fnet_netif_t *netif, unsigned char **next_header_p, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t **nb_p, fnet_netbuf_t *ip6_nb);
+static void fnet_ip6_input_low( void *cookie );
 
 #if FNET_CFG_IP6_FRAGMENTATION
     static void fnet_ip6_frag_list_add( fnet_ip6_frag_list_t ** head, fnet_ip6_frag_list_t *fl );
@@ -112,10 +114,7 @@ fnet_ip6_ext_header_t fnet_ip6_ext_header_list[] =
     ,{FNET_IP6_TYPE_HOP_BY_HOP_OPTIONS,     fnet_ip6_ext_header_handler_options}
     ,{FNET_IP6_TYPE_DESTINATION_OPTIONS,    fnet_ip6_ext_header_handler_options}
     ,{FNET_IP6_TYPE_ROUTING_HEADER,         fnet_ip6_ext_header_handler_routing_header}
-//#if FNET_CFG_IP6_FRAGMENTATION    
     ,{FNET_IP6_TYPE_FRAGMENT_HEADER,        fnet_ip6_ext_header_handler_fragment_header}
-//#endif    
-    
     /* ADD YOUR EXTENSION HEADER HANDLERS HERE.*/
 };
 
@@ -167,7 +166,8 @@ const fnet_ip6_addr_t fnet_ip6_addr_linklocal_allv2routers = FNET_IP6_ADDR_LINKL
 const fnet_ip6_addr_t fnet_ip6_addr_linklocal_prefix = FNET_IP6_ADDR_LINKLOCAL_PREFIX_INIT;
 
 
-static void fnet_ip6_input_low( void *cookie );
+/* IPv6 Multicast list.*/
+fnet_ip6_multicast_list_entry_t fnet_ip6_multicast_list[FNET_CFG_MULTICAST_MAX];
 
 
 /************************************************************************
@@ -196,7 +196,10 @@ int fnet_ip6_init( void )
         
 #if FNET_CFG_IP6_FRAGMENTATION
     }
-#endif    
+#endif 
+
+    /* Clear the multicast list.*/
+    fnet_memset_zero( fnet_ip6_multicast_list, sizeof(fnet_ip6_multicast_list));   
     
     return result;
 }
@@ -557,8 +560,7 @@ static void fnet_ip6_input_low( void *cookie )
             && (FNET_IP6_HEADER_GET_VERSION(hdr) == 6)                      /* Check the IP Version. */
             && (!FNET_IP6_ADDR_IS_MULTICAST(&hdr->source_addr))             /* Validate source address. */
             && (fnet_netif_is_my_ip6_addr(netif, &hdr->destination_addr)    /* Validate destination address. */
-                || fnet_netif_is_my_ip6_solicited_multicast_addr(netif, &hdr->destination_addr)
-                || FNET_IP6_ADDR_EQUAL(&fnet_ip6_addr_linklocal_allnodes, &hdr->destination_addr) )
+              || FNET_IP6_ADDR_IS_MULTICAST(&hdr->destination_addr))        /* Pass multicast destination address.*/
           )
         { 
             unsigned char   *next_header = &hdr->next_header;
@@ -1853,6 +1855,261 @@ void fnet_ip6_drain( void )
     fnet_isr_unlock();
 }
 
+/************************************************************************
+* NAME: fnet_ip6_getsockopt
+*
+* DESCRIPTION: This function retrieves the current value 
+*              of IPv6 socket option.
+*************************************************************************/
+int fnet_ip6_getsockopt(fnet_socket_t *sock, int optname, char *optval, int *optlen )
+{
+    int result = FNET_OK;
+    
+    switch(optname)      /* Socket options processing. */
+    {
+        case IPV6_UNICAST_HOPS: /* Get IPv6 hop limit for outgoing unicast datagrams.*/
+            if(*optlen < sizeof(int))
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
 
+            *((int*)optval) = (char)sock->options.ip6_opt.hops_unicast;
+            *optlen = sizeof(int);
+            break;
+        case IPV6_MULTICAST_HOPS: /* Get IPv6 hop limit for outgoing multicast datagrams.*/
+            if(*optlen < sizeof(int))
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+
+            *((int*)optval) = (char)sock->options.ip6_opt.hops_multicast;
+            *optlen = sizeof(int);
+            break;            
+        default:
+            result = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported.*/
+            break;
+    }
+    
+    return result;
+}
+
+/************************************************************************
+* NAME: fnet_ip6_setsockopt
+*
+* DESCRIPTION: This function sets the value of IPv6 socket option. 
+*************************************************************************/
+int fnet_ip6_setsockopt( fnet_socket_t *sock, int optname, char *optval, int optlen )
+{
+    int result = FNET_OK;
+
+    switch(optname)      /* Socket options processing. */
+    {
+        /******************************/
+        case IPV6_UNICAST_HOPS: /* Set IPv6 hop limit for outgoing unicast datagrams. */
+            if(optlen != sizeof(int))
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+
+            sock->options.ip6_opt.hops_unicast = (unsigned char) (*((int *)(optval)));
+            break;
+        /******************************/
+        case IPV6_MULTICAST_HOPS: /* Set IPv6 hop limit for outgoing multicast datagrams. */
+            /* Validation.*/
+            if( (optlen != sizeof(int)) || !(sock->protocol_interface) || (sock->protocol_interface->type != SOCK_DGRAM )  )
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+            sock->options.ip6_opt.hops_multicast = (unsigned char) (*((int *)(optval)));
+            break;            
+        /******************************/
+        case IPV6_JOIN_GROUP:     /* Join the socket to the supplied IPv6 multicast group on 
+                                   * the specified interface. */
+        case IPV6_LEAVE_GROUP:    /* Drops membership to the given IPv6 multicast group and interface.*/                                     
+        {                     
+            int                             i;
+            fnet_ip6_multicast_list_entry_t **multicast_entry = FNET_NULL;
+            struct ipv6_mreq                *mreq = (struct ipv6_mreq *)optval;
+            fnet_netif_t                    *netif;
+                        
+                        
+            if(mreq->ipv6imr_interface == 0)
+            {
+                netif = (fnet_netif_t *)fnet_netif_get_default();
+            }
+            else
+            {
+                netif = (fnet_netif_t *)fnet_netif_get_by_scope_id(mreq->ipv6imr_interface);
+            }
+                        
+            if((optlen != sizeof(struct ipv6_mreq)) /* Check size.*/
+                || (netif == FNET_NULL) /* Found IF.*/
+                || (!FNET_IP6_ADDR_IS_MULTICAST(&mreq->ipv6imr_multiaddr.s6_addr)) /* Check if the address is multicast.*/
+                || !(sock->protocol_interface) || (sock->protocol_interface->type != SOCK_DGRAM )
+                )
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+                        
+            /* Find the existing entry with same parameters (if any).*/
+            for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+            {
+                if( (sock->ip6_multicast_entry[i] != FNET_NULL) 
+                    && (sock->ip6_multicast_entry[i]->netif == netif) 
+                    && FNET_IP6_ADDR_EQUAL(&sock->ip6_multicast_entry[i]->group_addr, &mreq->ipv6imr_multiaddr.s6_addr))
+                {
+                    multicast_entry = &sock->ip6_multicast_entry[i];
+                    break; /* Found.*/
+                }
+            }
+                         
+            /******************************/
+            if(optname == IPV6_JOIN_GROUP)
+            {
+                if(multicast_entry != FNET_NULL)
+                {
+                    /* Already joined.*/
+                    result = FNET_ERR_ADDRINUSE;
+                    break;
+                }
+                            
+                /* Find free entry.*/
+                for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+                {
+                    if(sock->ip6_multicast_entry[i] == FNET_NULL)
+                    {
+                        multicast_entry = &sock->ip6_multicast_entry[i];
+                        break; /* Found.*/
+                    }
+                }
+                            
+                if(multicast_entry != FNET_NULL)
+                {
+                    *multicast_entry = fnet_ip6_multicast_join( netif, &mreq->ipv6imr_multiaddr.s6_addr );
+                                
+                    if(*multicast_entry == FNET_NULL)
+                    {
+                        result = FNET_ERR_ADDRINUSE;
+                        break;
+                    }
+                }
+                else
+                {
+                    result = FNET_ERR_ADDRINUSE;
+                    break;
+                }
+
+            }
+            /******************************/
+            else /* IP_DROP_MEMBERSHIP */
+            {
+                if(multicast_entry != FNET_NULL)
+                {
+                    /* Leave the group.*/
+                    fnet_ip6_multicast_leave(*multicast_entry);
+                    *multicast_entry = FNET_NULL; /* Clear entry.*/
+                }
+                else
+                {
+                    /* Join entry is not foud.*/
+                    result = FNET_ERR_INVAL;
+                    break;
+                }
+            }
+        }
+        break;
+        /******************************/                    
+        default:
+            result = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported. */
+            break;
+    }
+
+    return result;            
+}
+
+/************************************************************************
+* NAME: fnet_ip6_multicast_join
+*
+* DESCRIPTION: Join a IPv6 multicast group. Returns pointer to the entry in 
+*              the multicast list, or FNET_NULL if any error;
+*************************************************************************/
+fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_join(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr )
+{
+    int                             i;
+    fnet_ip6_multicast_list_entry_t *result = FNET_NULL; 
+    
+    /* Find existing entry or free one.*/
+    for(i=0; i < FNET_CFG_MULTICAST_MAX; i++)
+    {
+        if(fnet_ip6_multicast_list[i].user_counter > 0)
+        {
+            if((fnet_ip6_multicast_list[i].netif == netif) && FNET_IP6_ADDR_EQUAL(&fnet_ip6_multicast_list[i].group_addr, group_addr)) 
+            {
+                result = &fnet_ip6_multicast_list[i];
+                break; /* Found.*/
+            }
+        }
+        else /* user_counter == 0.*/
+        {
+            result = &fnet_ip6_multicast_list[i]; /* Save the last free.*/
+        }
+    }
+    
+    if(result)
+    { 
+        result->user_counter++; /* Increment user counter.*/
+        
+        if(result->user_counter == 1) /* New entry.*/
+        {
+            FNET_IP6_ADDR_COPY(group_addr, &result->group_addr);
+            result->netif = netif;
+            
+            /* Join HW interface. */
+            fnet_netif_join_ip6_multicast ( (fnet_netif_desc_t) netif, group_addr );
+
+        #if FNET_CFG_MLD
+            /*
+             * When a host joins a new group, it should immediately transmit a
+             * Report for that group.
+             * //TBD To cover the possibility of the initial Report being lost or damaged, it is
+             * recommended that it be repeated once or twice after short delays.
+             */
+            fnet_mld_join(netif, (fnet_ip6_addr_t *)group_addr);
+        #endif           
+        }
+    }
+    
+    return result;
+}
+
+/************************************************************************
+* NAME: fnet_ip_multicast_leave
+*
+* DESCRIPTION: Leave a multicast group. 
+*************************************************************************/
+void fnet_ip6_multicast_leave( fnet_ip6_multicast_list_entry_t *multicastentry )
+{
+    if(multicastentry)
+    { 
+        multicastentry->user_counter--; /* Decrement user counter.*/
+        
+        if(multicastentry->user_counter == 0) 
+        {
+
+        #if FNET_CFG_MLD  
+            /* Leave via MLD */
+           fnet_mld_leave(multicastentry->netif, &multicastentry->group_addr);
+        #endif
+                         
+            /* Leave HW interface. */
+            fnet_netif_leave_ip6_multicast ( (fnet_netif_desc_t) multicastentry->netif, &multicastentry->group_addr );
+        }
+    }
+}
 
 #endif /* FNET_CFG_IP6 */

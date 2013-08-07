@@ -75,14 +75,16 @@ static fnet_ip_queue_t   ip_queue;
 static fnet_event_desc_t ip_event;
 
 #if FNET_CFG_MULTICAST
-    fnet_ip_multicast_list_entry_t fnet_ip_multicast_list[FNET_CFG_MULTICAST_MAX];
+    fnet_ip4_multicast_list_entry_t fnet_ip_multicast_list[FNET_CFG_MULTICAST_MAX];
 #endif /* FNET_CFG_MULTICAST */
 
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
 static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t* nb, int do_not_route);
-void fnet_ip_input_low( void *cookie );
+static void fnet_ip_input_low( void *cookie );
+static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, int *optlen );
+static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, int optlen );
 
 #if FNET_CFG_IP4_FRAGMENTATION
     fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr );
@@ -121,7 +123,7 @@ int fnet_ip_init( void )
         
     #if FNET_CFG_MULTICAST
         /* Clear the multicast list.*/
-        fnet_memset_zero( fnet_ip_multicast_list, sizeof(fnet_ip_multicast_list_entry_t)*FNET_CFG_MULTICAST_MAX );
+        fnet_memset_zero(fnet_ip_multicast_list, sizeof(fnet_ip_multicast_list));
     #endif /* FNET_CFG_MULTICAST */
         
         /* Install SW Interrupt handler. */
@@ -475,7 +477,7 @@ void fnet_ip_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
 *
 * DESCRIPTION: This function performs handling of incoming datagrams.
 *************************************************************************/
-void fnet_ip_input_low( void *cookie )
+static void fnet_ip_input_low( void *cookie )
 {
     fnet_ip_header_t    *hdr;
     fnet_netbuf_t       *ip4_nb;
@@ -975,12 +977,12 @@ static void fnet_ip_frag_del( fnet_ip_frag_header_t ** head, fnet_ip_frag_header
 * NAME: fnet_ip_multicast_join
 *
 * DESCRIPTION: Join a multicast group. Returns pointer to the entry in 
-*              the multicast list, or FNET_NULL if eny error;
+*              the multicast list, or FNET_NULL if any error;
 *************************************************************************/
-fnet_ip_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fnet_ip4_addr_t group_addr )
+fnet_ip4_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fnet_ip4_addr_t group_addr )
 {
     int i;
-    fnet_ip_multicast_list_entry_t *result = FNET_NULL; 
+    fnet_ip4_multicast_list_entry_t *result = FNET_NULL; 
     
     /* Find existing entry or free one.*/
     for(i=0; i < FNET_CFG_MULTICAST_MAX; i++)
@@ -1031,7 +1033,7 @@ fnet_ip_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fne
 *
 * DESCRIPTION: Leave a multicast group. 
 *************************************************************************/
-void fnet_ip_multicast_leave( fnet_ip_multicast_list_entry_t *multicastentry )
+void fnet_ip_multicast_leave( fnet_ip4_multicast_list_entry_t *multicastentry )
 {
     if(multicastentry)
     { 
@@ -1132,6 +1134,209 @@ unsigned long fnet_ip_maximum_packet( fnet_ip4_addr_t dest_ip )
 }
 
 /************************************************************************
+* NAME: fnet_ip4_getsockopt
+*
+* DESCRIPTION: This function retrieves the current value 
+*              of IPv4 socket option.
+*************************************************************************/
+static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, int *optlen )
+{
+    int result = FNET_OK;
+    
+    switch(optname)      /* Socket options processing. */
+    {
+        case IP_TOS: /* Get IP TOS for outgoing datagrams.*/
+            if(*optlen < sizeof(int))
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+
+            *((int*)optval) = sock->options.ip_opt.tos;
+            *optlen = sizeof(int);
+            break;
+        case IP_TTL: /* Get IP TTL for outgoing datagrams.*/
+            if(*optlen < sizeof(int))
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+
+            *((int*)optval) = (char)sock->options.ip_opt.ttl;
+            *optlen = sizeof(int);
+            break;
+    #if FNET_CFG_MULTICAST
+        case IP_MULTICAST_TTL: /* Get IP TTL for outgoing datagrams.*/
+            if(*optlen < sizeof(int))
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+
+            *((int*)optval) = (char)sock->options.ip_opt.ttl_multicast;
+            *optlen = sizeof(int);
+            break;
+    #endif /* FNET_CFG_MULTICAST */
+        default:
+            result = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported.*/
+            break;
+    }
+
+    return result;
+}
+
+/************************************************************************
+* NAME: fnet_ip4_setsockopt
+*
+* DESCRIPTION: This function sets the value of IPv4 socket option. 
+*************************************************************************/
+static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, int optlen )
+{
+    int result = FNET_OK;
+
+
+    switch(optname)      /* Socket options processing. */
+    {
+        /******************************/
+        case IP_TOS: /* Set IP TOS for outgoing datagrams. */
+            if(optlen != sizeof(int))
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+
+            sock->options.ip_opt.tos = (unsigned char) (*((int *)(optval)));
+            break;
+        /******************************/
+        case IP_TTL: /* Set IP TTL for outgoing datagrams. */
+            if(optlen != sizeof(int))
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+
+            sock->options.ip_opt.ttl = (unsigned char) (*((int *)(optval)));
+            break;
+    #if FNET_CFG_MULTICAST 
+        /******************************/
+        case IP_MULTICAST_TTL: /* Set IP TTL for outgoing Multicast datagrams. */
+            /* Validation.*/
+            if( (optlen != sizeof(int)) || !(sock->protocol_interface) || (sock->protocol_interface->type != SOCK_DGRAM )  )
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+            sock->options.ip_opt.ttl_multicast = (unsigned char) (*((int *)(optval)));
+            break;
+        /******************************/
+        case IP_ADD_MEMBERSHIP:     /* Join the socket to the supplied multicast group on 
+                                     * the specified interface. */
+        case IP_DROP_MEMBERSHIP:    /* Drops membership to the given multicast group and interface.*/                                     
+        {                     
+            int                             i;
+            fnet_ip4_multicast_list_entry_t **multicast_entry = FNET_NULL;
+            struct ip_mreq                  *mreq = (struct ip_mreq *)optval;
+            fnet_netif_t                    *netif;
+                        
+                        
+            if(mreq->imr_interface.s_addr == INADDR_ANY)
+            {
+                netif = (fnet_netif_t *)fnet_netif_get_default();
+            }
+            else
+            {
+                netif = (fnet_netif_t *)fnet_netif_get_by_ip4_addr(mreq->imr_interface.s_addr);
+            }
+                        
+            if((optlen != sizeof(struct ip_mreq)) /* Check size.*/
+                || (netif == FNET_NULL) /* Found IF.*/
+                || (!FNET_IP4_ADDR_IS_MULTICAST(mreq->imr_multiaddr.s_addr)) /* Check if the address is multicast.*/
+                || !(sock->protocol_interface) || (sock->protocol_interface->type != SOCK_DGRAM )
+                )
+            {
+                result = FNET_ERR_INVAL;
+                break;
+            }
+                        
+            /* Find the existing entry with same parameters.*/
+            for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+            {
+                if( (sock->ip4_multicast_entry[i] != FNET_NULL) 
+                    && (sock->ip4_multicast_entry[i]->netif == netif) 
+                    && (sock->ip4_multicast_entry[i]->group_addr == mreq->imr_multiaddr.s_addr) )
+                {
+                    multicast_entry = &sock->ip4_multicast_entry[i];
+                    break; /* Found.*/
+                }
+            }
+                         
+            /******************************/
+            if(optname == IP_ADD_MEMBERSHIP)
+            {
+                if(multicast_entry != FNET_NULL)
+                {
+                    /* Already joined.*/
+                    result = FNET_ERR_ADDRINUSE;
+                    break;
+                }
+                            
+                /* Find free entry.*/
+                for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+                {
+                    if(sock->ip4_multicast_entry[i] == FNET_NULL)
+                    {
+                        multicast_entry = &sock->ip4_multicast_entry[i];
+                        break; /* Found.*/
+                    }
+                }
+                            
+                if(multicast_entry != FNET_NULL)
+                {
+                    *multicast_entry = fnet_ip_multicast_join( netif, mreq->imr_multiaddr.s_addr );
+                                
+                    if(*multicast_entry == FNET_NULL)
+                    {
+                        result = FNET_ERR_ADDRINUSE;
+                        break;
+                    }
+                }
+                else
+                {
+                    result = FNET_ERR_ADDRINUSE;
+                    break;
+                }
+
+            }
+            /******************************/
+            else /* IP_DROP_MEMBERSHIP */
+            {
+                if(multicast_entry != FNET_NULL)
+                {
+                    /* Leave the group.*/
+                    fnet_ip_multicast_leave(*multicast_entry);
+                    *multicast_entry = FNET_NULL;
+                }
+                else
+                {
+                    /* Join entry is not foud.*/
+                    result = FNET_ERR_INVAL;
+                    break;
+                }
+            }
+        }
+        break;
+    #endif /* FNET_CFG_MULTICAST */ 
+                /******************************/               
+        default:
+            result = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported. */
+            break;
+    }
+
+    return result;            
+}
+
+
+/************************************************************************
 * NAME: fnet_ip_trace
 *
 * DESCRIPTION: Prints an IP header. For debug needs only.
@@ -1183,172 +1388,25 @@ int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, char *optva
 
     if((optval) && (optlen))
     {
-#if FNET_CFG_IP4    
+    #if FNET_CFG_IP4    
         if((level == IPPROTO_IP) && (sock->protocol_interface->family & AF_INET))
         {
-            switch(optname)      /* Socket options processing. */
-            {
-                /******************************/
-                case IP_TOS: /* Set IP TOS for outgoing datagrams. */
-                  if(optlen != sizeof(int))
-                  {
-                      error = FNET_ERR_INVAL;
-                      goto ERROR_SOCK;
-                  }
-
-                  sock->options.ip_opt.tos = (unsigned char) (*((int *)(optval)));
-                  break;
-                /******************************/
-                case IP_TTL: /* Set IP TTL for outgoing datagrams. */
-                  if(optlen != sizeof(int))
-                  {
-                      error = FNET_ERR_INVAL;
-                      goto ERROR_SOCK;
-                  }
-
-                  sock->options.ip_opt.ttl = (unsigned char) (*((int *)(optval)));
-                  break;
-    #if FNET_CFG_MULTICAST 
-                /******************************/
-                case IP_MULTICAST_TTL: /* Set IP TTL for outgoing Multicast datagrams. */
-                    /* Validation.*/
-                    if( (optlen != sizeof(int)) || !(sock->protocol_interface) || (sock->protocol_interface->type != SOCK_DGRAM )  )
-                    {
-                        error = FNET_ERR_INVAL;
-                        goto ERROR_SOCK;
-                    }
-                    sock->options.ip_opt.ttl_multicast = (unsigned char) (*((int *)(optval)));
-                    break;
-                /******************************/
-                case IP_ADD_MEMBERSHIP:     /* Join the socket to the supplied multicast group on 
-                                             * the specified interface. */
-                case IP_DROP_MEMBERSHIP:    /* Drops membership to the given multicast group and interface.*/                                     
-                    {                     
-                        int i;
-                        fnet_ip_multicast_list_entry_t **multicast_entry = FNET_NULL;
-                        struct ip_mreq *mreq = (struct ip_mreq *)optval;
-                        fnet_netif_t *netif;
-                        
-                        
-                        if(mreq->imr_interface.s_addr == INADDR_ANY)
-                        {
-                            netif = (fnet_netif_t *)fnet_netif_get_default();
-                        }
-                        else
-                        {
-                            netif = (fnet_netif_t *)fnet_netif_get_by_ip4_addr(mreq->imr_interface.s_addr);
-                        }
-                        
-                        if((optlen != sizeof(struct ip_mreq)) /* Check size.*/
-                            || (netif == FNET_NULL) /* Found IF.*/
-                            || (!FNET_IP4_ADDR_IS_MULTICAST(mreq->imr_multiaddr.s_addr)) /* Check if the address is multicast.*/
-                            || !(sock->protocol_interface) || (sock->protocol_interface->type != SOCK_DGRAM )
-                            )
-                        {
-                            error = FNET_ERR_INVAL;
-                            goto ERROR_SOCK;
-                        }
-                        
-                        /* Find the existing entry with same parameters.*/
-                        for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
-                        {
-                            if( (sock->multicast_entry[i] != FNET_NULL) 
-                                   && (sock->multicast_entry[i]->netif == netif) 
-                                   && (sock->multicast_entry[i]->group_addr == mreq->imr_multiaddr.s_addr) )
-                            {
-                                multicast_entry = &sock->multicast_entry[i];
-                                break; /* Found.*/
-                            }
-                        }
-                         
-                        /******************************/
-                        if(optname == IP_ADD_MEMBERSHIP)
-                        {
-                            if(multicast_entry != FNET_NULL)
-                            {
-                                /* Already joined.*/
-                                error = FNET_ERR_ADDRINUSE;
-                                goto ERROR_SOCK;
-                            }
-                            
-                            /* Find free entry.*/
-                            for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
-                            {
-                                if(sock->multicast_entry[i] == FNET_NULL)
-                                {
-                                    multicast_entry = &sock->multicast_entry[i];
-                                    break; /* Found.*/
-                                }
-                            }
-                            
-                            if(multicast_entry != FNET_NULL)
-                            {
-                                *multicast_entry = fnet_ip_multicast_join( netif, mreq->imr_multiaddr.s_addr );
-                                
-                                if(*multicast_entry == FNET_NULL)
-                                {
-                                    error = FNET_ERR_ADDRINUSE;
-                                    goto ERROR_SOCK;
-                                }
-                            }
-                            else
-                            {
-                                error = FNET_ERR_ADDRINUSE;
-                                goto ERROR_SOCK;
-                            }
-
-                        }
-                        /******************************/
-                        else /* IP_DROP_MEMBERSHIP */
-                        {
-                            if(multicast_entry != FNET_NULL)
-                            {
-                                /* Leave the group.*/
-                                fnet_ip_multicast_leave(*multicast_entry);
-                                *multicast_entry = FNET_NULL;
-                            }
-                            else
-                            {
-                                /* Join entry is not foud.*/
-                                error = FNET_ERR_INVAL;
-                                goto ERROR_SOCK;
-                            }
-                        }
-                    }
-                    break;
-    #endif /* FNET_CFG_MULTICAST */ 
-                /******************************/               
-                default:
-                    error = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported. */
-                    goto ERROR_SOCK;
-            }
+            error = fnet_ip4_setsockopt(sock, optname, optval, optlen);
+            if(error != FNET_OK)
+                goto ERROR_SOCK;
         }
         else
-#endif
-#if FNET_CFG_IP6
+    #endif
+    #if FNET_CFG_IP6
         if((level == IPPROTO_IPV6) && (sock->protocol_interface->family & AF_INET6))
         {
-            switch(optname)      /* Socket options processing. */
-            {
-                /******************************/
-                case IPV6_UNICAST_HOPS: /* Set IP TTL for outgoing datagrams. */
-                  if(optlen != sizeof(int))
-                  {
-                      error = FNET_ERR_INVAL;
-                      goto ERROR_SOCK;
-                  }
-
-                  sock->options.ip6_opt.unicast_hops = (unsigned char) (*((int *)(optval)));
-                  break;
-                /******************************/               
-                default:
-                    error = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported. */
-                    goto ERROR_SOCK;
-            }
+            error = fnet_ip6_setsockopt(sock, optname, optval, optlen);
+            if(error != FNET_OK)
+                goto ERROR_SOCK;
         }
         else
 
-#endif          
+    #endif          
         {
             error = FNET_ERR_INVAL; /* Invalid argument.*/
             goto ERROR_SOCK;        
@@ -1368,86 +1426,38 @@ ERROR_SOCK:
     fnet_error_set(error);
     return (SOCKET_ERROR);
 }
+
 /************************************************************************
 * NAME: fnet_ip_getsockopt
 *
 * DESCRIPTION: This function retrieves the current value 
-*              of IP socket option.
+*              of IP-layer socket option.
 *************************************************************************/
 int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optval, int *optlen )
 {
     int error;
 
-    if((optval) && (optlen) && ( *optlen))
+    if((optval) && (optlen) && (*optlen))
     {
     
-    #if FNET_CFG_IP4    
+    #if FNET_CFG_IP4 
         if((level == IPPROTO_IP) && (sock->protocol_interface->family & AF_INET))
         {
-    
-            switch(optname)      /* Socket options processing. */
-            {
-                case IP_TOS: /* Get IP TOS for outgoing datagrams.*/
-                    if(*optlen < sizeof(int))
-                    {
-                        error = FNET_ERR_INVAL;
-                        goto ERROR_SOCK;
-                    }
-
-                    *((int*)optval) = sock->options.ip_opt.tos;
-                    *optlen = sizeof(int);
-                    break;
-                case IP_TTL: /* Get IP TTL for outgoing datagrams.*/
-                    if(*optlen < sizeof(int))
-                    {
-                        error = FNET_ERR_INVAL;
-                        goto ERROR_SOCK;
-                    }
-
-                    *((int*)optval) = (char)sock->options.ip_opt.ttl;
-                    *optlen = sizeof(int);
-                    break;
-    #if FNET_CFG_MULTICAST
-                case IP_MULTICAST_TTL: /* Get IP TTL for outgoing datagrams.*/
-                    if(*optlen < sizeof(int))
-                    {
-                        error = FNET_ERR_INVAL;
-                        goto ERROR_SOCK;
-                    }
-
-                    *((int*)optval) = (char)sock->options.ip_opt.ttl_multicast;
-                    *optlen = sizeof(int);
-                    break;
-    #endif /* FNET_CFG_MULTICAST */
-                default:
-                    error = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported.*/
-                    goto ERROR_SOCK;
-            }
+            error = fnet_ip4_getsockopt(sock, optname, optval, optlen);
+            if(error != FNET_OK)
+                goto ERROR_SOCK;
         }
         else
-#endif
-#if FNET_CFG_IP6
+    #endif 
+    #if FNET_CFG_IP6
         if((level == IPPROTO_IPV6) && (sock->protocol_interface->family & AF_INET6))
         {
-            switch(optname)      /* Socket options processing. */
-            {        
-                case IPV6_UNICAST_HOPS: /* Set IP TTL for outgoing datagrams.*/
-                    if(*optlen < sizeof(int))
-                    {
-                        error = FNET_ERR_INVAL;
-                        goto ERROR_SOCK;
-                    }
-
-                    *((int*)optval) = (char)sock->options.ip6_opt.unicast_hops;
-                    *optlen = sizeof(int);
-                    break;
-                default:
-                    error = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported.*/
-                    goto ERROR_SOCK;
-            }                                                
+            error = fnet_ip6_getsockopt(sock, optname, optval, optlen);
+            if(error != FNET_OK)
+                goto ERROR_SOCK;                              
         }
         else
-#endif
+    #endif
         {
             error = FNET_ERR_INVAL; /* Invalid argument.*/
             goto ERROR_SOCK;        
@@ -1467,6 +1477,8 @@ ERROR_SOCK:
     fnet_error_set(error);
     return (SOCKET_ERROR);
 }
+
+
 
 /************************************************************************
 * NAME: ip_append_queue

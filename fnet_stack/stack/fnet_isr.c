@@ -262,7 +262,7 @@ void fnet_isr_lock( void )
 * DESCRIPTION: Executes all pending interrupt handlers and 
 *              enables hardware interrupts processing
 *************************************************************************/
-#if 0/* Old version.*/ 
+#if 1/* Old version.*/ 
 void fnet_isr_unlock( void )
 {
     fnet_isr_entry_t *isr_temp;
@@ -287,7 +287,7 @@ void fnet_isr_unlock( void )
                 isr_temp->pended = 0;
 
                 if(isr_temp->handler_bottom)
-                    isr_temp->handler_bottom();
+                    isr_temp->handler_bottom(isr_temp->cookie);
             }
 
             isr_temp = isr_temp->next;
@@ -296,7 +296,7 @@ void fnet_isr_unlock( void )
 
     --fnet_locked;
 }
-#else /* new one.*/ 
+#else /* new one. - but it looks like it is not too stable. */ 
 void fnet_isr_unlock( void )
 {
     fnet_isr_entry_t *isr_temp;

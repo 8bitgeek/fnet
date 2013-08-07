@@ -53,6 +53,7 @@
 #include "fnet_socket.h"
 #include "fnet_socket_prv.h"
 #include "fnet_checksum.h"
+#include "fnet_mld.h"
 
 
 /************************************************************************
@@ -147,7 +148,15 @@ static void fnet_icmp6_input(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_
              **************************/
             case FNET_ICMP6_TYPE_REDIRECT:
                 fnet_nd6_redirect_receive(netif, src_ip, dest_ip, nb, ip6_nb);
-                break; 
+                break;
+        #if FNET_CFG_MLD 
+            /**************************
+             * Multicast Listener Query.
+             **************************/
+            case FNET_ICMP6_TYPE_MULTICAST_LISTENER_QUERY:
+                fnet_mld_query_receive(netif, src_ip, dest_ip, nb, ip6_nb);
+                break;
+        #endif                                
             /**************************
              * Echo Request.
              * RFC4443 4.1: Every node MUST implement an ICMPv6 Echo responder function that
@@ -165,7 +174,7 @@ static void fnet_icmp6_input(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_
                 fnet_icmp6_output(netif, dest_ip/*ipsrc*/, src_ip/*ipdest*/, 0, nb);   //MD
                 fnet_netbuf_free_chain(ip6_nb);
                 break;   
-      #if FNET_CFG_IP6_PMTU_DISCOVERY 
+        #if FNET_CFG_IP6_PMTU_DISCOVERY 
            /**************************
             * Packet Too Big Message.
             **************************/
@@ -197,7 +206,7 @@ static void fnet_icmp6_input(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_
                     }                
                 }
                 goto DISCARD;
-      #endif                       
+        #endif                       
             default:
                 goto DISCARD;
         }                

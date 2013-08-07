@@ -56,6 +56,7 @@
 
 	/* For CW10.1 ARM compiler. After CW10.2 Release is obsolete. */
 	#if FNET_MK
+	    #pragma load_store_elimination off   /*  Disable Load Store Optimization, workaround of CW10.x bug. */
 		#define FNET_COMP_PACKED __attribute__ ((aligned (1)))
 	#endif
 

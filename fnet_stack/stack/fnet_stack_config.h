@@ -116,7 +116,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_ND6_DAD_TRANSMITS 
-    #define FNET_CFG_ND6_DAD_TRANSMITS          (1) /* If RTCSCFG_ND6_DAD_TRANSMITS = 0, the DAD is disabled.*/
+    #define FNET_CFG_ND6_DAD_TRANSMITS          (1)
 #endif 
 
 /* Check minimum values.*/
@@ -168,6 +168,18 @@
     #undef FNET_CFG_NETIF_IP6_ADDR_MAX
     #define FNET_CFG_NETIF_IP6_ADDR_MAX     (2)
 #endif 
+
+/**************************************************************************/ /*!
+ * @def      FNET_CFG_MLD
+ * @brief    Multicast Listener Discovery (MLDv1) support:
+ *               - @c 1 = is enabled.
+ *               - @b @c 0 = is disabled (Default value).
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_MLD
+    #define FNET_CFG_MLD                    (0)
+#endif
+
  
 /*! @} */
 

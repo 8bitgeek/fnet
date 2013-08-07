@@ -1095,6 +1095,36 @@ fnet_netif_ip6_addr_t *fnet_netif_get_ip6_addr_info(fnet_netif_t *netif, fnet_ip
 }
 
 /************************************************************************
+* NAME: fnet_netif_get_ip6_addr_valid_link_local
+*
+* DESCRIPTION: This function returns valid link-local address,
+*  if there is no vlaid address(DAD is in progress) it returns FNET_NULL.
+*************************************************************************/
+fnet_ip6_addr_t *fnet_netif_get_ip6_addr_valid_link_local (fnet_netif_t *netif)
+{
+
+    fnet_ip6_addr_t *result = FNET_NULL;
+    int             i;
+
+    if(netif)
+    {
+        for(i=0; i<FNET_NETIF_IP6_ADDR_MAX; i++)
+        {
+            /* Skip NOT_USED and TENTATIVE addresses. */
+            if((netif->ip6_addr[i].state != FNET_NETIF_IP6_ADDR_STATE_NOT_USED) 
+                && (netif->ip6_addr[i].state != FNET_NETIF_IP6_ADDR_STATE_TENTATIVE)
+                && FNET_IP6_ADDR_IS_LINKLOCAL(&netif->ip6_addr[i].address))
+            {    
+                result = &netif->ip6_addr[i].address;
+                break;
+            }    
+        } 
+    }
+    
+    return result;
+}
+
+/************************************************************************
 * NAME: fnet_netif_is_my_ip6_addr
 *
 * DESCRIPTION: Checks if an unicast address is attached/bound to the interface.
@@ -1314,7 +1344,7 @@ int fnet_netif_bind_ip6_addr_prv(fnet_netif_t *netif, fnet_ip6_addr_t *addr, fne
                 * addresses assigned to the interface.
                 **************************************************************************/
                 /* Join solicited multicast address group.*/
-                fnet_netif_join_ip6_multicast ( (fnet_netif_desc_t)netif, &if_addr_ptr->solicited_multicast_addr );
+                fnet_ip6_multicast_join(netif, &if_addr_ptr->solicited_multicast_addr);
 
                 /* Start Duplicate Address Detection (DAD).
                  * RFC4862:  The Duplicate Address Detection algorithm is performed on all addresses,
@@ -1327,13 +1357,6 @@ int fnet_netif_bind_ip6_addr_prv(fnet_netif_t *netif, fnet_ip6_addr_t *addr, fne
             {
                 if_addr_ptr->state = FNET_NETIF_IP6_ADDR_STATE_PREFERRED; 
             }           
-            
-            
-
-        //Check by type
-           
-           //TBD if(netif->api->set_addr_notify)
-           //     netif->api->set_addr_notify(netif);
         }
     }
 

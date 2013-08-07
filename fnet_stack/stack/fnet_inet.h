@@ -199,12 +199,30 @@ char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, 
 int fnet_inet_pton (fnet_address_family_t family, const char *str, void *addr, int addr_len);
 
 
-/************************************************************************
-* NAME: inet_ptos
-*
-* DESCRIPTION:The function converts from presentation format (string)
-*	        to struct sockaddr.
-*************************************************************************/
+/***************************************************************************/ /*!
+ *
+ * @brief    Converts IPv4 and IPv6 addresses from text to socket-address structure.
+ *
+ * @param str        Null-terminated character string that contains the text 
+ *                   representation of the IP address to convert to socket-address
+ *                   structure.
+ *
+ * @param addr       Pointer to a socket-address structure to be filled.
+
+ *
+ * @return This function returns:
+ *   - @ref FNET_OK if no error occurs.
+ *   - @ref FNET_ERR if the string in the @c str parameter does not contain 
+ *     a legitimate Internet address.
+ *
+ * @see fnet_inet_pton()
+ *
+ ******************************************************************************
+ *
+ * This function converts the character string @c src into a socket-address
+ * structure.
+ *
+ ******************************************************************************/
 int fnet_inet_ptos (char *str, struct sockaddr *addr);
 
 

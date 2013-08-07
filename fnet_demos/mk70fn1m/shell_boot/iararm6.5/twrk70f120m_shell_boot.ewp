@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.50.2.4581</state>
+          <state>6.50.6.4952</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -349,7 +349,7 @@
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
@@ -1317,7 +1317,7 @@
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
@@ -2458,6 +2458,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mempool.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mld.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mld.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_nd6.c</name>

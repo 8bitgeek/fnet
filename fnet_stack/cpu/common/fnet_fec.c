@@ -342,7 +342,7 @@ int fnet_fec_init(fnet_netif_t *netif)
         ethif->reg->ECR = FNET_FEC_ECR_ETHER_EN;
         
 	#if FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER
-        fnet_fec_phy_discover_addr(ethif, ethif->phy_addr);
+        fnet_fec_phy_discover_addr(ethif, ethif->phy_addr);      
 	#endif    
             
         fnet_eth_phy_init(ethif);
@@ -942,6 +942,9 @@ static void fnet_fec_isr_rx_handler_bottom (void *cookie)
 static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned int phy_addr_start)
 { 
 	unsigned char i;
+    unsigned char phy_addr = ethif->phy_addr; /* Save old value just in case the discover 
+                                               * is failed, in case ommunication with 
+                                               * the PHY via MDIO is not possible.*/
         
     for (i = (unsigned char)phy_addr_start; i < 32; i++) 
     {
@@ -952,11 +955,10 @@ static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned int phy_a
           
         if (!(id == 0 || id == 0xffff || id == 0x7fff))
         {
-            ethif->phy_addr = (unsigned char)i;
-            break;
+            return; /* FHY address is discovered.*/
         }
     } 
-
+    ethif->phy_addr = phy_addr;
 } 
 #endif
 

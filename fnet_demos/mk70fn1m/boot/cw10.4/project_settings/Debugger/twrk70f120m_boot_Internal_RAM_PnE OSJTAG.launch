@@ -117,6 +117,16 @@
 <booleanAttribute key="com.freescale.cdt.debug.cw.useSerialTransferIO" value="false"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.useStopTransferIO" value="true"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.useUDPPort" value="false"/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.CommandLineArgs" value=""/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.ConfigFile" value=""/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.Debug port interface" value="JTAG"/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.Delay after reset (ms)" value="0"/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.JTAG/SWD fixed speed (Khz)" value="4000"/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.JTAG/SWD speed" value="Fixed"/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.Library" value="arm_jlink_gdi"/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.Reset" value="Kinetis"/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.USB device" value="0"/>
+<stringAttribute key="com.freescale.mcu.debug.connections.jlink.arm.names_of_user_added_attributes" value=""/>
 <listAttribute key="com.freescale.panel.list">
 <listEntry value="Debugger Common Settings"/>
 <listEntry value="ARM Exceptions"/>
@@ -227,6 +237,10 @@
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.PEDEBUG_PRESERVE3_ACTIVE" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.PEDEBUG_PRESERVE3_END" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.PEDEBUG_PRESERVE3_START" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_CyclonePro_PowerDownDelay" value="250"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_CyclonePro_PowerUpDelay" value="250"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_CyclonePro_currentvoltage" value="128"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_CyclonePro_poweroffonexit" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FORCE_MASS_ERASE" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_CYCLONE" value="3"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_FX" value="4"/>
@@ -234,6 +248,8 @@
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_OPENSDA" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_OSJTAG" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_TRACELINK" value="3"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_Multilink_PowerDownDelay" value="250"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_Multilink_PowerUpDelay" value="1000"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_PCI_DELAY" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_PORT" value="21"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_RESET_DELAY" value="0"/>
@@ -247,10 +263,11 @@
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_TraceLink_currentvoltage" value="255"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_TraceLink_poweroffonexit" value="1"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_USE_CJTAG" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_USE_CYCLONEPRO_RELAYS" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_USE_SWD" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_USE_TRACELINK_RELAYS" value="1"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_interface_selection" value="1"/>
-<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.UUID" value="fa605ba8-c539-4d67-8453-987e0bb8e50a"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.UUID" value="e6aa965f-7885-4208-b5bc-cda7eb8e9669"/>
 <booleanAttribute key="forceShellDownload" value="false"/>
 <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="com.freescale.cdt.debug.cw.arm.ArmDebugger"/>
@@ -261,7 +278,7 @@
 <booleanAttribute key="org.eclipse.cdt.launch.ENABLE_REGISTER_BOOKKEEPING" value="false"/>
 <booleanAttribute key="org.eclipse.cdt.launch.ENABLE_RESTORE_WATCHPOINTS" value="true"/>
 <booleanAttribute key="org.eclipse.cdt.launch.ENABLE_VARIABLE_BOOKKEEPING" value="false"/>
-<stringAttribute key="org.eclipse.cdt.launch.FORMAT" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&lt;contentList/&gt;"/>
+<stringAttribute key="org.eclipse.cdt.launch.FORMAT" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&lt;contentList&gt;&lt;content id=&quot;[4]-data-record-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;[3]-data-record-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;[2]-data-record-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;[1]-data-record-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;[0]-data-record-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;[0]-record_bytes-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;[1]-record_bytes-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;[2]-record_bytes-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;[3]-record_bytes-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;4&quot;/&gt;&lt;content id=&quot;count-record-*srec-srec-fapp_tftp_rx_handler_srec-(format)&quot; val=&quot;1&quot;/&gt;&lt;/contentList&gt;"/>
 <stringAttribute key="org.eclipse.cdt.launch.GLOBAL_VARIABLES" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;globalVariableList/&gt;&#13;&#10;"/>
 <stringAttribute key="org.eclipse.cdt.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList/&gt;&#13;&#10;"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="TWRK70F120M_Internal_RAM/boot_intram.afx"/>

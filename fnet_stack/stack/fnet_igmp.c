@@ -39,7 +39,7 @@
 *
 * @version 0.1.23.0
 *
-* @brief IGMPv1 protocol implementation.
+* @brief IGMPv1/v2 protocol implementation.
 *
 ***************************************************************************/
 

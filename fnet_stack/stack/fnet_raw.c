@@ -160,7 +160,8 @@ static int fnet_raw_output(  struct sockaddr *src_addr, const struct sockaddr *d
                                 fnet_socket_addr_is_unspecified(src_addr)? FNET_NULL : &((struct sockaddr_in6 *)(src_addr))->sin6_addr.s6_addr, 
                                 &((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr, 
                                 protocol_number, 
-                                sockoption->ip6_opt.unicast_hops, nb,0);
+                                FNET_IP6_ADDR_IS_MULTICAST(&((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr)?sockoption->ip6_opt.hops_multicast:sockoption->ip6_opt.hops_unicast,
+                                nb,0);
     }
 #endif                               
 
@@ -245,19 +246,39 @@ static void fnet_raw_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  
                 if(sock->protocol_number != protocol_number)
                     continue; /* => ignore.*/
 #if FNET_CFG_MULTICAST
-                if(fnet_socket_addr_is_multicast(local_addr) && (local_addr->sa_family == AF_INET)) //TBD add support for IPv6
+                if(fnet_socket_addr_is_multicast(local_addr))
                 {
                     int m;
                     int for_us = FNET_FALSE;
                         
-                    for(m=0; m < FNET_CFG_MULTICAST_SOCKET_MAX; m++)
+                #if FNET_CFG_IP4                        
+                    if(local_addr->sa_family == AF_INET)
                     {
-                        if(sock->multicast_entry[m])
+                        
+                        for(m=0; m < FNET_CFG_MULTICAST_SOCKET_MAX; m++)
                         {
-                            if((sock->multicast_entry[m]->group_addr == ((struct sockaddr_in *)(local_addr))->sin_addr.s_addr) &&  (sock->multicast_entry[m]->netif == netif )) 
-                                for_us = FNET_TRUE;       
+                            if(sock->ip4_multicast_entry[m])
+                            {
+                                if((sock->ip4_multicast_entry[m]->group_addr == ((struct sockaddr_in *)(local_addr))->sin_addr.s_addr) &&  (sock->ip4_multicast_entry[m]->netif == netif )) 
+                                    for_us = FNET_TRUE;       
+                            }
                         }
                     }
+                #endif    
+                #if FNET_CFG_IP6
+                    if(local_addr->sa_family == AF_INET6) 
+                    {  
+                        for(m=0; m < FNET_CFG_MULTICAST_SOCKET_MAX; m++)
+                        {
+                            if(sock->ip6_multicast_entry[m])
+                            {
+                                if(FNET_IP6_ADDR_EQUAL(&sock->ip6_multicast_entry[m]->group_addr, &((struct sockaddr_in6 *)(local_addr))->sin6_addr.s6_addr) && (sock->ip6_multicast_entry[m]->netif == netif))
+                                    for_us = FNET_TRUE;       
+                            }
+                        }
+                    }
+                #endif   
+                    
                         
                     if(for_us == FNET_FALSE)
                         continue;
@@ -351,7 +372,7 @@ static int fnet_raw_attach( fnet_socket_t *sk )
 #endif    
 
 #if FNET_CFG_IP6    
-    sk->options.ip6_opt.unicast_hops = 0; /* Defined by ND.*/ 
+    sk->options.ip6_opt.hops_unicast = 0; /* Defined by ND.*/ 
 #endif    
     
     sk->send_buffer.count_max = FNET_RAW_TX_BUF_MAX;

@@ -149,10 +149,15 @@ typedef struct _socket
     struct sockaddr         local_addr;             /**< Lockal socket address.*/
     fnet_socket_option_t    options;                /**< Collection of socket options.*/
     
-#if FNET_CFG_MULTICAST
+#if FNET_CFG_MULTICAST 
     /* Multicast params.*/
-    fnet_ip_multicast_list_entry_t *multicast_entry[FNET_CFG_MULTICAST_SOCKET_MAX];
-#endif /* FNET_CFG_MULTICAST */
+#if FNET_CFG_IP4    
+    fnet_ip4_multicast_list_entry_t *ip4_multicast_entry[FNET_CFG_MULTICAST_SOCKET_MAX];
+#endif 
+#if FNET_CFG_IP6    
+    fnet_ip6_multicast_list_entry_t *ip6_multicast_entry[FNET_CFG_MULTICAST_SOCKET_MAX];
+#endif    
+#endif /* FNET_CFG_MULTICAST */    
     
 } fnet_socket_t;
 
@@ -194,16 +199,12 @@ int fnet_socket_buffer_append_record( fnet_socket_buffer_t *sb, fnet_netbuf_t *n
 int fnet_socket_buffer_read_address( fnet_socket_buffer_t *sb, char *buf, int len, struct sockaddr *foreign_addr, int remove );
 int fnet_socket_buffer_read_record( fnet_socket_buffer_t *sb, char *buf, int len, int remove );
 void fnet_socket_buffer_release( fnet_socket_buffer_t *sb );
-
 int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, char *optval, int optlen );
 int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optval, int *optlen );
-
-int fnet_socket_addr_is_multicast(const struct sockaddr *addr);
 int fnet_socket_addr_is_broadcast(const struct sockaddr *addr, fnet_netif_t *netif);
-
-int fnet_socket_addr_are_equal(const struct sockaddr *addr1, const struct sockaddr *addr2);
 void fnet_socket_ip_addr_copy(const struct sockaddr *from_addr, struct sockaddr *to_addr);
 void fnet_socket_addr_copy(const struct sockaddr *from_addr, struct sockaddr *to_addr);
 fnet_netif_t *fnet_socket_addr_route(const struct sockaddr *dest_addr);
 
-#endif
+
+#endif /* _FNET_SOCKET_PRV_H_ */

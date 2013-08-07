@@ -110,9 +110,11 @@
 #define FNET_CFG_FLASH              (1)
 
 /*****************************************************************************
-* Multicast & IGMP support.
+* Multicast & IGMP & MLD support.
 ******************************************************************************/
 #define FNET_CFG_IGMP               (1)
+#define FNET_CFG_MLD                (1)
+
 
 #ifdef TWRMCF52259 /*TWR-SER board port*/
     #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (1)

@@ -49,7 +49,6 @@
 #define _FNET_IP6_PRV_H_
 
 #include "fnet.h"
-
 #include "fnet_ip.h"
 #include "fnet_ip6.h"
 #include "fnet_netif.h"
@@ -110,7 +109,8 @@
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned char       unicast_hops    FNET_COMP_PACKED;       /**< Unicast hop limit.*/
+    unsigned char   hops_unicast   FNET_COMP_PACKED;   /**< Unicast hop limit.*/
+    unsigned char   hops_multicast FNET_COMP_PACKED;   /**< Multicast hop limit.*/
 } fnet_ip6_sockopt_t;
 FNET_COMP_PACKED_END
 
@@ -244,6 +244,12 @@ FNET_COMP_PACKED_END
                                              * into the Options area of a header. For N octets of padding, the
                                              * Opt Data Len field contains the value N-2, and the Option Data
                                              * consists of N-2 zero-valued octets. */
+
+#define FNET_IP6_OPTION_TYPE_ROUTER_ALERT   (0x05) /* RFC2711:The presence of this option in an IPv6 datagram informs the router
+                                                    * that the contents of this datagram is of interest to the router and
+                                                    * to handle any control data accordingly.*/
+#define FNET_IP6_OPTION_TYPE_ROUTER_ALERT_VALUE_MLD (0x0000)    /* RFC2711: Datagram contains a Multicast 
+                                                                 * Listener Discovery message [RFC-2710].*/
 
 
 /* RFC 2460: The Option Type identifiers are internally encoded such that their
@@ -384,6 +390,22 @@ typedef struct fnet_ip6_frag_list
 } fnet_ip6_frag_list_t;
 FNET_COMP_PACKED_END
 
+/******************************************************************************
+ * Multicast related structures.
+ ******************************************************************************/
+
+/* Entry of the IPv6multicast group list.*/
+typedef struct fnet_ip6_multicast_list_entry
+{
+    fnet_netif_t    *netif;     /* Interface to join on. */
+    fnet_ip6_addr_t group_addr; /* IPv6 address of joined multicast group. */
+    int user_counter;           /* User counter. Keeps a reference count of the number 
+                                 * of requests to join a particular host group. */
+} fnet_ip6_multicast_list_entry_t;
+
+/* Global IPv6 multicast list.*/
+extern fnet_ip6_multicast_list_entry_t fnet_ip6_multicast_list[FNET_CFG_MULTICAST_MAX];
+
 
 /************************************************************************
 *     Function Prototypes
@@ -402,6 +424,13 @@ int fnet_ip6_output(fnet_netif_t *netif /*optional*/, fnet_ip6_addr_t *src_ip /*
 void fnet_ip6_drain(void);
 unsigned long fnet_ip6_mtu(fnet_netif_t *netif);      
 fnet_netif_t *fnet_ip6_route(fnet_ip6_addr_t *src_ip /*optional*/, fnet_ip6_addr_t *dest_ip);    
-int fnet_ip6_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_size);          
+int fnet_ip6_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_size);
+
+struct _socket; /* Forward declaration.*/
+int fnet_ip6_getsockopt(struct _socket *sock, int optname, char *optval, int *optlen); 
+int fnet_ip6_setsockopt(struct _socket *sock, int optname, char *optval, int optlen );      
+
+fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_join(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr);
+void fnet_ip6_multicast_leave(fnet_ip6_multicast_list_entry_t *multicastentry);   
 
 #endif /* _FNET_IP6_PRV_H_ */

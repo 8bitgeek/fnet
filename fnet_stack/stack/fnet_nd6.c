@@ -53,6 +53,7 @@
 #include "fnet_ip_prv.h"
 #include "fnet_ip6_prv.h"
 #include "fnet_checksum.h"
+#include "fnet_mld.h"
 
 static void fnet_nd6_timer( void *cookie );
 static void fnet_nd6_dad_timer( fnet_netif_t *netif );
@@ -2050,6 +2051,13 @@ static void fnet_nd6_dad_timer(fnet_netif_t *netif )
                      * Once an address is determined to be unique,
                      * it may be assigned to an interface.*/
                     addr_info->state = FNET_NETIF_IP6_ADDR_STATE_PREFERRED;
+                    
+                #if FNET_CFG_MLD
+                    /* [RFC3590] Once a valid link-local address is available, a node SHOULD generate
+                     * new MLD Report messages for all multicast addresses joined on the interface.*/
+                    if(netif->mld_invalid == FNET_TRUE)
+                        fnet_mld_all(netif);
+                #endif
                     
                 #if FNET_CFG_DEBUG_IP6
                     {

@@ -280,7 +280,7 @@ int fnet_eth_init( fnet_netif_t *netif)
             /* RFC4861 6.3.3: The host joins the all-nodes multicast address on all 
              * multicastcapable interfaces.
              */
-            fnet_netif_join_ip6_multicast ( (fnet_netif_desc_t)netif, &fnet_ip6_addr_linklocal_allnodes );
+            fnet_ip6_multicast_join(netif, &fnet_ip6_addr_linklocal_allnodes);
 
             /* To speed the autoconfiguration process, a host may generate its linklocal
              * address (and verify its uniqueness) in parallel with waiting
@@ -297,7 +297,7 @@ int fnet_eth_init( fnet_netif_t *netif)
              * For all autoconfiguration types, a link-local address is always configured. 
              */
             fnet_netif_bind_ip6_addr_prv( netif, (fnet_ip6_addr_t *)&fnet_ip6_addr_any, FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE, 
-                                                FNET_NETIF_IP6_ADDR_LIFETIME_INFINITE /*in seconds*/, FNET_ND6_PREFIX_LENGTH_DEFAULT /* bits */ );
+                                                  FNET_NETIF_IP6_ADDR_LIFETIME_INFINITE /*in seconds*/, FNET_ND6_PREFIX_LENGTH_DEFAULT /* bits */ );
 
             /* RFC4862: The next phase of autoconfiguration involves obtaining a Router
              * Advertisement or determining that no routers are present.  If routers

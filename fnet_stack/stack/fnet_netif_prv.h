@@ -181,13 +181,19 @@ typedef struct fnet_netif
 #endif
 #if FNET_CFG_IP6
     fnet_netif_ip6_addr_t   ip6_addr[FNET_NETIF_IP6_ADDR_MAX];  /* The interface IPv6 address structure. */
-    struct fnet_nd6_if      *nd6_if_ptr;                        /* Pointer to the ND structure, if the interface supports ND. */ 
+    struct fnet_nd6_if      *nd6_if_ptr;                        /* Pointer to the ND structure, if the interface supports ND. */
+#if FNET_CFG_MLD
+    int                     mld_invalid;                        /* Flag that, MLD message was sent with the unspecified address.
+                                                                 * Once a valid link-local address is available, a node SHOULD generate
+                                                                 * new MLD Report messages for all multicast addresses joined on the
+                                                                 * interface.*/
+#endif
 #if FNET_CFG_IP6_PMTU_DISCOVERY    
     unsigned long           pmtu;                               /* Path MTU, changed by Path MTU Discovery for IPv6. If 0 - is disabled.*/
     unsigned long           pmtu_timestamp;                     /* The timestamp, in milliseconds, when PMTU was changed last time.*/ 
     fnet_timer_desc_t       pmtu_timer;                         /* PMTU timer,used to detect increases in PMTU.*/
 #endif    
-#endif    
+#endif /* FNET_CFG_IP6 */   
  } fnet_netif_t;
 
 
@@ -219,6 +225,7 @@ void fnet_netif_dupip_handler_signal( fnet_netif_desc_t netif );
     int fnet_netif_is_my_ip6_solicited_multicast_addr(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr);
     void fnet_netif_ip6_addr_timer ( fnet_netif_t *netif);
     int fnet_netif_set_ip6_addr_autoconf(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr);
+    fnet_ip6_addr_t *fnet_netif_get_ip6_addr_valid_link_local (fnet_netif_t *netif);
 #if FNET_CFG_IP6_PMTU_DISCOVERY     
     void fnet_netif_pmtu_init(fnet_netif_t *netif);
     void fnet_netif_pmtu_release(fnet_netif_t *netif);

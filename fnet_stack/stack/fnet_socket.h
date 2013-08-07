@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-28-2013
-*
-* @version 0.1.51.0
-*
 * @brief Socket API.
 *
 ***************************************************************************/
@@ -302,7 +298,7 @@ struct sockaddr_in6
 };
 
 /**************************************************************************/ /*!
- * @brief Multicast group information.
+ * @brief IPv4 multicast group information.
  *
  * The structure is used with the @ref IP_ADD_MEMBERSHIP and 
  * @ref IP_DROP_MEMBERSHIP socket options. 
@@ -318,6 +314,22 @@ struct ip_mreq
                                      * If this member specifies an IPv4 address of 0.0.0.0 
                                      * or @ref INADDR_ANY, 
                                      * the default interface is used. */
+};
+
+/**************************************************************************/ /*!
+ * @brief IPv6 multicast group information.
+ *
+ * The structure is used with the @ref IPV6_JOIN_GROUP and 
+ * @ref IPV6_LEAVE_GROUP socket options. 
+ *
+ * @see IPV6_JOIN_GROUP, IPV6_LEAVE_GROUP
+ *
+ ******************************************************************************/
+struct ipv6_mreq
+{
+    struct in6_addr ipv6imr_multiaddr;  /**< @brief IPv6 multicast address of group. */
+    unsigned int    ipv6imr_interface;  /**< @brief Interface index. It equals to the scope zone index, defining network interface.@n
+                                         * If this member is zero, the default interface is used. */
 };
 
 /**************************************************************************/ /*!
@@ -623,7 +635,7 @@ typedef enum
 } fnet_tcp_options_t;
 
 /**************************************************************************/ /*!
- * @brief IP level (@ref IPPROTO_IP) options for the @ref setsockopt() and 
+ * @brief IPv4 level (@ref IPPROTO_IP) options for the @ref setsockopt() and 
  * the @ref getsockopt().
  *
  * <table>
@@ -651,27 +663,27 @@ typedef enum
  ******************************************************************************/
 typedef enum
 {
-    IP_TOS      = (3), /**< @brief  This option defines the IP TOS 
+    IP_TOS      = (3), /**< @brief  This option defines the IPv4 TOS 
                         *   (type-of-service) field for outgoing datagrams.
                         */
-    IP_TTL      = (4)  /**< @brief  This option defines the IP TTL 
+    IP_TTL      = (4)  /**< @brief  This option defines the IPv4 TTL 
                         *   (time-to-live) vlaue for outgoing datagrams.
                         */
 #if FNET_CFG_MULTICAST || defined(__DOXYGEN__)
     ,
-    IP_MULTICAST_TTL = (6),     /**< @brief This option allows to change IP "time to live" (TTL) 
+    IP_MULTICAST_TTL = (6),     /**< @brief This option allows to change IPv4 "time to live" (TTL) 
                                  * value for outgoing multicast datagrams. 
                                  * Otherwise, multicast datagrams are sent with a default value of 1, 
                                  * to prevent them to be forwarded beyond the local network.@n
                                  * This option is available only if @ref FNET_CFG_MULTICAST is set to @c 1.
                                  */ 
-    IP_ADD_MEMBERSHIP = (7),    /**< @brief  Join the socket to the supplied multicast group on 
+    IP_ADD_MEMBERSHIP = (7),    /**< @brief  Join the socket to the IPv4 multicast group on 
                                  * the specified interface. It tells the system to receive packets on 
                                  * the network whose destination is the group address (but not its own).
                                  * It is valid only for the SOCK_DGRAM (UDP) sockets.@n
                                  * This option is available only if @ref FNET_CFG_MULTICAST is set to @c 1.
                                  */
-    IP_DROP_MEMBERSHIP = (8)    /**< @brief  Drops membership to the given multicast group and interface.@n
+    IP_DROP_MEMBERSHIP = (8)    /**< @brief  Drops membership to a IPv4 multicast group and interface.@n
                                  * This option is available only if @ref FNET_CFG_MULTICAST is set to @c 1.
                                  */
 #endif /* FNET_CFG_MULTICAST */
@@ -690,15 +702,33 @@ typedef enum
  *<tr>
  *<td>@ref IPV6_UNICAST_HOPS</td><td>int</td><td>64</td><td>RW</td>
  *</tr>
+ *<tr>
+ *<td>@ref IPV6_MULTICAST_HOPS</td><td>int</td><td>1</td><td>RW</td>
+ *</tr>
+ *<tr> 
+ *<td>@ref IPV6_JOIN_GROUP</td><td>@ref ipv6_mreq</td><td>N/A</td><td>W</td>
+ *</tr> 
+ *<tr> 
+ *<td>@ref IPV6_LEAVE_GROUP</td><td>@ref ipv6_mreq</td><td>N/A</td><td>W</td>
+ *</tr> 
  *</table>
  ******************************************************************************/
 typedef enum
 {
-    IPV6_UNICAST_HOPS = (4)  /**< @brief  This option defines hop limit used 
-                              * for outgoing unicast IPv6 packets. @n
-                              * Its value can be from 0 till 255.
-                              */
-
+    IPV6_UNICAST_HOPS = (4)     /**< @brief  This option defines hop limit used 
+                                * for outgoing unicast IPv6 packets. @n
+                                * Its value can be from 0 till 255.
+                                */
+    ,IPV6_MULTICAST_HOPS = (5)  /**< @brief (RFC3493) Set the hop limit to use for outgoing multicast IPv6 packets.@n
+                                * If IPV6_MULTICAST_HOPS is not set, the default is 1.
+                                */ 
+    ,IPV6_JOIN_GROUP  = (6)     /**< @brief (RFC3493) Join a multicast group on a specified local interface.@n
+                                *  It is valid only for the SOCK_DGRAM (UDP) sockets.
+                                */ 
+    ,IPV6_LEAVE_GROUP = (7)     /**< @brief (RFC3493)  Leave a multicast group on a specified interface.@n
+                                *  It is valid only for the SOCK_DGRAM (UDP) sockets.
+                                */ 
+ 
 } fnet_ip6_options_t;
 
 /**************************************************************************/ /*!
@@ -1455,6 +1485,23 @@ int fnet_socket_addr_are_equal(const struct sockaddr *addr1, const struct sockad
  *
  ******************************************************************************/
 int fnet_socket_addr_is_unspecified(const struct sockaddr *addr);
+
+/***************************************************************************/ /*!
+ *
+ * @brief    Determines, if socket address is multicast.
+ *
+ * @param addr  Socket address.
+ *
+ * @return       This function returns:
+ *   - @c FNET_TRUE if the address is multicast.
+ *   - @c FNET_FALSE if the address is not multicast.
+ *
+ ******************************************************************************
+ *
+ * This function determines if the socket address is multicast or not.
+ *
+ ******************************************************************************/
+int fnet_socket_addr_is_multicast(const struct sockaddr *addr);
 
 /*! @} */
 

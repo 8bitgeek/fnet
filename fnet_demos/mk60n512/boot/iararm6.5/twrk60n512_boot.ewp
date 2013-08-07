@@ -2458,6 +2458,12 @@
         <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mempool.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mld.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_mld.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\..\..\fnet_stack\stack\fnet_nd6.c</name>
       </file>
       <file>

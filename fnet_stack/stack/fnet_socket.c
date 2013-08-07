@@ -696,18 +696,32 @@ int closesocket( SOCKET s )
     {
 
 #if FNET_CFG_MULTICAST && FNET_CFG_IP4
-        /* Leave all multicast groups.*/
+        /* Leave all IPv4 multicast groups.*/
         {
             int i;
             for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
             {
-                if (sock->multicast_entry[i]!= FNET_NULL) 
+                if (sock->ip4_multicast_entry[i]!= FNET_NULL) 
                 {
-                    fnet_ip_multicast_leave(sock->multicast_entry[i]);
+                    fnet_ip_multicast_leave(sock->ip4_multicast_entry[i]);
                 }
             }
         }                        
-#endif /* FNET_CFG_MULTICAST */
+#endif 
+
+#if FNET_CFG_MULTICAST && FNET_CFG_IP6
+        /* Leave all IPv6 multicast groups.*/
+        {
+            int i;
+            for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+            {
+                if (sock->ip6_multicast_entry[i]!= FNET_NULL) 
+                {
+                    fnet_ip6_multicast_leave(sock->ip6_multicast_entry[i]);
+                }
+            }
+        }                        
+#endif
 
 
 
@@ -1895,5 +1909,4 @@ fnet_netif_t *fnet_socket_addr_route(const struct sockaddr *dest_addr)
     
     return result;
 }
-
 

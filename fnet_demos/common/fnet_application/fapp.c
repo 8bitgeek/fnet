@@ -620,9 +620,9 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
 #if FNET_CFG_IP6
     if(family & AF_INET6)
     {
-        int result;
-        unsigned int n;
-        fnet_netif_ip6_addr_info_t addr_info;
+        int                         result;
+        unsigned int                n;
+        fnet_netif_ip6_addr_info_t  addr_info;
         
         /* Print all assigned IPv6 addreses.*/
         for(n=0;;n++) 
@@ -631,13 +631,13 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
             
             if(result == FNET_TRUE)
             {
-                fnet_inet_ntop(AF_INET6, (char*)(&addr_info.address), ip_str, sizeof(ip_str)); 
-            
+                fnet_inet_ntop(AF_INET6, (char*)(&addr_info.address), ip_str, sizeof(ip_str));
+                            
                 fnet_shell_printf(desc, FAPP_SHELL_INFO_FORMAT_S, "IPv6 Address", ip_str);
                 if(print_type)
-                    fnet_shell_println(desc," <%s>", (addr_info.type == FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE)  ? "autoconfigurable" : "manual"); 
+                    fnet_shell_println(desc," <%s> ScopeID:%d", (addr_info.type == FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE)  ? "autoconfigurable" : "manual", fnet_netif_get_scope_id(netif)); 
                 else
-                    fnet_shell_println(desc, "");                     
+                    fnet_shell_println(desc,"");    
             }
             else
                break;

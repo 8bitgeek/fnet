@@ -39,7 +39,7 @@
 *
 * @version 0.1.8.0
 *
-* @brief Private. IGMPv2 protocol function definitions, data structures, etc.
+* @brief Private. IGMPv1/v2 protocol function definitions, data structures, etc.
 *
 ***************************************************************************/
 
@@ -67,7 +67,7 @@
 
 /************************************************************************
  * @internal
- * @brief    ICMP message header.
+ * @brief    IGMP message header.
  ************************************************************************
  *
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -83,11 +83,11 @@ typedef struct
 {
     fnet_uint8      type FNET_COMP_PACKED;           /* Type.*/
     fnet_uint8      max_resp_time FNET_COMP_PACKED;  /* IGMPv1 Unused field, zeroed when sent, ignored when received.*/
-                                    /* IGMPv2 Max Response Time (is meaningful only in Membership Query).*/
-                                    /* NOTE: Current version of FNET ignores this parameter.*/
+                                                     /* IGMPv2 Max Response Time (is meaningful only in Membership Query).*/
+                                                     /* NOTE: Current version of FNET ignores this parameter.*/
     fnet_uint16     checksum FNET_COMP_PACKED;       /* The checksum is the 16-bit one’s complement of the one’s
-                                     * complement sum of the 8-octet IGMP message.*/
-    fnet_ip4_addr_t  group_addr FNET_COMP_PACKED;     /* Group address field.*/                             
+                                                      * complement sum of the 8-octet IGMP message.*/
+    fnet_ip4_addr_t group_addr FNET_COMP_PACKED;     /* Group address field.*/                             
 } fnet_igmp_header_t;
 FNET_COMP_PACKED_END
 

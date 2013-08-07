@@ -115,9 +115,10 @@
 #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT  (3) 
 
 /*****************************************************************************
-* Multicast & IGMP support.
+* Multicast & IGMP & MLD support.
 ******************************************************************************/
 #define FNET_CFG_IGMP               (1)
+#define FNET_CFG_MLD                (1)
 
 /*****************************************************************************
 * Vector Table address.

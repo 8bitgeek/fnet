@@ -1062,6 +1062,16 @@
               <FileType>5</FileType>
               <FilePath>..\..\..\..\fnet_stack\stack\fnet_raw.h</FilePath>
             </File>
+            <File>
+              <FileName>fnet_mld.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\fnet_stack\stack\fnet_mld.c</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_mld.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\..\fnet_stack\stack\fnet_mld.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2486,6 +2496,16 @@
               <FileName>fnet_raw.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\..\..\fnet_stack\stack\fnet_raw.h</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_mld.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\fnet_stack\stack\fnet_mld.c</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_mld.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\..\fnet_stack\stack\fnet_mld.h</FilePath>
             </File>
           </Files>
         </Group>

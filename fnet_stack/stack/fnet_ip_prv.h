@@ -222,10 +222,10 @@ FNET_COMP_PACKED_END
         fnet_ip4_addr_t group_addr; /* IP address of joined multicast group. */
         int user_counter;           /* User counter. Keeps a reference count of the number 
                                      * of requests to join a particular host group. */
-    } fnet_ip_multicast_list_entry_t;
+    } fnet_ip4_multicast_list_entry_t;
 
     /* Global multicast list.*/
-    extern fnet_ip_multicast_list_entry_t fnet_ip_multicast_list[FNET_CFG_MULTICAST_MAX];
+    extern fnet_ip4_multicast_list_entry_t fnet_ip_multicast_list[FNET_CFG_MULTICAST_MAX];
 
 #endif /* FNET_CFG_MULTICAST */
 
@@ -255,8 +255,8 @@ fnet_netbuf_t *fnet_ip_queue_read( fnet_ip_queue_t *queue, fnet_netif_t ** netif
 int fnet_ip_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_size);
 
 #if FNET_CFG_MULTICAST
-    fnet_ip_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fnet_ip4_addr_t group_addr );
-    void fnet_ip_multicast_leave( fnet_ip_multicast_list_entry_t *multicastentry );
+    fnet_ip4_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fnet_ip4_addr_t group_addr );
+    void fnet_ip_multicast_leave( fnet_ip4_multicast_list_entry_t *multicastentry );
 #endif /* FNET_CFG_MULTICAST */
 
 #endif /* _FNET_IP_PRV_H_ */

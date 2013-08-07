@@ -60,45 +60,50 @@
 ******************************************************************/
 
 /* ICMPv6 error messages:*/
-#define FNET_ICMP6_TYPE_DEST_UNREACH            (1)     /* Destination Unreachable. */
-#define FNET_ICMP6_TYPE_PACKET_TOOBIG           (2)     /* Packet Too Big. */
-#define FNET_ICMP6_TYPE_TIME_EXCEED             (3)     /* Time Exceeded. */
-#define FNET_ICMP6_TYPE_PARAM_PROB              (4)     /* Parameter Problem. */
+#define FNET_ICMP6_TYPE_DEST_UNREACH                (1)     /* Destination Unreachable. */
+#define FNET_ICMP6_TYPE_PACKET_TOOBIG               (2)     /* Packet Too Big. */
+#define FNET_ICMP6_TYPE_TIME_EXCEED                 (3)     /* Time Exceeded. */
+#define FNET_ICMP6_TYPE_PARAM_PROB                  (4)     /* Parameter Problem. */
 
 /* ICMPv6 informational messages:*/
-#define FNET_ICMP6_TYPE_ECHO_REQ                (128)   /* Echo Request. */
-#define FNET_ICMP6_TYPE_ECHO_REPLY              (129)	/* Echo Reply. */
+#define FNET_ICMP6_TYPE_ECHO_REQ                    (128)   /* Echo Request. */
+#define FNET_ICMP6_TYPE_ECHO_REPLY                  (129)	/* Echo Reply. */
+
+/* MLD messages (RFC2710):*/
+#define FNET_ICMP6_TYPE_MULTICAST_LISTENER_QUERY    (130)   /* Multicast Listener Query */
+#define FNET_ICMP6_TYPE_MULTICAST_LISTENER_REPORT   (131)   /* Multicast Listener Report */
+#define FNET_ICMP6_TYPE_MULTICAST_LISTENER_DONE     (132)   /* Multicast Listener Done */
 
 /*  Neighbor Discovery defines five different ICMP packet types (RFC4861):*/
-#define FNET_ICMP6_TYPE_ROUTER_SOLICITATION     (133)   /* Router Solicitation. */
-#define FNET_ICMP6_TYPE_ROUTER_ADVERTISEMENT    (134)   /* Router Advertisement. */
-#define FNET_ICMP6_TYPE_NEIGHBOR_SOLICITATION   (135)   /* Neighbor Solicitation. */
-#define FNET_ICMP6_TYPE_NEIGHBOR_ADVERTISEMENT  (136)   /* Neighbor Advertisement. */
-#define FNET_ICMP6_TYPE_REDIRECT                (137)   /* Redirect.*/
+#define FNET_ICMP6_TYPE_ROUTER_SOLICITATION         (133)   /* Router Solicitation. */
+#define FNET_ICMP6_TYPE_ROUTER_ADVERTISEMENT        (134)   /* Router Advertisement. */
+#define FNET_ICMP6_TYPE_NEIGHBOR_SOLICITATION       (135)   /* Neighbor Solicitation. */
+#define FNET_ICMP6_TYPE_NEIGHBOR_ADVERTISEMENT      (136)   /* Neighbor Advertisement. */
+#define FNET_ICMP6_TYPE_REDIRECT                    (137)   /* Redirect.*/
 
 /* Destination Unreachable codes */
-#define FNET_ICMP6_CODE_DU_NO_ROUTE             (0)     /* No route to destination. */
-#define FNET_ICMP6_CODE_DU_ADMIN_PROHIBITED     (1)     /* Communication with destination administratively prohibited. */
-#define FNET_ICMP6_CODE_DU_BEYOND_SCOPE         (2)     /* Beyond scope of source address.*/
-#define FNET_ICMP6_CODE_DU_ADDR_UNREACH         (3)     /* Address unreachable.*/
-#define FNET_ICMP6_CODE_DU_PORT_UNREACH         (4)     /* Port unreachable.*/
-#define FNET_ICMP6_CODE_DU_ADDR_FAILED          (5)     /* Source address failed ingress/egress policy.*/
-#define FNET_ICMP6_CODE_DU_REJECT_ROUTE         (6)     /* Reject route to destination.*/
+#define FNET_ICMP6_CODE_DU_NO_ROUTE                 (0)     /* No route to destination. */
+#define FNET_ICMP6_CODE_DU_ADMIN_PROHIBITED         (1)     /* Communication with destination administratively prohibited. */
+#define FNET_ICMP6_CODE_DU_BEYOND_SCOPE             (2)     /* Beyond scope of source address.*/
+#define FNET_ICMP6_CODE_DU_ADDR_UNREACH             (3)     /* Address unreachable.*/
+#define FNET_ICMP6_CODE_DU_PORT_UNREACH             (4)     /* Port unreachable.*/
+#define FNET_ICMP6_CODE_DU_ADDR_FAILED              (5)     /* Source address failed ingress/egress policy.*/
+#define FNET_ICMP6_CODE_DU_REJECT_ROUTE             (6)     /* Reject route to destination.*/
 
 /* Packet Too Big codes */
-#define FNET_ICMP6_CODE_PTB                     (0)  
+#define FNET_ICMP6_CODE_PTB                         (0)  
 
 /* Time Exceeded codes */
-#define FNET_ICMP6_CODE_TE_HOP_LIMIT            (0)     /* Hop limit exceeded in transit.*/
-#define FNET_ICMP6_CODE_TE_FRG_REASSEMBLY       (1)     /* Fragment reassembly time exceeded.*/
+#define FNET_ICMP6_CODE_TE_HOP_LIMIT                (0)     /* Hop limit exceeded in transit.*/
+#define FNET_ICMP6_CODE_TE_FRG_REASSEMBLY           (1)     /* Fragment reassembly time exceeded.*/
 
 /* Parameter Problem codes */
-#define FNET_ICMP6_CODE_PP_HEADER               (0)     /* Erroneous header field encountered.*/
-#define FNET_ICMP6_CODE_PP_NEXT_HEADER          (1)     /* Unrecognized Next Header type encountered.*/
-#define FNET_ICMP6_CODE_PP_OPTION               (2)     /* Unrecognized IPv6 option encountered.*/
+#define FNET_ICMP6_CODE_PP_HEADER                   (0)     /* Erroneous header field encountered.*/
+#define FNET_ICMP6_CODE_PP_NEXT_HEADER              (1)     /* Unrecognized Next Header type encountered.*/
+#define FNET_ICMP6_CODE_PP_OPTION                   (2)     /* Unrecognized IPv6 option encountered.*/
 
-
-#define FNET_ICMP6_HOP_LIMIT                    (FNET_IP6_HOP_LIMIT_DEFAULT)   /* The Hop Limit of ICMPv6 messages.*/
+/* The Hop Limit of ICMPv6 messages.*/
+#define FNET_ICMP6_HOP_LIMIT                        (FNET_IP6_HOP_LIMIT_DEFAULT)   
 
 /*
 * Error messages are identified as such by a
