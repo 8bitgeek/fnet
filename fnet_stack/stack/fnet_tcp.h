@@ -381,8 +381,8 @@ typedef struct
     int tcpcb_crto;                     /* Current retransmission timeout.*/
     int tcpcb_cprto;                    /* Current retransmission timeout for persist timer.*/
     unsigned long tcpcb_retrseq;        /* Sequenc number of the retransmitting data.*/
-    unsigned short tcpcb_srtt;          /* Smoothed round trip time.*/
-    unsigned short tcpcb_rttvar;        /* Round trip time variance.*/
+    /*unsigned short*/ int tcpcb_srtt;          /* Smoothed round trip time.*/
+    /*unsigned short*/ int tcpcb_rttvar;        /* Round trip time variance.*/
     fnet_tcp_timing_state_t tcpcb_timing_state;   /* Timing state, defined by fnet_tcp_timing_state_t.*/
 
     /* Timers.*/

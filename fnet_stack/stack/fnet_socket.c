@@ -686,12 +686,6 @@ int closesocket( SOCKET s )
 
     fnet_os_mutex_lock();
 
-    //if(fnet_enabled == 0) /* Stack is disabled */
-    //{
-    //    error = FNET_ERR_SYSNOTREADY;
-    //    goto ERROR;
-    //}
-
     if((sock = fnet_socket_desc_find(s)) != 0)
     {
 
@@ -703,7 +697,7 @@ int closesocket( SOCKET s )
             {
                 if (sock->ip4_multicast_entry[i]!= FNET_NULL) 
                 {
-                    fnet_ip_multicast_leave(sock->ip4_multicast_entry[i]);
+                    fnet_ip_multicast_leave_entry(sock->ip4_multicast_entry[i]);
                 }
             }
         }                        
@@ -717,13 +711,11 @@ int closesocket( SOCKET s )
             {
                 if (sock->ip6_multicast_entry[i]!= FNET_NULL) 
                 {
-                    fnet_ip6_multicast_leave(sock->ip6_multicast_entry[i]);
+                    fnet_ip6_multicast_leave_entry(sock->ip6_multicast_entry[i]);
                 }
             }
         }                        
 #endif
-
-
 
         if(sock->protocol_interface->socket_api->prot_detach)
             result = sock->protocol_interface->socket_api->prot_detach(sock);

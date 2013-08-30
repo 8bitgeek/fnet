@@ -998,7 +998,6 @@ static int fnet_tcp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
             /* Check the memory allocation.*/
             if(netbuf) 
             {
-                sendlength -= currentlen;
                 sentlength += currentlen;
 
                 if(fnet_socket_buffer_append_record(&sk->send_buffer, netbuf) == FNET_OK)
@@ -1965,7 +1964,7 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
 {
     fnet_tcp_control_t  *cb = (fnet_tcp_control_t *)sk->protocol_control;       
     long                size;                                     
-    short               err;
+    int                 err;
     int                 delflag = 1;
     unsigned long       seq;
     unsigned long       tcp_ack = fnet_ntohl(FNET_TCP_ACK(insegment));
@@ -2075,13 +2074,13 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
         {
             if(cb->tcpcb_srtt)
             {
-                err = (short)(cb->tcpcb_timers.round_trip - (cb->tcpcb_srtt >> FNET_TCP_RTT_SHIFT));
+                err = /*(short)*/(cb->tcpcb_timers.round_trip - (cb->tcpcb_srtt >> FNET_TCP_RTT_SHIFT));
 
                 if((cb->tcpcb_srtt += err) <= 0)
                     cb->tcpcb_srtt = 1;
 
                 if(err < 0)
-                    err = (short)(-err);
+                    err = -err;
 
                 err -= (cb->tcpcb_rttvar >> FNET_TCP_RTTVAR_SHIFT);
 
@@ -2091,9 +2090,9 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
             else
             {
                 /* Initial calculation of the retransmission variables.*/
-                cb->tcpcb_srtt = (unsigned short)((cb->tcpcb_timers.round_trip + 1) << FNET_TCP_RTT_SHIFT);
-                cb->tcpcb_rttvar = (unsigned short)((cb->tcpcb_timers.round_trip + 1)
-                                                        << (FNET_TCP_RTTVAR_SHIFT - 1));
+                cb->tcpcb_srtt = (cb->tcpcb_timers.round_trip + 1) << FNET_TCP_RTT_SHIFT;
+                cb->tcpcb_rttvar = (cb->tcpcb_timers.round_trip + 1)
+                                                        << (FNET_TCP_RTTVAR_SHIFT - 1); 
             }
 
             cb->tcpcb_timing_state = TCP_TS_ACK_RECEIVED;

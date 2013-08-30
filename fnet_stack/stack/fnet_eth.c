@@ -331,6 +331,8 @@ void fnet_eth_release( fnet_netif_t *netif)
 {
 
 #if FNET_CFG_IP6  
+
+    fnet_ip6_multicast_leave_all(netif);
         
     #if FNET_CFG_IP6_PMTU_DISCOVERY  
         fnet_netif_pmtu_release(netif);

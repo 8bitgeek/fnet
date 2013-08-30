@@ -57,6 +57,7 @@
 #include "fnet_isr.h"
 
 #include "fnet_nd6.h"
+#include "fnet_ip6_prv.h"
 #include "fnet_socket.h"
 
 
@@ -1395,7 +1396,8 @@ int fnet_netif_unbind_ip6_addr_prv ( fnet_netif_t *netif, fnet_netif_ip6_addr_t 
     if(netif && if_addr && (if_addr->state != FNET_NETIF_IP6_ADDR_STATE_NOT_USED))
     {
         /* Leave Multicast group.*/
-        fnet_netif_leave_ip6_multicast( (fnet_netif_desc_t)netif, &if_addr->solicited_multicast_addr );
+        fnet_ip6_multicast_leave(netif, &if_addr->solicited_multicast_addr);
+        
         /* Mark as Not Used.*/
         if_addr->state = FNET_NETIF_IP6_ADDR_STATE_NOT_USED; 
         result = FNET_OK;

@@ -331,7 +331,6 @@ void *fnet_mempool_malloc(fnet_mempool_desc_t mpool, unsigned nbytes )
             mempool->free_ptr = prevp;
 
             fnet_isr_unlock();
-
             return (void *)((unsigned long)p + mempool->unit_size);
         }
 
@@ -365,20 +364,19 @@ unsigned long fnet_mempool_free_mem_status( fnet_mempool_desc_t mpool)
 
     t_mem = mempool->free_ptr;
 
-    if(t_mem == 0)
-        return 0;
-
-    total_size += t_mem->size;
-    /* FNET_DEBUG("%d,",t_mem->size*sizeof(FNET_ALLOC_HDR_T));*/
-
-    while(t_mem->ptr != mempool->free_ptr)
+    if(t_mem)
     {
-        t_mem = t_mem->ptr;
         total_size += t_mem->size;
-    /* FNET_DEBUG("%d,",t_mem->size*sizeof(FNET_ALLOC_HDR_T));*/
-    }
-    /*FNET_DEBUG("");*/
+        /* FNET_DEBUG("%d,",t_mem->size*sizeof(FNET_ALLOC_HDR_T));*/
 
+        while(t_mem->ptr != mempool->free_ptr)
+        {
+            t_mem = t_mem->ptr;
+            total_size += t_mem->size;
+        /* FNET_DEBUG("%d,",t_mem->size*sizeof(FNET_ALLOC_HDR_T));*/
+        }
+        /*FNET_DEBUG("");*/
+    }
 
     fnet_isr_unlock();
 
@@ -401,23 +399,24 @@ unsigned long fnet_mempool_malloc_max( fnet_mempool_desc_t mpool )
 
     t_mem = mempool->free_ptr;
 
-    if(t_mem == 0)
-        return 0;
-
-    max = t_mem->size;
-    /*FNET_DEBUG("%d,", t_mem->size * sizeof(FNET_ALLOC_HDR_T));*/
-
-    while(t_mem->ptr && (t_mem->ptr != mempool->free_ptr))
+    if(t_mem)
     {
-        t_mem = t_mem->ptr;
 
-        if(t_mem->size > max)
-            max = t_mem->size;
-
+        max = t_mem->size;
         /*FNET_DEBUG("%d,", t_mem->size * sizeof(FNET_ALLOC_HDR_T));*/
-    }
+
+        while(t_mem->ptr && (t_mem->ptr != mempool->free_ptr))
+        {
+            t_mem = t_mem->ptr;
+
+            if(t_mem->size > max)
+                max = t_mem->size;
+
+            /*FNET_DEBUG("%d,", t_mem->size * sizeof(FNET_ALLOC_HDR_T));*/
+        }
 
     /*FNET_DEBUG("");*/
+    }
 
     fnet_isr_unlock();
 
@@ -436,33 +435,32 @@ int fnet_mempool_check( fnet_mempool_desc_t mpool )
 
     t_mem = mempool->free_ptr;
 
-    if(t_mem == 0)
-        return 0;
-
-    while(t_mem->ptr != mempool->free_ptr)
+    if(t_mem)
     {
-        i++;
-        
-        if((i>100)||(t_mem->ptr == 0)||(t_mem->ptr == (void *)0xFFFFFFFF))
-        {
-            fnet_println("!!!MEMPOOL CRASH!!!");
-            return FNET_ERR;
-        }
-        
-        if( (((unsigned long)t_mem) < (unsigned long)t_mem->ptr) && ((t_mem->size + (unsigned long)t_mem) > (unsigned long)t_mem->ptr))
-        {
-            fnet_println("!!!MEMPOOL FREE CRASH!!!");
-            return FNET_ERR;
-        }
-        
-        t_mem = t_mem->ptr;
 
+        while(t_mem->ptr != mempool->free_ptr)
+        {
+            i++;
+            
+            if((i>100)||(t_mem->ptr == 0)||(t_mem->ptr == (void *)0xFFFFFFFF))
+            {
+                fnet_println("!!!MEMPOOL CRASH!!!");
+                return FNET_ERR;
+            }
+            
+            if( (((unsigned long)t_mem) < (unsigned long)t_mem->ptr) && ((t_mem->size + (unsigned long)t_mem) > (unsigned long)t_mem->ptr))
+            {
+                fnet_println("!!!MEMPOOL FREE CRASH!!!");
+                return FNET_ERR;
+            }
+            
+            t_mem = t_mem->ptr;
+
+        }
     }
 
 
     fnet_isr_unlock();
-   
-
     return FNET_OK;
 }
 #endif

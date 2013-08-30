@@ -94,11 +94,11 @@
  *  site-local (0x5), organization-local (0x8), and global (0xE)
  *  scopes [11].
  */
-#define FNET_IP6_ADDR_SCOPE_INTFACELOCAL (0x01)
-#define FNET_IP6_ADDR_SCOPE_LINKLOCAL    (0x02)
-#define FNET_IP6_ADDR_SCOPE_SITELOCAL    (0x05)
-#define FNET_IP6_ADDR_SCOPE_ORGLOCAL     (0x08)
-#define FNET_IP6_ADDR_SCOPE_GLOBAL       (0x0e)
+#define FNET_IP6_ADDR_SCOPE_INTERFACELOCAL (0x01)
+#define FNET_IP6_ADDR_SCOPE_LINKLOCAL      (0x02)
+#define FNET_IP6_ADDR_SCOPE_SITELOCAL      (0x05)
+#define FNET_IP6_ADDR_SCOPE_ORGLOCAL       (0x08)
+#define FNET_IP6_ADDR_SCOPE_GLOBAL         (0x0e)
 
 #define FNET_IP6_ADDR_MULTICAST_SCOPE(a) ((a)->addr[1] & 0x0f)
 
@@ -397,10 +397,10 @@ FNET_COMP_PACKED_END
 /* Entry of the IPv6multicast group list.*/
 typedef struct fnet_ip6_multicast_list_entry
 {
-    fnet_netif_t    *netif;     /* Interface to join on. */
-    fnet_ip6_addr_t group_addr; /* IPv6 address of joined multicast group. */
-    int user_counter;           /* User counter. Keeps a reference count of the number 
-                                 * of requests to join a particular host group. */
+    fnet_netif_t    *netif;         /* Interface to join on. */
+    fnet_ip6_addr_t group_addr;     /* IPv6 address of joined multicast group. */
+    int             user_counter;   /* User counter. Keeps a reference count of the number 
+                                     * of requests to join a particular host group. */
 } fnet_ip6_multicast_list_entry_t;
 
 /* Global IPv6 multicast list.*/
@@ -431,6 +431,9 @@ int fnet_ip6_getsockopt(struct _socket *sock, int optname, char *optval, int *op
 int fnet_ip6_setsockopt(struct _socket *sock, int optname, char *optval, int optlen );      
 
 fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_join(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr);
-void fnet_ip6_multicast_leave(fnet_ip6_multicast_list_entry_t *multicastentry);   
+void fnet_ip6_multicast_leave_entry(fnet_ip6_multicast_list_entry_t *multicastentry); 
+void fnet_ip6_multicast_leave(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr); 
+fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_find_entry(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr);
+void fnet_ip6_multicast_leave_all(fnet_netif_t *netif);
 
 #endif /* _FNET_IP6_PRV_H_ */

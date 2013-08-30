@@ -1029,11 +1029,11 @@ fnet_ip4_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fn
 }
 
 /************************************************************************
-* NAME: fnet_ip_multicast_leave
+* NAME: fnet_ip_multicast_leave_entry
 *
 * DESCRIPTION: Leave a multicast group. 
 *************************************************************************/
-void fnet_ip_multicast_leave( fnet_ip4_multicast_list_entry_t *multicastentry )
+void fnet_ip_multicast_leave_entry( fnet_ip4_multicast_list_entry_t *multicastentry )
 {
     if(multicastentry)
     { 
@@ -1313,7 +1313,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, 
                 if(multicast_entry != FNET_NULL)
                 {
                     /* Leave the group.*/
-                    fnet_ip_multicast_leave(*multicast_entry);
+                    fnet_ip_multicast_leave_entry(*multicast_entry);
                     *multicast_entry = FNET_NULL;
                 }
                 else
@@ -1507,8 +1507,8 @@ int fnet_ip_queue_append( fnet_ip_queue_t *queue, fnet_netif_t *netif, fnet_netb
 
     nb = fnet_netbuf_concat(nb_netif, nb);
     fnet_netbuf_add_chain(&queue->head, nb);
+    
     fnet_isr_unlock();
-
     return FNET_OK;
 
 ERROR:
@@ -1539,6 +1539,7 @@ fnet_netbuf_t *fnet_ip_queue_read( fnet_ip_queue_t *queue, fnet_netif_t ** netif
 
         nb_netif->next = 0;
         fnet_netbuf_del_chain(&queue->head, nb_netif);
+        
         fnet_isr_unlock();
     }
     else

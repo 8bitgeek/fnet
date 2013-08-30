@@ -566,6 +566,8 @@ static int fnet_udp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
     const struct sockaddr   *foreign_addr;
     int                     flags_save = 0;
 
+    fnet_isr_lock();
+
 #if FNET_CFG_TCP_URGENT
     if(flags & MSG_OOB)
     {
@@ -615,11 +617,13 @@ static int fnet_udp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
 
     if((error == FNET_OK) && (sk->options.local_error == FNET_OK)) /* We get UDP or ICMP error.*/
     {
+        fnet_isr_unlock();
         return (len);
     }
 
 ERROR:
     fnet_socket_set_error(sk, error);
+    fnet_isr_unlock();
     return (SOCKET_ERROR);
 }
 

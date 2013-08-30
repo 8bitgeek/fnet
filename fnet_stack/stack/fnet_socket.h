@@ -1303,7 +1303,6 @@ int shutdown( SOCKET s, int how );
  ******************************************************************************/
 int closesocket( SOCKET s );
 
-
 /***************************************************************************/ /*!
  *
  * @brief    Sets a socket option.
@@ -1313,13 +1312,15 @@ int closesocket( SOCKET s );
  *
  * @param level      Level, at which the option is defined.
  *                   The supported levels are @ref SOL_SOCKET, 
- *                   @ref IPPROTO_IP, and @ref IPPROTO_TCP.
+ *                   @ref IPPROTO_IP, @ref IPPROTO_IPV6 or @ref IPPROTO_TCP.
  *
  * @param optname    Socket option for which the value is to be set.
  *                   - for the @ref SOL_SOCKET level the options are defined by 
  *                     @ref fnet_socket_options_t.
  *                   - for the @ref IPPROTO_IP level the options are defined by 
  *                     @ref fnet_ip_options_t.
+ *                   - for the @ref IPPROTO_IPV6 level the options are defined by 
+ *                     @ref fnet_ip6_options_t.
  *                   - for the @ref IPPROTO_TCP level the options are defined by 
  *                     @ref fnet_tcp_options_t.
  *
@@ -1355,13 +1356,15 @@ int setsockopt( SOCKET s, int level, int optname, char *optval, int optlen );
  *
  * @param level      Level, at which the option is defined.
  *                   The supported levels are the @ref SOL_SOCKET, 
- *                   @ref IPPROTO_IP, and @ref IPPROTO_TCP.
+ *                   @ref IPPROTO_IP, @ref IPPROTO_IPV6 or @ref IPPROTO_TCP.
  *
  * @param optname    Socket option, for which the value is to be retrievied.
  *                   - for the @ref SOL_SOCKET level the options are defined by 
  *                     @ref fnet_socket_options_t.
  *                   - for the @ref IPPROTO_IP level the options are defined by 
  *                     @ref fnet_ip_options_t.
+ *                   - for the @ref IPPROTO_IPV6 level the options are defined by 
+ *                     @ref fnet_ip6_options_t. 
  *                   - for the @ref IPPROTO_TCP level the options are defined by 
  *                     @ref fnet_tcp_options_t.
  *
@@ -1459,7 +1462,7 @@ int getsockname( SOCKET s, struct sockaddr *name, int *namelen );
  * @return This function returns:
  *   - @ref FNET_TRUE if addresses are equal.
  *   - @ref FNET_FALSE if addresses are not equal. 
-*
+ *
  ******************************************************************************
  *
  * This function compares specified socket addresses, depending on address family. @n

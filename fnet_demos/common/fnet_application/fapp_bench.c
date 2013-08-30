@@ -144,7 +144,6 @@ static void fapp_bench_print_results (fnet_shell_desc_t desc)
             ((interval*FNET_TIMER_PERIOD_MS)%1000)/100,
             (interval == 0) ? -1 : (int)((fapp_bench.bytes*8/**(1000*//FNET_TIMER_PERIOD_MS/*)*/)/interval)/*/1000*/,
             (interval == 0) ? -1 : (int)((fapp_bench.remote_bytes*8/**(1000*//FNET_TIMER_PERIOD_MS/*)*/)/interval)/*/1000*/);     
-    
     }
 }
 

@@ -256,7 +256,7 @@ int fnet_ip_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_s
 
 #if FNET_CFG_MULTICAST
     fnet_ip4_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fnet_ip4_addr_t group_addr );
-    void fnet_ip_multicast_leave( fnet_ip4_multicast_list_entry_t *multicastentry );
+    void fnet_ip_multicast_leave_entry( fnet_ip4_multicast_list_entry_t *multicastentry );
 #endif /* FNET_CFG_MULTICAST */
 
 #endif /* _FNET_IP_PRV_H_ */

@@ -1576,6 +1576,11 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+- Version 2.6.1:
+	- Fixed timeout issue in the DHCP client, reported by Colin Bathe.
+	- Fixed race condition in UDP-send function that can cause data corruption, reported by Tomas.
+	- Fixed MLD multicast group leave function.
+	- Many other minor changes and fixes.
 
 - Version 2.6.0:
 	- Added Multicast Listener Discovery Version 1 (MLDv1), enabled by @ref FNET_CFG_MLD.

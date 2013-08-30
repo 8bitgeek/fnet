@@ -456,7 +456,7 @@
  * @def      FNET_CFG_MULTICAST_MAX
  * @brief    Maximum number of unique multicast memberships may exist at 
  *           the same time in the whole system.@n
- *           You can also join the same host group address on multiple interfaces.
+ *           You may join the same host group address on multiple interfaces.
  * @see FNET_CFG_MULTICAST, FNET_CFG_MULTICAST_SOCKET_MAX
  * @showinitializer
  ******************************************************************************/

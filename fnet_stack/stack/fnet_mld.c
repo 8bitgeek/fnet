@@ -108,9 +108,9 @@ void fnet_mld_all(fnet_netif_t *netif)
 }
 
 /************************************************************************
-* NAME: fnet_mld_join
+* NAME: fnet_mld_send
 *
-* DESCRIPTION: Sends MLD message defined ny type:
+* DESCRIPTION: Sends MLD message defined by type:
 *        FNET_ICMP6_TYPE_MULTICAST_LISTENER_REPORT or FNET_ICMP6_TYPE_MULTICAST_LISTENER_DONE 
 *************************************************************************/
 static void fnet_mld_send(fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, unsigned char type)
@@ -125,7 +125,7 @@ static void fnet_mld_send(fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, unsi
     
     /* [RFC2710] EXCLUDING the link-scope all-nodes address and any multicast 
      * addresses of scope 0 (reserved) or 1(node-local).*/
-    if((FNET_IP6_ADDR_MULTICAST_SCOPE(group_addr) > FNET_IP6_ADDR_SCOPE_INTFACELOCAL) 
+    if((FNET_IP6_ADDR_MULTICAST_SCOPE(group_addr) > FNET_IP6_ADDR_SCOPE_INTERFACELOCAL) 
         && !FNET_IP6_ADDR_EQUAL(&fnet_ip6_addr_linklocal_allnodes, group_addr))
     {    
         /* Construct Router Alert option + MLD meassage */
@@ -151,7 +151,7 @@ static void fnet_mld_send(fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, unsi
                 /* Concatanate Hop-by_Hop Options with MLD header. */
                 nb = fnet_netbuf_concat(nb_option, nb);
                 
-                /* Source Address Selection for MLD by RFC3590.*/
+                /* Source Address Selection for MLD, by RFC3590.*/
                 
                 /* [RFC3590] MLD Report and Done messages are sent with a link-local address as
                  * the IPv6 source address, if a valid address is available on the interface.*/

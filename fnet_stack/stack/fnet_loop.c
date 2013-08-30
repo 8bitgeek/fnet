@@ -111,11 +111,15 @@ void fnet_loop_output_ip4(fnet_netif_t *netif, fnet_ip4_addr_t dest_ip_addr, fne
 {
     FNET_COMP_UNUSED_ARG(dest_ip_addr);
     
+    fnet_isr_lock();
+    
     /* MTU check */
     if (nb->total_length <= netif->mtu)
         fnet_ip_input(netif, nb);
     else
         fnet_netbuf_free_chain(nb);
+        
+    fnet_isr_unlock();
 }
 #endif /* FNET_CFG_IP4 */
 
@@ -129,12 +133,16 @@ void fnet_loop_output_ip6(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip_addr
 {
     FNET_COMP_UNUSED_ARG(dest_ip_addr);
     FNET_COMP_UNUSED_ARG(src_ip_addr);
+    
+    fnet_isr_lock();
  
     /* MTU check */
     if (nb->total_length <= netif->mtu)
         fnet_ip6_input(netif, nb);
     else
         fnet_netbuf_free_chain(nb);
+        
+    fnet_isr_unlock();
 }
 #endif /* FNET_CFG_IP6 */
 

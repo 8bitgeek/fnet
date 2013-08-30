@@ -220,7 +220,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
 #if FNET_CFG_IP6
             if(ping_if->family == AF_INET6)
             {
-                fnet_ip6_addr_t   *src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(FNET_NULL, (fnet_ip6_addr_t *)ping_if->target_addr.sa_data); //TBD //DM Check result.
+                fnet_ip6_addr_t   *src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(FNET_NULL, (fnet_ip6_addr_t *)ping_if->target_addr.sa_data); //TBD  Check result.
 
                 hdr->header.checksum = fnet_checksum_pseudo_buf(&fnet_ping_if.buffer[0], 
                                                                 (unsigned short)(sizeof(*hdr) + ping_if->packet_size), 

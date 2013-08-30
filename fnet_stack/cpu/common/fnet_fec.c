@@ -686,6 +686,10 @@ static void fnet_fec_checksum_clear(unsigned short type, char *datagram, unsigne
 }
 #endif /* FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM */
 
+#ifdef FNET_FEC_TEST_RACE_CONDITION
+int fnet_fec_output_reentry_count;
+#endif
+
 /************************************************************************
 * NAME: fnet_fec_output
 *
@@ -726,6 +730,17 @@ void fnet_fec_output(fnet_netif_t *netif, unsigned short type, const fnet_mac_ad
          
         ethif->tx_buf_desc_cur->length = fnet_htons((unsigned short)(FNET_ETH_HDR_SIZE + nb->total_length));
         ethif->tx_buf_desc_cur->status |= FNET_HTONS(FNET_FEC_TX_BD_R); /* Set Frame ready for transmit.*/
+
+
+#ifdef FNET_FEC_TEST_RACE_CONDITION
+        if (fnet_fec_output_reentry_count)
+        {
+            fnet_fec_output_reentry_count = 0;  /* Place breakpoint here.*/
+            while(1){};
+        }
+        fnet_fec_output_reentry_count = 1;
+#endif
+
       
         /* Update pointer to next entry.*/
         if (ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_W))
@@ -736,12 +751,23 @@ void fnet_fec_output(fnet_netif_t *netif, unsigned short type, const fnet_mac_ad
         while(ethif->reg->TDAR) /* Workaround.*/
         {};
 
+#ifdef FNET_FEC_TEST_RACE_CONDITION
+    {
+        int i;
+        for (i=0; i<10000; i++){}        /* tempo 20µs */
+    }
+#endif
+
         ethif->reg->TDAR=FNET_FEC_TDAR_X_DES_ACTIVE; /* Indicate that there has been a transmit buffer produced.*/
 
 #if !FNET_CFG_CPU_ETH_MIB       
         ((fnet_eth_if_t *)(netif->if_ptr))->statistics.tx_packet++;
 #endif      
     }
+
+#ifdef FNET_FEC_TEST_RACE_CONDITION    
+    fnet_fec_output_reentry_count = 0;
+#endif    
    
     fnet_netbuf_free_chain(nb);   
 }
