@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Feb-5-2013
-*
-* @version 0.1.9.0
-*
 * @brief FNET Shell Demo implementation (Ping).
 *
 ***************************************************************************/

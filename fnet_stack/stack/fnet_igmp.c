@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.23.0
-*
 * @brief IGMPv1/v2 protocol implementation.
 *
 ***************************************************************************/

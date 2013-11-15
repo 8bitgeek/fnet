@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Feb-12-2013
-*
-* @version 0.1.7.0
-*
 * @brief Private. ICMP protocol function definitions, data structures, etc.
 *
 ***************************************************************************/

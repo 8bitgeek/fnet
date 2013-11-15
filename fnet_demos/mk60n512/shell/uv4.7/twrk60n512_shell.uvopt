@@ -73,7 +73,7 @@
       <OPTFL>
         <tvExp>1</tvExp>
         <tvExpOptDlg>0</tvExpOptDlg>
-        <IsCurrentTarget>1</IsCurrentTarget>
+        <IsCurrentTarget>0</IsCurrentTarget>
       </OPTFL>
       <CpuCode>14</CpuCode>
       <DllOpt>
@@ -229,7 +229,7 @@
       <OPTFL>
         <tvExp>1</tvExp>
         <tvExpOptDlg>0</tvExpOptDlg>
-        <IsCurrentTarget>0</IsCurrentTarget>
+        <IsCurrentTarget>1</IsCurrentTarget>
       </OPTFL>
       <CpuCode>14</CpuCode>
       <DllOpt>
@@ -392,10 +392,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>25</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>925</TopLine>
+      <CurrentLine>946</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\cpu\common\fnet_fec.c</PathWithFileName>
       <FilenameWithoutPath>fnet_fec.c</FilenameWithoutPath>
@@ -1194,8 +1194,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>67</TopLine>
-      <CurrentLine>81</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\services\poll\fnet_poll.c</PathWithFileName>
       <FilenameWithoutPath>fnet_poll.c</FilenameWithoutPath>
@@ -1226,8 +1226,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>708</TopLine>
-      <CurrentLine>730</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\services\serial\fnet_serial.c</PathWithFileName>
       <FilenameWithoutPath>fnet_serial.c</FilenameWithoutPath>
@@ -1274,8 +1274,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>122</TopLine>
-      <CurrentLine>136</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\services\shell\fnet_shell.c</PathWithFileName>
       <FilenameWithoutPath>fnet_shell.c</FilenameWithoutPath>
@@ -1658,8 +1658,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>252</TopLine>
-      <CurrentLine>281</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_icmp.c</PathWithFileName>
       <FilenameWithoutPath>fnet_icmp.c</FilenameWithoutPath>
@@ -1690,8 +1690,8 @@
       <Focus>0</Focus>
       <ColumnNumber>33</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>92</TopLine>
-      <CurrentLine>112</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_igmp.c</PathWithFileName>
       <FilenameWithoutPath>fnet_igmp.c</FilenameWithoutPath>
@@ -1722,8 +1722,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>563</TopLine>
-      <CurrentLine>583</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_ip.c</PathWithFileName>
       <FilenameWithoutPath>fnet_ip.c</FilenameWithoutPath>
@@ -1754,8 +1754,8 @@
       <Focus>0</Focus>
       <ColumnNumber>18</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>157</TopLine>
-      <CurrentLine>166</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_ip_prv.h</PathWithFileName>
       <FilenameWithoutPath>fnet_ip_prv.h</FilenameWithoutPath>
@@ -1770,8 +1770,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>307</TopLine>
-      <CurrentLine>319</CurrentLine>
+      <TopLine>232</TopLine>
+      <CurrentLine>250</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_isr.c</PathWithFileName>
       <FilenameWithoutPath>fnet_isr.c</FilenameWithoutPath>
@@ -1784,10 +1784,10 @@
       <FileType>5</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>25</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>37</TopLine>
+      <CurrentLine>63</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_isr.h</PathWithFileName>
       <FilenameWithoutPath>fnet_isr.h</FilenameWithoutPath>
@@ -1866,8 +1866,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>417</TopLine>
-      <CurrentLine>423</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_netbuf.c</PathWithFileName>
       <FilenameWithoutPath>fnet_netbuf.c</FilenameWithoutPath>
@@ -1882,8 +1882,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>91</TopLine>
-      <CurrentLine>117</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_netbuf.h</PathWithFileName>
       <FilenameWithoutPath>fnet_netbuf.h</FilenameWithoutPath>
@@ -1978,8 +1978,8 @@
       <Focus>0</Focus>
       <ColumnNumber>34</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>861</TopLine>
-      <CurrentLine>874</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_socket.c</PathWithFileName>
       <FilenameWithoutPath>fnet_socket.c</FilenameWithoutPath>
@@ -2106,8 +2106,8 @@
       <Focus>0</Focus>
       <ColumnNumber>15</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>841</TopLine>
-      <CurrentLine>851</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_tcp.c</PathWithFileName>
       <FilenameWithoutPath>fnet_tcp.c</FilenameWithoutPath>
@@ -2186,8 +2186,8 @@
       <Focus>0</Focus>
       <ColumnNumber>32</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>260</TopLine>
-      <CurrentLine>277</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_udp.c</PathWithFileName>
       <FilenameWithoutPath>fnet_udp.c</FilenameWithoutPath>
@@ -2250,8 +2250,8 @@
       <Focus>0</Focus>
       <ColumnNumber>10</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>471</TopLine>
-      <CurrentLine>480</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\stack\fnet_ip6.c</PathWithFileName>
       <FilenameWithoutPath>fnet_ip6.c</FilenameWithoutPath>
@@ -2410,8 +2410,8 @@
       <Focus>0</Focus>
       <ColumnNumber>16</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>262</TopLine>
-      <CurrentLine>265</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\fnet_stack\services\ping\fnet_ping.c</PathWithFileName>
       <FilenameWithoutPath>fnet_ping.c</FilenameWithoutPath>
@@ -2864,10 +2864,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>6</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
+      <TopLine>78</TopLine>
+      <CurrentLine>79</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\fnet_application\fapp_setget.c</PathWithFileName>
       <FilenameWithoutPath>fapp_setget.c</FilenameWithoutPath>
@@ -3034,8 +3034,8 @@
       <Focus>0</Focus>
       <ColumnNumber>17</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>34</TopLine>
-      <CurrentLine>79</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\startup\startup_mk60n512\crt0.s</PathWithFileName>
       <FilenameWithoutPath>crt0.s</FilenameWithoutPath>
@@ -3346,8 +3346,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>1</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Linker Files\K60N512_FLASH.sct</PathWithFileName>
       <FilenameWithoutPath>K60N512_FLASH.sct</FilenameWithoutPath>
@@ -3362,8 +3362,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>1</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Linker Files\K60N512_RAM.sct</PathWithFileName>
       <FilenameWithoutPath>K60N512_RAM.sct</FilenameWithoutPath>
@@ -3374,7 +3374,7 @@
 
   <Group>
     <GroupName>src</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -3418,8 +3418,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>19</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>

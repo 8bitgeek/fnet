@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-4-2013
-*
-* @version 0.1.39.0
-*
 * @brief FNET Network interface implementation.
 *
 ***************************************************************************/
@@ -684,6 +680,31 @@ fnet_ip4_addr_t fnet_netif_get_ip4_dns( fnet_netif_desc_t netif_desc )
     return netif ? (netif->ip4_addr.dns) : 0;
 }    
 #endif /* FNET_CFG_DNS && FNET_CFG_IP4*/
+
+#if FNET_CFG_DNS && FNET_CFG_IP6
+/************************************************************************
+* NAME: fnet_netif_get_ip6_dns
+*
+* DESCRIPTION: This function returns a DNSv6 Server address.
+*************************************************************************/
+int fnet_netif_get_ip6_dns( fnet_netif_desc_t netif_desc, unsigned int n, fnet_ip6_addr_t *addr_dns )
+{
+    fnet_netif_t    *netif = (fnet_netif_t *)netif_desc;
+    int             result = FNET_FALSE;
+
+    if(netif)
+    {
+        /* TBD Manual configuration.*/
+
+    #if FNET_CFG_ND6_RDNSS 
+        result =  fnet_nd6_rdnss_get_addr(netif, n, addr_dns);
+    #endif
+    }
+    
+    return result;
+}    
+#endif /* FNET_CFG_DNS && FNET_CFG_IP4*/
+
 
 /************************************************************************
 * NAME: fnet_netif_get_name
@@ -1421,8 +1442,8 @@ void fnet_netif_ip6_addr_timer ( fnet_netif_t *netif)
     {
         /* Check lifetime for address.*/
         if((netif->ip6_addr[i].state != FNET_NETIF_IP6_ADDR_STATE_NOT_USED)
-           && (netif->ip6_addr[i].lifetime != FNET_NETIF_IP6_ADDR_LIFETIME_INFINITE)
-           && (fnet_timer_seconds() > (netif->ip6_addr[i].creation_time + netif->ip6_addr[i].lifetime))
+            && (netif->ip6_addr[i].lifetime != FNET_NETIF_IP6_ADDR_LIFETIME_INFINITE)
+            && (fnet_timer_get_interval(netif->ip6_addr[i].creation_time, fnet_timer_seconds()) > netif->ip6_addr[i].lifetime)
             )
         {
             /* RFC4862 5.5.4: An address (and its association with an interface) becomes invalid

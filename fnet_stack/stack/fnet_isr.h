@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.24.0
-*
 * @brief Private. Interrupt dispatcher API.
 *
 ***************************************************************************/
@@ -54,6 +50,8 @@
 *     Events
 *************************************************************************/
 typedef long fnet_event_desc_t;
+
+extern unsigned long fnet_locked;
 
 /************************************************************************
 *     Function Prototypes

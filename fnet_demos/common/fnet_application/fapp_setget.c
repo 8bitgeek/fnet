@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.32.0
-*
 * @brief FNET Application Shell Set/Get routines.
 *
 ***************************************************************************/
@@ -65,38 +61,58 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-void fapp_set_cmd_ip(fnet_shell_desc_t desc, char *value );
 #if FAPP_CFG_SETGET_CMD_IP && FNET_CFG_IP4
-void fapp_get_cmd_ip(fnet_shell_desc_t desc);
+static void fapp_set_cmd_ip(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_ip(fnet_shell_desc_t desc);
 #endif
 #if FAPP_CFG_SETGET_CMD_GATEWAY && FNET_CFG_IP4
-void fapp_set_cmd_gateway(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_gateway(fnet_shell_desc_t desc);
+static void fapp_set_cmd_gateway(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_gateway(fnet_shell_desc_t desc);
 #endif
 #if FAPP_CFG_SETGET_CMD_NETMASK && FNET_CFG_IP4
-void fapp_set_cmd_netmask(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_netmask(fnet_shell_desc_t desc);
+static void fapp_set_cmd_netmask(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_netmask(fnet_shell_desc_t desc);
 #endif
-void fapp_set_cmd_mac(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_mac(fnet_shell_desc_t desc);
-void fapp_set_cmd_dns(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_dns(fnet_shell_desc_t desc);
-void fapp_set_cmd_boot(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_boot(fnet_shell_desc_t desc);
-void fapp_set_cmd_bootscript(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_bootscript(fnet_shell_desc_t desc);
-void fapp_set_cmd_bootdelay(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_bootdelay(fnet_shell_desc_t desc);
-void fapp_set_cmd_tftp(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_tftp(fnet_shell_desc_t desc);
-void fapp_set_cmd_image(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_image(fnet_shell_desc_t desc);
-void fapp_set_cmd_image_type(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_image_type(fnet_shell_desc_t desc);
-void fapp_set_cmd_go(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_go(fnet_shell_desc_t desc);
-void fapp_set_cmd_raw(fnet_shell_desc_t desc, char *value );
-void fapp_get_cmd_raw(fnet_shell_desc_t desc);
+#if FAPP_CFG_SETGET_CMD_MAC 
+static void fapp_set_cmd_mac(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_mac(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_DNS && FNET_CFG_DNS && FNET_CFG_IP4
+static void fapp_set_cmd_dns(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_dns(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_BOOT
+static void fapp_set_cmd_boot(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_boot(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_SCRIPT 
+static void fapp_set_cmd_bootscript(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_bootscript(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_DELAY 
+static void fapp_set_cmd_bootdelay(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_bootdelay(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_TFTP
+static void fapp_set_cmd_tftp(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_tftp(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_IMAGE 
+static void fapp_set_cmd_image(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_image(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_TYPE
+static void fapp_set_cmd_image_type(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_image_type(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_GO 
+static void fapp_set_cmd_go(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_go(fnet_shell_desc_t desc);
+#endif
+#if FAPP_CFG_SETGET_CMD_RAW 
+static void fapp_set_cmd_raw(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_raw(fnet_shell_desc_t desc);
+#endif
 
 /************************************************************************
 *     The set/show parameterr's entry control data structure definition.

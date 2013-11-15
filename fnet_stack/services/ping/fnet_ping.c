@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.5.0
-*
 * @brief PING implementation.
 *
 ***************************************************************************/
@@ -338,6 +334,9 @@ NO_DATA:
                 ping_if->state = FNET_PING_STATE_SENDING_REQUEST;
             }
             break;
+
+        default:
+            break;  /* do nothing, avoid compiler warning "enumeration value not handled in switch" */
     }
 }
 

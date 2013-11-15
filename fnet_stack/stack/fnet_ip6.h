@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.12.0
-*
 * @brief IPv6 protocol API.
 *
 ***************************************************************************/
@@ -79,8 +75,6 @@ FNET_COMP_PACKED_END
 #define FNET_IP6_ADDR_STR_SIZE       sizeof("abcd:abcd:abcd:abcd:abcd:abcd:abcd:abcd")
 
 /*! @} */
-
-#if FNET_CFG_IP6
 
 /******************************************************************
 * Constants
@@ -169,8 +163,5 @@ extern const fnet_ip6_addr_t fnet_ip6_addr_linklocal_prefix;
     	(((a)->addr[0] == 0xfe) && (((a)->addr[1] & 0xc0) == 0xc0))
 
 
-#endif /* FNET_CFG_IP6 */
 
-
-
-#endif
+#endif  /* _FNET_IP6_H_ */

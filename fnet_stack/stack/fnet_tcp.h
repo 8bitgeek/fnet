@@ -21,11 +21,7 @@
 *
 * @file fnet_tcp.h
 *
-* @date Dec-19-2012
-*
 * @author Alexey Shervashidze, Andrey Butok.
-*
-* @version 0.1.27.0
 *
 * @brief Private. TCP protocol definitions.
 *
@@ -118,7 +114,7 @@ extern struct fnet_prot_if fnet_tcp_prot_if;
 /************************************************************************
 *    Maximal size of synchronized options
 *************************************************************************/
-#define FNET_TCP_MAX_OPT_SIZE       (7)
+#define FNET_TCP_MAX_OPT_SIZE       (8)
 
 /************************************************************************
 *    Maximal window size 

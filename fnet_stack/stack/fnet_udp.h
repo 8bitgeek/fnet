@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.24.0
-*
 * @brief Private. UDP protocol definitions.
 *
 ***************************************************************************/
@@ -84,13 +80,6 @@ typedef struct
 } fnet_udp_header_t;
 FNET_COMP_PACKED_END
 
-/************************************************************************
-*     Function Prototypes
-*************************************************************************/
-static void fnet_udp_release(void);
-static int fnet_udp_output(struct sockaddr * src_addr, const struct sockaddr * dest_addr, fnet_socket_option_t *sockoption, fnet_netbuf_t *nb );
-static void fnet_udp_input_ip4(fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
-static void fnet_udp_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
 
 #endif  /* FNET_CFG_UDP */
 

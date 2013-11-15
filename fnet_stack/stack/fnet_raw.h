@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.4.0
-*
 * @brief RAW socket definitions.
 *
 ***************************************************************************/
@@ -68,8 +64,6 @@ extern fnet_prot_if_t fnet_raw_prot_if;
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fnet_raw_release(void);
-static int fnet_raw_output(struct sockaddr *src_addr, const struct sockaddr *dest_addr, unsigned char protocol_number, fnet_socket_option_t *sockoption, fnet_netbuf_t *nb);
 void fnet_raw_input_ip4(fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
 void fnet_raw_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
 

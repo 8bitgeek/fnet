@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.0.11.0
-*
 * @brief TFTP services configuration file.
 *
 ***************************************************************************/

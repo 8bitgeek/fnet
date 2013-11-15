@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-17-2012
-*
-* @version 0.1.31.0
-*
 * @brief ColdFire specific default configuration file.
 *
 ***************************************************************************/

@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Oct-26-2012
-*
-* @version 0.0.15.0
-*
 * @brief ColdFire Serial port I/O functions.
 *
 ***************************************************************************/

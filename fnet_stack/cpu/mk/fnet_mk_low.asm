@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.6.0
-*
 * @brief Lowest level routines for Kinetis.
 *
 ***************************************************************************/

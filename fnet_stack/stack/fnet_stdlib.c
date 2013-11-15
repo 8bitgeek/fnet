@@ -21,10 +21,6 @@
 *
 * @file fnet_stdlib.c
 *
-* @date Dec-19-2012
-*
-* @version 0.1.32.0
-*
 * @brief Standard functions implementation.
 *
 ***************************************************************************/

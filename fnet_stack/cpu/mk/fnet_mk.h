@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.11.0
-*
 * @brief Private. Kinetis Peripheral Registers definitions.
 *
 ***************************************************************************/

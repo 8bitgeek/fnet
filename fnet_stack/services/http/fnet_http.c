@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.48.0
-*
 * @brief FNET HTTP/0.9 Server implementation.
 *
 ***************************************************************************/
@@ -63,13 +59,13 @@
 *     Definitions
 ************************************************************************/
 /* Automated time-outs */
-#define FNET_HTTP_WAIT_TX_MS    (10000)  /* ms*/
-#define FNET_HTTP_WAIT_RX_MS    (15000)  /* ms*/
+#define FNET_HTTP_WAIT_TX_MS                    (10000)  /* ms*/
+#define FNET_HTTP_WAIT_RX_MS                    (15000)  /* ms*/
 
-#define FNET_HTTP_BACKLOG_MAX   (1)
+#define FNET_HTTP_BACKLOG_MAX                   (FNET_CFG_HTTP_SESSION_MAX)
 
-#define FNET_HTTP_VERSION_HEADER    "HTTP/" /* Protocol version HTTP/x.x*/
-#define FNET_HTTP_ITERATION_NUMBER  (2)
+#define FNET_HTTP_VERSION_HEADER                "HTTP/" /* Protocol version HTTP/x.x*/
+#define FNET_HTTP_ITERATION_NUMBER              (2)
 
 #define FNET_HTTP_HEADER_FIELD_CONTENT_TYPE     "Content-Type:"
 #define FNET_HTTP_HEADER_FIELD_CONTENT_LENGTH   "Content-Length:"

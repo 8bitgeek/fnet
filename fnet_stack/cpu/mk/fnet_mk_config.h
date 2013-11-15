@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-17-2012
-*
-* @version 0.1.8.0
-*
 * @brief Kinetis specific default configuration.
 *
 ***************************************************************************/

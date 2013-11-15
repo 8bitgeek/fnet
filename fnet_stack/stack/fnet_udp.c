@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.62.0
-*
 * @brief UDP protocol implementation.
 *
 ***************************************************************************/
@@ -49,7 +45,6 @@
 #include "fnet_ip_prv.h"
 #include "fnet_timer.h"
 #include "fnet_stdlib.h"
-
 #include "fnet_isr.h"
 #include "fnet_checksum.h"
 #include "fnet_prot.h"
@@ -68,9 +63,17 @@ static int fnet_udp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struc
 static void fnet_udp_control_input( fnet_prot_notify_t command, fnet_ip_header_t *ip_hdr );
 static int fnet_udp_shutdown( fnet_socket_t *sk, int how );
 static void fnet_udp_input( fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
+static void fnet_udp_release(void);
+static int fnet_udp_output(struct sockaddr * src_addr, const struct sockaddr * dest_addr, fnet_socket_option_t *sockoption, fnet_netbuf_t *nb );
+#if FNET_CFG_IP4
+static void fnet_udp_input_ip4(fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
+#endif
+#if FNET_CFG_IP6
+static void fnet_udp_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
+#endif
 
 #if FNET_CFG_DEBUG_TRACE_UDP
-    void fnet_udp_trace(char *str, fnet_udp_header_t *udp_hdr);
+    static void fnet_udp_trace(char *str, fnet_udp_header_t *udp_hdr);
 #else
     #define fnet_udp_trace(str, udp_hdr)
 #endif

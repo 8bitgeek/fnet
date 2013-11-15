@@ -84,25 +84,23 @@ void fnet_mld_leave(fnet_netif_t *netif, fnet_ip6_addr_t  *group_addr)
 }
 
 /************************************************************************
-* NAME: fnet_mld_all
+* NAME: fnet_mld_report_all
 *
 * DESCRIPTION: Generates new MLD Report messages for all multicast 
 *              addresses joined on the interface.
 *************************************************************************/
-void fnet_mld_all(fnet_netif_t *netif)
+void fnet_mld_report_all(fnet_netif_t *netif)
 {
     int i;
     
     /* Find existing entries for the interface.*/
     for(i=0; i < FNET_CFG_MULTICAST_MAX; i++)
     {
-        if(fnet_ip6_multicast_list[i].user_counter > 0)
+        if((fnet_ip6_multicast_list[i].user_counter > 0) 
+            && (fnet_ip6_multicast_list[i].netif == netif))
         {
-            if(fnet_ip6_multicast_list[i].netif == netif)
-            {
-                /* Send report.*/
-                fnet_mld_join(netif, &fnet_ip6_multicast_list[i].group_addr);
-            }
+            /* Send report.*/
+            fnet_mld_send(netif, &fnet_ip6_multicast_list[i].group_addr, FNET_ICMP6_TYPE_MULTICAST_LISTENER_REPORT);
         }
     }
 }
@@ -194,6 +192,7 @@ static void fnet_mld_send(fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, unsi
 
 /************************************************************************
 * NAME: fnet_mld_query_receive
+*
 * DESCRIPTION: Handles received Multicast Listener Query message.
 *************************************************************************/
 void fnet_mld_query_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
@@ -206,7 +205,7 @@ void fnet_mld_query_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_i
     FNET_COMP_UNUSED_ARG(dest_ip);
 	
     /************************************************************
-    * Validation of Router Advertisement Message.
+    * Validation of MLD Query Message.
     *************************************************************/	
     if(
         (mld_packet_size < sizeof(fnet_mld_header_t))  
@@ -226,13 +225,14 @@ void fnet_mld_query_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_i
         /* [RFC2710] A Multicast-Address-Specific
          * Query applies to a single multicast address on the interface from
          * which the Query is received. */
-        fnet_mld_join(netif, &mld_packet->multicast_addr);
+        if(fnet_ip6_multicast_find_entry(netif, &mld_packet->multicast_addr))
+            fnet_mld_join(netif, &mld_packet->multicast_addr);
     }
     else if(FNET_IP6_ADDR_EQUAL(&fnet_ip6_addr_any, &mld_packet->multicast_addr))
     {
         /* [RFC2710] General Query applies to all multicast addresses on the interface
          * from which the Query is received. */
-        fnet_mld_all(netif);
+        fnet_mld_report_all(netif);
     }
 
 

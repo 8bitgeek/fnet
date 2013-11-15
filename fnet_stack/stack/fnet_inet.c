@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.6.0
-*
 * @brief Address-conversion functions.
 *
 ***************************************************************************/

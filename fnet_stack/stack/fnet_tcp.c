@@ -21,11 +21,7 @@
 *
 * @file fnet_tcp.c
 *
-* @date Mar-25-2013
-*
 * @author Olexandr Servasidze, Andrey Butok.
-*
-* @version 0.1.76.0
 *
 * @brief TCP protocol implementation.
 *
@@ -101,18 +97,22 @@ static void fnet_tcp_delpartialsk( fnet_socket_t *sk );
 static void fnet_tcp_delincomingsk( fnet_socket_t *sk );
 static void fnet_tcp_delcb( fnet_tcp_control_t *cb );
 #if !FNET_CFG_TCP_DISCARD_OUT_OF_ORDER
-    void fnet_tcp_deletetmpbuf( fnet_tcp_control_t *cb );
+static void fnet_tcp_deletetmpbuf( fnet_tcp_control_t *cb );
 #endif
 static void fnet_tcp_delsk( fnet_socket_t ** head, fnet_socket_t *sk );
 static int fnet_tcp_sendanydata( fnet_socket_t *sk, int oneexec );
 #if FNET_CFG_TCP_URGENT
-    static void fnet_tcp_urgprocessing( fnet_socket_t *sk, fnet_netbuf_t ** segment, unsigned long repdatasize, int *ackparam );
+static void fnet_tcp_urgprocessing( fnet_socket_t *sk, fnet_netbuf_t ** segment, unsigned long repdatasize, int *ackparam );
 #endif
 static void fnet_tcp_finprocessing( fnet_socket_t *sk, unsigned long ack );
 static int fnet_tcp_init( void );
 static void fnet_tcp_release( void );
+#if FNET_CFG_IP4
 static void fnet_tcp_input_ip4( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
+#endif
+#if FNET_CFG_IP6
 static void fnet_tcp_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
+#endif
 static void fnet_tcp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
 static void fnet_tcp_ctrlinput( fnet_prot_notify_t command, fnet_ip_header_t *ip_hdr );
 static int fnet_tcp_attach( fnet_socket_t *sk );
@@ -1616,18 +1616,20 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
         switch(cb->tcpcb_connection_state)
         {
             case FNET_TCP_CS_LISTENING:
-              if(sgmtype & FNET_TCP_SGT_ACK)
-                  /* Send the reset segment.*/
-                  fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
+                if(sgmtype & FNET_TCP_SGT_ACK)
+                    /* Send the reset segment.*/
+                    fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
 
-              return FNET_TRUE;
+                return FNET_TRUE;
 
             case FNET_TCP_CS_SYN_SENT:
-              if(sgmtype & FNET_TCP_SGT_ACK)
+                if(sgmtype & FNET_TCP_SGT_ACK)
                   /* Send the reset segment.*/
-                  fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
+                    fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
 
-              return FNET_TRUE;
+                return FNET_TRUE;
+            default:
+                break;  /* do nothing, avoid compiler warning "enumeration value not handled in switch" */
         }
     }
 
@@ -1905,44 +1907,37 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
         case FNET_TCP_CS_FIN_WAIT_2:
         case FNET_TCP_CS_CLOSE_WAIT:
         case FNET_TCP_CS_ESTABLISHED:
-
-          /* Proseed the processing.*/
-          result = fnet_tcp_dataprocess(sk, insegment, &ackparam);
-          break;
-
+            /* Proseed the processing.*/
+            result = fnet_tcp_dataprocess(sk, insegment, &ackparam);
+            break;
         case FNET_TCP_CS_FIN_WAIT_1:
+            /* Proseed the processing.*/
+            result = fnet_tcp_dataprocess(sk, insegment, &ackparam);
 
-          /* Proseed the processing.*/
-          result = fnet_tcp_dataprocess(sk, insegment, &ackparam);
-
-          if(cb->tcpcb_sndseq == cb->tcpcb_rcvack && cb->tcpcb_connection_state == FNET_TCP_CS_FIN_WAIT_1)
-              /* Change the state.*/
-              cb->tcpcb_connection_state = FNET_TCP_CS_FIN_WAIT_2;
-
-          break;
-
+            if(cb->tcpcb_sndseq == cb->tcpcb_rcvack && cb->tcpcb_connection_state == FNET_TCP_CS_FIN_WAIT_1)
+                /* Change the state.*/
+                cb->tcpcb_connection_state = FNET_TCP_CS_FIN_WAIT_2;
+            break;
         case FNET_TCP_CS_LAST_ACK:
           if(tcp_ack == cb->tcpcb_sndseq) 
               /* Close the socket.*/
               fnet_tcp_closesk(sk);
-
           return FNET_TRUE;
-
         case FNET_TCP_CS_CLOSING:
-          if(tcp_ack == cb->tcpcb_sndseq) 
-          {
-              cb->tcpcb_connection_state = FNET_TCP_CS_TIME_WAIT;
-              /* Set the  timeout of the TIME_WAIT state.*/
-              cb->tcpcb_timers.connection = FNET_TCP_TIME_WAIT;
-              cb->tcpcb_timers.retransmission = FNET_TCP_TIMER_OFF;
-              cb->tcpcb_timers.keepalive = FNET_TCP_TIMER_OFF;
-          }
-
-          break;
-
+            if(tcp_ack == cb->tcpcb_sndseq) 
+            {
+                cb->tcpcb_connection_state = FNET_TCP_CS_TIME_WAIT;
+                /* Set the  timeout of the TIME_WAIT state.*/
+                cb->tcpcb_timers.connection = FNET_TCP_TIME_WAIT;
+                cb->tcpcb_timers.retransmission = FNET_TCP_TIMER_OFF;
+                cb->tcpcb_timers.keepalive = FNET_TCP_TIMER_OFF;
+            }
+            break;
         case FNET_TCP_CS_TIME_WAIT:
-          fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
-          break;
+            fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
+            break;
+        default:
+            break;  /* do nothing, avoid compiler warning "enumeration value not handled in switch" */
     }
 
     /* If the input buffer is closed, delete the input data.*/

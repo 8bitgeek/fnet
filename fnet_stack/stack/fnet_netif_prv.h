@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.34.0
-*
 * @brief Private. FNET Network interface API.
 *
 ***************************************************************************/

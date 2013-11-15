@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-4-2013
-*
-* @version 0.1.29.0
-*
 * @brief FNET Buffer and memory management implementation.
 *
 ***************************************************************************/

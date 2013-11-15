@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-16-2013
-*
-* @version 0.0.14.0
-*
 * @brief DHCP Client configuration file.
 *
 ***************************************************************************/

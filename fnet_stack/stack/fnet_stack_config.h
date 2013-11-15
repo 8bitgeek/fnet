@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Feb-5-2013
-*
-* @version 0.1.57.0
-*
 * @brief Main TCP/IP stack default configuration file.
 *
 ***************************************************************************/
@@ -131,6 +127,38 @@
 #endif
 
 /**************************************************************************/ /*!
+ * @def     FNET_CFG_ND6_RDNSS
+ * @brief   Recursive DNS Server Option (RFC6106) support via router advertisemnt:
+ *               - @b @c 1 = is enabled (Default value).
+ *               - @c 0 = is disabled.@n
+ * @see FNET_CFG_ND6_RDNSS_LIST_SIZE
+ *
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_ND6_RDNSS
+    #define FNET_CFG_ND6_RDNSS                  (1)
+#endif
+
+/**************************************************************************/ /*!
+ * @def     FNET_CFG_ND6_RDNSS_LIST_SIZE
+ * @brief   Maximum number of entries in the RDNSS address list (per interface).
+ * 
+ * @note    RFC6106: Specified a sufficient number of RDNSS addresses as three.
+ * 
+ * @see FNET_CFG_ND6_RDNSS
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_ND6_RDNSS_LIST_SIZE
+    #define FNET_CFG_ND6_RDNSS_LIST_SIZE        (3)
+#endif
+
+/* Control FNET_CFG_ND6_RDNSS_LIST_SIZE minimum value.*/
+#if FNET_CFG_ND6_RDNSS_LIST_SIZE < 1
+    #undef FNET_CFG_ND6_RDNSS_LIST_SIZE
+    #define FNET_CFG_ND6_RDNSS_LIST_SIZE        (1)
+#endif
+
+/**************************************************************************/ /*!
  * @def      FNET_CFG_IP6_FRAGMENTATION
  * @brief    IPv6 fragmentation:
  *               - @b @c 1 = is enabled (Default value). @n The IPv6 will attempt
@@ -141,7 +169,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_IP6_FRAGMENTATION
-    #define FNET_CFG_IP6_FRAGMENTATION      (1)
+    #define FNET_CFG_IP6_FRAGMENTATION          (1)
 #endif
 
 /**************************************************************************/ /*!
@@ -152,7 +180,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_IP6_PMTU_DISCOVERY
-    #define FNET_CFG_IP6_PMTU_DISCOVERY     (1)
+    #define FNET_CFG_IP6_PMTU_DISCOVERY         (1)
 #endif
 
 /**************************************************************************/ /*!
@@ -161,23 +189,25 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_NETIF_IP6_ADDR_MAX
-    #define FNET_CFG_NETIF_IP6_ADDR_MAX     (5)
+    #define FNET_CFG_NETIF_IP6_ADDR_MAX         (5)
 #endif
 
 #if FNET_CFG_NETIF_IP6_ADDR_MAX <2 
     #undef FNET_CFG_NETIF_IP6_ADDR_MAX
-    #define FNET_CFG_NETIF_IP6_ADDR_MAX     (2)
+    #define FNET_CFG_NETIF_IP6_ADDR_MAX         (2)
 #endif 
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_MLD
  * @brief    Multicast Listener Discovery (MLDv1) support:
- *               - @c 1 = is enabled.
+ *               - @c 1 = is enabled. Its enabling is optional for multicast 
+ *                        traffic that takes place inside only one local network.
  *               - @b @c 0 = is disabled (Default value).
+ *           
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_MLD
-    #define FNET_CFG_MLD                    (0)
+    #define FNET_CFG_MLD                        (0)
 #endif
 
  
@@ -863,22 +893,22 @@
  * Obsolete configuration parameters
  ******************************************************************************/
 #ifdef FNET_CFG_ETH_IP4_ADDR  
-	#error "FNET_CFG_ETH_IP4_ADDR parameter is obsolete, use FNET_CFG_ETH0_IP4_ADDR ."
+	#error "FNET_CFG_ETH_IP4_ADDR parameter is obsolete, use FNET_CFG_ETH0_IP4_ADDR."
 #endif
 #ifdef FNET_CFG_ETH_IP4_MASK  
-	#error "FNET_CFG_ETH_IP4_MASK parameter is obsolete, use FNET_CFG_ETH0_IP4_MASK ."
+	#error "FNET_CFG_ETH_IP4_MASK parameter is obsolete, use FNET_CFG_ETH0_IP4_MASK."
 #endif
 #ifdef FNET_CFG_ETH_IP4_GW  
-	#error "FNET_CFG_ETH_IP4_GW parameter is obsolete, use FNET_CFG_ETH0_IP4_GW ."
+	#error "FNET_CFG_ETH_IP4_GW parameter is obsolete, use FNET_CFG_ETH0_IP4_GW."
 #endif
 #ifdef FNET_CFG_ETH_IP4_DNS  
-	#error "FNET_CFG_ETH_IP4_DNS parameter is obsolete, use FNET_CFG_ETH0_IP4_DNS ."
+	#error "FNET_CFG_ETH_IP4_DNS parameter is obsolete, use FNET_CFG_ETH0_IP4_DNS."
 #endif
 #ifdef FNET_CFG_ETH  
-	#error "FNET_CFG_ETH parameter is obsolete, use FNET_CFG_CPU_ETH0 ."
+	#error "FNET_CFG_ETH parameter is obsolete, use FNET_CFG_CPU_ETH0."
 #endif
 #ifdef FNET_CFG_ETH_MAC_ADDR  
-	#error "FNET_CFG_ETH_MAC_ADDR parameter is obsolete, use FNET_CFG_CPU_ETH0_MAC_ADDR ."
+	#error "FNET_CFG_ETH_MAC_ADDR parameter is obsolete, use FNET_CFG_CPU_ETH0_MAC_ADDR."
 #endif
 #ifdef FNET_CFG_ETH_MTU  
 	#error "FNET_CFG_ETH_MTU parameter is obsolete, use FNET_CFG_CPU_ETH0_MTU ."

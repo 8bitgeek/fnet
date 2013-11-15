@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.0.22.0
-*
 * @brief FNET HTTP Server configuration file.
 *
 ***************************************************************************/

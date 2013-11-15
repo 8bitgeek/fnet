@@ -176,9 +176,9 @@ typedef unsigned short fnet_address_family_t;
 
 /* Size of sa_data[]*/
 #if FNET_CFG_IP6
-    #define FNET_SA_DATA_SIZE   (20)
+    #define FNET_SA_DATA_SIZE   (20) /* To cover sockaddr_in and sockaddr_in6. */
 #else /* IPv4 */
-    #define FNET_SA_DATA_SIZE   (4)
+   #define FNET_SA_DATA_SIZE   (4)
 #endif
 
 /**************************************************************************/ /*!
@@ -690,7 +690,7 @@ typedef enum
 } fnet_ip_options_t;
 
 /**************************************************************************/ /*!
- * @brief IPv6 level (@ref IPPROTO_IPV6) options for the @ref setsockopt() 
+ * @brief IPv6 level (@ref IPPROTO_IPV6) options (RFC3493) for the @ref setsockopt() 
  * and the @ref getsockopt().
  *
  * <table>
@@ -700,7 +700,7 @@ typedef enum
  * Default Value</th><th ALIGN=CENTER>Read/Write</th>
  *</tr>
  *<tr>
- *<td>@ref IPV6_UNICAST_HOPS</td><td>int</td><td>64</td><td>RW</td>
+ *<td>@ref IPV6_UNICAST_HOPS</td><td>int</td><td>0 (64)</td><td>RW</td>
  *</tr>
  *<tr>
  *<td>@ref IPV6_MULTICAST_HOPS</td><td>int</td><td>1</td><td>RW</td>
@@ -717,9 +717,11 @@ typedef enum
 {
     IPV6_UNICAST_HOPS = (4)     /**< @brief  This option defines hop limit used 
                                 * for outgoing unicast IPv6 packets. @n
-                                * Its value can be from 0 till 255.
+                                * Its value can be from 0 till 255.@n
+                                * By default the option is set to 0. It means that the hop limit is defined 
+                                * by local IPv6 router, otherwise it equals to 64. 
                                 */
-    ,IPV6_MULTICAST_HOPS = (5)  /**< @brief (RFC3493) Set the hop limit to use for outgoing multicast IPv6 packets.@n
+    ,IPV6_MULTICAST_HOPS = (5)  /**< @brief Set the hop limit to use for outgoing multicast IPv6 packets.@n
                                 * If IPV6_MULTICAST_HOPS is not set, the default is 1.
                                 */ 
     ,IPV6_JOIN_GROUP  = (6)     /**< @brief (RFC3493) Join a multicast group on a specified local interface.@n
@@ -810,7 +812,6 @@ typedef enum
  *
  * @param family   Address family that the socket will use, defined 
  *                 by the @ref fnet_address_family_t.
- *                 Only Internet address family (@ref AF_INET) is supported.
  *
  * @param type     Type specification for the new socket, defined by @ref
  *                 fnet_socket_type_t. It can be @ref SOCK_STREAM (TCP) or

@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.8.0
-*
 * @brief Main FNET default configuration file.
 *
 ***************************************************************************/

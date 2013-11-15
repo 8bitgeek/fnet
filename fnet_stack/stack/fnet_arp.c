@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.33.0
-*
 * @brief ARP protocol implementation.
 *
 ***************************************************************************/

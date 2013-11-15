@@ -33,10 +33,6 @@
 *
 * @file fnet_stack.c
 *
-* @date Dec-19-2012
-*
-* @version 0.1.12.0
-*
 * @brief FNET init/release functions.
 *
 ***************************************************************************/

@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.12.0
-*
 * @brief Compiler-specific definitions that resolve
 * differences between different assemblers.
 *
@@ -238,7 +234,7 @@ after the END directive.*/
 
 /* Code section. */
 /* GCC compiler adds leading underscores to assembly symbols.*/
-#define FNET_COMP_ASM_PREFIX(x) _##x
+#define FNET_COMP_ASM_PREFIX(x) x
 
 /* Macro for the equate directive. */
 .macro FNET_COMP_ASM_EQU label, value
@@ -269,6 +265,34 @@ after the END directive.*/
 .macro FNET_COMP_ASM_DC32 value
    .long \value
    .endm
+
+#if FNET_MCF 
+
+#define a0 %a0
+#define a1 %a1
+#define a2 %a2
+#define a3 %a3
+#define a4 %a4
+#define a5 %a5
+#define a6 %a6
+#define a7 %a7
+#define sp %sp
+#define d0 %d0
+#define d1 %d1
+#define d2 %d2
+#define d3 %d3
+#define d4 %d4
+#define d5 %d5
+#define d6 %d6
+#define d7 %d7
+#define ccr %ccr
+#define pc %pc
+#define VBR %vbr
+#define cacr %cacr
+#define sr %sr
+
+#endif /* FNET_MCF */
+
 
 #define FNET_COMP_ASM_LABEL(x)    FNET_COMP_ASM_PREFIX(x):
 

@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.26.0
-*
 * @brief Interrupt service dispatcher implementation.
 *
 ***************************************************************************/
@@ -77,7 +73,7 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
 /************************************************************************
 *     Variables,
 *************************************************************************/
-static unsigned long fnet_locked = 0;
+unsigned long fnet_locked = 0;
 static fnet_isr_entry_t *fnet_isr_table = 0;
 
 static fnet_event_desc_t fnet_event_desc_last = FNET_EVENT_VECTOR_NUMBER;
@@ -251,7 +247,7 @@ void fnet_isr_vector_release( unsigned int vector_number)
 * DESCRIPTION: After execution of this routine all interrupts will be 
 *              pended
 *************************************************************************/
-void fnet_isr_lock( void )
+void fnet_isr_lock(void)
 {
     fnet_locked++;
 }

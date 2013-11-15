@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.36.0
-*
 * @brief ICMP protocol implementation.
 *
 ***************************************************************************/

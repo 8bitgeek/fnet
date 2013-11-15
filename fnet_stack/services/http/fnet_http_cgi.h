@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-28-2013
-*
-* @version 0.1.17.0
-*
 * @brief FNET HTTP Server CGI API.
 *
 ***************************************************************************/

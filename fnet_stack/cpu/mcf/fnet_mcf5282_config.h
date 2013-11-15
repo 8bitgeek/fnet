@@ -61,7 +61,9 @@
 #endif
 
 /* There is cache. */
-#define FNET_CFG_CPU_CACHE              	(1)
+#ifndef FNET_CFG_CPU_CACHE  
+    #define FNET_CFG_CPU_CACHE             	(1)
+#endif
 
 /* Flash size.*/
 #define FNET_CFG_CPU_FLASH_SIZE         	(1024 * 512)    /* 512 KB */

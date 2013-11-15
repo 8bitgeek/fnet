@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.18.0
-*
 * @brief ColdFire specific SW timers implementation.
 *
 ***************************************************************************/

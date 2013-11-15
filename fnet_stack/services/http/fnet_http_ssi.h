@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-28-2013
-*
-* @version 0.1.16.0
-*
 * @brief FNET HTTP Server SSI API.
 *
 ***************************************************************************/

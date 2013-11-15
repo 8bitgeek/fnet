@@ -33,10 +33,6 @@
 *
 * @file fnet_checksum.c
 *
-* @date Dec-19-2012
-*
-* @version 0.1.25.0
-*
 * @brief Internet checksum implementation.
 *
 ***************************************************************************/

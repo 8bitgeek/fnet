@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.27.0
-*
 * @brief FNET Shell Demo implementation.
 *
 ***************************************************************************/

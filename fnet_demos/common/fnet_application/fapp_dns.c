@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.11.0
-*
 * @brief FNET Shell Demo implementation (DNS Resolver).
 *
 ***************************************************************************/
@@ -48,14 +44,14 @@
 #include "fapp_dns.h"
 #include "fnet.h"
 
-#if FAPP_CFG_DNS_CMD && FNET_CFG_DNS && FNET_CFG_DNS_RESOLVER && FNET_CFG_IP4 
+#if FAPP_CFG_DNS_CMD && FNET_CFG_DNS && FNET_CFG_DNS_RESOLVER
 /************************************************************************
 *     Definitions.
 *************************************************************************/
 //#define FNET_DNS_RESOLUTION_FAILED  "Resolution is failed!"
 
-const char FNET_DNS_RESOLUTION_FAILED[]="FAILED";
-
+const char FNET_DNS_RESOLUTION_FAILED[]="Resolution is FAILED";
+const char FNET_DNS_UNKNOWN[]="DNS server is unknown";
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
@@ -67,15 +63,31 @@ const char FNET_DNS_RESOLUTION_FAILED[]="FAILED";
 *
 * DESCRIPTION: Event handler on new IP from DHCP client. 
 ************************************************************************/
-static void fapp_dns_handler_resolved (fnet_ip4_addr_t address, long shl_desc)
+static void fapp_dns_handler_resolved (fnet_address_family_t addr_family, const char *addr_list, int addr_list_size, long shl_desc)
 {
-    char ip_str[FNET_IP4_ADDR_STR_SIZE];
-    fnet_shell_desc_t desc = (fnet_shell_desc_t) shl_desc;
+    char                ip_str[FNET_IP_ADDR_STR_SIZE];
+    fnet_shell_desc_t   desc = (fnet_shell_desc_t) shl_desc;
+    int                 i;
     
     fnet_shell_unblock((fnet_shell_desc_t)shl_desc); /* Unblock the shell. */
     
-    fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Resolved address", 
-    (address != (fnet_ip4_addr_t)FNET_ERR)?(fnet_inet_ntoa(*(struct in_addr *)( &address), ip_str)):FNET_DNS_RESOLUTION_FAILED );
+    if(addr_list && addr_list_size)
+    {
+        for(i=0; i < addr_list_size; i++)
+        {
+            fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Resolved address", 
+                                fnet_inet_ntop(addr_family, addr_list, ip_str, sizeof(ip_str)) );
+
+            if(addr_family == AF_INET)
+                addr_list+=sizeof(fnet_ip4_addr_t);
+            else
+                addr_list+=sizeof(fnet_ip6_addr_t);
+        }
+    }
+    else
+    {
+        fnet_shell_println(desc, FNET_DNS_RESOLUTION_FAILED);
+    }
 }
 
 /************************************************************************
@@ -98,16 +110,65 @@ static void fapp_dns_on_ctrlc(fnet_shell_desc_t desc)
 void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     
-    struct fnet_dns_params dns_params;
-    fnet_netif_desc_t netif = fapp_default_netif;
-    char ip_str[FNET_IP4_ADDR_STR_SIZE];
+    struct fnet_dns_params      dns_params;
+    fnet_netif_desc_t           netif = fapp_default_netif;
+    char                        ip_str[FNET_IP_ADDR_STR_SIZE];
+    int                         error_param;
     
     FNET_COMP_UNUSED_ARG(argc);
     
     /* Set DNS client/resolver parameters.*/
     fnet_memset_zero(&dns_params, sizeof(struct fnet_dns_params));
-    dns_params.dns_server = fnet_netif_get_ip4_dns(netif); /* Get DNS server address of default netif.*/
-    dns_params.host_name = argv[1];                 /* Get host name via command argument.*/
+    
+    /**** Define addr type to request ****/
+    if (!fnet_strcmp(argv[2], "4"))
+    {
+        dns_params.addr_family = AF_INET;
+    }
+    else if (!fnet_strcmp(argv[2], "6"))
+    {
+        dns_params.addr_family = AF_INET6;
+    }
+    else
+    {
+        error_param = 2;
+        goto ERROR_PARAMETER;
+    }
+
+
+    /**** Define DNS server address.****/
+    if(argc == 4)
+    {
+        if(fnet_inet_ptos(argv[3], &dns_params.dns_server_addr) == FNET_ERR)
+        {
+            error_param = 3;
+            goto ERROR_PARAMETER;
+        }
+    }
+    else /* The DNS server address is not provided by user.*/
+    {
+    #if FNET_CFG_IP6
+        /* IPv6 DNS has higher priority over IPv4.*/
+        if(fnet_netif_get_ip6_dns(netif, 0, (fnet_ip6_addr_t *)&dns_params.dns_server_addr.sa_data) == FNET_TRUE)
+        {
+            dns_params.dns_server_addr.sa_family = AF_INET6;
+        }
+        else
+    #endif
+    #if FNET_CFG_IP4
+        if( (((struct sockaddr_in*)(&dns_params.dns_server_addr))->sin_addr.s_addr = fnet_netif_get_ip4_dns(netif)) != 0)
+        {
+            dns_params.dns_server_addr.sa_family = AF_INET;
+        }
+        else
+    #endif
+        {
+            fnet_shell_println(desc, FNET_DNS_UNKNOWN);
+            return;    
+        }
+    }
+
+    dns_params.host_name = argv[1];                 /* Host name to resolve.*/
     dns_params.handler = fapp_dns_handler_resolved; /* Callback function.*/
     dns_params.cookie = (long)desc;                 /* Application-specific parameter 
                                                        which will be passed to fapp_dns_handler_resolved().*/
@@ -117,9 +178,8 @@ void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     {
         fnet_shell_println(desc, FAPP_DELIMITER_STR);
         fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Resolving", dns_params.host_name);
-        fnet_inet_ntoa(*(struct in_addr *)( &dns_params.dns_server), ip_str);
-        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "DNS Server", ip_str);
-        
+        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "DNS Server", 
+                            fnet_inet_ntop(dns_params.dns_server_addr.sa_family, dns_params.dns_server_addr.sa_data, ip_str, sizeof(ip_str)));
         fnet_shell_println(desc, FAPP_TOCANCEL_STR);
         fnet_shell_println(desc, FAPP_DELIMITER_STR);
         
@@ -129,9 +189,14 @@ void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     {
         fnet_shell_println(desc, FAPP_INIT_ERR, "DNS");
     }
+    return;
+    
+ERROR_PARAMETER:
+    fnet_shell_println(desc, FAPP_PARAM_ERR, argv[error_param]);
+    return;    
 }
 
-#endif /* FAPP_CFG_DNS_CMD && FNET_CFG_DNS && FNET_CFG_DNS_RESOLVER && FNET_CFG_IP4  */
+#endif /* FAPP_CFG_DNS_CMD && FNET_CFG_DNS && FNET_CFG_DNS_RESOLVER */
 
 
 

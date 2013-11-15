@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-4-2013
-*
-* @version 0.1.32.0
-*
 * @brief Private. IP protocol API.
 *
 ***************************************************************************/

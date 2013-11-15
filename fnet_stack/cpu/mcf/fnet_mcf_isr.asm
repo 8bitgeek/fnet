@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.9.0
-*
 * @brief Lowest level routines for ColdFire.
 *
 ***************************************************************************/
@@ -73,13 +69,16 @@ FNET_COMP_ASM_PREFIX(fnet_cpu_isr):
     lsr.l    #8,d0     
     lsr.l    #2,d0
     and.l    #0xff,d0
-   
+#if FNET_CFG_COMP_GNUC          /* GCC passes parameters on the stack */
+    move.l   d0, -(sp)
+#endif   
 	jsr     (FNET_COMP_ASM_PREFIX(fnet_isr_handler))
-
+#if FNET_CFG_COMP_GNUC          /* GCC passes parameters on the stack */
+    addq.l   #4, sp
+#endif
 	movem.l  (a7),d0-d7/a0-a6
     lea      (60,a7),a7	
 	rte
-
 
 #endif /*FNET_MCF*/
 

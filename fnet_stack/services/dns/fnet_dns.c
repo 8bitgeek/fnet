@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-16-2013
-*
-* @version 0.1.11.0
-*
 * @brief DNS Resolver implementation.
 *
 ***************************************************************************/
@@ -76,6 +72,13 @@
                                            * Longer messages (not supported) are truncated and the TC bit is set in
                                            * the header.
                                            */    
+
+/********************************************************************/ /*!
+* @brief DNS Resorce Record Types 
+*************************************************************************/
+#define    FNET_DNS_TYPE_A      (0x0001)   /**< @brief IPv4 address. */
+#define    FNET_DNS_TYPE_AAAA   (0x001C)    /**< @brief IPv6 address. */
+
 
 
 /************************************************************************
@@ -142,10 +145,10 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned char zero_length FNET_COMP_PACKED;  /* The domain name terminates with the
-                                 * zero length octet for the null label of the root. */
-    unsigned short qtype FNET_COMP_PACKED;       /* Specifies the type of the query.*/
-    unsigned short qclass FNET_COMP_PACKED;      /* Specifies the class of the query.*/
+    unsigned char   zero_length FNET_COMP_PACKED;   /* The domain name terminates with the
+                                                    * zero length octet for the null label of the root. */
+    unsigned short  qtype FNET_COMP_PACKED;         /* Specifies the type of the query.*/
+    unsigned short  qclass FNET_COMP_PACKED;        /* Specifies the class of the query.*/
 
 } fnet_dns_q_tail_t;
 FNET_COMP_PACKED_END
@@ -178,28 +181,33 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned char name_ptr[2] FNET_COMP_PACKED; /* A domain name to which this resource record pertains.
-                                * For compression, it is replaced with a pointer to a prior occurance
-                                * of the same name */
-    unsigned short type FNET_COMP_PACKED;    /* This field specifies the meaning of the data in the RDATA
-                             * field.*/
-    unsigned short class FNET_COMP_PACKED;   /* An unsigned 16 bit integer specifying the number of
-                             * entries in the question section.*/
-    unsigned long ttl FNET_COMP_PACKED;      /* Specifies the time interval (in seconds) that the 
-                             * resource record may be
-                             * cached before it should be discarded.*/
-    unsigned short rdlength FNET_COMP_PACKED;/* Length in octets of the RDATA field.*/
-    unsigned long rdata FNET_COMP_PACKED;   /* The format of this information varies
-                             * according to the TYPE and CLASS of the resource record. 
-                             * If the TYPE is A and the CLASS is IN,
-                             * the RDATA field is a 4 octet ARPA Internet address.*/
+    unsigned char   name_ptr[2] FNET_COMP_PACKED; /* A domain name to which this resource record pertains.
+                                                * For compression, it is replaced with a pointer to a prior occurance
+                                                * of the same name */
+    unsigned short  type FNET_COMP_PACKED;      /* This field specifies the meaning of the data in the RDATA
+                                                * field.*/
+    unsigned short  class FNET_COMP_PACKED;     /* An unsigned 16 bit integer specifying the number of
+                                                * entries in the question section.*/
+    unsigned long   ttl FNET_COMP_PACKED;      /* Specifies the time interval (in seconds) that the 
+                                                * resource record may be
+                                                * cached before it should be discarded.*/
+    unsigned short  rdlength FNET_COMP_PACKED;  /* Length in octets of the RDATA field.*/
+    unsigned long   rdata FNET_COMP_PACKED;     /* The format of this information varies
+                                                * according to the TYPE and CLASS of the resource record. 
+                                                * If the TYPE is A and the CLASS is IN,
+                                                * the RDATA field is a 4 octet ARPA Internet address.*/
 
 } fnet_dns_rr_header_t;
 FNET_COMP_PACKED_END
 
-#define FNET_DNS_HEADER_TYPE_A          (0x01)  /* Host address.*/
-#define FNET_DNS_HEADER_CLASS_IN        (0x01)  /* The Internet.*/
-#define FNET_DNS_RR_HEADER_RDLENGTH_4   (0x04)  /* 32bit IPv4 address.*/
+
+
+#define FNET_DNS_RR_RDLENGTH_A      (4)     /* 32bit IPv4 address.*/
+#define FNET_DNS_RR_RDLENGTH_AAAA   (16)    /* 128 bit IPv6 address.*/
+
+#define FNET_DNS_HEADER_CLASS_IN    (0x01)  /* The Internet.*/
+
+
 
 static void fnet_dns_state_machine(void *);
 
@@ -208,17 +216,19 @@ static void fnet_dns_state_machine(void *);
 *************************************************************************/
 typedef struct
 {
-    SOCKET socket_cln;
-    fnet_poll_desc_t service_descriptor;
-    fnet_dns_state_t state;                /* Current state. */
-    fnet_dns_handler_resolved_t handler;   /* Callback function. */
-    long handler_cookie;                   /* Callback-handler specific parameter. */
-    unsigned long last_time;               /* Last receive time, used for timeout detection. */
-    int iteration;                         /* Current iteration number.*/
-    char message[FNET_DNS_MESSAGE_SIZE];   /* Message buffer. */
-    unsigned long message_size;            /* Size of the message.*/
-    fnet_ip4_addr_t result;
-    unsigned short id;
+    SOCKET                      socket_cln;
+    fnet_poll_desc_t            service_descriptor;
+    fnet_dns_state_t            state;                          /* Current state. */
+    fnet_dns_handler_resolved_t handler;                        /* Callback function. */
+    long                        handler_cookie;                 /* Callback-handler specific parameter. */
+    unsigned long               last_time;                      /* Last receive time, used for timeout detection. */
+    int                         iteration;                      /* Current iteration number.*/
+    char                        message[FNET_DNS_MESSAGE_SIZE]; /* Message buffer and Resolved addreses.. */
+    int                         addr_number;
+    unsigned long               message_size;                   /* Size of the message.*/
+    unsigned short              id;
+    unsigned short              dns_type;                       /* DNS Resource Record type that is queried.*/
+    fnet_address_family_t       addr_family;
 } 
 fnet_dns_if_t;
 
@@ -232,26 +242,91 @@ static fnet_dns_if_t fnet_dns_if;
 * DESCRIPTION: Initializes DNS client service and starts the host 
 *              name reolving.
 ************************************************************************/
+static int fnet_dns_add_question( char *message, unsigned short type, char *host_name)
+{
+    int                 total_length = 0;
+    int                 label_length;
+    fnet_dns_q_tail_t   *q_tail;
+    char                *strtok_pos = FNET_NULL;
+    
+
+    /* Set Question section :    
+      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                                               |
+    /                     QNAME                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                     QTYPE                     |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                     QCLASS                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    */ 
+    /* QNAME */
+    /* a domain name represented as a sequence of labels, where
+    * each label consists of a length octet followed by that
+    * number of octets. The domain name terminates with the
+    * zero length octet for the null label of the root. Note
+    * that this field may be an odd number of octets; no
+    * padding is used.
+    */
+ 
+    /* Copy host_name string.*/
+    fnet_strcpy(&message[1], host_name); 
+ 
+    //TBD Place for improvement, use strtok_pos as pointer.
+    
+    /* Replace '.' by zero.*/
+    fnet_strtok_r(&message[1], ".", &strtok_pos);
+
+    while((label_length = (int)fnet_strlen(&message[total_length]+1)) > 0)
+    {
+        message[total_length] = (char)label_length; /* Set length before (previous) label.*/
+        total_length += label_length + 1;
+       
+        fnet_strtok_r(FNET_NULL,".", &strtok_pos);
+    }
+    
+    q_tail = (fnet_dns_q_tail_t *)&message[total_length];
+    
+    /* Skip 1 byte (zero). End of string. */
+
+    /* QTYPE */
+    q_tail->qtype =  type;
+    
+    /* QCLASS */
+    q_tail->qclass = FNET_HTONS(FNET_DNS_HEADER_CLASS_IN);
+
+    return (total_length+ sizeof(fnet_dns_q_tail_t)); 
+}
+
+
+/************************************************************************
+* NAME: fnet_dns_init
+*
+* DESCRIPTION: Initializes DNS client service and starts the host 
+*              name reolving.
+************************************************************************/
 int fnet_dns_init( struct fnet_dns_params *params )
 {
     const unsigned long bufsize_option = FNET_DNS_MESSAGE_SIZE;
     int                 total_length;
-    int                 label_length;
     unsigned long       host_name_length;
-    struct sockaddr     local_addr;
+    struct sockaddr     remote_addr;
     fnet_dns_header_t   *header;
-    fnet_dns_q_tail_t   *q_tail;
-    char                *strtok_pos = FNET_NULL;
   
     /* Check input parameters. */
-    if((params == 0) || (params->dns_server == 0) || (params->handler == 0) ||
-       /* Check length of host_name.*/
-       ((host_name_length = fnet_strlen(params->host_name)) == 0) || (host_name_length >= FNET_DNS_MAME_SIZE))
+    if((params == 0) 
+        || (params->dns_server_addr.sa_family == AF_UNSPEC) 
+        || fnet_socket_addr_is_unspecified(&params->dns_server_addr)
+        || (params->handler == 0)
+        /* Check length of host_name.*/
+        || ((host_name_length = fnet_strlen(params->host_name)) == 0) || (host_name_length >= FNET_DNS_MAME_SIZE))
     {
         FNET_DEBUG_DNS(FNET_DNS_ERR_PARAMS);
         goto ERROR;
     }
-    
+
     /* Check if DNS service is free.*/
     if(fnet_dns_if.state != FNET_DNS_STATE_DISABLED)
     {
@@ -262,13 +337,29 @@ int fnet_dns_init( struct fnet_dns_params *params )
     /* Save input parmeters.*/
     fnet_dns_if.handler = params->handler;
     fnet_dns_if.handler_cookie = params->cookie;
-    
+    fnet_dns_if.addr_family = params->addr_family;
+    fnet_dns_if.addr_number = 0;
+
+    if(params->addr_family == AF_INET)
+    {
+        fnet_dns_if.dns_type = FNET_HTONS(FNET_DNS_TYPE_A);
+    }
+    else
+    if(params->addr_family == AF_INET6)
+    {
+        fnet_dns_if.dns_type = FNET_HTONS(FNET_DNS_TYPE_AAAA);
+    }
+    else
+    {
+        FNET_DEBUG_DNS(FNET_DNS_ERR_PARAMS);
+        goto ERROR;
+    }
     
     fnet_dns_if.iteration = 0;  /* Reset iteration counter.*/
     fnet_dns_if.id++;           /* Change query ID.*/
    
     /* Create socket */
-    if((fnet_dns_if.socket_cln = socket(AF_INET, SOCK_DGRAM, 0)) == SOCKET_INVALID)
+    if((fnet_dns_if.socket_cln = socket(params->dns_server_addr.sa_family, SOCK_DGRAM, 0)) == SOCKET_INVALID)
     {
         FNET_DEBUG_DNS(FNET_DNS_ERR_SOCKET_CREATION);
         goto ERROR;
@@ -280,12 +371,12 @@ int fnet_dns_init( struct fnet_dns_params *params )
     
     /* Bind/connect to the server.*/
     FNET_DEBUG_DNS("Connecting to DNS Server.");
-    fnet_memset_zero(&local_addr, sizeof(local_addr));
-    ((struct sockaddr_in *)(&local_addr))->sin_addr.s_addr = params->dns_server;
-    ((struct sockaddr_in *)(&local_addr))->sin_port = FNET_CFG_DNS_PORT;    
-    ((struct sockaddr_in *)(&local_addr))->sin_family = AF_INET;
-    
-    if(connect(fnet_dns_if.socket_cln, (struct sockaddr *)(&local_addr), sizeof(local_addr))== FNET_ERR)
+    fnet_memset_zero(&remote_addr, sizeof(remote_addr));
+    remote_addr = params->dns_server_addr;
+    if(remote_addr.sa_port == 0)
+        remote_addr.sa_port = FNET_CFG_DNS_PORT;
+   
+    if(connect(fnet_dns_if.socket_cln, &remote_addr, sizeof(remote_addr))== FNET_ERR)
     {
         FNET_DEBUG_DNS(FNET_DNS_ERR_SOCKET_CONNECT);
         goto ERROR_1;
@@ -321,62 +412,11 @@ int fnet_dns_init( struct fnet_dns_params *params )
     
     /* No Answer (ANCOUNT).*/ /* No Authority (NSCOUNT). */ /* No Additional (ARCOUNT). */
 
-    
-    /* Set Question section :    
-      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                                               |
-    /                     QNAME                     /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                     QTYPE                     |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                     QCLASS                    |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    */ 
 
-
-    /* QNAME */
-    /* a domain name represented as a sequence of labels, where
-    * each label consists of a length octet followed by that
-    * number of octets. The domain name terminates with the
-    * zero length octet for the null label of the root. Note
-    * that this field may be an odd number of octets; no
-    * padding is used.
-    */
- 
-    /* Copy host_name string.*/
-    fnet_strcpy(&fnet_dns_if.message[sizeof(fnet_dns_header_t)+1], params->host_name); 
-    
     total_length = sizeof(fnet_dns_header_t);
- 
-    //TBD Place for improvement, use strtok_pos as pointer.
-    
-    /* Replace '.' by zero.*/
-    fnet_strtok_r(&fnet_dns_if.message[sizeof(fnet_dns_header_t)+1], ".", &strtok_pos);
-
-    while((label_length = (int)fnet_strlen(&fnet_dns_if.message[total_length]+1)) > 0)
-    {
-        fnet_dns_if.message[total_length] = (char)label_length; /* Set length before (previous) label.*/
-        total_length += label_length + 1;
-       
-        fnet_strtok_r(FNET_NULL,".", &strtok_pos);
-    }
-    
-    q_tail = (fnet_dns_q_tail_t *)&fnet_dns_if.message[total_length];
-    
-    /* Skip 1 byte (zero). End of string. */
-
-    /* QTYPE */
-    q_tail->qtype = FNET_HTONS(FNET_DNS_HEADER_TYPE_A);
-    
-    /* QCLASS */
-    q_tail->qclass = FNET_HTONS(FNET_DNS_HEADER_CLASS_IN);
-    
-    
-    fnet_dns_if.message_size = total_length + 1 + sizeof(fnet_dns_q_tail_t);
-   
-
+    total_length += fnet_dns_add_question( &fnet_dns_if.message[total_length], fnet_dns_if.dns_type, params->host_name);
+    fnet_dns_if.message_size = (unsigned long)(total_length + 1);
+  
     /* Register DNS service. */
     fnet_dns_if.service_descriptor = fnet_poll_service_register(fnet_dns_state_machine, (void *) &fnet_dns_if);
     if(fnet_dns_if.service_descriptor == (fnet_poll_desc_t)FNET_ERR)
@@ -385,17 +425,8 @@ int fnet_dns_init( struct fnet_dns_params *params )
         goto ERROR_1;
     }
     
-    /* Check if the input string is IP address "x.x.x.x". */
-    if( fnet_inet_aton(params->host_name, (struct in_addr *) &fnet_dns_if.result) == FNET_OK) /* TFTP server IP*/
-    {
-        fnet_dns_if.state = FNET_DNS_STATE_RELEASE;
-    }
-    else /* Send DNS request. */
-    {
-        fnet_dns_if.result = (fnet_ip4_addr_t)FNET_ERR;
-        fnet_dns_if.state = FNET_DNS_STATE_TX; /* => Send request. */    
-    }
-    
+    fnet_dns_if.state = FNET_DNS_STATE_TX; /* => Send request. */    
+   
     return FNET_OK;
 ERROR_1:
     closesocket(fnet_dns_if.socket_cln);
@@ -411,12 +442,12 @@ ERROR:
 ************************************************************************/
 static void fnet_dns_state_machine( void *fnet_dns_if_p )
 {
-    int sent_size;
-    int received;    
-    int i;
-    fnet_dns_header_t *header;
-    fnet_dns_rr_header_t *rr_header;
-    fnet_dns_if_t *dns_if = (fnet_dns_if_t *)fnet_dns_if_p;
+    int                     sent_size;
+    int                     received;    
+    int                     i;
+    fnet_dns_header_t       *header;
+    fnet_dns_rr_header_t    *rr_header;
+    fnet_dns_if_t           *dns_if = (fnet_dns_if_t *)fnet_dns_if_p;
 
     switch(dns_if->state)
     {
@@ -462,21 +493,28 @@ static void fnet_dns_state_machine( void *fnet_dns_if_p )
                         * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
                         */
                         /* => Check for 0xC0. */
-                        if ((unsigned char)dns_if->message[i] == 0xC0) //look for the beginnig of the response (Question Name == 192 (label compression))
+                        if ((unsigned char)dns_if->message[i] == 0xC0) /* look for the beginnig of the response (Question Name == 192 (label compression))*/
                         {
                             rr_header = (fnet_dns_rr_header_t *)&dns_if->message[i]; 
 
 
                             /* Check Question Type, Class and Resource Data Lenght. */
-                            if ( (rr_header->type == FNET_HTONS(FNET_DNS_HEADER_TYPE_A)) && 
-                                 (rr_header->class == FNET_HTONS(FNET_DNS_HEADER_CLASS_IN)) && 
-                                 (rr_header->rdlength == FNET_HTONS(FNET_DNS_RR_HEADER_RDLENGTH_4)) ) 
+                            if ( (rr_header->type ==  dns_if->dns_type) && 
+                                 (rr_header->class == FNET_HTONS(FNET_DNS_HEADER_CLASS_IN))) 
                             {
                                 /* Resolved.*/
-                                dns_if->result = rr_header->rdata; /* Save IP address.*/
-                                
-                                break; /* Current version takes the first provided IP address.*/
+                                if(rr_header->type == FNET_HTONS(FNET_DNS_TYPE_A))
+                                {
+                                    *((fnet_ip4_addr_t *)(&dns_if->message[dns_if->addr_number*sizeof(fnet_ip4_addr_t)])) = *((fnet_ip4_addr_t*)(&rr_header->rdata));
+                                }
+                                else /* AF_INET6 */
+                                {
+                                    FNET_IP6_ADDR_COPY( (fnet_ip6_addr_t*)(&rr_header->rdata), (fnet_ip6_addr_t*)(&dns_if->message[dns_if->addr_number*sizeof(fnet_ip6_addr_t)]) );
+                                }
+                                dns_if->addr_number++;
+                                  
                             }
+                            i+=sizeof(fnet_dns_rr_header_t)+fnet_ntohs(rr_header->rdlength)-4-1;
                         }
                     }
                 }
@@ -506,7 +544,7 @@ static void fnet_dns_state_machine( void *fnet_dns_if_p )
          /*---- RELEASE -------------------------------------------------*/    
         case FNET_DNS_STATE_RELEASE:
             fnet_dns_release(); 
-            dns_if->handler(dns_if->result, dns_if->handler_cookie); /* User Callback.*/
+            dns_if->handler( dns_if->addr_family, dns_if->addr_number ? dns_if->message : FNET_NULL, dns_if->addr_number, dns_if->handler_cookie); /* User Callback.*/
             break;
         default:
             break;            

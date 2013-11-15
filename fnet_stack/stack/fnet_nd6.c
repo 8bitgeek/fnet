@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Feb-14-2013
-*
-* @version 0.1.26.0
-*
 * @brief IPv6 Neighbor Discovery implementation.
 *
 ***************************************************************************/
@@ -65,6 +61,12 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif);
 static void fnet_nd6_redirect_table_del(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *target_addr);
 static fnet_nd6_redirect_entry_t *fnet_nd6_redirect_table_add(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *destination_addr, const fnet_ip6_addr_t *target_addr);
 static int fnet_nd6_is_firsthop_router(fnet_netif_t *netif, fnet_ip6_addr_t *router_ip);
+
+#if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
+static void fnet_nd6_rdnss_list_update(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *rdnss_addr, unsigned long lifetime);
+static void fnet_nd6_rdnss_list_del(fnet_nd6_rdnss_entry_t *rdnss_entry);
+static void fnet_nd6_rdnss_timer(fnet_netif_t *netif);
+#endif
 
 /************************************************************************
 * NAME: fnet_nd6_init
@@ -107,8 +109,7 @@ int fnet_nd6_init (fnet_netif_t *netif, fnet_nd6_if_t *nd6_if_ptr)
         nd6_if_ptr->retrans_timer = FNET_ND6_RETRANS_TIMER;                   
         
         /* --- Register timer to check ND lists and N cache. ---*/       
-        nd6_if_ptr->timer = fnet_timer_new((FNET_ND6_TIMER_PERIOD / FNET_TIMER_PERIOD_MS)+1, 
-                                                 fnet_nd6_timer, netif);
+        nd6_if_ptr->timer = fnet_timer_new((FNET_ND6_TIMER_PERIOD / FNET_TIMER_PERIOD_MS)+1, fnet_nd6_timer, netif);
         
         if(nd6_if_ptr->timer != FNET_NULL)
             result = FNET_OK;
@@ -152,8 +153,12 @@ static void fnet_nd6_timer( void *cookie )
     fnet_netif_ip6_addr_timer(netif);
     
     /* RD timer. */
-    fnet_nd6_rd_timer(netif);      
+    fnet_nd6_rd_timer(netif);  
 
+#if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
+    /* RDNSS timer. */
+    fnet_nd6_rdnss_timer(netif);
+#endif
 }
 
 /************************************************************************
@@ -280,7 +285,8 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif)
         /* Check router expiration */
         if((neighbor_entry->state != FNET_ND6_NEIGHBOR_STATE_NOTUSED)
            && (neighbor_entry->is_router == 1) 
-           && (fnet_timer_seconds() > (neighbor_entry->creation_time + neighbor_entry->router_lifetime)))
+           && (fnet_timer_get_interval(neighbor_entry->creation_time, fnet_timer_seconds()) > neighbor_entry->router_lifetime) 
+            )
         {
             if(neighbor_entry->router_lifetime)
                 fnet_nd6_router_list_del(neighbor_entry);
@@ -409,8 +415,6 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif)
                 break;
         }
     }
-    
-    
 }
 
 /************************************************************************
@@ -618,7 +622,6 @@ void fnet_nd6_prefix_list_del(fnet_nd6_prefix_entry_t *prefix_entry)
     }
 }
 
-
 /************************************************************************
 * NAME: fnet_nd6_prefix_list_add
 *
@@ -686,8 +689,7 @@ static void fnet_nd6_prefix_timer(fnet_netif_t *netif)
     {
         if((nd6_if->prefix_list[i].state != FNET_ND6_PREFIX_STATE_NOTUSED)
             && (nd6_if->prefix_list[i].lifetime != FNET_ND6_PREFIX_LIFETIME_INFINITE)
-            && (fnet_timer_seconds() > (nd6_if->prefix_list[i].creation_time + nd6_if->prefix_list[i].lifetime)) ) //PFI
-             
+            && (fnet_timer_get_interval(nd6_if->prefix_list[i].creation_time, fnet_timer_seconds()) > nd6_if->prefix_list[i].lifetime) )
         {
             fnet_nd6_prefix_list_del(&nd6_if->prefix_list[i]);
         }
@@ -1126,8 +1128,6 @@ DROP:
     fnet_netbuf_free_chain(nb);
 }
 
-
-
 /************************************************************************
 * NAME: fnet_nd6_neighbor_advertisement_send
 * DESCRIPTION: Sends an Neighbor Advertisement message.
@@ -1557,6 +1557,25 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                     prefix_index++;
                  }
             }
+    #if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
+            /* RDNSS option */
+            else if( (nd_option->type == FNET_ND6_OPTION_RDNSS)
+    			   && ((nd_option->length << 3) >= sizeof(fnet_nd6_option_rdnss_header_t)) )
+            {
+                /*************************************************************
+                * Process RDNSS options.
+                *************************************************************/
+                fnet_nd6_option_rdnss_header_t  *nd_option_rdnss = (fnet_nd6_option_rdnss_header_t *)nd_option;
+                /* The number of addresses is equal to (Length - 1) / 2.*/
+                int                             rdnss_number = (nd_option->length - 1)/2;
+                int                             i;
+                
+                for(i=0; i< rdnss_number; i++)
+                {
+                    fnet_nd6_rdnss_list_update(netif, &nd_option_rdnss->address[i], fnet_ntohl(nd_option_rdnss->lifetime));
+                }
+            }
+    #endif /* FNET_CFG_ND6_RDNSS && FNET_CFG_DNS*/
             /* else, silently ignore any options they do not recognize
              * and continue processing the message.
              */
@@ -1771,8 +1790,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                              * address. We call the remaining time "RemainingLifetime" in the
                              * following discussion:*/
                             if( (fnet_ntohl(nd_option_prefix[i]->valid_lifetime) > (60*60*2) /* 2 hours */)
-                               ||( fnet_ntohl(nd_option_prefix[i]->valid_lifetime /*sec*/) >  ((addr_info->creation_time + addr_info->lifetime /*sec*/) - fnet_timer_seconds() ) ) 
-                              )
+                                ||( fnet_ntohl(nd_option_prefix[i]->valid_lifetime /*sec*/) >  fnet_timer_get_interval(fnet_timer_seconds(), (addr_info->creation_time + addr_info->lifetime /*sec*/)) ) ) 
                             {
                                /* 1. If the received Valid Lifetime is greater than 2 hours or
                                 *    greater than RemainingLifetime, set the valid lifetime of the
@@ -2056,7 +2074,7 @@ static void fnet_nd6_dad_timer(fnet_netif_t *netif )
                     /* [RFC3590] Once a valid link-local address is available, a node SHOULD generate
                      * new MLD Report messages for all multicast addresses joined on the interface.*/
                     if(netif->mld_invalid == FNET_TRUE)
-                        fnet_mld_all(netif);
+                        fnet_mld_report_all(netif);
                 #endif
                     
                 #if FNET_CFG_DEBUG_IP6
@@ -2114,6 +2132,150 @@ static void fnet_nd6_dad_failed(fnet_netif_t *netif , fnet_netif_ip6_addr_t *add
     if(FNET_IP6_ADDR_EQUAL(&if_ip6_address, &addr_info->address))
         netif->nd6_if_ptr->ip6_disabled = FNET_TRUE;
 }
+
+#if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
+/************************************************************************
+* NAME: fnet_nd6_rdnss_list_update
+*
+* DESCRIPTION: Update entry in the RDNSS List.
+*************************************************************************/
+static void fnet_nd6_rdnss_list_update(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *rdnss_addr, unsigned long lifetime)
+{
+    struct fnet_nd6_if      *nd6_if = if_ptr->nd6_if_ptr;
+    int                     i;
+    fnet_nd6_rdnss_entry_t  *entry = FNET_NULL;
+    
+    if (nd6_if)
+    {
+        /* RFC6106: For each RDNSS address, if it already exists in the DNS
+        * Server List, then just update the value of the Expiration-time field.*/
+        for(i=0; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+        {
+            if( (nd6_if->rdnss_list[i].lifetime != 0) &&
+                FNET_IP6_ADDR_EQUAL(&nd6_if->rdnss_list[i].rdnss_addr, rdnss_addr))
+            {
+                entry = &nd6_if->rdnss_list[i];
+                break;
+            }
+        }
+        
+        /* If no existing entry is found. */
+        if((entry == FNET_NULL) && lifetime)
+        { 
+            /* Find an unused entry in the RNDSS List. */
+            for(i=0; i < FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+            {
+                if(nd6_if->rdnss_list[i].lifetime == 0)
+                {
+                    entry = &nd6_if->rdnss_list[i];
+                    break;
+                }
+            }
+             
+            /* If no free entry is found. */
+            if(entry == FNET_NULL)
+            { 
+                /* RFC 6106: In the case where the data structure for the
+                 * DNS Server List is full of RDNSS entries (that is, has more
+                 * RDNSSes than the sufficient number discussed in Section 5.3.1),
+                 * delete from the DNS Server List the entry with the shortest
+                 * Expiration-time (i.e., the entry that will expire first).*/
+
+                entry = &nd6_if->rdnss_list[0];
+
+                for(i=1; i < FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+                {
+                    if( (entry->lifetime == FNET_ND6_RDNSS_LIFETIME_INFINITE)
+                        || ((nd6_if->rdnss_list[i].lifetime != FNET_ND6_RDNSS_LIFETIME_INFINITE)
+                        && ((nd6_if->rdnss_list[i].lifetime - fnet_timer_get_interval(nd6_if->rdnss_list[i].creation_time, fnet_timer_seconds())) 
+                            < (entry->lifetime - fnet_timer_get_interval(entry->creation_time, fnet_timer_seconds()))) )
+                      )
+                    {
+                        entry = &nd6_if->rdnss_list[i];
+                    }
+                }
+            }
+        }
+        
+        if(entry)
+        {
+            /* Fill the entry parameters.*/
+            FNET_IP6_ADDR_COPY(rdnss_addr, &entry->rdnss_addr);
+            entry->lifetime = lifetime;
+            entry->creation_time = fnet_timer_seconds();
+        }
+    }
+}
+
+/************************************************************************
+* NAME: fnet_nd6_rdnss_list_del
+*
+* DESCRIPTION: Deletes an entry from the RDNSS List.
+*************************************************************************/
+static void fnet_nd6_rdnss_list_del(fnet_nd6_rdnss_entry_t *rdnss_entry)
+{
+    if (rdnss_entry)
+    {
+        rdnss_entry->lifetime = 0;
+    }
+}
+
+/************************************************************************
+* NAME: fnet_nd6_rdnss_get_addr
+*
+* DESCRIPTION: This function returns a RDNS Server address.
+*************************************************************************/
+int fnet_nd6_rdnss_get_addr(fnet_netif_t *netif, unsigned int n, fnet_ip6_addr_t *addr_dns )
+{
+    int                 result = FNET_FALSE;
+    struct fnet_nd6_if  *nd6_if = netif->nd6_if_ptr;
+    int                 i;
+
+    if(nd6_if)
+    {
+        for(i=0; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+        {
+            /* Skip NOT_USED addresses. */
+            if(nd6_if->rdnss_list[i].lifetime != 0)
+            {    
+                if(n == 0)
+                {
+                    FNET_IP6_ADDR_COPY(&nd6_if->rdnss_list[i].rdnss_addr, addr_dns);
+                    result = FNET_TRUE;
+                    break;     
+                }
+                n--;
+            }    
+        } 
+    }
+    
+    return result;
+}    
+
+/************************************************************************
+* NAME: fnet_nd6_rdnss_timer
+* DESCRIPTION: Timer routine used for RDNSS lifetime check.
+*************************************************************************/
+static void fnet_nd6_rdnss_timer(fnet_netif_t *netif)
+{
+    fnet_nd6_if_t   *nd6_if = netif->nd6_if_ptr;
+    int             i;
+    
+    /* Check lifetime for prefixes.*/
+    for(i=0; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+    {
+        /* RFC 6106: Whenever an entry
+        * expires in the DNS Server List, the expired entry is deleted from the
+        * DNS Server List */
+        if((nd6_if->rdnss_list[i].lifetime != 0)
+            && (nd6_if->rdnss_list[i].lifetime != FNET_ND6_RDNSS_LIFETIME_INFINITE)
+            && (fnet_timer_get_interval(nd6_if->rdnss_list[i].creation_time, fnet_timer_seconds()) > nd6_if->rdnss_list[i].lifetime) )
+        {
+            fnet_nd6_rdnss_list_del(&nd6_if->rdnss_list[i]);
+        }
+    }
+}
+#endif /* FNET_CFG_ND6_RDNSS && FNET_CFG_DNS */
 
 
 

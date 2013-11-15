@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.24.0
-*
 * @brief FNET Application private definitions.
 *
 ***************************************************************************/

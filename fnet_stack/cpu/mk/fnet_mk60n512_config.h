@@ -32,10 +32,6 @@
 *
 * @file fnet_mk60n512_config.h
 *
-* @date Mar-25-2013
-*
-* @version 0.1.5.0
-*
 * @brief K60N512 specific configuration file.
 *
 ***************************************************************************/

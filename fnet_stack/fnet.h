@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Feb-5-2013
-*
-* @version 0.1.26.0
-*
 * @brief Main including header for the FNET project.
 *
 ***************************************************************************/
@@ -98,7 +94,7 @@
  *        string.
  * @showinitializer 
  ******************************************************************************/
-#define FNET_VERSION            "2.6.0"
+#define FNET_VERSION            "2.6.2"
 
 /*! @} */
 

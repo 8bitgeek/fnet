@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.17.0
-*
 * @brief CPU-specific API implementation.
 *
 ***************************************************************************/

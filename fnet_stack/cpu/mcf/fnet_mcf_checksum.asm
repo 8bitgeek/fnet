@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.16.0
-*
 * @brief ColdFire-specific Internet checksum calculation.
 *
 ***************************************************************************/
@@ -64,7 +60,12 @@
 *        D1: int current_length
 *        A0: unsigned short *d_ptr
 */
-FNET_COMP_ASM_PREFIX(fnet_checksum_low):  
+FNET_COMP_ASM_PREFIX(fnet_checksum_low):
+#if FNET_CFG_COMP_GNUC          /* GCC passes parameters on the stack */
+        move.l  4(sp), d0
+        move.l  8(sp), d1
+        move.l  12(sp), a0
+#endif  
         move.l  a1,-(sp)
         move.l  d2,-(sp)
         move.l  d3,-(sp)

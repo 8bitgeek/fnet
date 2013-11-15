@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.7.0
-*
 * @brief Kinetis Flash Memory Module (FTFL) driver.
 *
 ***************************************************************************/

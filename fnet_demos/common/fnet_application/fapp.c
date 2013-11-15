@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Feb-5-2013
-*
-* @version 0.1.71.0
-*
 * @brief FNET Shell Demo implementation.
 *
 ***************************************************************************/
@@ -194,8 +190,8 @@ const struct fnet_shell_command fapp_cmd_table [] =
 #if FAPP_CFG_TELNET_CMD && FNET_CFG_TELNET
     { FNET_SHELL_CMD_TYPE_NORMAL, "telnet",     0, 1, (void *)fapp_telnet_cmd,  "Start Telnet Server", "[release]"},
 #endif 
-#if FAPP_CFG_DNS_CMD && FNET_CFG_DNS && FNET_CFG_DNS_RESOLVER && FNET_CFG_IP4
-    { FNET_SHELL_CMD_TYPE_NORMAL, "dns",        1, 1, (void *)fapp_dns_cmd,     "Resolve IP address from <host name>", "<host name>"},
+#if FAPP_CFG_DNS_CMD && FNET_CFG_DNS && FNET_CFG_DNS_RESOLVER
+    { FNET_SHELL_CMD_TYPE_NORMAL, "dns",        2, 3, (void *)fapp_dns_cmd,     "Resolve IPv4|6 address of <host name>", "<host name> 4|6 [<server ip>]"},
 #endif 
 #if FAPP_CFG_MEM_CMD    
     { FNET_SHELL_CMD_TYPE_NORMAL, "mem",        0, 0, (void *)fapp_mem_cmd,     "Show memory map", ""},
@@ -421,7 +417,24 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     FNET_COMP_UNUSED_ARG(argv);
 
     /* Put here you debugging information.*/
+#if 0
     fnet_eth_debug_mii_print_regs(fapp_default_netif);
+#endif
+
+#if 1
+    {
+        int             i = 0;
+        fnet_ip6_addr_t addr_dns;
+        char            ip_str[FNET_IP_ADDR_STR_SIZE]={0};
+        
+        while(fnet_netif_get_ip6_dns(fapp_default_netif, i, &addr_dns ) == FNET_TRUE)
+        {
+            fnet_inet_ntop(AF_INET6, (char*)(&addr_dns), ip_str, sizeof(ip_str));
+            fnet_shell_println(desc, "DNS[%d]=%s", i, ip_str);
+            i++;
+        }
+    }
+#endif
 }
 #endif
 

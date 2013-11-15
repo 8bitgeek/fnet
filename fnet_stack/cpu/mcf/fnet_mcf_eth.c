@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Sep-27-2012
-*
-* @version 0.1.37.0
-*
 * @brief Ethernet driver implementation.
 *
 ***************************************************************************/
@@ -113,11 +109,6 @@ fnet_netif_t fnet_eth1_if =
 *************************************************************************/
 void fnet_eth_io_init() 
 {
-#if FNET_CFG_CPU_MCF523X
-
-    FNET_MCF523x_GPIO_PAR_FECI2C = 0xF0; 
-
-#endif
 
 #if FNET_CFG_CPU_MCF52235 /* Kirin2 */
 
@@ -134,7 +125,7 @@ void fnet_eth_io_init()
 
 #if FNET_CFG_CPU_MCF52259 /* Kirin3 */
 
-    FNET_MCF5225X_GPIO_PNQPAR = 0x4880; // 0x4880 (for Gamma environment, reported by a customer).
+    FNET_MCF5225X_GPIO_PNQPAR = 0x4880; /* 0x4880 (for Gamma environment, reported by a customer).*/
     FNET_MCF5225X_GPIO_PTIPAR = 0xFF;
     FNET_MCF5225X_GPIO_PTJPAR = 0xFF;
 
@@ -144,6 +135,12 @@ void fnet_eth_io_init()
 
     FNET_MCF5282_GPIO_PEHLPAR = 0xC0;
     FNET_MCF5282_GPIO_PASPAR |=0x0f00; /* Initialize PEHLPAR to enable ethernet signals.*/
+
+#endif
+
+#if FNET_CFG_CPU_MCF5235 /* CPUV2 */
+
+    FNET_MCF523x_GPIO_PAR_FECI2C = 0xF0;
 
 #endif
 
@@ -188,7 +185,7 @@ void fnet_eth_io_init()
     FNET_MCF5441X_GPIO_PDDR_G |= FNET_MCF5441X_GPIO_PDDR_G_PDDR_G4; 	/* Set GPIO4 as output.*/
     FNET_MCF5441X_GPIO_PODR_G &= ~FNET_MCF5441X_GPIO_PODR_G_PODR_G4; 	/* Clear GPIO4 pin to enable RMMI1 on the QS3VH16233PAG QUICKSWITCH*/
 
-#endif
+#endif /* FNET_CFG_CPU_MCF54418 */
 
 }
 

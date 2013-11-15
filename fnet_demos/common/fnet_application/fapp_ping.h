@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-20-2012
-*
-* @version 0.1.5.0
-*
 * @brief FNET Shell Demo API (Ping).
 *
 ***************************************************************************/

@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-28-2013
-*
-* @version 0.1.10.0
-*
 * @brief On-chip Flash Module driver API.
 *
 ***************************************************************************/

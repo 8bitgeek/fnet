@@ -79,6 +79,10 @@
 #ifndef FNET_CFG_CPU_MCF52259
     #define FNET_CFG_CPU_MCF52259   (0)
 #endif
+/* MCF5235 NOT SUPPORTED/TESTED */
+#ifndef FNET_CFG_CPU_MCF5235
+    #define FNET_CFG_CPU_MCF5235    (0)
+#endif
 #ifndef FNET_CFG_CPU_MCF5282
     #define FNET_CFG_CPU_MCF5282    (0)
 #endif
@@ -94,18 +98,17 @@
 #ifndef FNET_CFG_CPU_MK70FN1
     #define FNET_CFG_CPU_MK70FN1   	(0)
 #endif
-
 #ifndef FNET_CFG_CPU_MK60FN1
     #define FNET_CFG_CPU_MK60FN1    (0)
 #endif
-   
 #ifndef FNET_CFG_CPU_MPC5668G
     #define FNET_CFG_CPU_MPC5668G   (0)
 #endif 
-/* TBD NOT SUPPORTED/TESTED YET */
+/* MPC564xBC NOT SUPPORTED/TESTED */
 #ifndef FNET_CFG_CPU_MPC564xBC 
     #define FNET_CFG_CPU_MPC564xBC  (0)
 #endif  
+
 
 /*********** MFC ********************/
 #if FNET_CFG_CPU_MCF52235 /* Kirin2 */
@@ -124,6 +127,15 @@
     
     #include "fnet_mcf52259_config.h"
     #define FNET_CPU_STR    "MCF52259"
+#endif
+
+#if FNET_CFG_CPU_MCF5235 /* CPUV2 */
+    #ifdef FNET_CPU_STR
+        #error "More than one CPU selected FNET_CPU_XXXX"
+    #endif
+
+    #include "fnet_mcf5235_config.h"
+    #define FNET_CPU_STR    "MCF5235"
 #endif
 
 #if FNET_CFG_CPU_MCF5282 /* Reindeer */
@@ -360,7 +372,7 @@
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_CACHE
  * @brief    Cache invalidation:
- *               - @c 1 = is enabled (for MCF5282).
+ *               - @c 1 = is enabled (for MCF5282/5235).
  *               - @c 0 = is disabled. For platforms that do not have cache.
  *  @n @n NOTE: User application should not change this parameter.
  ******************************************************************************/

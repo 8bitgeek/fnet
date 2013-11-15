@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.10.0
-*
 * @brief The FNET HTTP server POST method implementation.
 *
 ***************************************************************************/

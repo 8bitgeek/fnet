@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-4-2013
-*
-* @version 0.1.21.0
-*
 * @brief Private. Ethernet platform independent API functions.
 *
 ***************************************************************************/

@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.9.0
-*
 * @brief RAW socket implementation.
 *
 ***************************************************************************/
@@ -64,6 +60,8 @@ static int fnet_raw_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
 static int fnet_raw_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr);
 static int fnet_raw_shutdown( fnet_socket_t *sk, int how );
 static void fnet_raw_input( fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, int protocol_number);
+static void fnet_raw_release(void);
+static int fnet_raw_output(struct sockaddr *src_addr, const struct sockaddr *dest_addr, unsigned char protocol_number, fnet_socket_option_t *sockoption, fnet_netbuf_t *nb);
 
 
 /************************************************************************

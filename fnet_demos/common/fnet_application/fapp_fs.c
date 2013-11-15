@@ -35,11 +35,7 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.23.0
-*
-* @brief FNET Shell Demo implementation.
+* @brief FNET Shell Demo (File System Explorer).
 *
 ***************************************************************************/
 

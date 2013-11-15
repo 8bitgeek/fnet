@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.0.3.0
-*
 * @brief PING service configuration file.
 *
 ***************************************************************************/

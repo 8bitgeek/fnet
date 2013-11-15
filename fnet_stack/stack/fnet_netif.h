@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-28-2013
-*
-* @version 0.1.27.0
-*
 * @brief FNET Network interface API.
 *
 ***************************************************************************/
@@ -407,7 +403,8 @@ void fnet_netif_set_ip4_dns( fnet_netif_desc_t netif, fnet_ip4_addr_t dns );
  *
  ******************************************************************************
  *
- * This function returns the subnet mask of the @c netif interface. @n
+ * This function is used to retrieve all DNS IPv4 addresses registered with 
+ * the given interface. @n
  * It is present only if @ref FNET_CFG_DNS is set to 1.
  *
  ******************************************************************************/
@@ -705,6 +702,32 @@ void fnet_netif_leave_ip6_multicast ( fnet_netif_desc_t netif, fnet_ip6_addr_t *
  *
  ******************************************************************************/
 int fnet_netif_get_ip6_addr ( fnet_netif_desc_t netif_desc, unsigned int n, fnet_netif_ip6_addr_info_t *addr_info );
+
+#if FNET_CFG_DNS || defined(__DOXYGEN__)
+/***************************************************************************/ /*!
+ *
+ * @brief    Retrieves the n-th DNS IPv6 address of the specified network interface.
+ *
+ * @param netif_desc  Network interface descriptor.
+ *
+ * @param n           Sequence number of DNS IPv6 address to retrieve (from @c 0).
+ *
+ * @param addr_dns    Pointer to DNS IPv6 address that will contain the result.
+ *
+ * @return This function returns:
+ *   - @ref FNET_TRUE if no error occurs and  @c addr_dns is filled.
+ *   - @ref FNET_FALSE in case of error or @c n-th DNS address is not available.
+ *
+ * @see FNET_CFG_ND6_RDNSS, FNET_CFG_DNS
+ ******************************************************************************
+ *
+ * This function is used to retrieve all DNS IPv6 addresses registered with 
+ * the given interface.@n
+ * It is present only if @ref FNET_CFG_DNS is set to 1.
+ *
+ ******************************************************************************/
+int fnet_netif_get_ip6_dns( fnet_netif_desc_t netif_desc, unsigned int n, fnet_ip6_addr_t *addr_dns );
+#endif /* FNET_CFG_DNS */
 
 /***************************************************************************/ /*!
  *

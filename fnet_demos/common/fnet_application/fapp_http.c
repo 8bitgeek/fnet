@@ -35,11 +35,7 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-25-2013
-*
-* @version 0.1.39.0
-*
-* @brief FNET Shell Demo implementation (HTTP Server Shell interface).
+* @brief FNET Shell Demo (HTTP Server Shell interface).
 *
 ***************************************************************************/
 
@@ -53,7 +49,7 @@
 
 static fnet_http_desc_t fapp_http_desc = 0; /* HTTP service descriptor. */
 
-unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned long buffer_size, char * eof, long *cookie);
+static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned long buffer_size, char * eof, long *cookie);
 
 
 /************************************************************************
@@ -83,7 +79,7 @@ static const struct fapp_http_echo_variable fapp_http_echo_variables[] =
 
 static char fapp_http_ssi_buffer[FAPP_HTTP_SSI_BUFFER_MAX];    /* Temporary buffer for run-time SSIs. */
 
-int fapp_http_ssi_echo_handle(char * query, long *cookie);
+static int fapp_http_ssi_echo_handle(char * query, long *cookie);
 
 /* SSI table */
 static const struct fnet_http_ssi fapp_ssi_table[] =
@@ -101,10 +97,10 @@ static const struct fnet_http_ssi fapp_ssi_table[] =
 
 #define CGI_MAX        sizeof("({ \"time\":\"00:00:00\",\"tx\":0000000000,\"rx\":0000000000})")
 
-int fapp_http_cgi_stdata_handle(char * query, long *cookie);
-int fapp_http_cgi_graph_handle(char * query, long *cookie);
+static int fapp_http_cgi_stdata_handle(char * query, long *cookie);
+static int fapp_http_cgi_graph_handle(char * query, long *cookie);
 #if FNET_CFG_HTTP_POST
-int fapp_http_cgi_post_handle(char * query, long *cookie);
+static int fapp_http_cgi_post_handle(char * query, long *cookie);
 #endif
 
 /* CGI table */
@@ -137,7 +133,7 @@ static const struct fnet_http_auth fapp_auth_table[]=
 *************************************************************************/
 #if FNET_CFG_HTTP_POST
 
-int fapp_http_post_receive (char * buffer, unsigned long buffer_size, long *cookie);
+static int fapp_http_post_receive (char * buffer, unsigned long buffer_size, long *cookie);
 
 static const struct fnet_http_post fapp_post_table[]=
 {   
@@ -157,12 +153,9 @@ static char fapp_http_post_buffer[FAPP_HTTP_POST_BUFFER_SIZE+1/* For zero-termin
 *************************************************************************/
 static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned long buffer_size, char * eof, long *cookie)
 {
-    unsigned long result = 0;
-   
-    char *string_buffer_ptr = (char *) *cookie;
-    
-    unsigned long send_size = fnet_strlen(string_buffer_ptr);
-    
+    unsigned long   result = 0;
+    char            *string_buffer_ptr = (char *) *cookie;
+    unsigned long   send_size = fnet_strlen(string_buffer_ptr);
     
     *eof = 1; /* No aditional send by default. */
     
@@ -184,7 +177,6 @@ static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned lon
     
     return result;    
 }
-
 
 /************************************************************************
 * NAME: fapp_http_ssi_echo_handle
@@ -407,7 +399,7 @@ void fapp_http_release()
 void fapp_http_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     struct fnet_http_params params;
-    fnet_http_desc_t http_desc;
+    fnet_http_desc_t        http_desc;
 
     FNET_COMP_UNUSED_ARG(desc);
 

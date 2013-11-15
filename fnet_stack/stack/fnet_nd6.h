@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Feb-14-2013
-*
-* @version 0.1.13.0
-*
 * @brief Neighbor Discovery for IP6 API.
 *
 ***************************************************************************/
@@ -143,12 +139,9 @@
  */
 #define FNET_ND6_TIMER_PERIOD                (100)      /* ms */
 
-
-
-
-
 #define FNET_ND6_PREFIX_LENGTH_DEFAULT       (64)            /* Default prefix length, in bits.*/
 #define FNET_ND6_PREFIX_LIFETIME_INFINITE    (0xFFFFFFFF)    /* A lifetime value of all one bits (0xffffffff) represents infinity. */
+#define FNET_ND6_RDNSS_LIFETIME_INFINITE     (0xFFFFFFFF)    /* A lifetime value of all one bits (0xffffffff) represents infinity. */
 
 /**********************************************************************
  * Link-layer address.
@@ -269,6 +262,23 @@ typedef struct fnet_nd6_redirect_entry
     unsigned long       creation_time;      /* Time of entry creation.*/
 } fnet_nd6_redirect_entry_t;
 
+/***********************************************************************
+* Recursive DNS Server List entry, based on RFC6106.
+***********************************************************************/
+typedef struct fnet_nd6_rdnss_entry
+{
+    fnet_ip6_addr_t             rdnss_addr;         /* IPv6 address of the Recursive
+                                                    * DNS Server, which is available for recursive DNS resolution
+                                                    * service in the network advertising the RDNSS option. */
+    unsigned long               creation_time;      /* Time of entry creation, in seconds.*/    
+    unsigned long               lifetime;           /* The maximum time, in
+                                                    * seconds (relative to the time the packet is sent),
+                                                    * over which this DNSSL domain name MAY be used for
+                                                    * name resolution.
+                                                    * A value of all one bits (0xffffffff) represents
+                                                    * infinity.  A value of zero means that the DNSSL
+                                                    * domain name MUST no longer be used.*/    
+} fnet_nd6_rdnss_entry_t;
 
 /**********************************************************************
 * Neighbor Solicitation Message Format (RFC 4861)
@@ -497,11 +507,12 @@ FNET_COMP_PACKED_END
 #define FNET_ND6_HOP_LIMIT                  (255)
 
 /* ND option types (RFC4861). */
-#define FNET_ND6_OPTION_SOURCE_LLA          (1) /* Source Link-layer Address.*/
-#define FNET_ND6_OPTION_TARGET_LLA          (2) /* Target Link-layer Address.*/
-#define FNET_ND6_OPTION_PREFIX              (3) /* Prefix Information.*/
-#define FNET_ND6_OPTION_REDIRECTED_HEADER   (4) /* Redirected Header.*/
-#define FNET_ND6_OPTION_MTU                 (5) /* MTU */
+#define FNET_ND6_OPTION_SOURCE_LLA          (1)     /* Source Link-layer Address.*/
+#define FNET_ND6_OPTION_TARGET_LLA          (2)     /* Target Link-layer Address.*/
+#define FNET_ND6_OPTION_PREFIX              (3)     /* Prefix Information.*/
+#define FNET_ND6_OPTION_REDIRECTED_HEADER   (4)     /* Redirected Header.*/
+#define FNET_ND6_OPTION_MTU                 (5)     /* MTU. */
+#define FNET_ND6_OPTION_RDNSS               (25)    /* RDNSS RFC6106. */
 
 /***********************************************************************
  * ND option header
@@ -548,7 +559,6 @@ typedef struct fnet_nd6_option_mtu_header
     unsigned long               mtu             FNET_COMP_PACKED;   /* The recommended MTU for the link.*/
 }fnet_nd6_option_mtu_header_t;
 FNET_COMP_PACKED_END
-
 
 /***********************************************************************
  * Prefix Information option header:
@@ -612,6 +622,7 @@ typedef struct fnet_nd6_option_prefix_header
 }fnet_nd6_option_prefix_header_t;
 FNET_COMP_PACKED_END
 
+
 #define FNET_ND6_OPTION_FLAG_L  (0x80)  /* 1-bit on-link flag. When set, indicates that this
                                          * prefix can be used for on-link determination. When
                                          * not set the advertisement makes no statement about
@@ -624,6 +635,34 @@ FNET_COMP_PACKED_END
                                          * set indicates that this prefix can be used for
                                          * stateless address configuration as specified in
                                          * [ADDRCONF].*/  
+
+/***********************************************************************
+ * Recursive DNS Server header (RFC 6106):
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |     Type      |     Length    |           Reserved            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |                           Lifetime                            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |                                                               |
+ *   :            Addresses of IPv6 Recursive DNS Servers            :
+ *   |                                                               |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ ***********************************************************************/
+FNET_COMP_PACKED_BEGIN  
+typedef struct fnet_nd6_option_rdnss_header
+{
+    fnet_nd6_option_header_t    option_header   FNET_COMP_PACKED;   /* Option general header.*/
+    unsigned short              _reserved       FNET_COMP_PACKED;   
+    unsigned long               lifetime        FNET_COMP_PACKED;   /* The maximum time, in
+                                                                     * seconds (relative to the time the packet is sent),
+                                                                     * over which this RDNSS address MAY be used for name
+                                                                     * resolution.*/
+    fnet_ip6_addr_t             address[1]      FNET_COMP_PACKED;   /* One or more 128-bit IPv6 addresses of the recursive
+                                                                     * DNS servers.  The number of addresses is determined
+                                                                     * by the Length field.  That is, the number of
+                                                                     * addresses is equal to (Length - 1) / 2.*/                                    
+}fnet_nd6_option_rdnss_header_t;
+FNET_COMP_PACKED_END
 
 
 /***********************************************************************
@@ -651,6 +690,10 @@ typedef struct fnet_nd6_if
     
     /* Redirect Table. Used only when target address != destination address. */
     fnet_nd6_redirect_entry_t   redirect_table[FNET_ND6_REDIRECT_TABLE_SIZE];  
+
+#if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
+    fnet_nd6_rdnss_entry_t      rdnss_list[FNET_CFG_ND6_RDNSS_LIST_SIZE];
+#endif
     
     fnet_timer_desc_t           timer;                  /* General ND timer.*/
     
@@ -708,6 +751,9 @@ void fnet_nd6_redirect_receive(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip
 void fnet_nd6_redirect_addr(struct fnet_netif *if_ptr, fnet_ip6_addr_t **destination_addr_p);
 void fnet_nd6_dad_start(struct fnet_netif *netif , struct fnet_netif_ip6_addr *addr_info);
 void fnet_nd6_rd_start(struct fnet_netif *netif);
-void fnet_nd6_debug_print_prefix_list(struct fnet_netif *netif );
+void fnet_nd6_debug_print_prefix_list(struct fnet_netif *netif);
+#if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
+int fnet_nd6_rdnss_get_addr(struct fnet_netif *netif, unsigned int n, fnet_ip6_addr_t *addr_dns);
+#endif
 
 #endif /* _FNET_ND6_H_ */

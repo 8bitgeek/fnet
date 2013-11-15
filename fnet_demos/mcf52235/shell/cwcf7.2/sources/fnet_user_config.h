@@ -27,7 +27,7 @@
 * IPv4 and/or IPv6 protocol support.
 ******************************************************************************/
 #define FNET_CFG_IP4                (1)
-#define FNET_CFG_IP6                (1)
+#define FNET_CFG_IP6                (0)
 
 /*****************************************************************************
 * IP address for the Ethernet interface. 

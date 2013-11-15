@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-28-2013
-*
-* @version 0.1.25.0
-*
 * @brief FNET Telnet Server API.
 *
 ***************************************************************************/

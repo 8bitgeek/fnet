@@ -36,10 +36,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.0.20.0
-*
 * @brief FNET Serial Input and Output Library implementation.
 *
 ***************************************************************************/

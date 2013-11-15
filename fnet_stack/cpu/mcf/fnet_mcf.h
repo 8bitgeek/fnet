@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.17.0
-*
 * @brief Private. ColdFire Peripheral Registers definitions.
 *
 ***************************************************************************/
@@ -533,9 +529,13 @@ void fnet_mcf_nop(void);
 #define FNET_MCF_INTC0_IACKLPR_LEVEL(x)    (((x)&0x07)<<4)
 
 /* Bit definitions and macros for FNET_MCF_INTC0_ICRn */
+#if FNET_CFG_CPU_MCF54418
+#define FNET_MCF_INTC0_ICRn_IP(x)          (0)
+#define FNET_MCF_INTC0_ICRn_IL(x)          (((x)&0x07)<<0)
+#else /* Other MCFs */
 #define FNET_MCF_INTC0_ICRn_IP(x)          (((x)&0x07)<<0)
 #define FNET_MCF_INTC0_ICRn_IL(x)          (((x)&0x07)<<3)
-
+#endif
 
 #define FNET_MCF_INTC0_IMR_INT_MASK(x)      (0x00000001<<(x%32))
 

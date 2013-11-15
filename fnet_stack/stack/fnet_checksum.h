@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.1.14.0
-*
 * @brief Private. Internet checksum API.
 *
 ***************************************************************************/

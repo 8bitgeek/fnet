@@ -70,11 +70,11 @@ preferred way to configure stack features). @n
 
 - Supported Compilers:
 	- @b IAR:
-		- Embedded Workbench for ARM, version 6.5 (MK60N512, MK70FN1M).
+		- Embedded Workbench for ARM, version 6.7 (MK60N512, MK70FN1M).
 	- @b ARM:
 		- Keil uVision, version 4.7 (MK60N512).
 	- @b Freescale:
-		- CodeWarrior Development Studio for Microcontrollers, version 10.4 (MK60N512, MK70FN1M, MCF52259, MCF54418).
+		- CodeWarrior Development Studio for Microcontrollers, version 10.5 (MK60N512, MK70FN1M, MCF52259, MCF54418).
 		- CodeWarrior for ColdFire, version 7.2.2 (MCF5282, MCF52235, MCF52259).
 		- CodeWarrior for Microcontrollers, version 6.3 (MCF51CN128).
 		- CodeWarrior Development Studio for MPC55xx/MPC56xx, version 2.10  (MPC5668G).
@@ -1576,6 +1576,16 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+- Version 2.6.2:
+	- Added IPv6 address support to DNS resolver.
+	- Added Recursive DNS Server Option (RFC6106) support via router advertisement. 
+	- Added basic MCF5235 support, contributed by Thomas Buergel.
+	- Fixed MLD-query receive-function that could send a wrong MLD report.
+	- New configuration parameters:
+       - @ref FNET_CFG_ND6_RDNSS enabled/disabled RDNSS support.
+       - @ref FNET_CFG_ND6_RDNSS_LIST_SIZE sets maximum number of entries in the RDNSS address list.
+	- Other minor changes.
+
 - Version 2.6.1:
 	- Fixed timeout issue in the DHCP client, reported by Colin Bathe.
 	- Fixed race condition in UDP-send function that can cause data corruption, reported by Tomas.

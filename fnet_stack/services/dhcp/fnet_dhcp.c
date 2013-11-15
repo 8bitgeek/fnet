@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-16-2013
-*
-* @version 0.1.37.0
-*
 * @brief DHCP/BOOTP Client implementation.
 *  
 *  BOOTP is based on Peter Baertschi contribution (Siemens Building Technologies).
@@ -255,7 +251,7 @@ typedef struct
     fnet_ip4_addr_t siaddr FNET_COMP_PACKED;    /* IP address of next server to use in bootstrap;
                                                  *   returned in DHCPOFFER, DHCPACK by server.*/
     fnet_ip4_addr_t giaddr FNET_COMP_PACKED;    /* Relay agent IP address, used in booting via a relay agent.*/
-    unsigned char   chaddr[FNET_IP4_ADDR_STR_SIZE] FNET_COMP_PACKED;   /* Client hardware address.*/
+    unsigned char   chaddr[16] FNET_COMP_PACKED;/* Client hardware address.*/
     unsigned char   sname[64] FNET_COMP_PACKED; /* Optional server host name, null terminated string.*/
     unsigned char   file[128] FNET_COMP_PACKED; /* Boot file name, null terminated string; "generic"
                                                  *   name or null in DHCPDISCOVER, fully qualified
@@ -917,7 +913,8 @@ static void fnet_dhcp_change_state( fnet_dhcp_if_t *dhcp, fnet_dhcp_state_t stat
 
         case FNET_DHCP_STATE_RELEASE:
           break;
-          
+        default:
+          break;  /* do nothing, avoid compiler warning "enumeration value not handled in switch" */          
     #endif /* !FNET_CFG_DHCP_BOOTP */
     };
 }

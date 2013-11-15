@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Jan-28-2013
-*
-* @version 0.1.10.0
-*
 * @brief DNS Resolver API.
 *
 ***************************************************************************/
@@ -52,7 +48,6 @@
 
 #if FNET_CFG_DNS_RESOLVER || defined(__DOXYGEN__)
 
-
 #include "fnet.h"
 #include "fnet_poll.h"
 
@@ -60,7 +55,7 @@
 *
 * The DNS client/resolver service allows user application to resolve IP addresses 
 * of internet hosts that are identified by a host name. @n
-* It does this by sending DNS requests to a DNS Server. 
+* It does this by sending DNS request to a DNS Server. 
 * The IP address of a DNS Server is specified manually or can be obtained from 
 * the DHCP Server for the Local Area Network. @n
 * @n
@@ -90,7 +85,9 @@
 * - @ref FNET_CFG_DNS_RESOLVER 
 * - @ref FNET_CFG_DNS_PORT  
 * - @ref FNET_CFG_DNS_RETRANSMISSION_MAX  
-* - @ref FNET_CFG_DNS_RETRANSMISSION_TIMEOUT  
+* - @ref FNET_CFG_DNS_RETRANSMISSION_TIMEOUT 
+* - @ref FNET_CFG_ND6_RDNSS 
+* - @ref FNET_CFG_ND6_RDNSS_LIST_SIZE
 *  
 */
 
@@ -103,53 +100,48 @@
 typedef enum
 {
     FNET_DNS_STATE_DISABLED = 0,    /**< @brief The DNS-client service is not 
-                                    * initialized or is released.
-                                    */
+                                    * initialized or is released.*/
     FNET_DNS_STATE_TX,              /**< @brief The DNS-client service sends the 
-                                    * request to the DNS server. 
-                                    */
-    FNET_DNS_STATE_RX,             /**< @brief The DNS-client service waits a response from the DNS server.
-                                    */                                     
+                                    * request to the DNS server.*/
+    FNET_DNS_STATE_RX,             /**< @brief The DNS-client service waits a response from the DNS server.*/                                     
     FNET_DNS_STATE_RELEASE          /**< @brief The DNS resolving is completed 
-                                    * or received error.
-                                    */
+                                    * or received error.*/
 } fnet_dns_state_t;
-
 
 /**************************************************************************/ /*!
  * @brief Prototype of the DNS-client callback function that is 
  * called when the DNS client has completed the resolving.
  *
- * @param address    Result of the DNS client resolving, that equals to:
- *                        - The resolved IP address (in network byte order), 
- *                          if no error occurs.
- *                        - @ref FNET_ERR if the resolving was failed.   
- * @param cookie     User-application specific parameter. It's set during 
- *                   the DNS-client service initialization as part of 
- *                   @ref fnet_dns_params.
+ * @param addr_family       IP address family.@n
+ *                          It determines the address pointed to by @c addr.
+ * @param addr_list         Pointer to the list of addresses, which equals to:
+ *                              - Array of resolved IPv4 addresses @ref fnet_ip4_addr_t (in network byte order), if @ addr_family is equal to @ref AF_INET. 
+ *                              - Array of resolved IPv6 addresses @ref fnet_ip6_addr_t, if @ addr_family is equal to @ref AF_INET6. 
+ *                              - @ref FNET_NULL if the resolving was failed.
+ * @param addr_list_size    Number of resolved addresses in addr_list.
+ * @param cookie            User-application specific parameter. It's set during 
+ *                          the DNS-client service initialization as part of 
+ *                          @ref fnet_dns_params.
  *
  * @see fnet_dns_resolve(), fnet_dns_params
  ******************************************************************************/  
- typedef void(*fnet_dns_handler_resolved_t)(fnet_ip4_addr_t address, long cookie);
-
+typedef void(*fnet_dns_handler_resolved_t)(fnet_address_family_t addr_family, const char *addr_list, int addr_list_size, long cookie);
 
 /**************************************************************************/ /*!
  * @brief Initialization parameters for the @ref fnet_dns_init() function.
  ******************************************************************************/
 struct fnet_dns_params
 {
-    fnet_ip4_addr_t dns_server;              /**< @brief DNS server IP address (in network byte order). 
-                                             */
-    char * host_name;                       /**< @brief Host name to resolve (null-terminated string).
-                                             */
-    fnet_dns_handler_resolved_t handler;    /**< @brief Pointer to the callback function defined by 
-                                             * @ref fnet_dns_handler_resolved_t. It is called when the 
-                                             * DNS-client resolving is finished or an error is occurred.
-                                             */
-    long cookie;                            /**< @brief Optional application-specific parameter. @n 
-                                             * It's passed to the @c handler callback 
-                                             * function as input parameter.
-                                             */
+    struct sockaddr             dns_server_addr;    /**< @brief Socket address of the remote DNS server to 
+                                                    * connect to. */
+    char                        *host_name;         /**< @brief Host name to resolve (null-terminated string). */
+    fnet_address_family_t       addr_family;        /**< @brief Family of the IP Address which is queried.*/
+    fnet_dns_handler_resolved_t handler;            /**< @brief Pointer to the callback function defined by 
+                                                    * @ref fnet_dns_handler_resolved_t. It is called when the 
+                                                    * DNS-client resolving is finished or an error is occurred. */
+    long                        cookie;             /**< @brief Optional application-specific parameter. @n 
+                                                    * It's passed to the @c handler callback 
+                                                    * function as input parameter. */
 };
 
 /***************************************************************************/ /*!
@@ -214,9 +206,7 @@ void fnet_dns_release(void);
  ******************************************************************************/
 fnet_dns_state_t fnet_dns_state(void);
 
-
 /*! @} */
-
 
 #endif /* FNET_CFG_DNS_RESOLVER */
 

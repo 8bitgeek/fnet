@@ -33,10 +33,6 @@
 *
 * @file fnet_mempool.c
 *
-* @date Dec-19-2012
-*
-* @version 0.1.15.0
-*
 * @brief FNET memory pool functions.
 *
 ***************************************************************************/

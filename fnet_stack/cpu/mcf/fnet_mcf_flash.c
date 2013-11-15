@@ -34,10 +34,6 @@
 *
 * @author Andrey Butok
 *
-* @date Aug-2-2012
-*
-* @version 0.1.2.0
-*
 * @brief ColdFire Flash Module driver.
 *
 ***************************************************************************/
@@ -113,7 +109,7 @@ static void cfm_command( unsigned char command, unsigned long *address, unsigned
    
     /* Write to one or more addresses in the flash memory.*/
 #if !FNET_CFG_MCF_V1    /* Use the backdoor address. */
-    address = (unsigned long *)(__IPSBAR+0x04000000+(unsigned long)address);
+    address = (unsigned long *)(FNET_CFG_MCF_IPSBAR+0x04000000+(unsigned long)address);
 #endif
     /* Use the frontdoor address. */
     *address = data;

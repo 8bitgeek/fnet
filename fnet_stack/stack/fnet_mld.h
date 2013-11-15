@@ -118,7 +118,7 @@ FNET_COMP_PACKED_END
 *************************************************************************/
 void fnet_mld_join(fnet_netif_t *netif, fnet_ip6_addr_t  *group_addr);
 void fnet_mld_leave(fnet_netif_t *netif, fnet_ip6_addr_t  *group_addr);
-void fnet_mld_all(fnet_netif_t *netif);
+void fnet_mld_report_all(fnet_netif_t *netif);
 void fnet_mld_query_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
 
 

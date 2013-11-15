@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.0.6.0
-*
 * @brief DNS Resolver configuration file.
 *
 ***************************************************************************/
@@ -69,6 +65,8 @@
  * @brief   Default DNS port number (in network byte order).@n
  *          The DNS client uses this port for sending and receiving of DNS 
  *          messages. @n
+ *          It can be changed during the DNS Resolver initialization by the 
+ *          @ref fnet_dns_init() function.@n
  *          Default value is FNET_HTONS(53).
  * @showinitializer 
  ******************************************************************************/  

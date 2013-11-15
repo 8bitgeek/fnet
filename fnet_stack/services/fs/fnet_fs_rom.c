@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Dec-19-2012
-*
-* @version 0.0.17.0
-*
 * @brief ROM FS Implementation.
 *
 ***************************************************************************/

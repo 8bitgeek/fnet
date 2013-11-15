@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Mar-4-2013
-*
-* @version 0.1.20.0
-*
 * @brief FEC module driver definitions.
 *
 ***************************************************************************/

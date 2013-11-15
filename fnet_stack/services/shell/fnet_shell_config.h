@@ -35,10 +35,6 @@
 *
 * @author Andrey Butok
 *
-* @date Feb-5-2013
-*
-* @version 0.0.22.0
-*
 * @brief FNET Shell Library configuration file.
 *
 ***************************************************************************/
