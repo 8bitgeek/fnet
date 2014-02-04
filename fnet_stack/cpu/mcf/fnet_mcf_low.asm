@@ -66,6 +66,9 @@
 /* Set VBR */
 /* void fnet_mcf_vbr_wr(fnet_uint32) */
 FNET_COMP_ASM_PREFIX(fnet_mcf_vbr_wr):
+#if FNET_CFG_COMP_GNUC
+	move.l  4(sp), d0	/* get parameter from stack */
+#endif
 	movec d0,VBR 
 	nop
 	rts	
@@ -74,6 +77,9 @@ FNET_COMP_ASM_PREFIX(fnet_mcf_vbr_wr):
 /* Set CACR */
 /* void fnet_mcf_cacr_wr(fnet_uint32) */
 FNET_COMP_ASM_PREFIX(fnet_mcf_cacr_wr):
+#if FNET_CFG_COMP_GNUC
+	move.l  4(sp), d0	/* get parameter from stack */
+#endif
 	movec d0, cacr 
 	nop
 	rts
@@ -95,6 +101,9 @@ FNET_COMP_ASM_PREFIX(fnet_mcf_sr_rd):
 /* Write SR */
 /* void fnet_mcf_sr_wr(fnet_uint16) */
 FNET_COMP_ASM_PREFIX(fnet_mcf_sr_wr):
+#if FNET_CFG_COMP_GNUC
+	move.l  4(sp), d0	/* get parameter from stack */
+#endif
 	move.w     d0,sr
 	rts
 

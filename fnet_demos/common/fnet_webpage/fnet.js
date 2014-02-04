@@ -57,7 +57,7 @@ function fnetPrintFooter(){
 		</div>\
 		<br/>\
 		<div id="fnet_footer">\
-			<center>&copy; 2005-2013 by Andrey Butok, FNET Community.</center>\
+			<center>&copy; 2005-2014 by Andrey Butok, FNET Community.</center>\
 		</div>');
 }
 function sfHover(){

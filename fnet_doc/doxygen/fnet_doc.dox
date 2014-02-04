@@ -1,13 +1,7 @@
 /**********************************************************************//*!
 *
 * @file fnet_doc.dox
-*
 * @author Andrey Butok
-*
-* @date Mar-25-2013
-*
-* @version 0.1.61.0
-*
 * @brief FNET documentation framework, for Doxygen.
 *
 ***************************************************************************/
@@ -59,6 +53,7 @@ preferred way to configure stack features). @n
 	- @b ARM Cortex-M4, Kinetis:
 		- @b MK60N512 (TWR-K60N512 board)
 		- @b MK70FN1M (TWR-K70F120M board)
+		- @b MK60FN1M (TWR-K60F120M board)
 	- @b ColdFire: 
 		- Reindeer - MCF5282 (M5282EVB board).
 		- Modelo - MCF54418 (TWR-MCF5441x board).
@@ -227,26 +222,32 @@ The following table summarizes the supported demo applications, platforms and co
  </tr>
 <tr>
  <td class="fnet_td_grey">MCF52259 (Kirin3)</td>
- <td ALIGN=CENTER>CW10.4<br/>CW7.2</td>
- <td ALIGN=CENTER>CW10.4<br/>CW7.2</td>
- <td ALIGN=CENTER>CW10.4<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.5<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.5<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.5<br/>CW7.2</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MCF54418 (Modelo)</td>
- <td ALIGN=CENTER>CW10.4</td>
+ <td ALIGN=CENTER>CW10.5</td>
  <td ALIGN=CENTER>x</td>
  <td ALIGN=CENTER>x</td>
 </tr>
 <tr>
  <td class="fnet_td_grey">MK60N512 (Kinetis)</td>
- <td ALIGN=CENTER>CW10.4<br/>IAR6.5<br/>uV4.7</td>
- <td ALIGN=CENTER>CW10.4<br/>IAR6.5<br/>uV4.7</td>
- <td ALIGN=CENTER>CW10.4<br/>IAR6.5<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.5<br/>IAR6.5<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.5<br/>IAR6.5<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.5<br/>IAR6.5<br/>uV4.7</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK70FN1M (Kinetis)</td>
- <td ALIGN=CENTER>CW10.4<br/>IAR6.5</td>
- <td ALIGN=CENTER>CW10.4<br/>IAR6.5</td>
+ <td ALIGN=CENTER>CW10.5<br/>IAR6.7</td>
+ <td ALIGN=CENTER>CW10.5<br/>IAR6.7</td>
+ <td ALIGN=CENTER>x</td>
+ </tr>
+<tr>
+ <td class="fnet_td_grey">MK60FN1M (Kinetis)</td>
+ <td ALIGN=CENTER>CW10.5<br/>IAR6.7</td>
+ <td ALIGN=CENTER>CW10.5<br/>IAR6.7</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
@@ -1576,6 +1577,12 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+- Version 2.6.3:
+	- Added support of Kinetis K60FN1M0 (TWR-K60F120M board).
+	- Fixed defect in IPv4 TCP segment send function, reported by Dian Nugraha.
+	- Fixed MCF assembler code to be valid for GCC compiler, thanks to Thomas Buergel.
+
+
 - Version 2.6.2:
 	- Added IPv6 address support to DNS resolver.
 	- Added Recursive DNS Server Option (RFC6106) support via router advertisement. 

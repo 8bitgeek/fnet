@@ -94,6 +94,8 @@ try_longs:
 
 #if FNET_CFG_COMP_IAR           /* IAR does not understand this command.*/
         DC32   0x4EFB3842
+#elif FNET_CFG_COMP_GNUC
+        jmp     66(pc,d3.l*1)     
 #else
         jmp     (pc,d3.l,66)
 #endif

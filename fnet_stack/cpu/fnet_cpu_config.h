@@ -63,6 +63,7 @@
  *            - @c FNET_CFG_CPU_MCF54418  = Used platform is the MCF54418.            
  *            - @c FNET_CFG_CPU_MK60N512  = Used platform is the MK60N512.
  *            - @c FNET_CFG_CPU_MK70FN1  = Used platform is the MK70FN1.  
+ *            - @c FNET_CFG_CPU_MK60FN1  = Used platform is the MK70FN1. 
  *            - @c FNET_CFG_CPU_MPC5668G  = Used platform is the MPC5668G. 
  *            @n @n
  *            Selected processor definition should be only one and must be defined as 1. 
