@@ -803,6 +803,27 @@ int fnet_netif_unbind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *ad
  ******************************************************************************/
 unsigned long fnet_netif_get_scope_id(fnet_netif_desc_t netif_desc);
 
+/************************************************************************
+* NAME: fnet_netif_get_mtu
+*
+* DESCRIPTION: Gets Maximum Transmission Unit (MTU) of the interface.
+*************************************************************************/
+/***************************************************************************/ /*!
+ *
+ * @brief    Retrieves a Maximum Transmission Unit (MTU) of the specified network interface.
+ *
+ * @param netif_desc  Network interface descriptor.
+ *
+ * @return This function returns:
+ *          - MTU value.
+ *
+ ******************************************************************************
+ *
+ * This function is used to retrieve Maximum Transmission Unit (MTU) of the given interface.
+ *
+ ******************************************************************************/
+unsigned long fnet_netif_get_mtu(fnet_netif_desc_t netif_desc);
+
 /***************************************************************************/ /*!
  *
  * @brief    Looks for a network interface according to the specified Scope ID.

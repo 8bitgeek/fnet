@@ -76,7 +76,7 @@ fnet_netif_t fnet_eth0_if =
 *************************************************************************/
 void fnet_eth_io_init() 
 {
-#if FNET_CFG_CPU_MK60N512 || FNET_CFG_CPU_MK70FN1 || FNET_CFG_CPU_MK60FN1
+#if FNET_CFG_CPU_MK60N512 || FNET_CFG_CPU_MK64FN1 || FNET_CFG_CPU_MK70FN1 || FNET_CFG_CPU_MK60FN1
   
     FNET_MK_PORT_MemMapPtr pctl;
     FNET_MK_SIM_MemMapPtr  sim  = (FNET_MK_SIM_MemMapPtr)FNET_MK_SIM_BASE_PTR;

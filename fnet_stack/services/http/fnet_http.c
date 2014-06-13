@@ -266,7 +266,7 @@ static void fnet_http_state_machine( void *http_if_p )
                 			            /* Parse URI.*/
                 			            req_buf = fnet_http_uri_parse(req_buf, &session->request.uri);
                 			            
-                			            FNET_DEBUG_HTTP("HTTP: URI Path = %s; Query = %s", http->request.uri.path, http->request.uri.query);
+                			            FNET_DEBUG_HTTP("HTTP: URI Path = %s; Query = %s", session->request.uri.path, session->request.uri.query);
                 			            
     #if FNET_CFG_HTTP_VERSION_MAJOR /* HTTP/1.x*/                            
                                         /* Parse HTTP/x.x version.*/
@@ -881,7 +881,7 @@ static int fnet_http_tx_status_line (struct fnet_http_if * http)
     while (session->response.status_line_state <= 4);
     
     session->buffer_actual_size =  result;
-    FNET_DEBUG_HTTP("HTTP: TX Status: %s", http->buffer); 
+    FNET_DEBUG_HTTP("HTTP: TX Status: %s", session->buffer); 
     
     return FNET_OK;
 }

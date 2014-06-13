@@ -62,6 +62,7 @@
  *            - @c FNET_CFG_CPU_MCF51CN128  = Used platform is the MCF51CN128.
  *            - @c FNET_CFG_CPU_MCF54418  = Used platform is the MCF54418.            
  *            - @c FNET_CFG_CPU_MK60N512  = Used platform is the MK60N512.
+ *            - @c FNET_CFG_CPU_MK64FN1  = Used platform is the MK64FN1.  
  *            - @c FNET_CFG_CPU_MK70FN1  = Used platform is the MK70FN1.  
  *            - @c FNET_CFG_CPU_MK60FN1  = Used platform is the MK70FN1. 
  *            - @c FNET_CFG_CPU_MPC5668G  = Used platform is the MPC5668G. 
@@ -95,6 +96,9 @@
 #endif
 #ifndef FNET_CFG_CPU_MK60N512
     #define FNET_CFG_CPU_MK60N512   (0)
+#endif 
+#ifndef FNET_CFG_CPU_MK64FN1
+    #define FNET_CFG_CPU_MK64FN1    (0)
 #endif 
 #ifndef FNET_CFG_CPU_MK70FN1
     #define FNET_CFG_CPU_MK70FN1   	(0)
@@ -175,6 +179,15 @@
     
     #include "fnet_mk60n512_config.h"
     #define FNET_CPU_STR    "MK60N512"
+#endif
+
+#if FNET_CFG_CPU_MK64FN1 /* Kinetis */
+    #ifdef FNET_CPU_STR
+        #error "More than one CPU selected FNET_CPU_XXXX"
+    #endif
+    
+    #include "fnet_mk64fn1_config.h"
+    #define FNET_CPU_STR    "MK64FN1"
 #endif
 
 #if FNET_CFG_CPU_MK70FN1 /* Kinetis */

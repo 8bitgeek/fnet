@@ -395,7 +395,8 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
                 
                 fnet_arp_trace("TX Reply", arp_hdr); /* Print ARP header. */
                 
-                ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_ARP, fnet_eth_broadcast, nb);
+                //DM ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_ARP, fnet_eth_broadcast, nb);
+                ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_ARP, arp_hdr->target_hard_addr, nb);
                 return;
             }
         }

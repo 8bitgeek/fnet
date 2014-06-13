@@ -51,27 +51,28 @@ preferred way to configure stack features). @n
 @n 
 - Supported Platforms:
 	- @b ARM Cortex-M4, Kinetis:
+		- @b MK64FN1M (FRDM-K64F board)
 		- @b MK60N512 (TWR-K60N512 board)
 		- @b MK70FN1M (TWR-K70F120M board)
 		- @b MK60FN1M (TWR-K60F120M board)
 	- @b ColdFire: 
-		- Reindeer - MCF5282 (M5282EVB board).
 		- Modelo - MCF54418 (TWR-MCF5441x board).
 		- Kirin2 - MCF52235 (M52235EVB board).
 		- @b Kirin3 - MCF52259 (M52259EVB, M52259DEMO and TWR-MCF52259 boards).
-		- Lasko - MCF51CN128 (TWR-MCF51CN board). 
 	- @b Qorivva Power Architecture: 
 		- Fado - MPC5668G (MPC5668GKIT board).
+	- Obsolete Platforms, available in older FNET releases:
+		- Lasko - MCF51CN128 (TWR-MCF51CN board).
+		- Reindeer - MCF5282 (M5282EVB board).  
 
 - Supported Compilers:
 	- @b IAR:
-		- Embedded Workbench for ARM, version 6.7 (MK60N512, MK70FN1M).
+		- Embedded Workbench for ARM, version 7.1 (Kinetis).
 	- @b ARM:
 		- Keil uVision, version 4.7 (MK60N512).
 	- @b Freescale:
-		- CodeWarrior Development Studio for Microcontrollers, version 10.5 (MK60N512, MK70FN1M, MCF52259, MCF54418).
+		- CodeWarrior Development Studio for Microcontrollers, version 10.6 (MK60N512, MK70FN1M, MCF52259, MCF54418).
 		- CodeWarrior for ColdFire, version 7.2.2 (MCF5282, MCF52235, MCF52259).
-		- CodeWarrior for Microcontrollers, version 6.3 (MCF51CN128).
 		- CodeWarrior Development Studio for MPC55xx/MPC56xx, version 2.10  (MPC5668G).
  
 	
@@ -202,18 +203,6 @@ The following table summarizes the supported demo applications, platforms and co
  <th ALIGN=CENTER>Bootloader</th>
  <th ALIGN=CENTER>Benchmark</th>
  </tr>
- <tr>
- <td class="fnet_td_grey">MCF51CN128 (Lasco)</td>
- <td ALIGN=CENTER>CW6.3</td>
- <td ALIGN=CENTER>CW6.3</td>
- <td ALIGN=CENTER>x</td>
- </tr>
- <tr>
- <td class="fnet_td_grey">MCF5282 (Reindeer)</td>
- <td ALIGN=CENTER>CW7.2</td>
- <td ALIGN=CENTER>CW7.2</td>
- <td ALIGN=CENTER>x</td>
- </tr>
 <tr>
  <td class="fnet_td_grey">MCF52235 (Kirin2)</td>
  <td ALIGN=CENTER>CW7.2</td>
@@ -222,32 +211,38 @@ The following table summarizes the supported demo applications, platforms and co
  </tr>
 <tr>
  <td class="fnet_td_grey">MCF52259 (Kirin3)</td>
- <td ALIGN=CENTER>CW10.5<br/>CW7.2</td>
- <td ALIGN=CENTER>CW10.5<br/>CW7.2</td>
- <td ALIGN=CENTER>CW10.5<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.6<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.6<br/>CW7.2</td>
+ <td ALIGN=CENTER>CW10.6<br/>CW7.2</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MCF54418 (Modelo)</td>
- <td ALIGN=CENTER>CW10.5</td>
+ <td ALIGN=CENTER>CW10.6</td>
  <td ALIGN=CENTER>x</td>
  <td ALIGN=CENTER>x</td>
 </tr>
 <tr>
+ <td class="fnet_td_grey">MK64FN1M (Kinetis)</td>
+ <td ALIGN=CENTER>IAR7.1</td>
+ <td ALIGN=CENTER>IAR7.1</td>
+ <td ALIGN=CENTER>x</td>
+ </tr>
+<tr>
  <td class="fnet_td_grey">MK60N512 (Kinetis)</td>
- <td ALIGN=CENTER>CW10.5<br/>IAR6.5<br/>uV4.7</td>
- <td ALIGN=CENTER>CW10.5<br/>IAR6.5<br/>uV4.7</td>
- <td ALIGN=CENTER>CW10.5<br/>IAR6.5<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.1<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.1<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.1<br/>uV4.7</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK70FN1M (Kinetis)</td>
- <td ALIGN=CENTER>CW10.5<br/>IAR6.7</td>
- <td ALIGN=CENTER>CW10.5<br/>IAR6.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.1</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.1</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK60FN1M (Kinetis)</td>
- <td ALIGN=CENTER>CW10.5<br/>IAR6.7</td>
- <td ALIGN=CENTER>CW10.5<br/>IAR6.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.1</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.1</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
@@ -1577,6 +1572,13 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+- Version 2.6.4:
+	- Added support of Kinetis K64FN1M (FRDM-K60F board).
+	- Added fnet_netif_get_mtu()
+	- Fixed ARP response, which could cause issue with iOS nodes. Thanks to Markus Muller.
+	- The assembler *.asm files renamed to *.s.
+	- Removed support of obsolete MCF51CN128 and MCF5282 platforms.
+
 - Version 2.6.3:
 	- Added support of Kinetis K60FN1M0 (TWR-K60F120M board).
 	- Fixed defect in IPv4 TCP segment send function, reported by Dian Nugraha.

@@ -3226,7 +3226,7 @@ static int fnet_tcp_sendseg(struct fnet_tcp_segment *segment)
         error = fnet_ip_output(netif, ((struct sockaddr_in *)(&segment->src_addr))->sin_addr.s_addr, 
                                 ((struct sockaddr_in *)(&segment->dest_addr))->sin_addr.s_addr, 
                                 FNET_IP_PROTOCOL_TCP, 
-                                (segment->sockoption ? segment->sockoption->ip_opt.tos : 0),
+                                (unsigned char)(segment->sockoption ? segment->sockoption->ip_opt.tos : 0),
                                 (unsigned char)(segment->sockoption ? segment->sockoption->ip_opt.ttl : FNET_TCP_TTL_DEFAULT),
                                 nb, 0, 
                                 (segment->sockoption ? ((segment->sockoption->flags & SO_DONTROUTE) > 0) : 0),

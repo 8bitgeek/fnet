@@ -458,11 +458,6 @@
               <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_isr_inst.c</FilePath>
             </File>
             <File>
-              <FileName>fnet_mk_low.asm</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.asm</FilePath>
-            </File>
-            <File>
               <FileName>fnet_mk_serial.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_serial.c</FilePath>
@@ -1071,6 +1066,11 @@
               <FileName>fnet_mld.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\..\..\fnet_stack\stack\fnet_mld.h</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_mk_low.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -1893,11 +1893,6 @@
               <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_isr_inst.c</FilePath>
             </File>
             <File>
-              <FileName>fnet_mk_low.asm</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.asm</FilePath>
-            </File>
-            <File>
               <FileName>fnet_mk_serial.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_serial.c</FilePath>
@@ -2506,6 +2501,11 @@
               <FileName>fnet_mld.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\..\..\fnet_stack\stack\fnet_mld.h</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_mk_low.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.s</FilePath>
             </File>
           </Files>
         </Group>

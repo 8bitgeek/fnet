@@ -59,7 +59,7 @@ gpio_init(void)
 {
   
 
-
+#if 0 /* Implemented in FNET UART driver.*/
 	/*
 	 * Set Port UA to initialize URXD0/UTXD0
 	 */
@@ -75,6 +75,8 @@ gpio_init(void)
         | MCF_GPIO_PUCPAR_URXD2_URXD2
         | MCF_GPIO_PUCPAR_UTXD2_UTXD2;
 
+#endif
+
 
 	/*
 	 * Initialize PLDPAR to enable Ethernet Leds
@@ -88,7 +90,7 @@ gpio_init(void)
 		 | MCF_GPIO_PLDPAR_RXLED_RXLED   
 		 | MCF_GPIO_PLDPAR_TXLED_TXLED);  
 
-#if 0 /* Implemented in the Ethernet driver.*/
+#if 0 /* Implemented in FNET Ethernet driver.*/
 {		  
     uint32 myctr; 		//generic counter variable
     // set phy address to zero

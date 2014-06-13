@@ -746,7 +746,7 @@ static void fnet_udp_control_input( fnet_prot_notify_t command, fnet_ip_header_t
 * DESCRIPTION: Prints UDP header. For debugging purposes.
 *************************************************************************/
 #if FNET_CFG_DEBUG_TRACE_UDP
-void fnet_udp_trace(char *str, fnet_udp_header_t *udp_hdr)
+static void fnet_udp_trace(char *str, fnet_udp_header_t *udp_hdr)
 {
 
     fnet_printf(FNET_SERIAL_ESC_FG_GREEN"%s", str); /* Print app-specific header.*/

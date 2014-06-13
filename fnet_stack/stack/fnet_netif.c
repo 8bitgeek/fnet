@@ -124,7 +124,7 @@ int fnet_netif_init_all( void )
 #endif    
 #if FNET_CFG_LOOPBACK
     /* Initialise Loop-back interface.*/
-    result = fnet_netif_init(FNET_LOOP_IF);
+    result = fnet_netif_init(FNET_LOOP_IF, 0, 0);
     if(result == FNET_ERR)
         goto INIT_ERR;
 #endif /* FNET_CFG_LOOPBACK */
@@ -970,15 +970,41 @@ static void fnet_netif_assign_scope_id( fnet_netif_t *netif )
 *************************************************************************/
 unsigned long fnet_netif_get_scope_id(fnet_netif_desc_t netif_desc)
 {
-    unsigned long   result = 0;
+    unsigned long   result;
     fnet_netif_t    *netif = (fnet_netif_t *)netif_desc;
     
     if(netif)
     {
         result = netif->scope_id;
   	}
+    else
+    {
+        result = 0;
+    }
     
     return result;
+}
+
+/************************************************************************
+* NAME: fnet_netif_get_mtu
+*
+* DESCRIPTION: Gets Maximum Transmission Unit (MTU) of the interface.
+*************************************************************************/
+unsigned long fnet_netif_get_mtu(fnet_netif_desc_t netif_desc)
+{
+    unsigned long   mtu;
+    fnet_netif_t    *netif = (fnet_netif_t *)netif_desc;
+    
+    if(netif)
+    {
+        mtu = netif->mtu;
+  	}
+    else
+    {
+        mtu = 0;
+    }
+    
+    return mtu;
 }
 
 /************************************************************************

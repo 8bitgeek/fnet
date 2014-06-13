@@ -458,7 +458,6 @@ static void fapp_dup_ip_handler( fnet_netif_desc_t netif )
 }
 #endif /* FNET_CFG_IP4 */
 
-
 /************************************************************************
 * NAME: fapp_init
 *
@@ -584,7 +583,6 @@ void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif)
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Interface", name);
     
     fapp_netif_addr_print(desc, AF_SUPPORTED, netif, FNET_TRUE);
-    
 #if FNET_CFG_IP4
     {    
         fnet_ip4_addr_t ip_addr;
@@ -679,7 +677,7 @@ void fapp_info_print( fnet_shell_desc_t desc )
         fnet_mac_to_str(macaddr, mac_str);
         fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "MAC Address", mac_str);
     }    
-    
+    fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "MTU", fnet_netif_get_mtu(netif));    
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Link Status", fnet_netif_connected(netif) ? "connected" : "unconnected");
 
     if(fnet_netif_get_statistics(netif, &statistics) == FNET_OK)

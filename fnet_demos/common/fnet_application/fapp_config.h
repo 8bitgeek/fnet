@@ -428,7 +428,7 @@
 #ifndef FAPP_CFG_PARAMS_BOOT
 #define FAPP_CFG_PARAMS_BOOT            (FAPP_CFG_SETGET_CMD_BOOT|FAPP_CFG_SETGET_CMD_DELAY|\
                                          FAPP_CFG_SETGET_CMD_SCRIPT|FAPP_CFG_SETGET_CMD_RAW|\
-                                         FAPP_CFG_SETGET_CMD_GO)
+                                         FAPP_CFG_SETGET_CMD_GO|FAPP_CFG_BOOTLOADER )
 #endif
 
 #ifndef FAPP_CFG_PARAMS_TFTP
