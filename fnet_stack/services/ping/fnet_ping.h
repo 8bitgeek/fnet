@@ -42,13 +42,11 @@
 
 #define _FNET_PING_H_
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 
 #if FNET_CFG_PING || defined(__DOXYGEN__)
 
-#include "fnet.h"
-#include "fnet_poll.h"
 
 /*! @addtogroup fnet_ping 
 *

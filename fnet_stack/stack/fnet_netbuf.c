@@ -40,12 +40,8 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
-#include "fnet_netbuf.h"
+#include "fnet.h"
 #include "fnet_prot.h"
-#include "fnet_isr.h"
-#include "fnet_stdlib.h"
-#include "fnet_debug.h"
 #include "fnet_mempool.h"
 
 

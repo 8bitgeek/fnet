@@ -43,8 +43,8 @@
 #define _FNET_MK_H_
 
 
-#include "fnet_config.h"
-#include "fnet_comp.h"
+
+#include "fnet.h"
 
 #if FNET_MK 
 

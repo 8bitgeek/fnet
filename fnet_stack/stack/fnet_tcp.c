@@ -27,21 +27,15 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_TCP
 
-#include "fnet.h"
-#include "fnet_error.h"
-#include "fnet_socket.h"
 #include "fnet_socket_prv.h"
 #include "fnet_timer_prv.h"
 #include "fnet_tcp.h"
-#include "fnet_isr.h"
 #include "fnet_checksum.h"
 #include "fnet_prot.h"
-#include "fnet_stdlib.h"
-#include "fnet_debug.h"
 
 /************************************************************************
 *     Definitions

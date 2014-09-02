@@ -41,11 +41,10 @@
 
 #define _FNET_DEBUG_H_
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_DEBUG
 
-#include "fnet_stdlib.h"
 
 #define FNET_DEBUG(...) fnet_println(__VA_ARGS__)
 

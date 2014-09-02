@@ -1,11 +1,5 @@
 
-/*
- * File:		main.c
- * Purpose:		sample program
- *
- */
 #include "fapp.h"
-#include "fnet_cpu.h" 
 
 void main(void)
 {

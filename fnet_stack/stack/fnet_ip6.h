@@ -43,7 +43,7 @@
 
 #define _FNET_IP6_H_
 
-#include "fnet_comp.h"
+#include "fnet.h"
 
 /*! @addtogroup fnet_socket */
 /*! @{ */

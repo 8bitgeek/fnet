@@ -143,19 +143,6 @@
 #define FNET_ND6_PREFIX_LIFETIME_INFINITE    (0xFFFFFFFF)    /* A lifetime value of all one bits (0xffffffff) represents infinity. */
 #define FNET_ND6_RDNSS_LIFETIME_INFINITE     (0xFFFFFFFF)    /* A lifetime value of all one bits (0xffffffff) represents infinity. */
 
-/**********************************************************************
- * Link-layer address.
- * For example, Ethernet interafce uses the address with size set to 6.
- ***********************************************************************/
-typedef unsigned char fnet_nd6_ll_addr_t[16]; 
-
-/* Copying Link-layer address.*/
-#define FNET_ND6_LL_ADDR_COPY(from_addr, to_addr, ll_size)   \
-                                    (fnet_memcpy(&to_addr[0], &from_addr[0], ll_size))
-
-/* Link-layer address Equality. */
-#define FNET_ND6_LL_ADDR_ARE_EQUAL(a, b, size)               \
-        (fnet_memcmp(&a[0], &b[0], (int)size) == 0)
                                     
 /***********************************************************************
 * Prefix state.
@@ -173,8 +160,7 @@ typedef enum fnet_nd6_prefix_state
 ***********************************************************************/
 typedef struct fnet_nd6_prefix_entry
 {
- 
-    fnet_ip6_addr_t         prefix;         /* Prefix of an IP address. */
+    fnet_ip6_addr_t         prefix;         /* Prefix of an IPv6 address. */
     unsigned long           prefix_length;  /* Prefix length (in bits). The number of leading bits
                                              * in the Prefix that are valid. */
     fnet_nd6_prefix_state_t state;          /* Prefix state.*/                                 
@@ -219,7 +205,7 @@ typedef struct fnet_nd6_neighbor_entry
 {
  
     fnet_ip6_addr_t             ip_addr;        /* Neighbor’s on-link unicast IP address. */
-    fnet_nd6_ll_addr_t          ll_addr;        /* Its link-layer address. Actual size is defiined by fnet_netif_api_t->hw_addr_size. */
+    fnet_netif_ll_addr_t        ll_addr;        /* Its link-layer address. Actual size is defiined by fnet_netif_api_t->hw_addr_size. */
     fnet_nd6_neighbor_state_t   state;          /* Neighbor’s reachability state.*/
     unsigned long               state_time;     /* Time of last state event.*/
     fnet_netbuf_t               *waiting_netbuf;/* Pointer to any queued packetwaiting for address resolution to complete.*/
@@ -735,7 +721,7 @@ fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_get(struct fnet_netif *netif, fnet
 int fnet_nd6_addr_is_onlink(struct fnet_netif *netif, fnet_ip6_addr_t *addr);
 fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_get(struct fnet_netif *netif, fnet_ip6_addr_t *ip_addr);
 void fnet_nd6_neighbor_cache_del(struct fnet_netif *netif, fnet_nd6_neighbor_entry_t *neighbor_entry);
-fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(struct fnet_netif *netif, fnet_ip6_addr_t *ip_addr, fnet_nd6_ll_addr_t ll_addr, fnet_nd6_neighbor_state_t state);
+fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(struct fnet_netif *netif, fnet_ip6_addr_t *ip_addr, fnet_netif_ll_addr_t ll_addr, fnet_nd6_neighbor_state_t state);
 void fnet_nd6_neighbor_enqueue_waiting_netbuf(fnet_nd6_neighbor_entry_t *neighbor_entry, fnet_netbuf_t *waiting_netbuf);
 void fnet_nd6_neighbor_send_waiting_netbuf(struct fnet_netif *netif, fnet_nd6_neighbor_entry_t *neighbor_entry);
 void fnet_nd6_router_list_add( fnet_nd6_neighbor_entry_t *neighbor_entry, unsigned long lifetime );

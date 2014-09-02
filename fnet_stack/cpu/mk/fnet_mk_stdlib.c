@@ -41,8 +41,5 @@
 
 #if FNET_MK
 
-#include "fnet_stdlib.h"
-
-
 
 #endif /*FNET_MK*/

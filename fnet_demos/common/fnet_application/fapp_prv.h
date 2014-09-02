@@ -74,6 +74,7 @@ void fapp_help_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_shell_init( fnet_shell_desc_t desc );
 void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif );
 void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_save_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_reset_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );

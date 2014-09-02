@@ -245,8 +245,7 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
             fnet_mac_addr_t macaddr;
             char mac_str[FNET_MAC_ADDR_STR_SIZE];
             fnet_netif_get_hw_addr(netif, macaddr, sizeof(fnet_mac_addr_t));
-            fnet_mac_to_str(macaddr, mac_str);
-            fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", mac_str);
+            fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", fnet_mac_to_str(macaddr, mac_str));
         }
         else
         {

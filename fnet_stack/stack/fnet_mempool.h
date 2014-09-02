@@ -43,8 +43,7 @@
 
 #define _FNET_MEMPOOL_H_
 
-#include "fnet_config.h"
-#include "fnet_comp.h"
+#include "fnet.h"
 
 /**************************************************************************/ /*!
  * @internal

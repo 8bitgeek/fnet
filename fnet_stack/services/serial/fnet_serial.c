@@ -41,7 +41,6 @@
 ***************************************************************************/
 
 #include "fnet.h"
-#include "fnet_serial.h"
 
 static int fnet_serial_printk_mknumstr( char *numstr, void *nump, int neg, int radix );
 static void fnet_serial_printk_pad( char c, fnet_serial_stream_t stream, int curlen, int field_width, int *count );

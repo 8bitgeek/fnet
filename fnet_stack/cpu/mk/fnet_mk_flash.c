@@ -38,7 +38,6 @@
 *
 ***************************************************************************/
 #include "fnet.h" 
-#include "fnet_stdlib.h"
 
 #if FNET_MK && FNET_CFG_CPU_FLASH
 

@@ -1,6 +1,6 @@
 /**************************************************************************
 *
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2014 by Andrey Butok. FNET Community.
 * Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -44,19 +44,20 @@
 
 #define _FNET_SERVICES_H_
 
-#include "fnet_config.h"
-#include "fnet_serial.h"
-#include "fnet_shell.h"
-#include "fnet_telnet.h"
-#include "fnet_poll.h"
-#include "fnet_tftp_cln.h"
-#include "fnet_tftp_srv.h"
-#include "fnet_dhcp.h"
-#include "fnet_flash.h"
-#include "fnet_fs_rom.h"
-#include "fnet_http.h"
-#include "fnet_dns.h"
-#include "fnet_ping.h"
+#include "fnet.h"
+#include "serial/fnet_serial.h"
+#include "shell/fnet_shell.h"
+#include "telnet/fnet_telnet.h"
+#include "poll/fnet_poll.h"
+#include "tftp/fnet_tftp_cln.h"
+#include "tftp/fnet_tftp_srv.h"
+#include "dhcp/fnet_dhcp.h"
+#include "flash/fnet_flash.h"
+#include "fs/fnet_fs_rom.h"
+#include "ssl/fnet_ssl.h"
+#include "http/fnet_http.h"
+#include "dns/fnet_dns.h"
+#include "ping/fnet_ping.h"
 
 #endif
 

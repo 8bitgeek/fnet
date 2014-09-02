@@ -43,13 +43,10 @@
 
 #define _FNET_DNS_H_
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 
 #if FNET_CFG_DNS_RESOLVER || defined(__DOXYGEN__)
-
-#include "fnet.h"
-#include "fnet_poll.h"
 
 /*! @addtogroup fnet_dns 
 *

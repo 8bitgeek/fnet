@@ -43,8 +43,7 @@
 
 #define _FNET_SERIAL_H_
 
-#include "fnet_config.h"
-#include "fnet_stdlib.h"
+#include "fnet.h"
 
 /*! @addtogroup fnet_serial
 * The Serial Input/Output (I/O) library provides commonly used I/O functions 

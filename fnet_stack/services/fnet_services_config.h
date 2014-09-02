@@ -72,15 +72,16 @@
     #define FNET_CFG_FLASH      (0)
 #endif
 
-#include "fnet_dhcp_config.h"
-#include "fnet_http_config.h"
-#include "fnet_fs_config.h"
-#include "fnet_tftp_config.h"
-#include "fnet_telnet_config.h"
-#include "fnet_dns_config.h"
-#include "fnet_ping_config.h"
-#include "fnet_serial_config.h"
-#include "fnet_shell_config.h"
+#include "services/dhcp/fnet_dhcp_config.h"
+#include "services/ssl/fnet_ssl_config.h"
+#include "services/http/fnet_http_config.h"
+#include "services/fs/fnet_fs_config.h"
+#include "services/tftp/fnet_tftp_config.h"
+#include "services/telnet/fnet_telnet_config.h"
+#include "services/dns/fnet_dns_config.h"
+#include "services/ping/fnet_ping_config.h"
+#include "services/serial/fnet_serial_config.h"
+#include "services/shell/fnet_shell_config.h"
 
 /*! @} */
 

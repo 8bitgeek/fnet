@@ -50,7 +50,7 @@
 
 
 #include "fnet.h"
-#include "fnet_fs.h"
+
 
 /*! @addtogroup fnet_http
  @{ */

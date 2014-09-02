@@ -42,7 +42,7 @@
 
 #ifndef _FNET_MK64FN1_CONFIG_H_
 
-#define _FNET_MK70FN1_CONFIG_H_
+#define _FNET_MK64FN1_CONFIG_H_
 
 #define FNET_MK                             (1)
 

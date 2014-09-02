@@ -41,8 +41,7 @@
 
 #define _FNET_STDLIB_H_
 
-#include "fnet_config.h"
-#include "fnet_comp.h"
+
 
 /*! @addtogroup fnet_stdlib
 * The standard library defines general purpose functions, including string converting, searching and other data manipulations.
@@ -70,6 +69,8 @@
     /* Retrieve next argument.*/
     #define fnet_va_arg(ap, type)   (*(type *)((ap += (sizeof(type) + 3U) & ~3U) - (sizeof(type))))
 #endif
+
+#include "fnet.h"
 
 /**************************************************************************/ /*!
  * @def FNET_TRUE
@@ -475,8 +476,6 @@ unsigned long fnet_strtoul (char *str, char **ptr, int base);
  ******************************************************************************/
 char * fnet_strtok_r(char *str, const char *delimiter, char **last);
 
-
-#include "fnet_serial.h"
 
 /*! @} */
 

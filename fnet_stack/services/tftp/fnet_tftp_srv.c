@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2014 by Andrey Butok. FNET Community.
 * Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -41,18 +41,11 @@
 
 
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_TFTP_SRV
 
-#include "fnet_tftp_srv.h"
-#include "fnet_timer.h"
-#include "fnet_eth.h"
-#include "fnet_socket.h"
-#include "fnet_debug.h"
-#include "fnet_netif_prv.h"
-#include "fnet_stdlib.h"
-#include "fnet_debug.h"
+#include "stack/fnet_netif_prv.h"
 
 #if FNET_CFG_DEBUG_TFTP_SRV    
     #define FNET_DEBUG_TFTP_SRV   FNET_DEBUG

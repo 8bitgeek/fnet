@@ -36,7 +36,7 @@
 *
 ***************************************************************************/
 
-#include "fnet_comp_asm.h"
+#include "compiler/fnet_comp_asm.h"
 
 #if FNET_CFG_OS && FNET_CFG_OS_UCOSIII && FNET_MCF && FNET_CFG_OS_ISR
 

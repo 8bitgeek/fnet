@@ -1,10 +1,3 @@
-/*
- * File:		hello_world.c
- * Purpose:		Main process
- *
- */
-
-//#include "common.h"
 
 #include "fapp.h"
 

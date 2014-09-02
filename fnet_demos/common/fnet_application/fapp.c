@@ -93,7 +93,6 @@
 #endif
 
 
-#include "fnet_netbuf.h"
 
 /************************************************************************
 *     Definitions.
@@ -167,7 +166,10 @@ const struct fnet_shell_command fapp_cmd_table [] =
     { FNET_SHELL_CMD_TYPE_NORMAL, "unbind",     1, 1, (void *)fapp_unbind_cmd,  "Unbind IPv6 Address", "<IP6 address>"},
 #endif    
 #if FAPP_CFG_INFO_CMD
-    { FNET_SHELL_CMD_TYPE_NORMAL, "info",       0, 0, (void *)fapp_info_cmd,    "Show detailed status", ""},
+    { FNET_SHELL_CMD_TYPE_NORMAL, "info",       0, 0, (void *)fapp_info_cmd,    "Show interface info", ""},
+#endif
+#if FAPP_CFG_STAT_CMD
+    { FNET_SHELL_CMD_TYPE_NORMAL, "stat",       0, 0, (void *)fapp_stat_cmd,    "Show interface statistics", ""},
 #endif
 #if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP && FNET_CFG_IP4
     { FNET_SHELL_CMD_TYPE_NORMAL, "dhcp",       0, 1, (void *)fapp_dhcp_cmd,    "Start DHCP client", "[release]"},
@@ -421,7 +423,7 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     fnet_eth_debug_mii_print_regs(fapp_default_netif);
 #endif
 
-#if 1
+#if 0
     {
         int             i = 0;
         fnet_ip6_addr_t addr_dns;
@@ -434,6 +436,12 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
             i++;
         }
     }
+#endif
+
+#if 1 /* Test ctacrypt library.*/
+    extern void ctaocrypt_test(void);
+    
+    ctaocrypt_test();
 #endif
 }
 #endif
@@ -664,7 +672,6 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
 ************************************************************************/
 void fapp_info_print( fnet_shell_desc_t desc )
 {
-    struct fnet_netif_statistics statistics;
     char mac_str[FNET_MAC_ADDR_STR_SIZE];
     fnet_mac_addr_t macaddr;
     fnet_netif_desc_t netif = fapp_default_netif;         
@@ -674,51 +681,33 @@ void fapp_info_print( fnet_shell_desc_t desc )
     /* HW address, if any */
     if(fnet_netif_get_hw_addr(netif, macaddr, sizeof(fnet_mac_addr_t)) == FNET_OK)
     {
-        fnet_mac_to_str(macaddr, mac_str);
-        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "MAC Address", mac_str);
+        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "MAC Address", fnet_mac_to_str(macaddr, mac_str));
     }    
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "MTU", fnet_netif_get_mtu(netif));    
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Link Status", fnet_netif_connected(netif) ? "connected" : "unconnected");
-
-    if(fnet_netif_get_statistics(netif, &statistics) == FNET_OK)
-    {
-        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "TX Packets", statistics.tx_packet);
-        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "RX Packets", statistics.rx_packet);
-    }
-    
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "Free Heap", fnet_free_mem_status());
 
 #if FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP
-
     fapp_http_info(desc);
-
 #endif
 
 #if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP && FNET_CFG_IP4
-    
     fapp_dhcp_info(desc);
-    
 #endif
 
 #if FAPP_CFG_TELNET_CMD && FNET_CFG_TELNET
-
     fapp_telnet_info(desc);
-    
 #endif   
 
 #if FAPP_CFG_TFTPS_CMD
-
     fapp_tftps_info(desc);
-    
 #endif 
-
-
 }
 
 /************************************************************************
 * NAME: fapp_info_cmd
 *
-* DESCRIPTION:
+* DESCRIPTION: "info" command
 ************************************************************************/
 #if FAPP_CFG_INFO_CMD
 void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
@@ -727,6 +716,62 @@ void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     FNET_COMP_UNUSED_ARG(argv);
 
     fapp_info_print(desc);
+}
+#endif
+
+/************************************************************************
+* NAME: fapp_stat_cmd
+*
+* DESCRIPTION: "stat" command
+************************************************************************/
+#if FAPP_CFG_STAT_CMD
+void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+{
+    struct fnet_netif_statistics statistics;
+    fnet_netif_desc_t netif = fapp_default_netif;  
+
+    FNET_COMP_UNUSED_ARG(argc);
+    FNET_COMP_UNUSED_ARG(argv);
+
+    /* Print Packet statistics. */
+    if(fnet_netif_get_statistics(netif, &statistics) == FNET_OK)
+    {
+        fnet_shell_println(desc, "\nPackets:");
+        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "TX Packets", statistics.tx_packet);
+        fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "RX Packets", statistics.rx_packet);
+    }
+
+#if FNET_CFG_IP6
+    {
+        int                                 i;
+        fnet_netif_ip6_prefix_t             ip6_prefix;
+        fnet_netif_ip6_neighbor_cache_t     ip6_neighbor_cache;
+        char                                numaddr[FNET_IP6_ADDR_STR_SIZE];
+        char                                mac_str[FNET_MAC_ADDR_STR_SIZE];
+
+        /* Print content of IPv6 Prefix List. */
+        fnet_shell_println(desc, "\nIPv6 Prefix List:");
+        for(i=0; fnet_netif_get_ip6_prefix(netif, i, &ip6_prefix) == FNET_TRUE; i++)
+        {
+            fnet_shell_println(desc,"   [%d] %s/%d\n", i, 
+                                fnet_inet_ntop(AF_INET6, &ip6_prefix.prefix, numaddr, sizeof(numaddr)), ip6_prefix.prefix_length);
+        }     
+
+        /* Print content of IPv6 Neighbor Cache. */
+        for(i=0; fnet_netif_get_ip6_neighbor_cache(netif, i, &ip6_neighbor_cache) == FNET_TRUE; i++)
+        {
+            if(i == 0)
+            {
+                fnet_shell_println(desc, "\nIPv6 Neighbor Cache:");
+            }
+            fnet_shell_println(desc,"   [%d] %s = %s (%s)\n", i, 
+                                fnet_inet_ntop(AF_INET6, &ip6_neighbor_cache.ip_addr, numaddr, sizeof(numaddr)), 
+                                fnet_mac_to_str(ip6_neighbor_cache.ll_addr, mac_str),
+                                (ip6_neighbor_cache.is_router == FNET_TRUE) ? "router" : "host");
+        }    
+    }
+#endif
+
 }
 #endif
 
@@ -906,7 +951,6 @@ void fapp_unbind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     }
 }
 #endif
-
 
 
 

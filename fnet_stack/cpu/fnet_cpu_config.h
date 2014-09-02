@@ -64,7 +64,7 @@
  *            - @c FNET_CFG_CPU_MK60N512  = Used platform is the MK60N512.
  *            - @c FNET_CFG_CPU_MK64FN1  = Used platform is the MK64FN1.  
  *            - @c FNET_CFG_CPU_MK70FN1  = Used platform is the MK70FN1.  
- *            - @c FNET_CFG_CPU_MK60FN1  = Used platform is the MK70FN1. 
+ *            - @c FNET_CFG_CPU_MK60FN1  = Used platform is the MK60FN1. 
  *            - @c FNET_CFG_CPU_MPC5668G  = Used platform is the MPC5668G. 
  *            @n @n
  *            Selected processor definition should be only one and must be defined as 1. 
@@ -121,7 +121,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
    
-    #include "fnet_mcf52235_config.h"
+    #include "cpu/mcf/fnet_mcf52235_config.h"
     #define FNET_CPU_STR    "MCF52235"
 #endif
 
@@ -130,7 +130,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mcf52259_config.h"
+    #include "cpu/mcf/fnet_mcf52259_config.h"
     #define FNET_CPU_STR    "MCF52259"
 #endif
 
@@ -139,7 +139,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
 
-    #include "fnet_mcf5235_config.h"
+    #include "cpu/mcf/fnet_mcf5235_config.h"
     #define FNET_CPU_STR    "MCF5235"
 #endif
 
@@ -148,7 +148,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mcf5282_config.h"
+    #include "cpu/mcf/fnet_mcf5282_config.h"
     #define FNET_CPU_STR    "MCF5282"
 #endif
 
@@ -157,7 +157,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mcf51cn128_config.h"
+    #include "cpu/mcf/fnet_mcf51cn128_config.h"
     #define FNET_CPU_STR    "MCF51CN128"
 #endif
 
@@ -166,7 +166,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mcf54418_config.h"
+    #include "cpu/mcf/fnet_mcf54418_config.h"
     #define FNET_CPU_STR    "MCF54418"
 #endif
 
@@ -177,7 +177,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mk60n512_config.h"
+    #include "cpu/mk/fnet_mk60n512_config.h"
     #define FNET_CPU_STR    "MK60N512"
 #endif
 
@@ -186,7 +186,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mk64fn1_config.h"
+    #include "cpu/mk/fnet_mk64fn1_config.h"
     #define FNET_CPU_STR    "MK64FN1"
 #endif
 
@@ -195,7 +195,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mk70fn1_config.h"
+    #include "cpu/mk/fnet_mk70fn1_config.h"
     #define FNET_CPU_STR    "MK70FN1"
 #endif
 
@@ -204,7 +204,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mk60fn1_config.h"
+    #include "cpu/mk/fnet_mk60fn1_config.h"
     #define FNET_CPU_STR    "MK60FN1"
 #endif
 
@@ -215,7 +215,7 @@
         #error More than one CPU selected FNET_CPU_XXXX
     #endif
    
-    #include "fnet_mpc5668g_config.h"
+    #include "cpu/mpc/fnet_mpc5668g_config.h"
     #define FNET_CPU_STR    "MPC5668G"
 #endif
 
@@ -226,7 +226,7 @@
         #error "More than one CPU selected FNET_CPU_XXXX"
     #endif
     
-    #include "fnet_mpc564xbc_config.h"
+    #include "cpu/mpc/fnet_mpc564xbc_config.h"
     #define FNET_CPU_STR    "MPC56xBC"
 #endif
 
@@ -250,15 +250,15 @@
 
 /*-----------*/
 #if FNET_MCF
-    #include "fnet_mcf_config.h"
+    #include "cpu/mcf/fnet_mcf_config.h"
 #endif
 
 #if FNET_MK
-    #include "fnet_mk_config.h"
+    #include "cpu/mk/fnet_mk_config.h"
 #endif
 
 #if FNET_MPC
-    #include "fnet_mpc_config.h"
+    #include "cpu/mpc/fnet_mpc_config.h"
 #endif
 
 /**************************************************************************/ /*!

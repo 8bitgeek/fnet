@@ -338,9 +338,7 @@ static void fapp_get_cmd_mac(fnet_shell_desc_t desc)
     fnet_mac_addr_t macaddr;
 
     fnet_netif_get_hw_addr(fapp_default_netif, macaddr, sizeof(fnet_mac_addr_t));
-    fnet_mac_to_str(macaddr, mac_str);
-
-    fnet_shell_println(desc, FAPP_GET_SOPT_FORMAT, mac_str);
+    fnet_shell_println(desc, FAPP_GET_SOPT_FORMAT, fnet_mac_to_str(macaddr, mac_str));
 }
 #endif
 

@@ -21,10 +21,7 @@
 /*!
 *
 * @file fnet_mpc564xbc_config.h
-*
-* @date Dec-17-2012
-*
-* @version 0.1.1.0
+
 *
 * @brief MPC564xBC specific configuration file.
 *
@@ -45,6 +42,9 @@
  ******************************************************************************/
 #define  FNET_CFG_CPU_TIMER_NUMBER_MAX  (7)
 
+#ifndef FNET_CFG_CPU_TIMER_NUMBER
+    #define FNET_CFG_CPU_TIMER_NUMBER           (FNET_CFG_CPU_TIMER_NUMBER_MAX)
+#endif
 
 /* Size of the internal static heap buffer. */
 #ifndef FNET_CFG_HEAP_SIZE
@@ -56,7 +56,7 @@
 #define FNET_CFG_CPU_FLASH_PAGE_SIZE    (2*1024)
 
 /* The platform does not have second Ethernet Module.*/
-#define FNET_CFG_CPU_ETH1        		(0)
+#define FNET_CFG_CPU_ETH1               (0)
 
 /* Default system bus frequency in Hz */
 #ifndef FNET_CFG_CPU_CLOCK_HZ

@@ -92,6 +92,26 @@ struct fnet_netif_statistics
 typedef void *fnet_netif_desc_t;
 
 
+#define FNET_NETIF_LL_ADDR_MAX          (16)
+
+/**************************************************************************/ /*!
+ * @brief Link-layer address.
+ * For example, Ethernet interafce uses the address with size set to 6.
+ ******************************************************************************/
+typedef unsigned char fnet_netif_ll_addr_t[FNET_NETIF_LL_ADDR_MAX]; 
+
+/**************************************************************************/ /*!
+ * @brief Copying Link-layer address.
+ ******************************************************************************/
+#define FNET_NETIF_LL_ADDR_COPY(from_addr, to_addr, ll_size)   \
+                                    (fnet_memcpy(&to_addr[0], &from_addr[0], ll_size))
+
+/**************************************************************************/ /*!
+ * @brief Check Link-layer address Equality.
+ ******************************************************************************/
+#define FNET_NETIF_LL_ADDR_ARE_EQUAL(a, b, size)               \
+        (fnet_memcmp(&a[0], &b[0], (int)size) == 0)
+
 /**************************************************************************/ /*!
  * @brief Possible IPv6 address states.
  * @see fnet_netif_get_ip6_addr(), fnet_netif_ip6_addr_info
@@ -133,6 +153,29 @@ typedef struct fnet_netif_ip6_addr_info
     fnet_netif_ip6_addr_state_t state;              /**< @brief Address current state.*/
     fnet_netif_ip6_addr_type_t  type;               /**< @brief How the address was acquired.*/
 } fnet_netif_ip6_addr_info_t;
+
+/**************************************************************************/ /*!
+ * @brief Interface IPv6 Prefix structure.
+ * @see fnet_netif_get_ip6_prefix()
+ ******************************************************************************/
+typedef struct fnet_netif_ip6_prefix
+{
+    fnet_ip6_addr_t         prefix;         /**< @brief  Prefix of an IPv6 address. */
+    unsigned long           prefix_length;  /**< @brief  Prefix length (in bits). The number of leading bits
+                                             * in the Prefix that are valid. */
+} fnet_netif_ip6_prefix_t;
+
+/**************************************************************************/ /*!
+ * @brief Interface IPv6 Neighbor Cache structure.
+ * @see fnet_netif_get_ip6_neighbor_cache()
+ ******************************************************************************/
+typedef struct fnet_netif_ip6_neighbor_cache
+{
+    fnet_ip6_addr_t         ip_addr;        /**< @brief Neighbor’s on-link unicast IP address. */
+    fnet_netif_ll_addr_t    ll_addr;        /**< @brief Its link-layer address. Actual size is defiined by ll_addr_size. */
+    unsigned int            ll_addr_size;   /**< @brief Size of link-layer address.*/
+    int                     is_router;      /**< @brief A flag indicating whether the neighbor is a router (FNET_TRUE) or a host (FNET_FALSE).*/
+} fnet_netif_ip6_neighbor_cache_t;
 
 /***************************************************************************/ /*!
  *
@@ -784,6 +827,52 @@ int fnet_netif_bind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr
  ******************************************************************************/
 int fnet_netif_unbind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr);
 
+/***************************************************************************/ /*!
+ *
+ * @brief    Retrieves the n-th IPv6 prefix of the specified network interface.
+ *
+ * @param netif_desc  Network interface descriptor.
+ *
+ * @param n           Sequence number of IPv6 prefix to retrieve (from @c 0).
+ *
+ * @param ip6_prefix    Pointer to prefix entry structure that will contain the result.
+ *
+ * @return This function returns:
+ *   - @ref FNET_TRUE if no error occurs and  @c ip6_prefix is filled.
+ *   - @ref FNET_FALSE in case of error or @c n-th prefix is not available.
+ *
+ * @see Ffnet_netif_ip6_prefix_t
+ ******************************************************************************
+ *
+ * This function is used to retrieve the IPv6 prefix list for
+ * the given interface.
+ *
+ ******************************************************************************/
+int fnet_netif_get_ip6_prefix( fnet_netif_desc_t netif_desc, unsigned int n, fnet_netif_ip6_prefix_t *ip6_prefix);
+
+/***************************************************************************/ /*!
+ *
+ * @brief    Retrieves the n-th IPv6 neighbor cache entry of the specified network interface.
+ *
+ * @param netif_desc  Network interface descriptor.
+ *
+ * @param n           Sequence number of IPv6 neighbor cache entry to retrieve (from @c 0).
+ *
+ * @param ip6_neighbor_cache    Pointer to neighbor cache entry that will contain the result.
+ *
+ * @return This function returns:
+ *   - @ref FNET_TRUE if no error occurs and  @c ip6_neighbor_cache is filled.
+ *   - @ref FNET_FALSE in case of error or @c n-th neighbor cache entry is not available.
+ *
+ * @see fnet_netif_ip6_neighbor_cache_t
+ ******************************************************************************
+ *
+ * This function is used to retrieve the Ipv6 neighbor cache for
+ * the given interface.@n
+ *
+ ******************************************************************************/
+int fnet_netif_get_ip6_neighbor_cache(fnet_netif_desc_t netif_desc, unsigned int n, fnet_netif_ip6_neighbor_cache_t *ip6_neighbor_cache );
+
 #endif /* FNET_CFG_IP6 */
 
 /***************************************************************************/ /*!
@@ -803,11 +892,6 @@ int fnet_netif_unbind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *ad
  ******************************************************************************/
 unsigned long fnet_netif_get_scope_id(fnet_netif_desc_t netif_desc);
 
-/************************************************************************
-* NAME: fnet_netif_get_mtu
-*
-* DESCRIPTION: Gets Maximum Transmission Unit (MTU) of the interface.
-*************************************************************************/
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves a Maximum Transmission Unit (MTU) of the specified network interface.
@@ -867,6 +951,7 @@ fnet_netif_desc_t fnet_netif_get_by_scope_id(unsigned long scope_id);
  ******************************************************************************/
 fnet_netif_desc_t fnet_netif_get_by_sockaddr( const struct sockaddr *addr );
 
+void fnet_netif_set_ip4_addr_automatic( fnet_netif_desc_t netif );
 
 /*! @} */
 

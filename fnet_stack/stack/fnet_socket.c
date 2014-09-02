@@ -40,16 +40,10 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
-#include "fnet_socket.h"
+#include "fnet.h"
 #include "fnet_socket_prv.h"
 #include "fnet_timer_prv.h"
-#include "fnet_isr.h"
-#include "fnet_stdlib.h"
 #include "fnet_prot.h"
-#include "fnet_debug.h"
-#include "fnet.h"
-#include "fnet_stdlib.h"
 
 /************************************************************************
 *     Global Data Structures

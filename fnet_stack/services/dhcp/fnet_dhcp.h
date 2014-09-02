@@ -48,7 +48,6 @@
 #if FNET_CFG_DHCP || defined(__DOXYGEN__)
 
 #include "fnet.h"
-#include "fnet_poll.h"
 
 /*! @addtogroup fnet_dhcp 
 * The user application can use the DHCP-client service to retrieve various network 

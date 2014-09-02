@@ -40,11 +40,8 @@
 ***************************************************************************/
 
 #include "fnet.h"
-#include "fnet_shell.h"
-#include "fnet_stdlib.h"
-#include "fnet_eth.h"
-#include "fapp_prv.h"
 
+#include "fapp_prv.h"
 #include "fapp_bench.h"
 
 #if FAPP_CFG_BENCH_CMD

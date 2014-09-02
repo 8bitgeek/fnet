@@ -42,9 +42,7 @@
 
 #if FNET_MK 
 #include "fnet.h"
-#include "fnet_timer_prv.h"
-#include "fnet_isr.h"
-
+#include "stack/fnet_timer_prv.h"
 
 /************************************************************************
 * NAME: fnet_timer_handler_top

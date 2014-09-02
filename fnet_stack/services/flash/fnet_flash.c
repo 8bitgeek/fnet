@@ -39,9 +39,6 @@
 *
 ***************************************************************************/
 #include "fnet.h" 
-#include "fnet_flash.h" 
-#include "fnet_stdlib.h"
-
 
 #if FNET_CFG_FLASH
 

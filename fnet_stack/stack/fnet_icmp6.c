@@ -291,7 +291,7 @@ void fnet_icmp6_error( fnet_netif_t *netif, unsigned char type, unsigned char co
          * (e.4) A packet sent as a link-layer multicast (the exceptions
          * from e.3 apply to this case, too).     
          */
-         if((FNET_IP6_ADDR_IS_MULTICAST(dest_ip) /*||(orig_pcb->TYPE & RTCSPCB_TYPE_MULTICAST)*/) 
+         if(FNET_IP6_ADDR_IS_MULTICAST(dest_ip)  
             && !( (type == FNET_ICMP6_TYPE_PACKET_TOOBIG) 
                 || ((type == FNET_ICMP6_TYPE_PARAM_PROB) && (code == FNET_ICMP6_CODE_PP_OPTION))) )
          {
@@ -307,12 +307,9 @@ void fnet_icmp6_error( fnet_netif_t *netif, unsigned char type, unsigned char co
              
         /*
          * (e.5) A packet sent as a link-layer broadcast (the exceptions
-         *  from e.3 apply to this case, too).
+         *  from e.3 apply to this case, too). TBD
          */
-        //if (orig_pcb->TYPE & RTCSPCB_TYPE_BROADCAST)
-        //{
-        //    return;
-        //}         
+      
 
         /*
          * (e.6) A packet whose source address does not uniquely identify a

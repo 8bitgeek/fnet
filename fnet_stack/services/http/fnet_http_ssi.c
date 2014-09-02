@@ -39,18 +39,11 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_HTTP && FNET_CFG_HTTP_SSI
 
-#include "fnet_http.h"
 #include "fnet_http_prv.h"
-#include "fnet_timer.h"
-#include "fnet_eth.h"
-#include "fnet_debug.h"
-#include "fnet_stdlib.h"
-#include "fnet_fs.h"
-#include "fnet_http_ssi.h"
 #include "fnet_http_ssi_prv.h"
 
 /************************************************************************

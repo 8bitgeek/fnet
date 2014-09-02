@@ -207,7 +207,6 @@ void fnet_netif_release_all( void );
 int fnet_netif_init(fnet_netif_t *netif, unsigned char *hw_addr, unsigned int hw_addr_size);
 void fnet_netif_release( fnet_netif_t *netif );
 void fnet_netif_drain( void );
-void fnet_netif_set_ip4_addr_automatic( fnet_netif_desc_t netif );
 void fnet_netif_dupip_handler_signal( fnet_netif_desc_t netif );
 
 

@@ -39,14 +39,13 @@
 ***************************************************************************/
 
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_PING
 
-#include "fnet_ping.h"
-#include "fnet_checksum.h"
-#include "fnet_icmp.h"
-#include "fnet_ip6_prv.h"
+#include "stack/fnet_checksum.h"
+#include "stack/fnet_icmp.h"
+#include "stack/fnet_ip6_prv.h"
 
 #if FNET_CFG_DEBUG_PING    
     #define FNET_DEBUG_PING   FNET_DEBUG

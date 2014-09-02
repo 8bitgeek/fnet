@@ -86,6 +86,8 @@ typedef unsigned char fnet_mac_addr_t[6]; /* MAC address type.*/
  *                   The @c str_mac buffer must be at least 18 bytes long 
  *                   (@ref FNET_MAC_ADDR_STR_SIZE). 
  *
+ * @return This function always returns the @c str_mac.
+ *
  * @see fnet_str_to_mac()
  ******************************************************************************
  * This function takes an MAC-48 address, specified by the @c addr 
@@ -94,7 +96,7 @@ typedef unsigned char fnet_mac_addr_t[6]; /* MAC address type.*/
  * in transmission order (e.g. 01:23:45:67:89:ab ), into buffer pointed to by the
  * @c str_mac.
  ******************************************************************************/
-void fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac );
+char *fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac );
 
 /***************************************************************************/ /*!
  *

@@ -39,10 +39,8 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
-#include "fnet_eth_prv.h"
-#include "fnet_stdlib.h"
 #include "fnet.h"
+#include "fnet_eth_prv.h"
 #include "fnet_prot.h"
 
 /************************************************************************
@@ -66,13 +64,15 @@ const fnet_mac_addr_t fnet_eth_broadcast =
 *
 * DESCRIPTION: Converts MAC address to an null-terminated string.
 *************************************************************************/
-void fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac )
+char *fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac )
 {
     unsigned char *p;
-
-    p = (unsigned char *)addr;
-    fnet_sprintf(str_mac, "%02X:%02X:%02X:%02X:%02X:%02X", p[0], p[1], p[2],
-                        p[3], p[4], p[5]);
+    if(str_mac)
+    {
+        p = (unsigned char *)addr;
+        fnet_sprintf(str_mac, "%02X:%02X:%02X:%02X:%02X:%02X", p[0], p[1], p[2], p[3], p[4], p[5]);
+    }
+    return str_mac;
 }
 
 /************************************************************************
@@ -651,11 +651,9 @@ void fnet_eth_trace(char *str, fnet_eth_header_t *eth_hdr)
     fnet_printf(FNET_SERIAL_ESC_FG_GREEN"%s", str); /* Print app-specific header.*/
     fnet_println("[ETH header]"FNET_SERIAL_ESC_FG_BLACK); 
     fnet_println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+/\\/\\/\\/-+");
-    fnet_mac_to_str(eth_hdr->destination_addr, mac_str);
-    fnet_println("|(Dest)                                                "FNET_SERIAL_ESC_FG_BLUE"%17s"FNET_SERIAL_ESC_FG_BLACK" |", mac_str);
+    fnet_println("|(Dest)                                                "FNET_SERIAL_ESC_FG_BLUE"%17s"FNET_SERIAL_ESC_FG_BLACK" |", fnet_mac_to_str(eth_hdr->destination_addr, mac_str));
     fnet_println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+/\\/\\/\\/-+");
-    fnet_mac_to_str(eth_hdr->source_addr, mac_str);
-    fnet_println("|(Src)                                                 "FNET_SERIAL_ESC_FG_BLUE"%17s"FNET_SERIAL_ESC_FG_BLACK" |", mac_str);
+    fnet_println("|(Src)                                                 "FNET_SERIAL_ESC_FG_BLUE"%17s"FNET_SERIAL_ESC_FG_BLACK" |", fnet_mac_to_str(eth_hdr->source_addr, mac_str));
     fnet_println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+/\\/\\/\\/-+");
     fnet_println("|(Type)                  0x%04x |", fnet_ntohs(eth_hdr->type));
     fnet_println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+");

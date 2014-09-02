@@ -131,9 +131,9 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
             break;
         case 2:
 		#if FNET_CFG_CPU_MK70FN1
-        	/* Enable the UART2_TXD function on PTD3 */
+        	/* Enable the UART2_TXD function  */
         	FNET_MK_PORTE_PCR16 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
-        	/* Enable the UART2_RXD function on PTD2 */
+        	/* Enable the UART2_RXD function  */
         	FNET_MK_PORTE_PCR17 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
 		#else /* K60 */            
         	/* Enable the UART2_TXD function on PTD3 */
@@ -145,10 +145,17 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
             FNET_MK_SIM_SCGC4 |= FNET_MK_SIM_SCGC4_UART2_MASK;
             break;
         case 3:
+        #if FNET_CFG_CPU_MK70FN1
+            /* Enable the UART3_TXD function  */
+            FNET_MK_PORTB_PCR11 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
+            /* Enable the UART3_RXD function */
+            FNET_MK_PORTB_PCR10 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
+        #else /* others */
         	/* Enable the UART3_TXD function on PTC17 */
             FNET_MK_PORTC_PCR17 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART3_RXD function on PTC16 */
             FNET_MK_PORTC_PCR16 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
+        #endif
             /* Enable the clock to the selected UART */ 
             FNET_MK_SIM_SCGC4 |= FNET_MK_SIM_SCGC4_UART3_MASK;
             break;

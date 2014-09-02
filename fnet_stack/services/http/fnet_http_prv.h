@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2014 by Andrey Butok. FNET Community.
 * Copyright 2005-2009 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -44,15 +44,10 @@
 
 #define _FNET_HTTP_PRV_H_
 
-#include "fnet_config.h"
-
+#include "fnet.h"
 
 #if FNET_CFG_HTTP && FNET_CFG_FS
 
-
-#include "fnet.h"
-#include "fnet_fs.h"
-#include "fnet_http.h"
 #if FNET_CFG_HTTP_SSI
 #include "fnet_http_ssi_prv.h"
 #endif

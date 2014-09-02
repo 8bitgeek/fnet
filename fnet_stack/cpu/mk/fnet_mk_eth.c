@@ -41,7 +41,7 @@
 #include "fnet_config.h"
 #if FNET_MK && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 
-#include "fnet_fec.h"
+#include "cpu/common/fnet_fec.h"
 
 
 /************************************************************************
@@ -76,8 +76,6 @@ fnet_netif_t fnet_eth0_if =
 *************************************************************************/
 void fnet_eth_io_init() 
 {
-#if FNET_CFG_CPU_MK60N512 || FNET_CFG_CPU_MK64FN1 || FNET_CFG_CPU_MK70FN1 || FNET_CFG_CPU_MK60FN1
-  
     FNET_MK_PORT_MemMapPtr pctl;
     FNET_MK_SIM_MemMapPtr  sim  = (FNET_MK_SIM_MemMapPtr)FNET_MK_SIM_BASE_PTR;
     
@@ -99,9 +97,6 @@ void fnet_eth_io_init()
     
     /*FSL: allow concurrent access to MPU controller. Example: ENET uDMA to SRAM, otherwise bus error*/
     FNET_MK_MPU_CESR = 0;  /* MPU is disabled. All accesses from all bus masters are allowed.*/
-    
-#endif  
-
 }
 
 /************************************************************************

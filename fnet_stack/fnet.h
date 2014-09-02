@@ -1,6 +1,6 @@
 /**************************************************************************
 *
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2014 by Andrey Butok. FNET Community.
 * Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok, Alexey Shervashidze. Motorola SPS
 *
@@ -46,11 +46,11 @@
 #define _FNET_H_
 
 #include "fnet_config.h"
-#include "fnet_comp.h"
-#include "fnet_cpu.h"
-#include "fnet_os.h"
-#include "fnet_stack.h"
-#include "fnet_services.h"
+#include "compiler/fnet_comp.h"
+#include "cpu/fnet_cpu.h"
+#include "os/fnet_os.h"
+#include "stack/fnet_stack.h"
+#include "services/fnet_services.h"
 
 
 /*! @addtogroup fnet_define
@@ -94,7 +94,7 @@
  *        string.
  * @showinitializer 
  ******************************************************************************/
-#define FNET_VERSION            "2.6.4"
+#define FNET_VERSION            "2.6.5"
 
 /*! @} */
 

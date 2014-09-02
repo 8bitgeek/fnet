@@ -39,17 +39,11 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_HTTP && FNET_CFG_FS
 
-#include "fnet_http.h"
 #include "fnet_http_prv.h"
-#include "fnet_timer.h"
-#include "fnet_eth.h"
-#include "fnet_debug.h"
-#include "fnet_stdlib.h"
-#include "fnet_fs.h"
 
 /* Prototypes */
 static int fnet_http_get_handle(struct fnet_http_if * http, struct fnet_http_uri * uri);

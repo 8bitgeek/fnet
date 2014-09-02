@@ -39,7 +39,7 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 #if (FNET_MCF || FNET_MK || FNET_MPC) && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 
 #include "fnet_fec.h"
@@ -51,9 +51,9 @@
 #define FNET_FEC_HW_TX_PROTOCOL_CHECKSUM_FIX       (1)
 
 #if FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM && FNET_FEC_HW_TX_PROTOCOL_CHECKSUM_FIX
-#include "fnet_icmp.h"
-#include "fnet_udp.h"
-#include "fnet_tcp.h"
+#include "stack/fnet_icmp.h"
+#include "stack/fnet_udp.h"
+#include "stack/fnet_tcp.h"
 #endif
 
 
@@ -248,11 +248,11 @@ int fnet_fec_init(fnet_netif_t *netif)
         /* Set the transceiver interface.*/
         ethif->reg->RCR = FNET_FEC_RCR_MII_MODE | FNET_FEC_RCR_MAX_FL(FNET_FEC_BUF_SIZE)
 								#if FNET_CFG_CPU_ETH_RMII /*Kinetis, Modelo*/
-						            /* Set the transceiver interface to RMII mode (for Kinetis).*/ //TBD Set it by config. param.
+						            /* Set the transceiver interface to RMII mode (for Kinetis).*/ 
 						            | FNET_FEC_RCR_RMII_MODE
-                                #if FNET_CFG_CPU_ETH_RMII_10T
+                                  #if FNET_CFG_CPU_ETH_RMII_10T
                                     |FNET_FEC_RCR_RMII_10T 
-                                #endif
+                                  #endif
 					            #endif /* FNET_CFG_CPU_ETH_RMII */
 					            #if FNET_CFG_CPU_ETH_PROMISCUOUS
 					                |FNET_FEC_RCR_PROM  /* Enable promiscuous mode.*/

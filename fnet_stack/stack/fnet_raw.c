@@ -38,13 +38,9 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 #include "fnet_raw.h"
 #include "fnet_ip_prv.h"
-#include "fnet_timer.h"
-#include "fnet_stdlib.h"
-
-#include "fnet_isr.h"
 #include "fnet_checksum.h"
 #include "fnet_prot.h"
 

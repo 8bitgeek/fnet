@@ -43,14 +43,10 @@
 
 #define _FNET_TFTP_CLN_H_
 
-#include "fnet_config.h"
-
+#include "fnet.h"
 
 #if FNET_CFG_TFTP_CLN || defined(__DOXYGEN__)
 
-
-#include "fnet.h"
-#include "fnet_poll.h"
 #include "fnet_tftp.h"
 
 

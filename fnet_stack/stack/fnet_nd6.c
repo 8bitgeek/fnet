@@ -217,7 +217,7 @@ void fnet_nd6_neighbor_cache_del(fnet_netif_t *netif, fnet_nd6_neighbor_entry_t 
 *
 * DESCRIPTION: Adds (TBD update) entry into the Neighbor cache.
 *************************************************************************/
-fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr, fnet_nd6_ll_addr_t ll_addr, fnet_nd6_neighbor_state_t state)
+fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr, fnet_netif_ll_addr_t ll_addr, fnet_nd6_neighbor_state_t state)
 {
     fnet_nd6_if_t               *nd6_if = netif->nd6_if_ptr;
     int                         i;
@@ -256,7 +256,7 @@ fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(fnet_netif_t *netif, fnet
         
         FNET_IP6_ADDR_COPY(ip_addr, &entry->ip_addr);
         if(ll_addr != FNET_NULL)
-            FNET_ND6_LL_ADDR_COPY(ll_addr, entry->ll_addr, netif->api->hw_addr_size);
+            FNET_NETIF_LL_ADDR_COPY(ll_addr, entry->ll_addr, netif->api->hw_addr_size);
         entry->creation_time = fnet_timer_seconds();
         entry->is_router = 0;
         entry->router_lifetime = 0;
@@ -934,7 +934,6 @@ DROP:
 
 /************************************************************************
 * NAME: fnet_nd6_neighbor_solicitation_receive
-* RETURS: RTCS_OK or error code.
 * DESCRIPTION: Handles received Neighbor Solicitation message.
 *************************************************************************/
 void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
@@ -1047,9 +1046,9 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
                      * If a Neighbor Cache entry already exists, its
                      * IsRouter flag MUST NOT be modified.
                      */
-                    if(!FNET_ND6_LL_ADDR_ARE_EQUAL(nd_option_slla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size))
+                    if(!FNET_NETIF_LL_ADDR_ARE_EQUAL(nd_option_slla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size))
                     {
-                        FNET_ND6_LL_ADDR_COPY(nd_option_slla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
+                        FNET_NETIF_LL_ADDR_COPY(nd_option_slla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
                         neighbor_cache_entry->state = FNET_ND6_NEIGHBOR_STATE_STALE;
                     }
                     else
@@ -1267,7 +1266,7 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
     * Validation.
     *************************************************************/	
     if(
-        (icmp6_packet_size < sizeof(fnet_nd6_na_header_t))          /* Make sure that sizeof(ICMP6_NA_HEADER) <= RTCSPCB_SIZE(pcb).*/
+        (icmp6_packet_size < sizeof(fnet_nd6_na_header_t))          /* Check mi. size of packet*/
         /* Validation RFC4861 (7.1.2).*/
         ||(ip6_packet->hop_limit != FNET_ND6_HOP_LIMIT)             /* The IP Hop Limit field has a value of 255.*/
         ||(icmp6_packet->code != 0)                                 /* ICMP Code is 0.*/ 
@@ -1361,7 +1360,7 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
              * steps:
              * - It records the link-layer address in the Neighbor Cache entry.
              */
-            FNET_ND6_LL_ADDR_COPY(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
+            FNET_NETIF_LL_ADDR_COPY(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
               
             /* - If the advertisement’s Solicited flag is set, the state of the
              *   entry is set to REACHABLE; otherwise, it is set to STALE.
@@ -1395,7 +1394,7 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
              if( nd_option_tlla )
              {
                 /* If supplied link-layer address differs. */
-                is_ll_addr_changed = !FNET_ND6_LL_ADDR_ARE_EQUAL(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
+                is_ll_addr_changed = !FNET_NETIF_LL_ADDR_ARE_EQUAL(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
              }
              else
              {
@@ -1431,7 +1430,7 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
                  *   from the already recorded address).
                  */
                 if(nd_option_tlla)
-                    FNET_ND6_LL_ADDR_COPY(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
+                    FNET_NETIF_LL_ADDR_COPY(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
                 
                 /* - If the Solicited flag is set, the state of the entry MUST be
                  *   set to REACHABLE. 
@@ -1654,9 +1653,9 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                 /* If a cache entry already exists and is
                  * updated with a different link-layer address, the reachability state
                  * MUST also be set to STALE.*/
-                if( !FNET_ND6_LL_ADDR_ARE_EQUAL(nd_option_slla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size) )
+                if( !FNET_NETIF_LL_ADDR_ARE_EQUAL(nd_option_slla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size) )
                 {
-                    FNET_ND6_LL_ADDR_COPY(nd_option_slla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
+                    FNET_NETIF_LL_ADDR_COPY(nd_option_slla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
                     neighbor_cache_entry->state = FNET_ND6_NEIGHBOR_STATE_STALE;
                 }
             }
@@ -1939,9 +1938,9 @@ void fnet_nd6_redirect_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fne
             /* If a cache entry already existed and
              * it is updated with a different link-layer address, its reachability
              * state MUST also be set to STALE. */
-            if( !FNET_ND6_LL_ADDR_ARE_EQUAL(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size) )
+            if( !FNET_NETIF_LL_ADDR_ARE_EQUAL(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size) )
             {
-                FNET_ND6_LL_ADDR_COPY(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
+                FNET_NETIF_LL_ADDR_COPY(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
                 neighbor_cache_entry->state = FNET_ND6_NEIGHBOR_STATE_STALE;
             }
             /* else. If the link-layer address is the
@@ -2033,7 +2032,7 @@ void fnet_nd6_dad_start(fnet_netif_t *netif , fnet_netif_ip6_addr_t *addr_info)
 #if FNET_CFG_ND6_DAD_TRANSMITS > 0 
     if(addr_info && (addr_info->state == FNET_NETIF_IP6_ADDR_STATE_TENTATIVE))
     {
-        /* To check an address, a node sends RTCSCFG_ND6_DAD_TRANSMITS Neighbor
+        /* To check an address, a node sends DAD Neighbor
          * Solicitations, each separated by 1 second(TBD)..
          */
         addr_info->dad_transmit_counter = FNET_CFG_ND6_DAD_TRANSMITS; 
@@ -2093,7 +2092,7 @@ static void fnet_nd6_dad_timer(fnet_netif_t *netif )
             }
         }
     }
-#endif /* RTCSCFG_ND6_DAD_TRANSMITS */    
+#endif /* FNET_CFG_ND6_DAD_TRANSMITS */    
 }
 
 /************************************************************************

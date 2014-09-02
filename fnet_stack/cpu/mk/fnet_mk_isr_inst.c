@@ -38,15 +38,10 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h" 
+#include "fnet.h" 
 #if FNET_MK 
 
 #if !FNET_OS
-
-#include "fnet.h"
-#include "fnet_isr.h"
-#include "fnet_timer.h"
-#include "fnet_netbuf.h"
 
 /************************************************************************
 * NAME: fnet_cpu_isr_install

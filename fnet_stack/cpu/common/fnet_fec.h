@@ -43,16 +43,14 @@
 #if (FNET_MCF || FNET_MK || FNET_MPC) && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 
 #include "fnet.h"
-#include "fnet_eth_prv.h"
-#include "fnet_error.h"
-#include "fnet_debug.h"
-#include "fnet_isr.h"
-#include "fnet_prot.h"
-#include "fnet_arp.h"
-#include "fnet_timer_prv.h"
-#include "fnet_loop.h"
-
-#include "fnet_stdlib.h"
+#include "stack/fnet_eth_prv.h"
+#include "stack/fnet_error.h"
+#include "stack/fnet_debug.h"
+#include "stack/fnet_isr.h"
+#include "stack/fnet_prot.h"
+#include "stack/fnet_arp.h"
+#include "stack/fnet_timer_prv.h"
+#include "stack/fnet_loop.h"
 
 
 /* CPU-specific configuration.*/

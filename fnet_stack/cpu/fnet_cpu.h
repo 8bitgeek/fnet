@@ -46,15 +46,15 @@
 #include "fnet_config.h"
 
 #if FNET_MCF    /* ColdFire.*/ 
-    #include "fnet_mcf.h"
+    #include "mcf/fnet_mcf.h"
 #endif    
 
 #if FNET_MK     /* Kinetis.*/
-    #include "fnet_mk.h"
+    #include "mk/fnet_mk.h"
 #endif    
 
 #if FNET_MPC     /* MPC.*/
-    #include "fnet_mpc.h"
+    #include "mpc/fnet_mpc.h"
 #endif  
 
 /*! @addtogroup fnet_socket */

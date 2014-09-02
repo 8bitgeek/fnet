@@ -37,7 +37,7 @@
 * @brief Lowest level routines for ColdFire.
 *
 ***************************************************************************/
-#include "fnet_comp_asm.h"
+#include "compiler/fnet_comp_asm.h"
 
 #if FNET_MCF
 

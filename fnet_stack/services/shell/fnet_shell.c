@@ -40,8 +40,6 @@
 ***************************************************************************/
 
 #include "fnet.h"
-#include "fnet_shell.h"
-#include "fnet_serial.h"
 
 #define FNET_SHELL_ERR_SYNTAX   ("Error: Invalid syntax for: %s")
 #define FNET_SHELL_ERR_CMD      ("Error: No such command: %s")

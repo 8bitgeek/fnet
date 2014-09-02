@@ -49,7 +49,6 @@
 #if FNET_CFG_HTTP || defined(__DOXYGEN__)
 
 #include "fnet.h"
-#include "fnet_poll.h"
 #include "fnet_http_ssi.h"
 #include "fnet_http_cgi.h"
 #include "fnet_http_auth.h"

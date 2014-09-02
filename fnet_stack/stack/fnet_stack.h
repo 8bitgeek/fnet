@@ -43,7 +43,6 @@
 
 #define _FNET_STACK_H_
 
-#include "fnet.h"
 #include "fnet_socket.h"
 #include "fnet_inet.h"
 #include "fnet_ip.h"
@@ -55,6 +54,7 @@
 #include "fnet_debug.h"
 #include "fnet_eth.h"
 #include "fnet_isr.h"
+#include "fnet_netbuf.h"
 
 
 /*! @addtogroup fnet_stack_init

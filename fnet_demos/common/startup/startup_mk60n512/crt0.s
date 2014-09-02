@@ -5,7 +5,7 @@
  * Notes:	
  *
  */
-#include "fnet_comp_asm.h"
+#include "compiler/fnet_comp_asm.h"
 
 
 

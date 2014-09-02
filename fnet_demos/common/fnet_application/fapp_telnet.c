@@ -44,8 +44,6 @@
 #include "fapp_telnet.h"
 #include "fapp_mem.h"
 
-#include "fnet_netbuf.h"
-
 #if FAPP_CFG_SETGET_CMD
 #include "fapp_setget.h"
 #endif
@@ -90,7 +88,10 @@
         { FNET_SHELL_CMD_TYPE_NORMAL, "get", 0, 1, (void *)fapp_get_cmd,    "Get parameters", "[<parameter>]" },
     #endif    
     #if FAPP_CFG_INFO_CMD
-        { FNET_SHELL_CMD_TYPE_NORMAL, "info", 0, 0, (void *)fapp_info_cmd,    "Show detailed status", ""},
+        { FNET_SHELL_CMD_TYPE_NORMAL, "info", 0, 0, (void *)fapp_info_cmd,    "Show interface info", ""},
+    #endif
+    #if FAPP_CFG_STAT_CMD
+        { FNET_SHELL_CMD_TYPE_NORMAL, "stat", 0, 0, (void *)fapp_stat_cmd,    "Show interface statistics", ""},
     #endif
     #if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP
         { FNET_SHELL_CMD_TYPE_NORMAL, "dhcp", 0, 1, (void *)fapp_dhcp_cmd,    "Start DHCP client", "[release]"},

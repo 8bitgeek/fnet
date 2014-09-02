@@ -39,17 +39,12 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_HTTP && FNET_CFG_HTTP_POST
 
-#include "fnet_http.h"
 #include "fnet_http_prv.h"
-#include "fnet_timer.h"
-#include "fnet_debug.h"
-
 #include "fnet_http_post.h"
-
 
 
 /* Prototypes */

@@ -40,21 +40,15 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 #include "fnet_ip_prv.h"
 #include "fnet_ip6_prv.h"
-#include "fnet_error.h"
 #include "fnet_netif_prv.h"
 #include "fnet_arp.h"
 #include "fnet_eth_prv.h"
 #include "fnet_loop.h"
-#include "fnet_stdlib.h"
-#include "fnet.h"
-#include "fnet_isr.h"
-
 #include "fnet_nd6.h"
 #include "fnet_ip6_prv.h"
-#include "fnet_socket.h"
 
 
 /************************************************************************
@@ -692,7 +686,7 @@ int fnet_netif_get_ip6_dns( fnet_netif_desc_t netif_desc, unsigned int n, fnet_i
     fnet_netif_t    *netif = (fnet_netif_t *)netif_desc;
     int             result = FNET_FALSE;
 
-    if(netif)
+    if(netif && addr_dns)
     {
         /* TBD Manual configuration.*/
 
@@ -703,7 +697,94 @@ int fnet_netif_get_ip6_dns( fnet_netif_desc_t netif_desc, unsigned int n, fnet_i
     
     return result;
 }    
-#endif /* FNET_CFG_DNS && FNET_CFG_IP4*/
+#endif /* FNET_CFG_DNS && FNET_CFG_IP6*/
+
+#if FNET_CFG_IP6
+/************************************************************************
+* NAME: fnet_netif_get_ip6_prefix
+*
+* DESCRIPTION: This function returns an entry from IPv6 ND prefix list.
+*************************************************************************/
+int fnet_netif_get_ip6_prefix( fnet_netif_desc_t netif_desc, unsigned int n, fnet_netif_ip6_prefix_t *ip6_prefix )
+{
+    fnet_netif_t        *netif = (fnet_netif_t *)netif_desc;
+    int                 result = FNET_FALSE;
+    struct fnet_nd6_if  *nd6_if;
+    int                 i;
+
+    if(netif && ip6_prefix)
+    {
+        nd6_if = netif->nd6_if_ptr;
+
+        if(nd6_if )
+        {
+            for(i=0; i < FNET_ND6_PREFIX_LIST_SIZE; i++)
+            {
+                /* Skip NOT_USED prefixes. */
+                if(nd6_if->prefix_list[i].state != FNET_ND6_PREFIX_STATE_NOTUSED)
+                {
+                    if(n == 0)
+                    {
+                        FNET_IP6_ADDR_COPY(&nd6_if->prefix_list[i].prefix, &ip6_prefix->prefix);
+                        ip6_prefix->prefix_length = nd6_if->prefix_list[i].prefix_length;
+
+                        result = FNET_TRUE;
+                        break;     
+                    }
+                    n--;
+                }
+            }
+        }
+    }
+    
+    return result;
+}    
+#endif /* FNET_CFG_IP6*/
+
+#if FNET_CFG_IP6
+/************************************************************************
+* NAME: fnet_netif_get_ip6_neighbor_cache
+*
+* DESCRIPTION: This function returns an entry from IPv6 neighbor cache.
+*************************************************************************/
+int fnet_netif_get_ip6_neighbor_cache(fnet_netif_desc_t netif_desc, unsigned int n, fnet_netif_ip6_neighbor_cache_t *ip6_neighbor_cache )
+{
+    fnet_netif_t        *netif = (fnet_netif_t *)netif_desc;
+    int                 result = FNET_FALSE;
+    struct fnet_nd6_if  *nd6_if;
+    int                 i;
+
+    if(netif && ip6_neighbor_cache)
+    {
+        nd6_if = netif->nd6_if_ptr;
+
+        if(nd6_if)
+        {
+            for(i=0; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
+            {
+                /* Skip NOT_USED entries. */
+                if(nd6_if->neighbor_cache[i].state != FNET_ND6_NEIGHBOR_STATE_NOTUSED)
+                {
+                    if(n == 0)
+                    {
+                        FNET_IP6_ADDR_COPY(&nd6_if->neighbor_cache[i].ip_addr, &ip6_neighbor_cache->ip_addr);
+                        FNET_NETIF_LL_ADDR_COPY(nd6_if->neighbor_cache[i].ll_addr, ip6_neighbor_cache->ll_addr, netif->api->hw_addr_size);
+                        ip6_neighbor_cache->ll_addr_size = netif->api->hw_addr_size;
+                        ip6_neighbor_cache->is_router = nd6_if->neighbor_cache[i].is_router;
+
+                        result = FNET_TRUE;
+                        break;     
+                    }
+                    n--;
+                }
+            }
+        }
+    }
+    
+    return result;
+}    
+#endif /* FNET_CFG_IP6*/
+
 
 
 /************************************************************************

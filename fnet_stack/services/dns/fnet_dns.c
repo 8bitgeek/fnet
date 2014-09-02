@@ -415,7 +415,7 @@ int fnet_dns_init( struct fnet_dns_params *params )
 
     total_length = sizeof(fnet_dns_header_t);
     total_length += fnet_dns_add_question( &fnet_dns_if.message[total_length], fnet_dns_if.dns_type, params->host_name);
-    fnet_dns_if.message_size = (unsigned long)(total_length + 1);
+    fnet_dns_if.message_size = (unsigned long)(total_length);
   
     /* Register DNS service. */
     fnet_dns_if.service_descriptor = fnet_poll_service_register(fnet_dns_state_machine, (void *) &fnet_dns_if);

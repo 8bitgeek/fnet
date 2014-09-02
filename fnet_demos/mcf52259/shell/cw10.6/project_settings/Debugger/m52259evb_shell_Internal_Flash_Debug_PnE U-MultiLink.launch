@@ -65,7 +65,7 @@
 <listEntry value="true"/>
 </listAttribute>
 <listAttribute key="com.freescale.cdt.debug.cw.Embedded Download.TaskNames">
-<listEntry value="MCF52259_INTFLASH"/>
+<listEntry value="MCF52259_INTFLASH (1)"/>
 </listAttribute>
 <listAttribute key="com.freescale.cdt.debug.cw.Embedded Download.TaskSuccessiveRuns">
 <listEntry value="true"/>

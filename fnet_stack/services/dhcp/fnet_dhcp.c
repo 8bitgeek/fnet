@@ -46,18 +46,10 @@
 * Boot file name (or two-step bootstrap procedure) is not suported.
 */
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_DHCP && FNET_CFG_IP4
 
-#include "fnet.h"
-#include "fnet_dhcp.h"
-#include "fnet_timer.h"
-#include "fnet_eth.h"
-#include "fnet_socket.h"
-#include "fnet_debug.h"
-#include "fnet_netif_prv.h"
-#include "fnet_stdlib.h"
 
 #if FNET_CFG_DEBUG_DHCP    
     #define FNET_DEBUG_DHCP   FNET_DEBUG

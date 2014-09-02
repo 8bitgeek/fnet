@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2014 by Andrey Butok. FNET Community.
 * Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -39,17 +39,12 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_HTTP && FNET_CFG_HTTP_AUTHENTICATION_BASIC
 
-
 #include "fnet_http_prv.h"
-#include "fnet_debug.h"
-#include "fnet_stdlib.h"
 #include "fnet_http_auth_prv.h"
-#include "fnet_serial.h"
-
 
 
 /************************************************************************

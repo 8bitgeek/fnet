@@ -40,7 +40,7 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #include "fnet_ip_prv.h"
 
@@ -48,16 +48,11 @@
 #include "fnet_icmp.h"
 #include "fnet_checksum.h"
 #include "fnet_timer_prv.h"
-#include "fnet_socket.h"
 #include "fnet_socket_prv.h"
-#include "fnet_isr.h"
-#include "fnet_netbuf.h"
 #include "fnet_netif_prv.h"
 #include "fnet_prot.h"
-#include "fnet_stdlib.h"
 #include "fnet_loop.h"
 #include "fnet_igmp.h"
-#include "fnet_prot.h"
 #include "fnet_raw.h"
 
 #if FNET_CFG_IP4 

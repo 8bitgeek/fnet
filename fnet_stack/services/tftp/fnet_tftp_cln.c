@@ -39,18 +39,12 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_TFTP_CLN
 
-#include "fnet_tftp_cln.h"
-#include "fnet_timer.h"
-#include "fnet_eth.h"
-#include "fnet_socket.h"
-#include "fnet_debug.h"
-#include "fnet_netif_prv.h"
-#include "fnet_stdlib.h"
-#include "fnet_debug.h"
+#include "stack/fnet_netif_prv.h"
+
 
 #if FNET_CFG_DEBUG_TFTP_CLN    
     #define FNET_DEBUG_TFTP   FNET_DEBUG

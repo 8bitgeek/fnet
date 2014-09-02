@@ -39,16 +39,9 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_TELNET
-
-#include "fnet_telnet.h"
-#include "fnet_timer.h"
-#include "fnet_debug.h"
-#include "fnet_stdlib.h"
-#include "fnet_shell.h"
-#include "fnet_poll.h"
 
 /************************************************************************
 *     Definitions

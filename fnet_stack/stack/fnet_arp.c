@@ -40,20 +40,13 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1) && FNET_CFG_IP4
 
 #include "fnet_arp.h"
 #include "fnet_eth_prv.h"
-#include "fnet_timer.h"
-#include "fnet_netif.h"
 #include "fnet_netif_prv.h"
-#include "fnet_stdlib.h"
-#include "fnet_error.h"
-#include "fnet_debug.h"
-#include "fnet_isr.h"
-
 
 
 #if FNET_CFG_DEBUG_ARP    
@@ -395,7 +388,6 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
                 
                 fnet_arp_trace("TX Reply", arp_hdr); /* Print ARP header. */
                 
-                //DM ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_ARP, fnet_eth_broadcast, nb);
                 ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_ARP, arp_hdr->target_hard_addr, nb);
                 return;
             }
@@ -505,14 +497,12 @@ static void fnet_arp_trace(char *str, fnet_arp_header_t *arp_hdr)
                     arp_hdr->prot_size,
                     fnet_ntohs(arp_hdr->op));
     fnet_println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+/\\/\\/\\/-+");
-    fnet_mac_to_str(arp_hdr->sender_hard_addr, mac_str);
-    fnet_println("|(SenderHWAddr)                                        "FNET_SERIAL_ESC_FG_BLUE"%17s"FNET_SERIAL_ESC_FG_BLACK" |", mac_str);
+    fnet_println("|(SenderHWAddr)                                        "FNET_SERIAL_ESC_FG_BLUE"%17s"FNET_SERIAL_ESC_FG_BLACK" |", fnet_mac_to_str(arp_hdr->sender_hard_addr, mac_str));
     fnet_println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+/\\/\\/\\/-+");
     fnet_println("|(SenderPrAddr)                                 "FNET_SERIAL_ESC_FG_BLUE"%15s"FNET_SERIAL_ESC_FG_BLACK" |",
                     fnet_inet_ntoa(*(struct in_addr *)(&arp_hdr->sender_prot_addr), ip_str)); 
     fnet_println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+/\\/\\/\\/-+");
-    fnet_mac_to_str(arp_hdr->target_hard_addr, mac_str);
-    fnet_println("|(TargetHWAddr)                                        "FNET_SERIAL_ESC_FG_BLUE"%17s"FNET_SERIAL_ESC_FG_BLACK" |", mac_str);
+    fnet_println("|(TargetHWAddr)                                        "FNET_SERIAL_ESC_FG_BLUE"%17s"FNET_SERIAL_ESC_FG_BLACK" |", fnet_mac_to_str(arp_hdr->target_hard_addr, mac_str));
     fnet_println("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+/\\/\\/\\/-+");
     fnet_println("|(TargetPrAddr)                                 "FNET_SERIAL_ESC_FG_BLUE"%15s"FNET_SERIAL_ESC_FG_BLACK" |",
                     fnet_inet_ntoa(*(struct in_addr *)(&arp_hdr->targer_prot_addr), ip_str));  

@@ -67,7 +67,7 @@ preferred way to configure stack features). @n
 
 - Supported Compilers:
 	- @b IAR:
-		- Embedded Workbench for ARM, version 7.1 (Kinetis).
+		- Embedded Workbench for ARM, version 7.2 (Kinetis).
 	- @b ARM:
 		- Keil uVision, version 4.7 (MK60N512).
 	- @b Freescale:
@@ -223,26 +223,26 @@ The following table summarizes the supported demo applications, platforms and co
 </tr>
 <tr>
  <td class="fnet_td_grey">MK64FN1M (Kinetis)</td>
- <td ALIGN=CENTER>IAR7.1</td>
- <td ALIGN=CENTER>IAR7.1</td>
+ <td ALIGN=CENTER>IAR7.2</td>
+ <td ALIGN=CENTER>IAR7.2</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK60N512 (Kinetis)</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.1<br/>uV4.7</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.1<br/>uV4.7</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.1<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.2<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.2<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.2<br/>uV4.7</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK70FN1M (Kinetis)</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.1</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.1</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.2</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.2</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK60FN1M (Kinetis)</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.1</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.1</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.2</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.2</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
@@ -1386,55 +1386,8 @@ fnet_cpu_isr,                        /****  91 (0x16C) FEC Receive frame interru
 
 @endcode
 - If you are using CodeWarrior compiler for ColdFire platforms be sure that "Code Model" and "Data Model", in Processor settings, are set to "Far(32-bit)".
-- If you are using CodeWarrior 10.x:
-	- Be sure that @ref FNET_CFG_CPU_VECTOR_TABLE is set to correct value.
-	- for ColdFire platform:
-		- go to "Properties" => "C/C++Build" => "Settings" => "ColdFire Compiler" => "Input" => "User Recursive Path" and add the path to the "fnet_stack" directory. 
-		- go to "Properties" => "C/C++Build" => "Settings" => "ColdFire Assembler" => "Input" => "User Recursive Path" and add the path to the "fnet_stack" directory.
-	- for Kinetis platform:
-		- go to "Properties" => "C/C++Build" => "Settings" => "ARM Compiler" => "Input" => "Include Search Paths" and add all paths to directories inside the "fnet_stack" directory:
-			- "fnet_stack"
-			- "fnet_stack\compiler"
-			- "fnet_stack\cpu"
-			- "fnet_stack\cpu\common"
-			- "fnet_stack\cpu\mcf"
-			- "fnet_stack\cpu\mk"
-			- "fnet_stack\os"
-			- "fnet_stack\services"
-			- "fnet_stack\services\dhcp"
-			- "fnet_stack\services\dns"
-			- "fnet_stack\services\flash"
-			- "fnet_stack\services\fs"
-			- "fnet_stack\services\http"
-			- "fnet_stack\services\poll"
-			- "fnet_stack\services\serial"
-			- "fnet_stack\services\shell"
-			- "fnet_stack\services\telnet"
-			- "fnet_stack\services\tftp"
-			- "fnet_stack\services\ping"
-			- "fnet_stack\stack" 
-		- go to "Properties" => "C/C++Build" => "Settings" => "ARM Assembler" => "Input" => "Include Search Paths " and add all paths to directories inside the "fnet_stack" directory:
-			- "fnet_stack"
-			- "fnet_stack\compiler"
-			- "fnet_stack\cpu"
-			- "fnet_stack\cpu\common"
-			- "fnet_stack\cpu\mcf"
-			- "fnet_stack\cpu\mk"
-			- "fnet_stack\os"
-			- "fnet_stack\services"
-			- "fnet_stack\services\dhcp"
-			- "fnet_stack\services\dns"
-			- "fnet_stack\services\flash"
-			- "fnet_stack\services\fs"
-			- "fnet_stack\services\http"
-			- "fnet_stack\services\poll"
-			- "fnet_stack\services\serial"
-			- "fnet_stack\services\shell"
-			- "fnet_stack\services\telnet"
-			- "fnet_stack\services\tftp"
-			- "fnet_stack\services\ping"
-			- "fnet_stack\stack"	
-
+- Be sure that @ref FNET_CFG_CPU_VECTOR_TABLE is set to correct value.
+- Add the "fnet_stack" directory path to Search Paths of C and Assembler compiler.
 
 
 */
@@ -1572,6 +1525,14 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+- Version 2.6.5:
+	- Fixed DNS query that caused resolution issue with FritzBox DNS server, reported by Lenz.
+	- Fixed checksum calculation to follow RFC1624(3).
+	- Added fnet_netif_get_ip6_prefix() and fnet_netif_get_ip6_neighbor_cache().
+	- Added "stat" command, to the Shell Demo, showing interface statistics, IPv6 prefix list and neighbor cache.
+	- Cleaned header includes. Now it is enough to add only the fnet_stack folder to Project Search Path without its subfolders.
+	- Other minor changes.
+
 - Version 2.6.4:
 	- Added support of Kinetis K64FN1M (FRDM-K60F board).
 	- Added fnet_netif_get_mtu()

@@ -44,12 +44,9 @@
 
 #define _FNET_TELNET_H_
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_TELNET || defined(__DOXYGEN__)
-
-#include "fnet.h"
-#include "fnet_poll.h"
 
 
 /*! @addtogroup fnet_telnet

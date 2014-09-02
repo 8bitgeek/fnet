@@ -38,9 +38,7 @@
 * @brief CPU-specific functions. 
 *
 ***************************************************************************/
-#include "fnet_cpu.h"
-#include "fnet_comp.h"
-
+#include "fnet.h"
 
 #if FNET_CFG_CPU_LITTLE_ENDIAN
 /* Convert short from host- to network byte order.*/

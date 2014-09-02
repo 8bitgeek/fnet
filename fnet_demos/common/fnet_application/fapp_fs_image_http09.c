@@ -4,11 +4,10 @@
 *   the code is regenerated.
 */
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_FS && FNET_CFG_FS_ROM && !FNET_CFG_HTTP_VERSION_MAJOR
 
-#include "fnet_fs_rom.h"
 
 /*<FILE SYSTEM IMAGE>/favicon.ico*/
 static const unsigned char node_1[1406] =

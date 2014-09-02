@@ -43,9 +43,7 @@
 
 #define _FNET_SHELL_H_
 
-#include "fnet_config.h"
-
-#include "fnet_serial.h"
+#include "fnet.h"
 
 /*! @addtogroup fnet_shell
 * The shell service provides application-specific command-line interface.@n
@@ -68,7 +66,7 @@
 *      { FNET_SHELL_CMD_TYPE_NORMAL, "help", 0, 0, fnet_shell_help_cmd,"Display this help message.", ""},
 *      { FNET_SHELL_CMD_TYPE_NORMAL, "set", 0, 2, fapp_set_cmd, "Set parameter.", "[<parameter> <value>]"},
 *      { FNET_SHELL_CMD_TYPE_NORMAL, "show", 0, 0, fapp_show, "Show parameters.", "" },
-*      { FNET_SHELL_CMD_TYPE_NORMAL, "info", 0, 0, fapp_info_cmd, "Show detailed status.", ""},
+*      { FNET_SHELL_CMD_TYPE_NORMAL, "info", 0, 0, fapp_info_cmd, "Show interface info.", ""},
 *      { FNET_SHELL_CMD_TYPE_NORMAL, "dhcp", 0, 1, fapp_dhcp_cmd, "Start DHCP client.", "[release|reboot]"},
 *      { FNET_SHELL_CMD_TYPE_NORMAL, "http", 0, 1, fapp_http_cmd, "Start HTTP Server.", "[release]"},
 *      { FNET_SHELL_CMD_TYPE_SHELL, "exp", 0, 1, &fapp_fs_shell, "File Explorer submenu...", ""},
@@ -382,7 +380,7 @@ typedef void(*fnet_shell_cmd_function_t)( fnet_shell_desc_t desc, int argc, char
  *      { FNET_SHELL_CMD_TYPE_NORMAL, "help", 0, 0, fapp_help_cmd,"Display this help message.", ""},
  *      { FNET_SHELL_CMD_TYPE_NORMAL, "set", 0, 2, fapp_set_cmd,      "Set parameter.", "[<parameter> <value>]"},
  *      { FNET_SHELL_CMD_TYPE_NORMAL, "get", 0, 0, fapp_show,    "Get parameters.", "[<parameter>]" },
- *      { FNET_SHELL_CMD_TYPE_NORMAL, "info", 0, 0, fapp_info_cmd,    "Show detailed status.", ""},
+ *      { FNET_SHELL_CMD_TYPE_NORMAL, "info", 0, 0, fapp_info_cmd,    "Show interface info.", ""},
  *      { FNET_SHELL_CMD_TYPE_NORMAL, "dhcp", 0, 1, fapp_dhcp_cmd,    "Start DHCP client.", "[release|reboot]"},
  *      { FNET_SHELL_CMD_TYPE_NORMAL, "http", 0, 1, fapp_http_cmd,    "Start HTTP Server.", "[release]"},
  *      { FNET_SHELL_CMD_TYPE_SHELL, "exp", 0, 1, &fapp_fs_shell,   "File Explorer submenu...", ""},

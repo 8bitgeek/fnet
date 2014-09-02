@@ -43,12 +43,10 @@
 
 #define _FNET_TFTP_SRV_H_
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_TFTP_SRV || defined(__DOXYGEN__)
 
-#include "fnet.h"
-#include "fnet_poll.h"
 #include "fnet_tftp.h"
 
 
