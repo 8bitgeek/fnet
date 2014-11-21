@@ -48,7 +48,7 @@
  * @brief Parameters-version string.@n
  * It defines version of the parameter structure saved in a persistent storage.
  ******************************************************************************/
-#define FAPP_PARAMS_VERSION                 "04" /* Changed on any change in the param. structures.*/
+#define FAPP_PARAMS_VERSION                 "05" /* Changed on any change in the param. structures.*/
 
 /**************************************************************************/ /*!
  * @brief Signature string value.@n
@@ -73,6 +73,11 @@
  ******************************************************************************/
 #define FAPP_PARAMS_TFTP_FILE_NAME_SIZE     (40)
 
+/**************************************************************************/ /*!
+ * @brief The maximum length of the @c host_name field of the 
+ * @ref fapp_params_tftp structure.
+ ******************************************************************************/
+#define FAPP_PARAMS_HOST_NAME_SIZE          (40)
 
 /**************************************************************************/ /*!
  * @brief Boot mode.
@@ -112,11 +117,13 @@ fapp_params_tftp_file_type_t;
  ******************************************************************************/
 struct fapp_params_fnet
 {
-    unsigned long address;	/**< @brief Application IP address.*/
-    unsigned long netmask;	/**< @brief Netmask.*/
-    unsigned long gateway;	/**< @brief Gateway IP address.*/
-    unsigned long dns;		/**< @brief DNS server address. */                            
-    unsigned char mac[6];   /**< @brief Ethernet MAC address.*/
+    unsigned long address;	                        /**< @brief Application IPv4 address.*/
+    unsigned long netmask;	                        /**< @brief IPv4 Netmask.*/
+    unsigned long gateway;	                        /**< @brief Gateway IPv4 address.*/
+    unsigned long dns;		                        /**< @brief DNS IPv4 server address. */                            
+    unsigned char mac[6];                           /**< @brief Ethernet MAC address.*/
+    char host_name[FAPP_PARAMS_HOST_NAME_SIZE];     /**< @brief Host Name string, used by LLMNR.
+                                                     * The string must be null-terminated.*/
 };
 
 /**************************************************************************/ /*!

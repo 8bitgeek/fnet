@@ -39,12 +39,14 @@
 *
 ***************************************************************************/
 
+#include "fnet.h"
 #include "fapp.h"
 #include "fapp_fs.h"
 #include "fapp_prv.h"
 
 
 #if FAPP_CFG_EXP_CMD || FAPP_CFG_HTTP_CMD
+
 
 /************************************************************************
 *     File System Image

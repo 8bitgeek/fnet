@@ -39,7 +39,7 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h" 
+#include "fnet.h" 
 #if FNET_MCF
 #if !FNET_OS
 

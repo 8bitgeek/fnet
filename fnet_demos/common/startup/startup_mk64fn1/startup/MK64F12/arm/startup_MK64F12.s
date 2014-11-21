@@ -2,9 +2,9 @@
 ; *  @file:    startup_MK64F12.s
 ; *  @purpose: CMSIS Cortex-M4 Core Device Startup File
 ; *            MK64F12
-; *  @version: 2.5
-; *  @date:    2014-2-10
-; *  @build:   b140516
+; *  @version: 2.6
+; *  @date:    2014-8-28
+; *  @build:   b140904
 ; * ---------------------------------------------------------------------------------------
 ; *
 ; * Copyright (c) 1997 - 2014 , Freescale Semiconductor, Inc.
@@ -316,16 +316,16 @@ __Vectors_Size 	EQU     __Vectors_End - __Vectors
 
 ; <h> Flash Configuration
 ;   <i> 16-byte flash configuration field that stores default protection settings (loaded on reset)
-;   <i> and security information that allows the MCU to restrict acces to the FTFL module.
+;   <i> and security information that allows the MCU to restrict access to the FTFL module.
 ;   <h> Backdoor Comparison Key
-;     <o0>  Backdoor Key 0  <0x0-0xFF:2>
-;     <o1>  Backdoor Key 1  <0x0-0xFF:2>
-;     <o2>  Backdoor Key 2  <0x0-0xFF:2>
-;     <o3>  Backdoor Key 3  <0x0-0xFF:2>
-;     <o4>  Backdoor Key 4  <0x0-0xFF:2>
-;     <o5>  Backdoor Key 5  <0x0-0xFF:2>
-;     <o6>  Backdoor Key 6  <0x0-0xFF:2>
-;     <o7>  Backdoor Key 7  <0x0-0xFF:2>
+;     <o0>  Backdoor Comparison Key 0.  <0x0-0xFF:2>
+;     <o1>  Backdoor Comparison Key 1.  <0x0-0xFF:2>
+;     <o2>  Backdoor Comparison Key 2.  <0x0-0xFF:2>
+;     <o3>  Backdoor Comparison Key 3.  <0x0-0xFF:2>
+;     <o4>  Backdoor Comparison Key 4.  <0x0-0xFF:2>
+;     <o5>  Backdoor Comparison Key 5.  <0x0-0xFF:2>
+;     <o6>  Backdoor Comparison Key 6.  <0x0-0xFF:2>
+;     <o7>  Backdoor Comparison Key 7.  <0x0-0xFF:2>
 BackDoorK0      EQU     0xFF
 BackDoorK1      EQU     0xFF
 BackDoorK2      EQU     0xFF
@@ -339,7 +339,7 @@ BackDoorK7      EQU     0xFF
 ;     <i> Each program flash region can be protected from program and erase operation by setting the associated PROT bit.
 ;     <i> Each bit protects a 1/32 region of the program flash memory.
 ;     <h> FPROT0
-;       <i> Program flash protection bytes
+;       <i> Program Flash Region Protect Register 0
 ;       <i> 1/32 - 8/32 region
 ;       <o.0>   FPROT0.0
 ;       <o.1>   FPROT0.1
@@ -398,40 +398,38 @@ FPROT3          EQU     nFPROT3:EOR:0xFF
 ;   <h> Data flash protection byte (FDPROT)
 ;     <i> Each bit protects a 1/8 region of the data flash memory.
 ;     <i> (Program flash only devices: Reserved)
-;     <o.0>   FDPROT.0
-;     <o.1>   FDPROT.1
-;     <o.2>   FDPROT.2
-;     <o.3>   FDPROT.3
-;     <o.4>   FDPROT.4
-;     <o.5>   FDPROT.5
-;     <o.6>   FDPROT.6
-;     <o.7>   FDPROT.7
+;       <o.0>   FDPROT.0
+;       <o.1>   FDPROT.1
+;       <o.2>   FDPROT.2
+;       <o.3>   FDPROT.3
+;       <o.4>   FDPROT.4
+;       <o.5>   FDPROT.5
+;       <o.6>   FDPROT.6
+;       <o.7>   FDPROT.7
 nFDPROT         EQU     0x00
 FDPROT          EQU     nFDPROT:EOR:0xFF
 ;   </h>
 ;   <h> EEPROM protection byte (FEPROT)
 ;     <i> FlexNVM devices: Each bit protects a 1/8 region of the EEPROM.
 ;     <i> (Program flash only devices: Reserved)
-;     <o.0>   FEPROT.0
-;     <o.1>   FEPROT.1
-;     <o.2>   FEPROT.2
-;     <o.3>   FEPROT.3
-;     <o.4>   FEPROT.4
-;     <o.5>   FEPROT.5
-;     <o.6>   FEPROT.6
-;     <o.7>   FEPROT.7
+;       <o.0>   FEPROT.0
+;       <o.1>   FEPROT.1
+;       <o.2>   FEPROT.2
+;       <o.3>   FEPROT.3
+;       <o.4>   FEPROT.4
+;       <o.5>   FEPROT.5
+;       <o.6>   FEPROT.6
+;       <o.7>   FEPROT.7
 nFEPROT         EQU     0x00
 FEPROT          EQU     nFEPROT:EOR:0xFF
 ;   </h>
 ;   <h> Flash nonvolatile option byte (FOPT)
 ;     <i> Allows the user to customize the operation of the MCU at boot time.
-;     <o.0>  LPBOOT
+;     <o.0> LPBOOT
 ;       <0=> Low-power boot
-;       <1=> normal boot
-;     <o.1>  EZPORT_DIS
-;       <0=> EzPort operation is enabled
-;       <1=> EzPort operation is disabled
-FOPT            EQU     0xFF
+;       <1=> Normal boot
+;     <o.1> EZPORT_DIS
+FOPT          EQU     0xFF
 ;   </h>
 ;   <h> Flash security byte (FSEC)
 ;     <i> WARNING: If SEC field is configured as "MCU security status is secure" and MEEN field is configured as "Mass erase is disabled",
@@ -440,23 +438,18 @@ FOPT            EQU     0xFF
 ;       <2=> MCU security status is unsecure
 ;       <3=> MCU security status is secure
 ;         <i> Flash Security
-;         <i> This bits define the security state of the MCU.
 ;     <o.2..3> FSLACC
 ;       <2=> Freescale factory access denied
 ;       <3=> Freescale factory access granted
 ;         <i> Freescale Failure Analysis Access Code
-;         <i> This bits define the security state of the MCU.
 ;     <o.4..5> MEEN
 ;       <2=> Mass erase is disabled
 ;       <3=> Mass erase is enabled
-;         <i> Mass Erase Enable Bits
-;         <i> Enables and disables mass erase capability of the FTFL module
 ;     <o.6..7> KEYEN
 ;       <2=> Backdoor key access enabled
 ;       <3=> Backdoor key access disabled
-;         <i> Backdoor key Security Enable
-;         <i> These bits enable and disable backdoor key access to the FTFL module.
-FSEC            EQU     0xFE
+;         <i> Backdoor Key Security Enable
+FSEC          EQU     0xFE
 ;   </h>
 ; </h>
                 IF      :LNOT::DEF:RAM_TARGET
@@ -464,8 +457,8 @@ FSEC            EQU     0xFE
 __FlashConfig
                 DCB     BackDoorK0, BackDoorK1, BackDoorK2, BackDoorK3
                 DCB     BackDoorK4, BackDoorK5, BackDoorK6, BackDoorK7
-                DCB     FPROT0,     FPROT1,     FPROT2,     FPROT3
-                DCB     FSEC,       FOPT,       FEPROT,     FDPROT
+                DCB     FPROT0    , FPROT1    , FPROT2    , FPROT3
+                DCB     FSEC      , FOPT      , FEPROT    , FDPROT
                 ENDIF
 
 _NVIC_ICER0     EQU   0xE000E180
@@ -729,7 +722,7 @@ ENET_Transmit_IRQHandler
 ENET_Receive_IRQHandler
 ENET_Error_IRQHandler
 DefaultISR
-                B       .
+                B      DefaultISR
                 ENDP
                   ALIGN
 

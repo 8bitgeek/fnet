@@ -53,11 +53,13 @@
 #include "tftp/fnet_tftp_srv.h"
 #include "dhcp/fnet_dhcp.h"
 #include "flash/fnet_flash.h"
+#include "fs/fnet_fs.h"
 #include "fs/fnet_fs_rom.h"
 #include "ssl/fnet_ssl.h"
 #include "http/fnet_http.h"
 #include "dns/fnet_dns.h"
 #include "ping/fnet_ping.h"
+#include "llmnr/fnet_llmnr.h"
 
 #endif
 

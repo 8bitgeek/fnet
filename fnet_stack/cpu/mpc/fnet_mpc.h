@@ -47,7 +47,7 @@
 
 #define _FNET_MPC_H_
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_MPC
 

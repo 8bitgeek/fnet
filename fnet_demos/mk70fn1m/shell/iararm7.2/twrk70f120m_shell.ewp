@@ -1961,6 +1961,12 @@
       <name>$PROJ_DIR$\..\..\..\common\fnet_application\fapp_http.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\common\fnet_application\fapp_llmnr.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\common\fnet_application\fapp_llmnr.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\common\fnet_application\fapp_mem.c</name>
     </file>
     <file>
@@ -2197,6 +2203,18 @@
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\http\fnet_http_ssi_prv.h</name>
+        </file>
+      </group>
+      <group>
+        <name>llmnr</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr_config.h</name>
         </file>
       </group>
       <group>

@@ -77,6 +77,10 @@ static void fapp_get_cmd_netmask(fnet_shell_desc_t desc);
 static void fapp_set_cmd_mac(fnet_shell_desc_t desc, char *value );
 static void fapp_get_cmd_mac(fnet_shell_desc_t desc);
 #endif
+#if FAPP_CFG_SETGET_CMD_HOSTNAME 
+static void fapp_set_cmd_hostname(fnet_shell_desc_t desc, char *value );
+static void fapp_get_cmd_hostname(fnet_shell_desc_t desc);
+#endif
 #if FAPP_CFG_SETGET_CMD_DNS && FNET_CFG_DNS && FNET_CFG_IP4
 static void fapp_set_cmd_dns(fnet_shell_desc_t desc, char *value );
 static void fapp_get_cmd_dns(fnet_shell_desc_t desc);
@@ -142,6 +146,9 @@ static const fapp_setget_cmd_t fapp_setget_cmd_table [] =
 #endif
 #if FAPP_CFG_SETGET_CMD_MAC    
     { "mac", fapp_set_cmd_mac, fapp_get_cmd_mac, "<ethernet address>" },
+#endif
+#if FAPP_CFG_SETGET_CMD_HOSTNAME    
+    { "host", fapp_set_cmd_hostname, fapp_get_cmd_hostname, "<host name>" },
 #endif
 
 /* DNS set/get parameters. */
@@ -299,6 +306,31 @@ static void fapp_set_cmd_mac(fnet_shell_desc_t desc, char *value)
     {
             fnet_shell_println(desc, FAPP_PARAM_ERR, value);
     }
+}
+#endif
+
+/************************************************************************
+* NAME: fapp_set_cmd_hostname
+*
+* DESCRIPTION: Sets host name, used by LLMNR.
+************************************************************************/
+#if FAPP_CFG_SETGET_CMD_HOSTNAME 
+static void fapp_set_cmd_hostname(fnet_shell_desc_t desc, char *value )
+{
+    (void)desc;
+    fnet_strncpy(fapp_params_host_name, value, FAPP_PARAMS_HOST_NAME_SIZE);
+}
+#endif
+
+/************************************************************************
+* NAME: fapp_get_cmd_hostname
+*
+* DESCRIPTION: Gets host name, used by LLMNR.
+************************************************************************/
+#if FAPP_CFG_SETGET_CMD_HOSTNAME 
+static void fapp_get_cmd_hostname(fnet_shell_desc_t desc)
+{
+    fnet_shell_println(desc, FAPP_GET_SOPT_FORMAT, fapp_params_host_name);
 }
 #endif
 

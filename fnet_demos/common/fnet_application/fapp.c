@@ -92,6 +92,11 @@
 
 #endif
 
+#if FAPP_CFG_LLMNR_CMD
+
+#include "fapp_llmnr.h"
+
+#endif
 
 
 /************************************************************************
@@ -194,6 +199,9 @@ const struct fnet_shell_command fapp_cmd_table [] =
 #endif 
 #if FAPP_CFG_DNS_CMD && FNET_CFG_DNS && FNET_CFG_DNS_RESOLVER
     { FNET_SHELL_CMD_TYPE_NORMAL, "dns",        2, 3, (void *)fapp_dns_cmd,     "Resolve IPv4|6 address of <host name>", "<host name> 4|6 [<server ip>]"},
+#endif 
+#if FAPP_CFG_LLMNR_CMD && FNET_CFG_LLMNR
+    { FNET_SHELL_CMD_TYPE_NORMAL, "llmnr",     0, 1, (void *)fapp_llmnr_cmd,  "Start LLMNR Server", "[release]"},
 #endif 
 #if FAPP_CFG_MEM_CMD    
     { FNET_SHELL_CMD_TYPE_NORMAL, "mem",        0, 0, (void *)fapp_mem_cmd,     "Show memory map", ""},
@@ -535,29 +543,33 @@ static void fapp_init(void)
 #if FAPP_CFG_REINIT_CMD 
 static void fapp_release(fnet_shell_desc_t desc)
 {
+    #if FAPP_CFG_LLMNR_CMD && FNET_CFG_LLMNR        /* Release LLMNR server. */ 
+    fapp_llmnr_release();
+    #endif  
+
     #if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP
-    fapp_dhcp_release();        /* Release DHCP client. */
+    fapp_dhcp_release();                            /* Release DHCP client. */
     #endif
     
-    #if FAPP_CFG_TELNET_CMD && FNET_CFG_TELNET    /* Release TELNET server. */   
+    #if FAPP_CFG_TELNET_CMD && FNET_CFG_TELNET      /* Release TELNET server. */   
     fapp_telnet_release();
     #endif
  
-    #if FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP      /* Release HTTP server. */ 
+    #if FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP          /* Release HTTP server. */ 
     fapp_http_release();
     #endif    
  
-    #if FAPP_CFG_TFTPS_CMD      /* Release TFTP server. */
+    #if FAPP_CFG_TFTPS_CMD                          /* Release TFTP server. */
     fapp_tftps_release();
     #endif   
 
     #if (FAPP_CFG_EXP_CMD && FNET_CFG_FS) || (FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP)   
-    fapp_fs_unmount();          /* Unmount and release FS. */
+    fapp_fs_unmount();                              /* Unmount and release FS. */
     #endif 
     
-    fnet_shell_release(desc);   /* Release shell. */
+    fnet_shell_release(desc);                       /* Release shell. */
     
-    fnet_release();             /* Release the FNET stack.*/
+    fnet_release();                                 /* Release the FNET stack.*/
 }
 #endif /* FAPP_CFG_REINIT_CMD */
 
@@ -699,8 +711,12 @@ void fapp_info_print( fnet_shell_desc_t desc )
     fapp_telnet_info(desc);
 #endif   
 
-#if FAPP_CFG_TFTPS_CMD
+#if FAPP_CFG_TFTPS_CMD && FNET_CFG_TFTP_SRV
     fapp_tftps_info(desc);
+#endif 
+
+#if FAPP_CFG_LLMNR_CMD && FNET_CFG_LLMNR
+    fapp_llmnr_info(desc);
 #endif 
 }
 

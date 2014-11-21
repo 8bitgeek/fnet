@@ -476,6 +476,22 @@ unsigned long fnet_strtoul (char *str, char **ptr, int base);
  ******************************************************************************/
 char * fnet_strtok_r(char *str, const char *delimiter, char **last);
 
+/***************************************************************************/ /*!
+ *
+ * @brief           Converts letter to lower case.
+ *
+ * @param to_lower   Letter to be converted to lower case, if possible.
+ *
+ * @return          This function returns converted letter.
+ *
+ ******************************************************************************
+ *
+ *  This function converts an uppercase letter to the corresponding 
+ * lowercase letter. 
+ *
+ ******************************************************************************/
+char fnet_tolower( const char to_lower );
+
 
 /*! @} */
 

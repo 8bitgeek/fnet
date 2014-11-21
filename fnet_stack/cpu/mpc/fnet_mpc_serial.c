@@ -42,7 +42,7 @@
 * @brief MPC Serial port I/O functions.
 *
 ***************************************************************************/
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_MPC
 

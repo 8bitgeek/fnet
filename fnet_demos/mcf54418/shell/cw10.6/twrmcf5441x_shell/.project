@@ -278,6 +278,11 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>Sources/fnet_stack/services/llmnr</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>Sources/fnet_stack/services/ping</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -1066,6 +1071,21 @@
 			<name>Sources/fnet_stack/services/http/fnet_http_ssi_prv.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/services/http/fnet_http_ssi_prv.h</locationURI>
+		</link>
+		<link>
+			<name>Sources/fnet_stack/services/llmnr/fnet_llmnr.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/services/llmnr/fnet_llmnr.c</locationURI>
+		</link>
+		<link>
+			<name>Sources/fnet_stack/services/llmnr/fnet_llmnr.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/services/llmnr/fnet_llmnr.h</locationURI>
+		</link>
+		<link>
+			<name>Sources/fnet_stack/services/llmnr/fnet_llmnr_config.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/services/llmnr/fnet_llmnr_config.h</locationURI>
 		</link>
 		<link>
 			<name>Sources/fnet_stack/services/ping/fnet_ping.c</name>

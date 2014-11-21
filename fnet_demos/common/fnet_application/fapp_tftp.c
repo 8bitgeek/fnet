@@ -1083,8 +1083,7 @@ void fapp_tftps_info(fnet_shell_desc_t desc)
                 fnet_tftp_srv_state(fapp_tftp_srv_desc) != FNET_TFTP_SRV_STATE_DISABLED ? FAPP_SHELL_INFO_ENABLED : FAPP_SHELL_INFO_DISABLED);
 }
 
-
-#endif
+#endif /* FAPP_CFG_TFTPS_CMD */
 
 
 

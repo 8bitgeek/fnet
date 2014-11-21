@@ -82,6 +82,7 @@
 #include "services/ping/fnet_ping_config.h"
 #include "services/serial/fnet_serial_config.h"
 #include "services/shell/fnet_shell_config.h"
+#include "services/llmnr/fnet_llmnr_config.h"
 
 /*! @} */
 

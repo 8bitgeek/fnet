@@ -458,9 +458,12 @@ static void fnet_tcp_ctrlinput( fnet_prot_notify_t command, fnet_ip_header_t *ip
 
                 case FNET_PROT_NOTIFY_UNREACH_PORT:              /* bad port #.*/
                 case FNET_PROT_NOTIFY_UNREACH_PROTOCOL:
-                  sk->options.local_error = FNET_ERR_CONNRESET;
-                  fnet_tcp_closesk(sk);
-                  break;
+                    if(sk->state != SS_LISTENING) /* Avoid listening sockets.*/
+                    {
+                        sk->options.local_error = FNET_ERR_CONNRESET;
+                        fnet_tcp_closesk(sk);
+                    }
+                    break;
 
                 default:
                   break;

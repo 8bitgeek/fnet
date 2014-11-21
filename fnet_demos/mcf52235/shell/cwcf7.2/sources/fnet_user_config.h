@@ -131,6 +131,12 @@
 #define FNET_CFG_DNS                (1)
 
 /*****************************************************************************
+* Link-Local Multicast Name Resolution (LLMNR) server/responder support.
+******************************************************************************/
+#define FNET_CFG_LLMNR                      (1)
+#define FNET_CFG_LLMNR_HOSTNAME_TTL         (2)
+
+/*****************************************************************************
 * DNS client/resolver service support.
 ******************************************************************************/
 #define FNET_CFG_DNS_RESOLVER       (1)

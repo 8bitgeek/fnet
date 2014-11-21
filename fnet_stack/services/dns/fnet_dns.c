@@ -45,6 +45,7 @@
 #if FNET_CFG_DNS_RESOLVER
 
 #include "fnet_dns.h"
+#include "fnet_dns_prv.h"
 
 #if FNET_CFG_DEBUG_DNS    
     #define FNET_DEBUG_DNS   FNET_DEBUG
@@ -62,152 +63,6 @@
 #define FNET_DNS_ERR_SERVICE           "ERROR: Service registration is failed."
 #define FNET_DNS_ERR_IS_INITIALIZED    "ERROR: DNS is already initialized."
 
-/* Size limits. */
-#define FNET_DNS_MAME_SIZE      (255)     /*
-                                           * RFC1035:To simplify implementations, the total length of a domain name (i.e.,
-                                           * label octets and label length octets) is restricted to 255 octets or less.
-                                           */
-#define FNET_DNS_MESSAGE_SIZE   (512)     /* Messages carried by UDP are restricted to 512 bytes (not counting the IP
-                                           * or UDP headers).  
-                                           * Longer messages (not supported) are truncated and the TC bit is set in
-                                           * the header.
-                                           */    
-
-/********************************************************************/ /*!
-* @brief DNS Resorce Record Types 
-*************************************************************************/
-#define    FNET_DNS_TYPE_A      (0x0001)   /**< @brief IPv4 address. */
-#define    FNET_DNS_TYPE_AAAA   (0x001C)    /**< @brief IPv6 address. */
-
-
-
-/************************************************************************
-*    DNS header [RFC1035, 4.1.1.]
-*************************************************************************
-      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                      ID                       |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                    QDCOUNT                    |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                    ANCOUNT                    |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                    NSCOUNT                    |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                    ARCOUNT                    |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-*/  
-    
-FNET_COMP_PACKED_BEGIN
-typedef struct
-{
-    unsigned short id FNET_COMP_PACKED;      /* A 16 bit identifier assigned by the program that
-                             * generates any kind of query. This identifier is copied
-                             * the corresponding reply and can be used by the requester
-                             * to match up replies to outstanding queries. */
-    unsigned short flags FNET_COMP_PACKED;   /* Flags.*/
-    unsigned short qdcount FNET_COMP_PACKED; /* An unsigned 16 bit integer specifying the number of
-                             * entries in the question section.*/
-    unsigned short ancount FNET_COMP_PACKED; /* An unsigned 16 bit integer specifying the number of
-                             * resource records in the answer section.*/
-    unsigned short nscount FNET_COMP_PACKED; /* an unsigned 16 bit integer specifying the number of name
-                             * server resource records in the authority records
-                             * section.*/
-    unsigned short arcount FNET_COMP_PACKED; /* An unsigned 16 bit integer specifying the number of
-                             * resource records in the additional records section.*/
-
-} fnet_dns_header_t;
-FNET_COMP_PACKED_END
-
-#define FNET_DNS_HEADER_FLAGS_QR    (0x8000) /* Query (0), Response (1)*/
-#define FNET_DNS_HEADER_FLAGS_AA    (0x0400) /* Authoritative Answer. */
-#define FNET_DNS_HEADER_FLAGS_TC    (0x0200) /* TrunCation. */
-#define FNET_DNS_HEADER_FLAGS_RD    (0x0100) /* Recursion Desired. */
-#define FNET_DNS_HEADER_FLAGS_RA    (0x0080) /* Recursion Available. */
-
-/************************************************************************
-*    DNS Question section [RFC1035, 4.1.2.]
-*************************************************************************
-      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                                               |
-    /                     QNAME                     /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                     QTYPE                     |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                     QCLASS                    |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-*/  
-    
-FNET_COMP_PACKED_BEGIN
-typedef struct
-{
-    unsigned char   zero_length FNET_COMP_PACKED;   /* The domain name terminates with the
-                                                    * zero length octet for the null label of the root. */
-    unsigned short  qtype FNET_COMP_PACKED;         /* Specifies the type of the query.*/
-    unsigned short  qclass FNET_COMP_PACKED;        /* Specifies the class of the query.*/
-
-} fnet_dns_q_tail_t;
-FNET_COMP_PACKED_END
-
-
-/************************************************************************
-*    DNS Resource Record header [RFC1035, 4.1.3.] with message compression
-*************************************************************************
-      0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                                               |
-    /                                               /
-    /                      NAME                     /
-    |                                               |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                      TYPE                     |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                     CLASS                     |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                      TTL                      |
-    |                                               |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                   RDLENGTH                    |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--|
-    /                     RDATA                     /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-*/  
-    
-FNET_COMP_PACKED_BEGIN
-typedef struct
-{
-    unsigned char   name_ptr[2] FNET_COMP_PACKED; /* A domain name to which this resource record pertains.
-                                                * For compression, it is replaced with a pointer to a prior occurance
-                                                * of the same name */
-    unsigned short  type FNET_COMP_PACKED;      /* This field specifies the meaning of the data in the RDATA
-                                                * field.*/
-    unsigned short  class FNET_COMP_PACKED;     /* An unsigned 16 bit integer specifying the number of
-                                                * entries in the question section.*/
-    unsigned long   ttl FNET_COMP_PACKED;      /* Specifies the time interval (in seconds) that the 
-                                                * resource record may be
-                                                * cached before it should be discarded.*/
-    unsigned short  rdlength FNET_COMP_PACKED;  /* Length in octets of the RDATA field.*/
-    unsigned long   rdata FNET_COMP_PACKED;     /* The format of this information varies
-                                                * according to the TYPE and CLASS of the resource record. 
-                                                * If the TYPE is A and the CLASS is IN,
-                                                * the RDATA field is a 4 octet ARPA Internet address.*/
-
-} fnet_dns_rr_header_t;
-FNET_COMP_PACKED_END
-
-
-
-#define FNET_DNS_RR_RDLENGTH_A      (4)     /* 32bit IPv4 address.*/
-#define FNET_DNS_RR_RDLENGTH_AAAA   (16)    /* 128 bit IPv6 address.*/
-
-#define FNET_DNS_HEADER_CLASS_IN    (0x01)  /* The Internet.*/
-
-
 
 static void fnet_dns_state_machine(void *);
 
@@ -223,7 +78,7 @@ typedef struct
     long                        handler_cookie;                 /* Callback-handler specific parameter. */
     unsigned long               last_time;                      /* Last receive time, used for timeout detection. */
     int                         iteration;                      /* Current iteration number.*/
-    char                        message[FNET_DNS_MESSAGE_SIZE]; /* Message buffer and Resolved addreses.. */
+    char                        message[FNET_DNS_MESSAGE_SIZE]; /* Message buffer and Resolved addreses.*/
     int                         addr_number;
     unsigned long               message_size;                   /* Size of the message.*/
     unsigned short              id;
@@ -305,7 +160,7 @@ static int fnet_dns_add_question( char *message, unsigned short type, char *host
 * NAME: fnet_dns_init
 *
 * DESCRIPTION: Initializes DNS client service and starts the host 
-*              name reolving.
+*              name resolving.
 ************************************************************************/
 int fnet_dns_init( struct fnet_dns_params *params )
 {
@@ -374,7 +229,9 @@ int fnet_dns_init( struct fnet_dns_params *params )
     fnet_memset_zero(&remote_addr, sizeof(remote_addr));
     remote_addr = params->dns_server_addr;
     if(remote_addr.sa_port == 0)
+    {
         remote_addr.sa_port = FNET_CFG_DNS_PORT;
+    }
    
     if(connect(fnet_dns_if.socket_cln, &remote_addr, sizeof(remote_addr))== FNET_ERR)
     {
@@ -455,7 +312,7 @@ static void fnet_dns_state_machine( void *fnet_dns_if_p )
         case FNET_DNS_STATE_TX:
 
             FNET_DEBUG_DNS("Sending query...");
-            sent_size = (int)send(dns_if->socket_cln, dns_if->message, (int)dns_if->message_size, 0);
+            sent_size = send(dns_if->socket_cln, dns_if->message, (int)dns_if->message_size, 0);
             
             if (sent_size != dns_if->message_size)
         	{
@@ -493,14 +350,14 @@ static void fnet_dns_state_machine( void *fnet_dns_if_p )
                         * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
                         */
                         /* => Check for 0xC0. */
-                        if ((unsigned char)dns_if->message[i] == 0xC0) /* look for the beginnig of the response (Question Name == 192 (label compression))*/
+                        if ((unsigned char)dns_if->message[i] == FNET_DNS_NAME_COMPRESSED_MASK) /* look for the beginnig of the response (Question Name == 192 (label compression))*/
                         {
                             rr_header = (fnet_dns_rr_header_t *)&dns_if->message[i]; 
 
 
                             /* Check Question Type, Class and Resource Data Lenght. */
                             if ( (rr_header->type ==  dns_if->dns_type) && 
-                                 (rr_header->class == FNET_HTONS(FNET_DNS_HEADER_CLASS_IN))) 
+                                 (rr_header->rr_class == FNET_HTONS(FNET_DNS_HEADER_CLASS_IN))) 
                             {
                                 /* Resolved.*/
                                 if(rr_header->type == FNET_HTONS(FNET_DNS_TYPE_A))

@@ -42,7 +42,7 @@
 * @brief Interrupt service dispatcher implementation.
 *
 ***************************************************************************/
-#include "fnet_config.h" 
+#include "fnet.h" 
 #if FNET_MPC
 #if !FNET_OS
 

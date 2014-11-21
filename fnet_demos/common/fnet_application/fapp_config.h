@@ -155,6 +155,10 @@
     #define FAPP_CFG_PARAMS_MAC_ADDR            (0) /* Defined by FNET */
 #endif
 
+#ifndef FAPP_CFG_PARAMS_HOST_NAME
+    #define FAPP_CFG_PARAMS_HOST_NAME           "fnet"
+#endif
+
 /* Bootloader parameters. */
 #ifndef FAPP_CFG_PARAMS_BOOT_MODE
     #define FAPP_CFG_PARAMS_BOOT_MODE           FAPP_PARAMS_BOOT_MODE_STOP 
@@ -361,6 +365,13 @@
     #define FAPP_CFG_PING6_CMD          (0)
 #endif
 
+/************************************************************************
+*    "llmnr" command.
+*************************************************************************/
+#ifndef FAPP_CFG_LLMNR_CMD
+    #define FAPP_CFG_LLMNR_CMD          (0)
+#endif
+
 
 /************************************************************************
 *    "d" command. Used for DEBUGGING needs only.
@@ -376,16 +387,19 @@
 *************************************************************************/
 /* FNET TCP/IP stack set/get parameters. */
 #ifndef FAPP_CFG_SETGET_CMD_IP
-    #define FAPP_CFG_SETGET_CMD_IP      (0)
+    #define FAPP_CFG_SETGET_CMD_IP          (0)
 #endif
 #ifndef FAPP_CFG_SETGET_CMD_GATEWAY
-    #define FAPP_CFG_SETGET_CMD_GATEWAY (0)
+    #define FAPP_CFG_SETGET_CMD_GATEWAY     (0)
 #endif
 #ifndef FAPP_CFG_SETGET_CMD_NETMASK
-    #define FAPP_CFG_SETGET_CMD_NETMASK (0)
+    #define FAPP_CFG_SETGET_CMD_NETMASK     (0)
 #endif
 #ifndef FAPP_CFG_SETGET_CMD_MAC
-    #define FAPP_CFG_SETGET_CMD_MAC     (0)
+    #define FAPP_CFG_SETGET_CMD_MAC         (0)
+#endif
+#ifndef FAPP_CFG_SETGET_CMD_HOSTNAME
+    #define FAPP_CFG_SETGET_CMD_HOSTNAME    (0)
 #endif
 
 /* Bootloader set/get parameters. */
@@ -428,7 +442,7 @@
                                          FAPP_CFG_SETGET_CMD_SCRIPT|FAPP_CFG_SETGET_CMD_RAW|\
                                          FAPP_CFG_SETGET_CMD_TFTP|FAPP_CFG_SETGET_CMD_IMAGE|\
                                          FAPP_CFG_SETGET_CMD_TYPE|FAPP_CFG_SETGET_CMD_GO|\
-                                         FAPP_CFG_SETGET_CMD_DNS)
+                                         FAPP_CFG_SETGET_CMD_DNS|FAPP_CFG_SETGET_CMD_HOSTNAME)
 #endif
 
 

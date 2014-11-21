@@ -1,22 +1,26 @@
 /*
 ** ###################################################################
-**     Processor:           MK64FN1M0VMD12
-**     Compilers:           ARM Compiler
+**     Processors:          MK64FN1M0VDC12
+**                          MK64FN1M0VLL12
+**                          MK64FN1M0VLQ12
+**                          MK64FN1M0VMD12
+**
+**     Compilers:           Keil ARM C/C++ Compiler
 **                          Freescale C/C++ for Embedded ARM
 **                          GNU C Compiler
 **                          GNU C Compiler - CodeSourcery Sourcery G++
 **                          IAR ANSI C/C++ Compiler for ARM
 **
 **     Reference manual:    K64P144M120SF5RM, Rev.2, January 2014
-**     Version:             rev. 2.5, 2014-02-10
-**     Build:               b140516
+**     Version:             rev. 2.6, 2014-08-28
+**     Build:               b140904
 **
 **     Abstract:
 **         Provides a system configuration function and a global variable that
 **         contains the system frequency. It configures the device and initializes
 **         the oscillator (PLL) that is part of the microcontroller device.
 **
-**     Copyright: 2014 Freescale Semiconductor, Inc.
+**     Copyright (c) 2014 Freescale Semiconductor, Inc.
 **     All rights reserved.
 **
 **     Redistribution and use in source and binary forms, with or without modification,
@@ -72,14 +76,17 @@
 **         The declaration of clock configurations has been moved to separate header file system_MK64F12.h
 **         Update of SystemInit() and SystemCoreClockUpdate() functions.
 **         Module access macro module_BASES replaced by module_BASE_PTRS.
+**     - rev. 2.6 (2014-08-28)
+**         Update of system files - default clock configuration changed.
+**         Update of startup files - possibility to override DefaultISR added.
 **
 ** ###################################################################
 */
 
 /*!
  * @file MK64F12
- * @version 2.5
- * @date 2014-02-10
+ * @version 2.6
+ * @date 2014-08-28
  * @brief Device specific configuration file for MK64F12 (implementation file)
  *
  * Provides a system configuration function and a global variable that contains
@@ -120,7 +127,6 @@ void SystemInit (void) {
                  0x0100U;
 #endif /* (DISABLE_WDOG) */
 
-
     /*
      * Enable all of the port clocks. These have to be enabled to configure
      * pin muxing options, so most code will need all of these on anyway.
@@ -132,25 +138,26 @@ void SystemInit (void) {
                   | SIM_SCGC5_PORTE_MASK 
                   );
 
-
-
-       if (PMC->REGSC &  PMC_REGSC_ACKISO_MASK)
-       {
-          PMC->REGSC |= PMC_REGSC_ACKISO_MASK;
-       }
-  
-#ifdef RTC_CR_VALUE
-  SIM_SCGC6 |= SIM_SCGC6_RTC_MASK;
-  if ((RTC_CR & RTC_CR_OSCE_MASK) == 0x00U) { /* Only if the OSCILLATOR is not already enabled */
-    RTC_CR = (uint32_t)((RTC_CR & (uint32_t)~(uint32_t)(RTC_CR_SC2P_MASK | RTC_CR_SC4P_MASK | RTC_CR_SC8P_MASK | RTC_CR_SC16P_MASK)) | (uint32_t)RTC_CR_VALUE);
-    RTC_CR |= (uint32_t)RTC_CR_OSCE_MASK;
-    RTC_CR &= (uint32_t)~(uint32_t)RTC_CR_CLKO_MASK;
-  }
+  if((RCM->SRS0 & RCM_SRS0_WAKEUP_MASK) != 0x00U)
+  {
+    if((PMC->REGSC & PMC_REGSC_ACKISO_MASK) != 0x00U)
+    {
+       PMC->REGSC |= PMC_REGSC_ACKISO_MASK; /* Release hold with ACKISO:  Only has an effect if recovering from VLLSx.*/
+    }
+  } else {
+#ifdef SYSTEM_RTC_CR_VALUE
+    SIM_SCGC6 |= SIM_SCGC6_RTC_MASK;
+    if ((RTC_CR & RTC_CR_OSCE_MASK) == 0x00U) { /* Only if the OSCILLATOR is not already enabled */
+      RTC_CR = (uint32_t)((RTC_CR & (uint32_t)~(uint32_t)(RTC_CR_SC2P_MASK | RTC_CR_SC4P_MASK | RTC_CR_SC8P_MASK | RTC_CR_SC16P_MASK)) | (uint32_t)SYSTEM_RTC_CR_VALUE);
+      RTC_CR |= (uint32_t)RTC_CR_OSCE_MASK;
+      RTC_CR &= (uint32_t)~(uint32_t)RTC_CR_CLKO_MASK;
+    }
 #endif
+  }
 
   /* Power mode protection initialization */
-#ifdef SMC_PMPROT_VALUE
-  SMC->PMPROT = SMC_PMPROT_VALUE;
+#ifdef SYSTEM_SMC_PMPROT_VALUE
+  SMC->PMPROT = SYSTEM_SMC_PMPROT_VALUE;
 #endif
 
   /* System clock initialization */
@@ -173,35 +180,35 @@ void SystemInit (void) {
   #endif /* defined(SLOW_TRIM_ADDRESS) */
 
   /* Set system prescalers and clock sources */
-  SIM->CLKDIV1 = SIM_CLKDIV1_VALUE;    /* Set system prescalers */
-  SIM->SOPT1 = ((SIM->SOPT1) & (uint32_t)(~(SIM_SOPT1_OSC32KSEL_MASK))) | ((SIM_SOPT1_VALUE) & (SIM_SOPT1_OSC32KSEL_MASK)); /* Set 32 kHz clock source (ERCLK32K) */
-  SIM->SOPT2 = ((SIM->SOPT2) & (uint32_t)(~(SIM_SOPT2_PLLFLLSEL_MASK))) | ((SIM_SOPT2_VALUE) & (SIM_SOPT2_PLLFLLSEL_MASK)); /* Selects the high frequency clock for various peripheral clocking options. */
+  SIM->CLKDIV1 = SYSTEM_SIM_CLKDIV1_VALUE; /* Set system prescalers */
+  SIM->SOPT1 = ((SIM->SOPT1) & (uint32_t)(~(SIM_SOPT1_OSC32KSEL_MASK))) | ((SYSTEM_SIM_SOPT1_VALUE) & (SIM_SOPT1_OSC32KSEL_MASK)); /* Set 32 kHz clock source (ERCLK32K) */
+  SIM->SOPT2 = ((SIM->SOPT2) & (uint32_t)(~(SIM_SOPT2_PLLFLLSEL_MASK))) | ((SYSTEM_SIM_SOPT2_VALUE) & (SIM_SOPT2_PLLFLLSEL_MASK)); /* Selects the high frequency clock for various peripheral clocking options. */
 #if ((MCG_MODE == MCG_MODE_FEI) || (MCG_MODE == MCG_MODE_FBI) || (MCG_MODE == MCG_MODE_BLPI))
   /* Set MCG and OSC */
-#if  ((((OSC_CR_VALUE) & OSC_CR_ERCLKEN_MASK) != 0x00U) || ((((MCG_C5_VALUE) & MCG_C5_PLLCLKEN0_MASK) != 0x00U) && (((MCG_C7_VALUE) & MCG_C7_OSCSEL_MASK) == 0x00U)))
+#if  ((((SYSTEM_OSC_CR_VALUE) & OSC_CR_ERCLKEN_MASK) != 0x00U) || ((((SYSTEM_MCG_C5_VALUE) & MCG_C5_PLLCLKEN0_MASK) != 0x00U) && (((SYSTEM_MCG_C7_VALUE) & MCG_C7_OSCSEL_MASK) == 0x00U)))
   /* SIM_SCGC5: PORTA=1 */
   SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;
   /* PORTA_PCR18: ISF=0,MUX=0 */
   PORTA_PCR18 &= (uint32_t)~(uint32_t)((PORT_PCR_ISF_MASK | PORT_PCR_MUX(0x07)));
-  if (((MCG_C2_VALUE) & MCG_C2_EREFS_MASK) != 0x00U) {
+  if (((SYSTEM_MCG_C2_VALUE) & MCG_C2_EREFS_MASK) != 0x00U) {
   /* PORTA_PCR19: ISF=0,MUX=0 */
   PORTA_PCR19 &= (uint32_t)~(uint32_t)((PORT_PCR_ISF_MASK | PORT_PCR_MUX(0x07)));
   }
 #endif
-  MCG->SC = MCG_SC_VALUE;              /* Set SC (fast clock internal reference divider) */
-  MCG->C1 = MCG_C1_VALUE;              /* Set C1 (clock source selection, FLL ext. reference divider, int. reference enable etc.) */
+  MCG->SC = SYSTEM_MCG_SC_VALUE;       /* Set SC (fast clock internal reference divider) */
+  MCG->C1 = SYSTEM_MCG_C1_VALUE;       /* Set C1 (clock source selection, FLL ext. reference divider, int. reference enable etc.) */
   /* Check that the source of the FLL reference clock is the requested one. */
-  if (((MCG_C1_VALUE) & MCG_C1_IREFS_MASK) != 0x00U) {
+  if (((SYSTEM_MCG_C1_VALUE) & MCG_C1_IREFS_MASK) != 0x00U) {
     while((MCG->S & MCG_S_IREFST_MASK) == 0x00U) {
     }
   } else {
     while((MCG->S & MCG_S_IREFST_MASK) != 0x00U) {
     }
   }
-  MCG->C2 = (MCG->C2 & (uint8_t)(~(MCG_C2_FCFTRIM_MASK))) | (MCG_C2_VALUE & (uint8_t)(~(MCG_C2_LP_MASK))); /* Set C2 (freq. range, ext. and int. reference selection etc. excluding trim bits; low power bit is set later) */
-  MCG->C4 = ((MCG_C4_VALUE) & (uint8_t)(~(MCG_C4_FCTRIM_MASK | MCG_C4_SCFTRIM_MASK))) | (MCG->C4 & (MCG_C4_FCTRIM_MASK | MCG_C4_SCFTRIM_MASK)); /* Set C4 (FLL output; trim values not changed) */
-  OSC->CR = OSC_CR_VALUE;              /* Set OSC_CR (OSCERCLK enable, oscillator capacitor load) */
-  MCG->C7 = MCG_C7_VALUE;              /* Set C7 (OSC Clock Select) */
+  MCG->C2 = (MCG->C2 & (uint8_t)(~(MCG_C2_FCFTRIM_MASK))) | (SYSTEM_MCG_C2_VALUE & (uint8_t)(~(MCG_C2_LP_MASK))); /* Set C2 (freq. range, ext. and int. reference selection etc. excluding trim bits; low power bit is set later) */
+  MCG->C4 = ((SYSTEM_MCG_C4_VALUE) & (uint8_t)(~(MCG_C4_FCTRIM_MASK | MCG_C4_SCFTRIM_MASK))) | (MCG->C4 & (MCG_C4_FCTRIM_MASK | MCG_C4_SCFTRIM_MASK)); /* Set C4 (FLL output; trim values not changed) */
+  OSC->CR = SYSTEM_OSC_CR_VALUE;       /* Set OSC_CR (OSCERCLK enable, oscillator capacitor load) */
+  MCG->C7 = SYSTEM_MCG_C7_VALUE;       /* Set C7 (OSC Clock Select) */
   #if (MCG_MODE == MCG_MODE_BLPI)
   /* BLPI specific */
   MCG->C2 |= (MCG_C2_LP_MASK);         /* Disable FLL and PLL in bypass mode */
@@ -209,46 +216,46 @@ void SystemInit (void) {
 
 #else /* MCG_MODE */
   /* Set MCG and OSC */
-#if  (((OSC_CR_VALUE) & OSC_CR_ERCLKEN_MASK) != 0x00U) || (((MCG_C7_VALUE) & MCG_C7_OSCSEL_MASK) == 0x00U)
+#if  (((SYSTEM_OSC_CR_VALUE) & OSC_CR_ERCLKEN_MASK) != 0x00U) || (((SYSTEM_MCG_C7_VALUE) & MCG_C7_OSCSEL_MASK) == 0x00U)
   /* SIM_SCGC5: PORTA=1 */
   SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;
   /* PORTA_PCR18: ISF=0,MUX=0 */
   PORTA_PCR18 &= (uint32_t)~(uint32_t)((PORT_PCR_ISF_MASK | PORT_PCR_MUX(0x07)));
-  if (((MCG_C2_VALUE) & MCG_C2_EREFS_MASK) != 0x00U) {
+  if (((SYSTEM_MCG_C2_VALUE) & MCG_C2_EREFS_MASK) != 0x00U) {
   /* PORTA_PCR19: ISF=0,MUX=0 */
   PORTA_PCR19 &= (uint32_t)~(uint32_t)((PORT_PCR_ISF_MASK | PORT_PCR_MUX(0x07)));
   }
 #endif
-  MCG->SC = MCG_SC_VALUE;              /* Set SC (fast clock internal reference divider) */
-  MCG->C2 = (MCG->C2 & (uint8_t)(~(MCG_C2_FCFTRIM_MASK))) | (MCG_C2_VALUE & (uint8_t)(~(MCG_C2_LP_MASK))); /* Set C2 (freq. range, ext. and int. reference selection etc. excluding trim bits; low power bit is set later) */
-  OSC->CR = OSC_CR_VALUE;              /* Set OSC_CR (OSCERCLK enable, oscillator capacitor load) */
-  MCG->C7 = MCG_C7_VALUE;              /* Set C7 (OSC Clock Select) */
+  MCG->SC = SYSTEM_MCG_SC_VALUE;       /* Set SC (fast clock internal reference divider) */
+  MCG->C2 = (MCG->C2 & (uint8_t)(~(MCG_C2_FCFTRIM_MASK))) | (SYSTEM_MCG_C2_VALUE & (uint8_t)(~(MCG_C2_LP_MASK))); /* Set C2 (freq. range, ext. and int. reference selection etc. excluding trim bits; low power bit is set later) */
+  OSC->CR = SYSTEM_OSC_CR_VALUE;       /* Set OSC_CR (OSCERCLK enable, oscillator capacitor load) */
+  MCG->C7 = SYSTEM_MCG_C7_VALUE;       /* Set C7 (OSC Clock Select) */
   #if (MCG_MODE == MCG_MODE_PEE)
-  MCG->C1 = (MCG_C1_VALUE) | MCG_C1_CLKS(0x02); /* Set C1 (clock source selection, FLL ext. reference divider, int. reference enable etc.) - PBE mode*/
+  MCG->C1 = (SYSTEM_MCG_C1_VALUE) | MCG_C1_CLKS(0x02); /* Set C1 (clock source selection, FLL ext. reference divider, int. reference enable etc.) - PBE mode*/
   #else
-  MCG->C1 = MCG_C1_VALUE;              /* Set C1 (clock source selection, FLL ext. reference divider, int. reference enable etc.) */
+  MCG->C1 = SYSTEM_MCG_C1_VALUE;       /* Set C1 (clock source selection, FLL ext. reference divider, int. reference enable etc.) */
   #endif
-  if (((MCG_C2_VALUE) & MCG_C2_EREFS_MASK) != 0U) {
+  if ((((SYSTEM_MCG_C2_VALUE) & MCG_C2_EREFS_MASK) != 0x00U) && (((SYSTEM_MCG_C7_VALUE) & MCG_C7_OSCSEL_MASK) == 0x00U)) {
     while((MCG->S & MCG_S_OSCINIT0_MASK) == 0x00U) { /* Check that the oscillator is running */
     }
   }
   /* Check that the source of the FLL reference clock is the requested one. */
-  if (((MCG_C1_VALUE) & MCG_C1_IREFS_MASK) != 0x00U) {
+  if (((SYSTEM_MCG_C1_VALUE) & MCG_C1_IREFS_MASK) != 0x00U) {
     while((MCG->S & MCG_S_IREFST_MASK) == 0x00U) {
     }
   } else {
     while((MCG->S & MCG_S_IREFST_MASK) != 0x00U) {
     }
   }
-  MCG->C4 = ((MCG_C4_VALUE)  & (uint8_t)(~(MCG_C4_FCTRIM_MASK | MCG_C4_SCFTRIM_MASK))) | (MCG->C4 & (MCG_C4_FCTRIM_MASK | MCG_C4_SCFTRIM_MASK)); /* Set C4 (FLL output; trim values not changed) */
+  MCG->C4 = ((SYSTEM_MCG_C4_VALUE)  & (uint8_t)(~(MCG_C4_FCTRIM_MASK | MCG_C4_SCFTRIM_MASK))) | (MCG->C4 & (MCG_C4_FCTRIM_MASK | MCG_C4_SCFTRIM_MASK)); /* Set C4 (FLL output; trim values not changed) */
 #endif /* MCG_MODE */
 
   /* Common for all MCG modes */
 
   /* PLL clock can be used to generate clock for some devices regardless of clock generator (MCGOUTCLK) mode. */
-  MCG->C5 = (MCG_C5_VALUE) & (uint8_t)(~(MCG_C5_PLLCLKEN0_MASK)); /* Set C5 (PLL settings, PLL reference divider etc.) */
-  MCG->C6 = (MCG_C6_VALUE) & (uint8_t)~(MCG_C6_PLLS_MASK); /* Set C6 (PLL select, VCO divider etc.) */
-  if ((MCG_C5_VALUE) & MCG_C5_PLLCLKEN0_MASK) {
+  MCG->C5 = (SYSTEM_MCG_C5_VALUE) & (uint8_t)(~(MCG_C5_PLLCLKEN0_MASK)); /* Set C5 (PLL settings, PLL reference divider etc.) */
+  MCG->C6 = (SYSTEM_MCG_C6_VALUE) & (uint8_t)~(MCG_C6_PLLS_MASK); /* Set C6 (PLL select, VCO divider etc.) */
+  if ((SYSTEM_MCG_C5_VALUE) & MCG_C5_PLLCLKEN0_MASK) {
     MCG->C5 |= MCG_C5_PLLCLKEN0_MASK;  /* PLL clock enable in mode other than PEE or PBE */
   }
   /* BLPE, PEE and PBE MCG mode specific */
@@ -266,6 +273,16 @@ void SystemInit (void) {
 #if ((MCG_MODE == MCG_MODE_FEI) || (MCG_MODE == MCG_MODE_FEE))
   while((MCG->S & MCG_S_CLKST_MASK) != 0x00U) { /* Wait until output of the FLL is selected */
   }
+  /* Use LPTMR to wait for 1ms dor FLL clock stabilization */
+  SIM_SCGC5 |= SIM_SCGC5_LPTMR_MASK;   /* Alow software control of LPMTR */
+  LPTMR0->CMR = LPTMR_CMR_COMPARE(0);  /* Default 1 LPO tick */
+  LPTMR0->CSR = (LPTMR_CSR_TCF_MASK | LPTMR_CSR_TPS(0x00));
+  LPTMR0->PSR = (LPTMR_PSR_PCS(0x01) | LPTMR_PSR_PBYP_MASK); /* Clock source: LPO, Prescaler bypass enable */
+  LPTMR0->CSR = LPTMR_CSR_TEN_MASK;    /* LPMTR enable */
+  while((LPTMR0_CSR & LPTMR_CSR_TCF_MASK) == 0u) {
+  }
+  LPTMR0_CSR = 0x00;                   /* Disable LPTMR */
+  SIM_SCGC5 &= (uint32_t)~(uint32_t)SIM_SCGC5_LPTMR_MASK;
 #elif ((MCG_MODE == MCG_MODE_FBI) || (MCG_MODE == MCG_MODE_BLPI))
   while((MCG->S & MCG_S_CLKST_MASK) != 0x04U) { /* Wait until internal reference clock is selected as MCG output */
   }
@@ -276,14 +293,18 @@ void SystemInit (void) {
   while((MCG->S & MCG_S_CLKST_MASK) != 0x0CU) { /* Wait until output of the PLL is selected */
   }
 #endif
-#if (((SMC_PMCTRL_VALUE) & SMC_PMCTRL_RUNM_MASK) == (0x02U << SMC_PMCTRL_RUNM_SHIFT))
-  SMC->PMCTRL = (uint8_t)((SMC_PMCTRL_VALUE) & (SMC_PMCTRL_RUNM_MASK)); /* Enable VLPR mode */
+#if (((SYSTEM_SMC_PMCTRL_VALUE) & SMC_PMCTRL_RUNM_MASK) == (0x02U << SMC_PMCTRL_RUNM_SHIFT))
+  SMC->PMCTRL = (uint8_t)((SYSTEM_SMC_PMCTRL_VALUE) & (SMC_PMCTRL_RUNM_MASK)); /* Enable VLPR mode */
   while(SMC->PMSTAT != 0x04U) {        /* Wait until the system is in VLPR mode */
   }
 #endif
 
+#if defined(SYSTEM_SIM_CLKDIV2_VALUE)
+  SIM->CLKDIV2 = ((SIM->CLKDIV2) & (uint32_t)(~(SIM_CLKDIV2_USBFRAC_MASK | SIM_CLKDIV2_USBDIV_MASK))) | ((SYSTEM_SIM_CLKDIV2_VALUE) & (SIM_CLKDIV2_USBFRAC_MASK | SIM_CLKDIV2_USBDIV_MASK)); /* Selects the USB clock divider. */
+#endif
+
   /* PLL loss of lock interrupt request initialization */
-  if (((MCG_C6_VALUE) & MCG_C6_LOLIE0_MASK) != 0U) {
+  if (((SYSTEM_MCG_C6_VALUE) & MCG_C6_LOLIE0_MASK) != 0U) {
     NVIC_EnableIRQ(MCG_IRQn);          /* Enable PLL loss of lock interrupt request */
   }
 }

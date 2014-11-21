@@ -23,6 +23,7 @@
 #define FAPP_CFG_SETGET_CMD_GATEWAY     (1)
 #define FAPP_CFG_SETGET_CMD_NETMASK     (1)
 #define FAPP_CFG_SETGET_CMD_MAC         (1)
+#define FAPP_CFG_SETGET_CMD_HOSTNAME    (1)
 
 /*  "info" command. */
 #define FAPP_CFG_INFO_CMD               (1)
@@ -45,6 +46,9 @@
 /*  "dns" command.*/
 #define FAPP_CFG_DNS_CMD                (1)
 
+/*  "llmnr" command.*/
+#define FAPP_CFG_LLMNR_CMD              (1)
+
 /*  "ping" command.*/
 #define FAPP_CFG_PING_CMD               (1) 
 
@@ -56,10 +60,10 @@
  * memory duiring flashing of the application. */
 #define FAPP_CFG_PARAMS_REWRITE_FLASH   (1)
 
-#if 0 /* To run HTTP and Telnet server on startup set to 1. */
+#if 1 /* To run servers on startup set to 1. */
     #define FAPP_CFG_STARTUP_SCRIPT_ENABLED	(1)
-    #define FAPP_CFG_STARTUP_SCRIPT     "http; telnet" 
+    #define FAPP_CFG_STARTUP_SCRIPT "llmnr"     /* For example "http; telnet" */
 #endif
 
-#endif
+#endif /* _FAPP_USER_CONFIG_H_ */
 

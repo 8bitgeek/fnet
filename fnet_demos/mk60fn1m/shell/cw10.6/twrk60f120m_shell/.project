@@ -188,21 +188,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/fnet_cpu_config.h</locationURI>
 		</link>
 		<link>
-			<name>Sources/fnet_stack/cpu/fnet_cpu_config.h~RF1073ec67.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/fnet_cpu_config.h~RF1073ec67.TMP</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/cpu/fnet_cpu_config.h~RFbbb5196.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/fnet_cpu_config.h~RFbbb5196.TMP</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/cpu/fnet_cpu_config.h~RFfc086fc.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/fnet_cpu_config.h~RFfc086fc.TMP</locationURI>
-		</link>
-		<link>
 			<name>Sources/fnet_stack/cpu/mcf</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -274,6 +259,11 @@
 		</link>
 		<link>
 			<name>Sources/fnet_stack/services/http</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Sources/fnet_stack/services/llmnr</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -503,21 +493,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/stack/fnet_netif.h</locationURI>
 		</link>
 		<link>
-			<name>Sources/fnet_stack/stack/fnet_netif.h~RF58d4ae1.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/stack/fnet_netif.h~RF58d4ae1.TMP</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/stack/fnet_netif.h~RF5922e3d.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/stack/fnet_netif.h~RF5922e3d.TMP</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/stack/fnet_netif.h~RFfd17cb0.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/stack/fnet_netif.h~RFfd17cb0.TMP</locationURI>
-		</link>
-		<link>
 			<name>Sources/fnet_stack/stack/fnet_netif_prv.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/stack/fnet_netif_prv.h</locationURI>
@@ -551,16 +526,6 @@
 			<name>Sources/fnet_stack/stack/fnet_socket.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/stack/fnet_socket.h</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/stack/fnet_socket.h~RF1064a52a.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/stack/fnet_socket.h~RF1064a52a.TMP</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/stack/fnet_socket.h~RF1066db37.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/stack/fnet_socket.h~RF1066db37.TMP</locationURI>
 		</link>
 		<link>
 			<name>Sources/fnet_stack/stack/fnet_socket_prv.h</name>
@@ -636,11 +601,6 @@
 			<name>Sources/fnet_stack/cpu/common/fnet_fec.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/common/fnet_fec.h</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/cpu/mcf/MFC1D32.tmp</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/mcf/MFC1D32.tmp</locationURI>
 		</link>
 		<link>
 			<name>Sources/fnet_stack/cpu/mcf/fnet_mcf.c</name>
@@ -1066,6 +1026,21 @@
 			<name>Sources/fnet_stack/services/http/fnet_http_ssi_prv.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/services/http/fnet_http_ssi_prv.h</locationURI>
+		</link>
+		<link>
+			<name>Sources/fnet_stack/services/llmnr/fnet_llmnr.c</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/services/llmnr/fnet_llmnr.c</locationURI>
+		</link>
+		<link>
+			<name>Sources/fnet_stack/services/llmnr/fnet_llmnr.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/services/llmnr/fnet_llmnr.h</locationURI>
+		</link>
+		<link>
+			<name>Sources/fnet_stack/services/llmnr/fnet_llmnr_config.h</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/services/llmnr/fnet_llmnr_config.h</locationURI>
 		</link>
 		<link>
 			<name>Sources/fnet_stack/services/ping/fnet_ping.c</name>

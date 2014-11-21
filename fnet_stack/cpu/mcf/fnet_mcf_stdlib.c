@@ -37,7 +37,7 @@
 * @brief ColdFire optimized/specific standard functions.
 *
 ***************************************************************************/
-#include "fnet_mcf.h"
+#include "fnet.h"
 
 #if FNET_MCF
 

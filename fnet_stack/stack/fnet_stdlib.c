@@ -27,9 +27,6 @@
 
 #include "fnet.h"
 
-static char fnet_tolower( const char to_lower );
-
-
 #if !FNET_CFG_OVERLOAD_MEMCPY
 /************************************************************************
 * NAME: fnet_memcpy
@@ -611,7 +608,7 @@ unsigned long fnet_strtoul (char *str, char **ptr, int base)
 * lowercase letter.
 *
 *************************************************************************/
-static char fnet_tolower( const char to_lower )
+char fnet_tolower( const char to_lower )
 {
     if((to_lower >= 'A') && (to_lower <= 'Z'))
         return (char)(to_lower + 0x20);

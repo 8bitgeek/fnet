@@ -2,9 +2,9 @@
 ;  @file:    startup_MK64F12.s
 ;  @purpose: CMSIS Cortex-M4 Core Device Startup File
 ;            MK64F12
-;  @version: 2.5
-;  @date:    2014-2-10
-;  @build:   b140516
+;  @version: 2.6
+;  @date:    2014-8-28
+;  @build:   b140904
 ; ---------------------------------------------------------------------------------------
 ;
 ; Copyright (c) 1997 - 2014 , Freescale Semiconductor, Inc.
@@ -594,6 +594,6 @@ ENET_Transmit_IRQHandler
 ENET_Receive_IRQHandler
 ENET_Error_IRQHandler
 DefaultISR
-        B .
+        B DefaultISR
 
         END

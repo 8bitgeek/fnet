@@ -44,6 +44,7 @@
 *
 ***************************************************************************/
 
+#include "fnet.h"
 #include "stack/fnet_isr.h"
 #include "cpu/mpc/fnet_mpc.h"
 

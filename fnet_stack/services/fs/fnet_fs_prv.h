@@ -43,10 +43,11 @@
 
 #define _FNET_FS_PRV_H_
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_FS
 
+#include "fnet_fs.h"
 
 /* Type of access and method for the file. */
 typedef enum

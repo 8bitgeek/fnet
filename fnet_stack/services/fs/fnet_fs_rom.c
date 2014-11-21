@@ -39,13 +39,12 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_FS && FNET_CFG_FS_ROM
 
 #include "fnet_fs_rom.h"
 #include "fnet_fs_prv.h"
-#include "fnet.h"
 
 /* Supported fopen mode = read-only */
 #define FNET_FS_ROM_OPENMODE     (FNET_FS_MODE_READ|FNET_FS_MODE_OPEN_EXISTING)

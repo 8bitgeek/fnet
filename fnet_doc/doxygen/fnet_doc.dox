@@ -104,6 +104,7 @@ preferred way to configure stack features). @n
 	- @b TELNET server. 
 	- @b DHCP/BOOTP client.
 	- @b DNS client/resolver.
+	- @b LLMNR Server/Responder.
 	- @b PING service.
 	- @b TFTP server and client. Both Read and Write requests are supported.
 	- ROM File System.
@@ -322,44 +323,56 @@ Parameters loaded from Flash.
 ************************************************
  FNET Shell Application
 ************************************************
- FNET TCP/IP Stack for MCF52259
- Version 2.0.0
- Built Nov 16 2012 at 14:48:47 by CW
+ FNET TCP/IP Stack for MK64FN1
+ Version 2.7.0
+ Built Nov 19 2014 at 14:04:02 by IAR
  Copyright by FNET Community
  GNU LGPLv3
 ************************************************
  Interface        : eth0
  IPv4 Address     : 192.168.0.22 <manual>
- IPv6 Address     : fe80::204:9fff:fe12:4938 <autoconfigurable>
+ IPv6 Address     : fe80::204:9fff:fe14:428 <autoconfigurable> ScopeID:1
  IPv4 Subnet mask : 255.255.255.0
  IPv4 Gateway     : 0.0.0.0
  IPv4 DNS         : 0.0.0.0
- MAC Address      : 00:04:9f:12:49:38
+ MAC Address      : 00:04:9f:14:04:28
+ MTU              : 1500
  Link Status      : connected
- TX Packets       : 4
- RX Packets       : 0
- Free Heap        : 30320
+ Free Heap        : 30288
  HTTP Server      : disabled
  DHCP Client      : disabled
  TELNET Server    : disabled
+ LLMNR Server     : disabled
 
  Enter 'help' for command list.
-************************************************
+************************************************ 
 
 SHELL> 
 @endverbatim
+- There is possibility to start any service automatically by setting the @c FAPP_CFG_STARTUP_SCRIPT_ENABLED parameter to @c 1 and setting the FAPP_CFG_STARTUP_SCRIPT parameter to command line string. For example the demo application start automatically LLMNR server, which allows name resolution for hosts on the same local link. 
+@verbatim
+Startup script: llmnr
+************************************************
+ LLMNR server started.
+ Host Name        : fnet
+************************************************
+@endverbatim
+So you can use "fnet" instead of IP address to find this node on local network. 
+
 - The Main Shell is now ready to accept user commands. Try @c help command to display a list of all the commands available within the shell:
 @verbatim
 SHELL> help
 >   help                                 - Display this help message
 >    set [<parameter> <value>]           - Set parameter
 >    get [<parameter>]                   - Get parameters
->   info                                 - Show detailed status
+>   info                                 - Show interface info
+>   stat                                 - Show interface statistics
 >   dhcp [release]                       - Start DHCP client
 >   http [release]                       - Start HTTP Server
 >    exp                                 - File Explorer submenu...
 > telnet [release]                       - Start Telnet Server
->    dns <host name>                     - Resolve IP address from <host name>
+>    dns <host name> 4|6 [<server ip>]   - Resolve IPv4|6 address of <host name>
+>  llmnr [release]                       - Start LLMNR Server
 >   save                                 - Save parameters to the FLASH
 >  reset                                 - Reset the board
 >   ping [-c <count>][-i <seconds>]
@@ -1525,6 +1538,15 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+
+- Version 2.7.0:
+	- Added Link-Local Multicast Name Resolution (LLMNR) Server/Responder.
+	- Added new "host" parameter to example applications, used as a host name for LLMNR. Its value is controlled by @c FAPP_CFG_PARAMS_HOST_NAME.
+	- Fixed "ICMP Destination unreachable" handling issue for listening TCP sockets, reported by Yasla.
+	- Fixed FRDM-K64F startup code, which caused wrong link status.
+	- Make public fnet_tolower().
+	- Other minor changes.
+
 - Version 2.6.5:
 	- Fixed DNS query that caused resolution issue with FritzBox DNS server, reported by Lenz.
 	- Fixed checksum calculation to follow RFC1624(3).
@@ -2290,7 +2312,14 @@ which includes all service-specific configuration files.
 *   The user may override and change the default values in the application-specific 
 *   configuration file @c fnet_user_config.h.
 */
-
+/*! 
+*	@defgroup fnet_llmnr_config LLMNR Server Configuration Parameters
+*	@ingroup fnet_services_config 
+*	This section describes the parameters specific to the LLMNR server.
+*	@n
+*   The user may override and change the default values in the application-specific 
+*   configuration file @c fnet_user_config.h.
+*/
 /*! 
 *	@defgroup fnet_fs_config File System Configuration Parameters
 *	@ingroup fnet_services_config 
@@ -2451,6 +2480,10 @@ which includes all service-specific configuration files.
 */
 /*! 
 *	@defgroup fnet_dns DNS client/resolver API
+*	@ingroup services_api 
+*/
+/*! 
+*	@defgroup fnet_llmnr LLMNR server/responder API
 *	@ingroup services_api 
 */
 /*! 

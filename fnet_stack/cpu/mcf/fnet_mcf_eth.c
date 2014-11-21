@@ -38,7 +38,7 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 #if FNET_MCF && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 #include "fnet_fec.h"
 #include "fnet_eth_prv.h"

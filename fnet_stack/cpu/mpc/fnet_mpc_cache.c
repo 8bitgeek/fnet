@@ -41,7 +41,7 @@
 * @brief MPC-specific cache invalidation.
 *
 ***************************************************************************/
-#include "fnet_config.h" 
+#include "fnet.h" 
 
 #if FNET_MPC
 

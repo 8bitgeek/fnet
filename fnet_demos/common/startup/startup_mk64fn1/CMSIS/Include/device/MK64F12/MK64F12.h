@@ -5,20 +5,20 @@
 **                          MK64FN1M0VLQ12
 **                          MK64FN1M0VMD12
 **
-**     Compilers:           ARM Compiler
+**     Compilers:           Keil ARM C/C++ Compiler
 **                          Freescale C/C++ for Embedded ARM
 **                          GNU C Compiler
 **                          GNU C Compiler - CodeSourcery Sourcery G++
 **                          IAR ANSI C/C++ Compiler for ARM
 **
 **     Reference manual:    K64P144M120SF5RM, Rev.2, January 2014
-**     Version:             rev. 2.5, 2014-02-10
-**     Build:               b140521
+**     Version:             rev. 2.6, 2014-08-28
+**     Build:               b140904
 **
 **     Abstract:
 **         CMSIS Peripheral Access Layer for MK64F12
 **
-**     Copyright: 1997 - 2014 Freescale Semiconductor, Inc.
+**     Copyright (c) 1997 - 2014 Freescale Semiconductor, Inc.
 **     All rights reserved.
 **
 **     Redistribution and use in source and binary forms, with or without modification,
@@ -74,14 +74,17 @@
 **         The declaration of clock configurations has been moved to separate header file system_MK64F12.h
 **         Update of SystemInit() and SystemCoreClockUpdate() functions.
 **         Module access macro module_BASES replaced by module_BASE_PTRS.
+**     - rev. 2.6 (2014-08-28)
+**         Update of system files - default clock configuration changed.
+**         Update of startup files - possibility to override DefaultISR added.
 **
 ** ###################################################################
 */
 
 /*!
  * @file MK64F12.h
- * @version 2.5
- * @date 2014-02-10
+ * @version 2.6
+ * @date 2014-08-28
  * @brief CMSIS Peripheral Access Layer for MK64F12
  *
  * CMSIS Peripheral Access Layer for MK64F12
@@ -109,7 +112,7 @@
  * compatible) */
 #define MCU_MEM_MAP_VERSION 0x0200u
 /** Memory map minor version */
-#define MCU_MEM_MAP_VERSION_MINOR 0x0005u
+#define MCU_MEM_MAP_VERSION_MINOR 0x0006u
 
 /**
  * @brief Macro to calculate address of an aliased word in the peripheral
@@ -162,6 +165,9 @@
 #define NUMBER_OF_INT_VECTORS 102                /**< Number of interrupts in the Vector table */
 
 typedef enum IRQn {
+  /* Auxiliary constants */
+  NotAvail_IRQn                = -128,             /**< Not available device specific interrupt */
+
   /* Core interrupts */
   NonMaskableInt_IRQn          = -14,              /**< Non Maskable Interrupt */
   HardFault_IRQn               = -13,              /**< Cortex-M4 SV Hard Fault Interrupt */
@@ -12995,7 +13001,7 @@ typedef struct {
 /** Interrupt vectors for the UART peripheral type */
 #define UART_RX_TX_IRQS                          { UART0_RX_TX_IRQn, UART1_RX_TX_IRQn, UART2_RX_TX_IRQn, UART3_RX_TX_IRQn, UART4_RX_TX_IRQn, UART5_RX_TX_IRQn }
 #define UART_ERR_IRQS                            { UART0_ERR_IRQn, UART1_ERR_IRQn, UART2_ERR_IRQn, UART3_ERR_IRQn, UART4_ERR_IRQn, UART5_ERR_IRQn }
-#define UART_LON_IRQS                            { UART0_LON_IRQn, 0, 0, 0, 0, 0 }
+#define UART_LON_IRQS                            { UART0_LON_IRQn, NotAvail_IRQn, NotAvail_IRQn, NotAvail_IRQn, NotAvail_IRQn, NotAvail_IRQn }
 
 /* ----------------------------------------------------------------------------
    -- UART - Register accessor macros
@@ -14126,6 +14132,144 @@ typedef struct {
  * @{
  */
 
+#define DMA_EARS_REG(base)                       This_symbol_has_been_deprecated
+#define DMA_EARS                                 This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_0_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_0_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_1_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_1_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_2_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_2_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_3_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_3_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_4_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_4_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_5_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_5_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_6_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_6_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_7_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_7_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_8_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_8_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_9_MASK                    This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_9_SHIFT                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_10_MASK                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_10_SHIFT                  This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_11_MASK                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_11_SHIFT                  This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_12_MASK                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_12_SHIFT                  This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_13_MASK                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_13_SHIFT                  This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_14_MASK                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_14_SHIFT                  This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_15_MASK                   This_symbol_has_been_deprecated
+#define DMA_EARS_EDREQ_15_SHIFT                  This_symbol_has_been_deprecated
+#define ENET_RMON_T_DROP_REG(base)               This_symbol_has_been_deprecated
+#define ENET_IEEE_T_DROP_REG(base)               This_symbol_has_been_deprecated
+#define ENET_IEEE_T_SQE_REG(base)                This_symbol_has_been_deprecated
+#define ENET_RMON_R_RESVD_0_REG(base)            This_symbol_has_been_deprecated
+#define ENET_RMON_R_DROP_REG(base)               ENET_IEEE_R_DROP_REG(base)
+#define ENET_RMON_R_FRAME_OK_REG(base)           ENET_IEEE_R_FRAME_OK_REG(base)
+#define ENET_RMON_T_DROP                         This_symbol_has_been_deprecated
+#define ENET_IEEE_T_DROP                         This_symbol_has_been_deprecated
+#define ENET_IEEE_T_SQE                          This_symbol_has_been_deprecated
+#define ENET_RMON_R_RESVD_0                      This_symbol_has_been_deprecated
+#define MCG_C9_REG(base)                         This_symbol_has_been_deprecated
+#define MCG_C2_EREFS0_MASK                       MCG_C2_EREFS_MASK
+#define MCG_C2_EREFS0_SHIFT                      MCG_C2_EREFS_SHIFT
+#define MCG_C2_HGO0_MASK                         MCG_C2_HGO_MASK
+#define MCG_C2_HGO0_SHIFT                        MCG_C2_HGO_SHIFT
+#define MCG_C2_RANGE0_MASK                       MCG_C2_RANGE_MASK
+#define MCG_C2_RANGE0_SHIFT                      MCG_C2_RANGE_SHIFT
+#define MCG_C2_RANGE0(x)                         MCG_C2_RANGE(x)
+#define MCG_C9                                   This_symbol_has_been_deprecated
+#define MCM_PLACR_REG(base)                      This_symbol_has_been_deprecated
+#define MCM_PLACR_ARB_MASK                       This_symbol_has_been_deprecated
+#define MCM_PLACR_ARB_SHIFT                      This_symbol_has_been_deprecated
+#define MCM_PLACR                                This_symbol_has_been_deprecated
+#define ADC_BASES                    ADC_BASE_PTRS
+#define AIPS_BASES                   AIPS_BASE_PTRS
+#define AXBS_BASES                   AXBS_BASE_PTRS
+#define CAN_BASES                    CAN_BASE_PTRS
+#define CAU_BASES                    CAU_BASE_PTRS
+#define CMP_BASES                    CMP_BASE_PTRS
+#define CMT_BASES                    CMT_BASE_PTRS
+#define CRC_BASES                    CRC_BASE_PTRS
+#define DAC_BASES                    DAC_BASE_PTRS
+#define DMA_BASES                    DMA_BASE_PTRS
+#define DMAMUX_BASES                 DMAMUX_BASE_PTRS
+#define ENET_BASES                   ENET_BASE_PTRS
+#define EWM_BASES                    EWM_BASE_PTRS
+#define FB_BASES                     FB_BASE_PTRS
+#define FMC_BASES                    FMC_BASE_PTRS
+#define FTFE_BASES                   FTFE_BASE_PTRS
+#define FTM_BASES                    FTM_BASE_PTRS
+#define GPIO_BASES                   GPIO_BASE_PTRS
+#define I2C_BASES                    I2C_BASE_PTRS
+#define I2S_BASES                    I2S_BASE_PTRS
+#define LLWU_BASES                   LLWU_BASE_PTRS
+#define LPTMR_BASES                  LPTMR_BASE_PTRS
+#define MCG_BASES                    MCG_BASE_PTRS
+#define MCM_ISR_REG(base)            MCM_ISCR_REG(base)
+#define MCM_ISR_FIOC_MASK            MCM_ISCR_FIOC_MASK
+#define MCM_ISR_FIOC_SHIFT           MCM_ISCR_FIOC_SHIFT
+#define MCM_ISR_FDZC_MASK            MCM_ISCR_FDZC_MASK
+#define MCM_ISR_FDZC_SHIFT           MCM_ISCR_FDZC_SHIFT
+#define MCM_ISR_FOFC_MASK            MCM_ISCR_FOFC_MASK
+#define MCM_ISR_FOFC_SHIFT           MCM_ISCR_FOFC_SHIFT
+#define MCM_ISR_FUFC_MASK            MCM_ISCR_FUFC_MASK
+#define MCM_ISR_FUFC_SHIFT           MCM_ISCR_FUFC_SHIFT
+#define MCM_ISR_FIXC_MASK            MCM_ISCR_FIXC_MASK
+#define MCM_ISR_FIXC_SHIFT           MCM_ISCR_FIXC_SHIFT
+#define MCM_ISR_FIDC_MASK            MCM_ISCR_FIDC_MASK
+#define MCM_ISR_FIDC_SHIFT           MCM_ISCR_FIDC_SHIFT
+#define MCM_ISR_FIOCE_MASK           MCM_ISCR_FIOCE_MASK
+#define MCM_ISR_FIOCE_SHIFT          MCM_ISCR_FIOCE_SHIFT
+#define MCM_ISR_FDZCE_MASK           MCM_ISCR_FDZCE_MASK
+#define MCM_ISR_FDZCE_SHIFT          MCM_ISCR_FDZCE_SHIFT
+#define MCM_ISR_FOFCE_MASK           MCM_ISCR_FOFCE_MASK
+#define MCM_ISR_FOFCE_SHIFT          MCM_ISCR_FOFCE_SHIFT
+#define MCM_ISR_FUFCE_MASK           MCM_ISCR_FUFCE_MASK
+#define MCM_ISR_FUFCE_SHIFT          MCM_ISCR_FUFCE_SHIFT
+#define MCM_ISR_FIXCE_MASK           MCM_ISCR_FIXCE_MASK
+#define MCM_ISR_FIXCE_SHIFT          MCM_ISCR_FIXCE_SHIFT
+#define MCM_ISR_FIDCE_MASK           MCM_ISCR_FIDCE_MASK
+#define MCM_ISR_FIDCE_SHIFT          MCM_ISCR_FIDCE_SHIFT
+#define MCM_BASES                    MCM_BASE_PTRS
+#define MPU_BASES                    MPU_BASE_PTRS
+#define NV_BASES                     NV_BASE_PTRS
+#define OSC_BASES                    OSC_BASE_PTRS
+#define PDB_BASES                    PDB_BASE_PTRS
+#define PIT_BASES                    PIT_BASE_PTRS
+#define PMC_BASES                    PMC_BASE_PTRS
+#define PORT_BASES                   PORT_BASE_PTRS
+#define RCM_BASES                    RCM_BASE_PTRS
+#define RFSYS_BASES                  RFSYS_BASE_PTRS
+#define RFVBAT_BASES                 RFVBAT_BASE_PTRS
+#define RNG_BASES                    RNG_BASE_PTRS
+#define RTC_BASES                    RTC_BASE_PTRS
+#define SDHC_BASES                   SDHC_BASE_PTRS
+#define SIM_BASES                    SIM_BASE_PTRS
+#define SMC_BASES                    SMC_BASE_PTRS
+#define SPI_BASES                    SPI_BASE_PTRS
+#define UART_WP7816_T_TYPE0_REG(base) UART_WP7816T0_REG(base)
+#define UART_WP7816_T_TYPE1_REG(base) UART_WP7816T1_REG(base)
+#define UART_WP7816_T_TYPE0_WI_MASK  UART_WP7816T0_WI_MASK
+#define UART_WP7816_T_TYPE0_WI_SHIFT UART_WP7816T0_WI_SHIFT
+#define UART_WP7816_T_TYPE0_WI(x)    UART_WP7816T0_WI(x)
+#define UART_WP7816_T_TYPE1_BWI_MASK UART_WP7816T1_BWI_MASK
+#define UART_WP7816_T_TYPE1_BWI_SHIFT UART_WP7816T1_BWI_SHIFT
+#define UART_WP7816_T_TYPE1_BWI(x)   UART_WP7816T1_BWI(x)
+#define UART_WP7816_T_TYPE1_CWI_MASK UART_WP7816T1_CWI_MASK
+#define UART_WP7816_T_TYPE1_CWI_SHIFT UART_WP7816T1_CWI_SHIFT
+#define UART_WP7816_T_TYPE1_CWI(x)   UART_WP7816T1_CWI(x)
+#define UART_BASES                   UART_BASE_PTRS
+#define USB_BASES                    USB_BASE_PTRS
+#define USBDCD_BASES                 USBDCD_BASE_PTRS
+#define VREF_BASES                   VREF_BASE_PTRS
+#define WDOG_BASES                   WDOG_BASE_PTRS
 #define DMA_EARS_REG(base)                       This_symbol_has_been_deprecated
 #define DMA_EARS                                 This_symbol_has_been_deprecated
 #define DMA_EARS_EDREQ_0_MASK                    This_symbol_has_been_deprecated

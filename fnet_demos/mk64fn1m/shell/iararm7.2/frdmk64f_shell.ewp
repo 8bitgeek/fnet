@@ -170,6 +170,8 @@
           <name>CCDefines</name>
           <state>CPU_MK64FN1M0VMD12</state>
           <state>IAR</state>
+          <state>FRDM_K64F120M</state>
+          <state>FREEDOM</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -230,7 +232,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11111110</state>
+          <state>00000000</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
@@ -324,7 +326,7 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
@@ -333,7 +335,7 @@
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CompilerMisraRules98</name>
@@ -724,7 +726,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>$PROJ_DIR$/config_files/K64FN1Mxxx12_flash.icf</state>
+          <state>$PROJ_DIR$\config_files\K64FN1Mxxx12_flash.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -1958,6 +1960,12 @@
       <name>$PROJ_DIR$\..\..\..\common\fnet_application\fapp_http.h</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\..\..\common\fnet_application\fapp_llmnr.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\..\common\fnet_application\fapp_llmnr.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\common\fnet_application\fapp_mem.c</name>
     </file>
     <file>
@@ -2120,6 +2128,9 @@
         <file>
           <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\dns\fnet_dns_config.h</name>
         </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\dns\fnet_dns_prv.h</name>
+        </file>
       </group>
       <group>
         <name>flash</name>
@@ -2206,6 +2217,18 @@
         </file>
       </group>
       <group>
+        <name>llmnr</name>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr.c</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr.h</name>
+        </file>
+        <file>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr_config.h</name>
+        </file>
+      </group>
+      <group>
         <name>ping</name>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\ping\fnet_ping.c</name>
@@ -2283,6 +2306,12 @@
           <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\tftp\fnet_tftp_srv.h</name>
         </file>
       </group>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\fnet_services.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\..\..\fnet_stack\services\fnet_services_config.h</name>
+      </file>
     </group>
     <group>
       <name>stack</name>

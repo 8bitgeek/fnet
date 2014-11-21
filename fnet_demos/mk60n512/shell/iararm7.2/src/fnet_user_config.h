@@ -135,6 +135,16 @@
 #endif
 
 /*****************************************************************************
+* Link-Local Multicast Name Resolution (LLMNR) server/responder support.
+******************************************************************************/
+#ifdef RAM_TARGET /* Just to save RAM */
+#define FNET_CFG_LLMNR                      (1)
+#define FNET_CFG_LLMNR_HOSTNAME_TTL         (2)
+#else
+#define FNET_CFG_LLMNR                      (0)
+#endif
+
+/*****************************************************************************
 * PING service support.
 ******************************************************************************/
 #ifdef RAM_TARGET /* Just to save RAM */

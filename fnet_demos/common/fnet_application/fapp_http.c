@@ -39,6 +39,7 @@
 *
 ***************************************************************************/
 
+#include "fnet.h"
 #include "fapp.h"
 #include "fapp_prv.h"
 #include "fapp_http.h"
@@ -399,8 +400,6 @@ void fapp_http_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     struct fnet_http_params params;
     fnet_http_desc_t        http_desc;
-
-    FNET_COMP_UNUSED_ARG(desc);
 
     if(argc == 1) /* By default is "init".*/
     {

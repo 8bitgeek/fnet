@@ -87,7 +87,8 @@ __attribute__((used))
             FAPP_CFG_PARAMS_IP_MASK,    /* netmask */
             FAPP_CFG_PARAMS_IP_GW,      /* gateway */
             FAPP_CFG_PARAMS_IP_DNS,     /* DNS */
-            FAPP_CFG_PARAMS_MAC_ADDR,   /* MAC address */
+            {FAPP_CFG_PARAMS_MAC_ADDR},   /* MAC address */
+            FAPP_CFG_PARAMS_HOST_NAME   /* Host name*/
         },
         {
             FAPP_CFG_PARAMS_BOOT_MODE,          /* boot */
@@ -108,6 +109,8 @@ __attribute__((used))
 /* Local confiruration parameters.
 * Will be overwritten by parameters from flash if FAPP_CFG_PARAMS_READ_FLASH set to 1.
 */
+char fapp_params_host_name[FAPP_PARAMS_HOST_NAME_SIZE] = FAPP_CFG_PARAMS_HOST_NAME;
+
 #if FAPP_CFG_PARAMS_BOOT 
 struct fapp_params_boot fapp_params_boot_config =
 {
@@ -160,6 +163,9 @@ int fapp_params_to_flash()
 #endif
     
     fnet_netif_get_hw_addr(netif, fnet_params.mac, sizeof(fnet_mac_addr_t));
+
+    /* Host name.*/
+    fnet_strncpy(fnet_params.host_name, fapp_params_host_name, FAPP_PARAMS_HOST_NAME_SIZE);
     
     /* Erase one paage allocated for configuration parameters.*/
     fapp_params_erase( (void *)(fapp_params), sizeof(struct fapp_params_flash));
@@ -215,6 +221,9 @@ int fapp_params_from_flash()
         fnet_netif_set_ip4_gateway(netif, fnet_params->fnet_params.gateway);       
         fnet_netif_set_ip4_subnet_mask(netif, fnet_params->fnet_params.netmask);
     #endif /* FNET_CFG_IP4 */
+
+        /* Host name.*/
+        fnet_strncpy(fapp_params_host_name, fnet_params->fnet_params.host_name, FAPP_PARAMS_HOST_NAME_SIZE);
         
         #if FAPP_CFG_PARAMS_BOOT 
         fapp_params_boot_config = fnet_params->boot_params; /* Boot parameters. */

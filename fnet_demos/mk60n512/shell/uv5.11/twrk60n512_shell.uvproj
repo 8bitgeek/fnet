@@ -1087,6 +1087,21 @@
               <FileType>2</FileType>
               <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.s</FilePath>
             </File>
+            <File>
+              <FileName>fnet_llmnr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr.c</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_llmnr.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr.h</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_llmnr_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr_config.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1236,6 +1251,16 @@
               <FileName>fapp_ping.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\..\common\fnet_application\fapp_ping.h</FilePath>
+            </File>
+            <File>
+              <FileName>fapp_llmnr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\fnet_application\fapp_llmnr.c</FilePath>
+            </File>
+            <File>
+              <FileName>fapp_llmnr.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\common\fnet_application\fapp_llmnr.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -2541,6 +2566,21 @@
               <FileType>2</FileType>
               <FilePath>..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.s</FilePath>
             </File>
+            <File>
+              <FileName>fnet_llmnr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr.c</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_llmnr.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr.h</FilePath>
+            </File>
+            <File>
+              <FileName>fnet_llmnr_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\..\fnet_stack\services\llmnr\fnet_llmnr_config.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2690,6 +2730,16 @@
               <FileName>fapp_ping.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\..\common\fnet_application\fapp_ping.h</FilePath>
+            </File>
+            <File>
+              <FileName>fapp_llmnr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\fnet_application\fapp_llmnr.c</FilePath>
+            </File>
+            <File>
+              <FileName>fapp_llmnr.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\..\common\fnet_application\fapp_llmnr.h</FilePath>
             </File>
           </Files>
         </Group>

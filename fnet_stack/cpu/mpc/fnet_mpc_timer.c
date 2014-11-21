@@ -42,10 +42,9 @@
 * @brief MPC specific timers implementation.
 *
 ***************************************************************************/
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_MPC
-#include "fnet.h"
 #include "fnet_timer_prv.h"
 #include "fnet_isr.h"
 #include "fnet_mpc.h"

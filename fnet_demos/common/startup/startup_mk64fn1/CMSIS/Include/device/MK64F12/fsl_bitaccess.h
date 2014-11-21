@@ -1,12 +1,12 @@
 /*
 ** ###################################################################
-**     Version:             rev. 2.5, 2014-02-10
-**     Build:               b140516
+**     Version:             rev. 2.6, 2014-08-28
+**     Build:               b140904
 **
 **     Abstract:
 **         Register bit field access macros.
 **
-**     Copyright: 2014 Freescale Semiconductor, Inc.
+**     Copyright (c) 2014 Freescale Semiconductor, Inc.
 **     All rights reserved.
 **
 **     Redistribution and use in source and binary forms, with or without modification,
@@ -62,13 +62,15 @@
 **         The declaration of clock configurations has been moved to separate header file system_MK64F12.h
 **         Update of SystemInit() and SystemCoreClockUpdate() functions.
 **         Module access macro module_BASES replaced by module_BASE_PTRS.
+**     - rev. 2.6 (2014-08-28)
+**         Update of system files - default clock configuration changed.
+**         Update of startup files - possibility to override DefaultISR added.
 **
 ** ###################################################################
 */
 
-
-#ifndef _FSL_BITBAND_H
-#define _FSL_BITBAND_H  1
+#ifndef _FSL_BITACCESS_H
+#define _FSL_BITACCESS_H  1
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -524,6 +526,6 @@
                             BF_##reg##_##f7(v7) |   \
                             BF_##reg##_##f8(v8))))
 
-#endif /* _FSL_BITBAND_H */
+#endif /* _FSL_BITACCESS_H */
 
 /******************************************************************************/

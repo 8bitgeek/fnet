@@ -130,13 +130,28 @@
 /*****************************************************************************
 * DNS client/resolver service support.
 ******************************************************************************/
-#define FNET_CFG_DNS                        (1)
-#define FNET_CFG_DNS_RESOLVER               (1)
+#ifdef RAM_TARGET /* Just to save RAM */
+    #define FNET_CFG_DNS                    (0)
+    #define FNET_CFG_DNS_RESOLVER           (0)
+#else
+    #define FNET_CFG_DNS                    (1)
+    #define FNET_CFG_DNS_RESOLVER           (1)
+#endif
+
+/*****************************************************************************
+* Link-Local Multicast Name Resolution (LLMNR) server/responder support.
+******************************************************************************/
+#define FNET_CFG_LLMNR                      (1)
+#define FNET_CFG_LLMNR_HOSTNAME_TTL         (2)
 
 /*****************************************************************************
 * PING service support.
 ******************************************************************************/
-#define FNET_CFG_PING                       (1)
+#ifdef RAM_TARGET /* Just to save RAM */
+    #define FNET_CFG_PING                   (0)
+#else
+    #define FNET_CFG_PING                   (1)
+#endif
 
 /*****************************************************************************
 *  TWR-K70F120 board uses the default port number 2.

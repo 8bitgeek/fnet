@@ -50,7 +50,7 @@
 
 #define _FNET_MPC_CONFIG_H_
 
-#include "fnet_user_config.h"
+#include "fnet.h"
 
 
 #if FNET_MPC

@@ -2,9 +2,9 @@
 /*  @file:    startup_MK64F12.s                                                           */
 /*  @purpose: CMSIS Cortex-M4 Core Device Startup File                                    */
 /*            MK64F12                                                                     */
-/*  @version: 2.5                                                                         */
-/*  @date:    2014-2-10                                                                   */
-/*  @build:   b140516                                                                     */
+/*  @version: 2.6                                                                         */
+/*  @date:    2014-8-28                                                                   */
+/*  @build:   b140904                                                                     */
 /* ---------------------------------------------------------------------------------------*/
 /*                                                                                        */
 /* Copyright (c) 1997 - 2014 , Freescale Semiconductor, Inc.                              */
@@ -337,19 +337,19 @@ __cs3_reset_cortex_m:
     .size   __cs3_reset_cortex_m,.-__cs3_reset_cortex_m
 
     .section ".text"
-    .weak  Default_Handler
-    .type   Default_Handler, %function
-Default_Handler:
-    B       .
-    .size   Default_Handler, . - Default_Handler
+    .weak  DefaultISR
+    .type  DefaultISR, %function
+DefaultISR:
+    B	DefaultISR
+    .size DefaultISR, . - DefaultISR
 
 /*    Macro to define default handlers. Default handler
  *    will be weak symbol and just dead loops. They can be
  *    overwritten by other handlers */
-  .macro	def_irq_handler	handler_name
-  .weak	\handler_name
-  .set	\handler_name, Default_Handler
-  .endm
+    .macro def_irq_handler	handler_name
+    .weak \handler_name
+    .set  \handler_name, DefaultISR
+    .endm
 
 /* Exception Handlers */
     def_irq_handler    NMI_Handler
@@ -447,4 +447,3 @@ Default_Handler:
     def_irq_handler    ENET_Transmit_IRQHandler
     def_irq_handler    ENET_Receive_IRQHandler
     def_irq_handler    ENET_Error_IRQHandler
-    def_irq_handler    DefaultISR

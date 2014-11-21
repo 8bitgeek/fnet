@@ -48,6 +48,8 @@
 /************************************************************************
 *    Definitions.
 *************************************************************************/
+extern char fapp_params_host_name[FAPP_PARAMS_HOST_NAME_SIZE];
+
 #if FAPP_CFG_PARAMS_BOOT 
 extern struct fapp_params_boot fapp_params_boot_config;
 #endif

@@ -156,8 +156,8 @@ struct fnet_dns_params
  ******************************************************************************
  *
  * This function initializes the DNS client service and starts the 
- * host name resolving. It allocates all
- * resources needed and registers the DNS service in the polling list.@n
+ * host name resolving. It allocates all needed
+ * resources and registers the DNS service in the polling list.@n
  * After the initialization, the user application should call the main polling 
  * function @ref fnet_poll_services() periodically to run the DNS service routine 
  * in the background.@n
