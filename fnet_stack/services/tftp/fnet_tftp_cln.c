@@ -420,7 +420,8 @@ static void fnet_tftp_cln_state_machine( void *fnet_tftp_cln_if_p )
 
             }
             break;            
-        /*---- RELEASE -------------------------------------------------*/    
+        /*---- RELEASE -------------------------------------------------*/
+        default:
         case FNET_TFTP_CLN_STATE_RELEASE:
             fnet_tftp_cln_release();            
             break;            

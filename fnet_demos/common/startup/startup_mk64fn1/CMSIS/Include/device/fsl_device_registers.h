@@ -89,10 +89,10 @@
     /* CPU specific feature definitions */
     #include "device/MK11DA5/MK11DA5_features.h"
 
-#elif (defined(CPU_MK20DN512VLK10) || defined(CPU_MK20DN512VLL10) || defined(CPU_MK20DX128VLQ10) || \
-    defined(CPU_MK20DX256VLQ10) || defined(CPU_MK20DN512VLQ10) || defined(CPU_MK20DX256VMC10) || \
-    defined(CPU_MK20DN512VMC10) || defined(CPU_MK20DX128VMD10) || defined(CPU_MK20DX256VMD10) || \
-    defined(CPU_MK20DN512VMD10))
+#elif (defined(CPU_MK20DN512VLK10) || defined(CPU_MK20DX256VLK10) || defined(CPU_MK20DN512VLL10) || \
+    defined(CPU_MK20DX256VLL10) || defined(CPU_MK20DX128VLQ10) || defined(CPU_MK20DX256VLQ10) || \
+    defined(CPU_MK20DN512VLQ10) || defined(CPU_MK20DX256VMC10) || defined(CPU_MK20DN512VMC10) || \
+    defined(CPU_MK20DX128VMD10) || defined(CPU_MK20DX256VMD10) || defined(CPU_MK20DN512VMD10))
 
     #define K20D10_SERIES
 
@@ -159,8 +159,8 @@
     /* CPU specific feature definitions */
     #include "device/MK22F12810/MK22F12810_features.h"
 
-#elif (defined(CPU_MK22FN256VDC12) || defined(CPU_MK22FN256VLH12) || defined(CPU_MK22FN256VLL12) || \
-    defined(CPU_MK22FN256VMP12))
+#elif (defined(CPU_MK22FN256CAH12) || defined(CPU_MK22FN128CAH12) || defined(CPU_MK22FN256VDC12) || \
+    defined(CPU_MK22FN256VLH12) || defined(CPU_MK22FN256VLL12) || defined(CPU_MK22FN256VMP12))
 
     #define K22F25612_SERIES
 
@@ -171,7 +171,8 @@
     /* CPU specific feature definitions */
     #include "device/MK22F25612/MK22F25612_features.h"
 
-#elif (defined(CPU_MK22FN512VDC12) || defined(CPU_MK22FN512VLH12) || defined(CPU_MK22FN512VLL12))
+#elif (defined(CPU_MK22FN512CAP12) || defined(CPU_MK22FN512VDC12) || defined(CPU_MK22FN512VLH12) || \
+    defined(CPU_MK22FN512VLL12) || defined(CPU_MK22FN512VMP12))
 
     #define K22F51212_SERIES
 

@@ -612,7 +612,7 @@ typedef enum
 #endif
     TCP_KEEPIDLE = (0x20),  /**< @brief When the @ref SO_KEEPALIVE option is enabled, TCP probes a connection that
                              *   has been idle for some amount of time.  The default value for this idle
-                             *   period is @c 14400 seconds (2 hours).  The @ref TCP_KEEPIDLE option can be used to affect this
+                             *   period is @c 7200 seconds (2 hours).  The @ref TCP_KEEPIDLE option can be used to affect this
                              *   value for a given socket, and specifies the number of seconds of idle
                              *   time between keepalive probes.   
                              */                           

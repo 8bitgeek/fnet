@@ -132,7 +132,7 @@ const fnet_ip6_if_policy_entry_t fnet_ip6_if_policy_table[] =
     {FNET_IP6_ADDR_INIT(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),          0,      40, 1},
     {FNET_IP6_ADDR_INIT(0x20,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0),    16,     30, 2},
     {FNET_IP6_ADDR_INIT(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),          96,     20, 3},
-    {FNET_IP6_ADDR_INIT(0,0,0,0,0,0,0,0,0,0,0xFF,0xFF,0,0,0,0),    96,     10, 4}    
+    {FNET_IP6_ADDR_INIT(0,0,0,0,0,0,0,0,0,0,0xFF,0xFF,0,0,0,0),    96,     10, 4}
 };
 #define FNET_IP6_IF_POLICY_TABLE_SIZE    (sizeof(fnet_ip6_if_policy_table)/sizeof(fnet_ip6_if_policy_entry_t))
 
@@ -857,10 +857,10 @@ const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.
                       
                      
                     /* Rule 3:  Avoid deprecated addresses.
-                     * XXX: Not implemented - we do not store depricated addresses."*/
+                     * XX: Not implemented - we do not store depricated addresses."*/
                      
                     /* Rule 4:  Prefer home addresses.
-                     * XXX: Not implemented - we do nit have Mobile IPv6.*/
+                     * XX: Not implemented - we do not have Mobile IPv6.*/
                       
                     /* Rule 5:  Prefer outgoing interface.
                      */
@@ -903,7 +903,7 @@ const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.
                      * If SA is a public address and SB is a temporary address, then prefer
                      * SA.  Similarly, if SB is a public address and SA is a temporary
                      * address, then prefer SB.
-                     * XXX: We do not support "temporary"/"random" addresses.*/
+                     * XX: We do not support "temporary"/"random" addresses.*/
                      
                     /* Rule 8:  Use longest matching prefix.
                      * If CommonPrefixLen(SA, D) > CommonPrefixLen(SB, D), then prefer SA.
@@ -1030,13 +1030,20 @@ int fnet_ip6_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_
      */
       
         (netif->pmtu /* If PMTU is enabled.*/ &&  ((protocol_message_size + sizeof(fnet_ip6_header_t)) > netif->pmtu)) ||
-         !netif->pmtu &&
+        ( !netif->pmtu &&
 #endif   
-        ((protocol_message_size + sizeof(fnet_ip6_header_t)) > fnet_ip6_mtu(netif)) ) /* IP Fragmentation. */ 
+        ((protocol_message_size + sizeof(fnet_ip6_header_t)) > fnet_ip6_mtu(netif))
+#if FNET_CFG_IP6_PMTU_DISCOVERY
+        )/* IP Fragmentation. */
+#endif
+    )
+    {
         res = FNET_TRUE;
+    }
     else
+    {
         res = FNET_FALSE;
-
+    }
     return res;
 }
 
@@ -1164,9 +1171,13 @@ int fnet_ip6_output(fnet_netif_t *netif /*optional*/, fnet_ip6_addr_t *src_ip /*
      */
       
         (netif->pmtu /* If PMTU is enabled.*/ &&  ((nb->total_length + nb_header->total_length) > netif->pmtu)) ||
-         !netif->pmtu &&
+        ( !netif->pmtu &&
 #endif   
-        ((nb->total_length + nb_header->total_length) > mtu) ) /* IP Fragmentation. */ 
+        ((nb->total_length + nb_header->total_length) > mtu)
+#if FNET_CFG_IP6_PMTU_DISCOVERY
+        )/* IP Fragmentation. */
+#endif
+ 	)
     {
 
 #if FNET_CFG_IP6_FRAGMENTATION

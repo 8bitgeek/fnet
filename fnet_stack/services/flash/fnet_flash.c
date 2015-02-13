@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2015 by Andrey Butok. FNET Community.
 * Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -42,7 +42,96 @@
 
 #if FNET_CFG_FLASH
 
+#if FNET_CFG_FLASH_WRITE_CACHE /* Just prototype.*/
+/**************************************************************************/ /*!
+ * Flash cache entry.
+ ******************************************************************************/
+struct fnet_flash_cache_entry
+{
+
+    void            *dest_addr; /* Must be aligned to FNET_CFG_CPU_FLASH_PROGRAM_SIZE address.*/
+    unsigned char   data[FNET_CFG_CPU_FLASH_PROGRAM_SIZE];
+};
+
+/* Write-cache.*/
+static  struct fnet_flash_cache_entry flash_cache[FNET_CFG_FLASH_WRITE_CACHE_SIZE];
+static  unsigned long   entry_next;
+
+static void fnet_flash_cache_flush_entry(struct fnet_flash_cache_entry   *entry);
+
+#endif
+
 static void fnet_flash_write_low( unsigned char *dest, unsigned char *src, unsigned int n_blocks );
+
+
+
+#if FNET_CFG_FLASH_WRITE_CACHE
+static void fnet_flash_cache_flush_entry(struct fnet_flash_cache_entry   *entry)
+{
+    if(entry && entry->dest_addr)
+    {
+        /* Actual write to the flash.*/
+        fnet_flash_write_low( entry->dest_addr, entry->data, 1 );
+        /* Clean up.*/
+        fnet_memset(entry->data, 0xFF, FNET_CFG_CPU_FLASH_PROGRAM_SIZE);
+        entry->dest_addr = 0;
+    }
+}
+
+static void fnet_flash_cache_write(unsigned char *dest_addr, unsigned char *data_p)
+{
+    int                             i;
+    struct fnet_flash_cache_entry   *entry = FNET_NULL;
+    
+    /* Find existing entry*/
+    for(i=0; i<FNET_CFG_FLASH_WRITE_CACHE_SIZE; i++)
+    {
+        if(flash_cache[i].dest_addr == dest_addr);
+        {
+            entry = &flash_cache[i];
+            break;
+        }
+    }
+
+    if(entry == FNET_NULL) /* No existing, so use the current one.*/
+    { 
+        entry = &flash_cache[entry_next];
+
+        entry_next++;
+        if(entry_next == FNET_CFG_FLASH_WRITE_CACHE_SIZE)
+        {
+            entry_next = 0;
+        }
+        
+        fnet_flash_cache_flush_entry(entry); /* Falsh if something in the cache entry.*/
+
+        entry->dest_addr = dest_addr; /* Init destination address.*/
+    }
+    
+    for(i=0; i<FNET_CFG_CPU_FLASH_PROGRAM_SIZE; i++)
+    {
+        entry->data[i] &= data_p[i];
+    }
+}
+
+/************************************************************************
+* NAME: fnet_flash_flush
+*
+* DESCRIPTION:
+************************************************************************/
+void fnet_flash_flush(void)
+{
+    int i;
+
+    for(i=0; i<FNET_CFG_FLASH_WRITE_CACHE_SIZE; i++)
+    {
+        fnet_flash_cache_flush_entry(&flash_cache[i]);
+    }
+}
+
+
+#endif
+
 
 /************************************************************************
 * NAME: fnet_flash_erase
@@ -90,6 +179,7 @@ static void fnet_flash_write_low( unsigned char *dest, unsigned char *src, unsig
 *
 * DESCRIPTION:
 ************************************************************************/
+
 void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_VAR const void *src, unsigned n  )
 {
     int             i;

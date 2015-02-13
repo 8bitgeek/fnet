@@ -85,8 +85,6 @@ typedef struct
 } fnet_arp_header_t;
 FNET_COMP_PACKED_END
 
-#define FNET_ARP_TABLE_SIZE     (10)    /* The number of entries in the ARP table.*/
-
 
 /**************************************************************************/ /*!
  * @internal
@@ -103,7 +101,7 @@ typedef struct
 
 typedef struct
 {
-    fnet_arp_entry_t arp_table[FNET_ARP_TABLE_SIZE]; /* ARP cach.*/
+    fnet_arp_entry_t arp_table[FNET_CFG_ARP_TABLE_SIZE]; /* ARP cach.*/
     fnet_timer_desc_t arp_tmr;                       /* ARP timer.*/
     fnet_event_desc_t arp_event;                     /* ARP event - duplicate address event.*/
 } fnet_arp_if_t;

@@ -517,6 +517,15 @@
 #endif
 
 /**************************************************************************/ /*!
+ * @def      FNET_CFG_ARP_TABLE_SIZE 
+ * @brief    Maximum number of entries in the ARP table, by network interface.
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_ARP_TABLE_SIZE
+    #define FNET_CFG_ARP_TABLE_SIZE         (10)    
+#endif
+
+/**************************************************************************/ /*!
  * @def      FNET_CFG_TCP_DISCARD_OUT_OF_ORDER
  * @brief    Discarding of TCP segments that are received out of order:
  *               - @c 1 = is enabled.

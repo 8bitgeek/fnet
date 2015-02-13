@@ -62,10 +62,13 @@
 #endif
   
 static  
-#if FNET_CFG_COMP_UV 
+#if FNET_CFG_COMP_UV
     __attribute__((section("FNET_RAM"))) __attribute__((used))
 #endif
-void fnet_ftfl_command_lunch_inram(void)
+#if FNET_CFG_COMP_GNUC
+    __attribute__((section(".FNET_RAM")))
+#endif
+    void fnet_ftfl_command_lunch_inram(void)
 {
     FNET_MK_FTFL_FSTAT = FNET_MK_FTFL_FSTAT_CCIF_MASK;
     while (!(FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK)) 
@@ -77,7 +80,7 @@ void fnet_ftfl_command_lunch_inram(void)
 *
 * DESCRIPTION: FTFL command 
 ************************************************************************/
-static void fnet_ftfl_command( unsigned char command, unsigned long *address, unsigned char *data )
+void fnet_ftfl_command( unsigned char command, unsigned long *address, unsigned char *data )
 {
     fnet_cpu_irq_desc_t irq_desc;
     

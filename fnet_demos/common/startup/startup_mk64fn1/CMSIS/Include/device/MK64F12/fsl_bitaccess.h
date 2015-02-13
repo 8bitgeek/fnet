@@ -1,7 +1,7 @@
 /*
 ** ###################################################################
-**     Version:             rev. 2.6, 2014-08-28
-**     Build:               b140904
+**     Version:             rev. 2.7, 2014-10-14
+**     Build:               b141016
 **
 **     Abstract:
 **         Register bit field access macros.
@@ -65,6 +65,8 @@
 **     - rev. 2.6 (2014-08-28)
 **         Update of system files - default clock configuration changed.
 **         Update of startup files - possibility to override DefaultISR added.
+**     - rev. 2.7 (2014-10-14)
+**         Interrupt INT_LPTimer renamed to INT_LPTMR0, interrupt INT_Watchdog renamed to INT_WDOG_EWM.
 **
 ** ###################################################################
 */

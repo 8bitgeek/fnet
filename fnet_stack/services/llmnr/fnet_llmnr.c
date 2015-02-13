@@ -73,7 +73,7 @@ typedef enum
 
 /* RFC 4795: The IPv6 link-scope multicast address a given responder listens to,
  * and to which a sender sends all queries, is FF02:0:0:0:0:0:1:3.*/
-const fnet_ip6_addr_t fnet_llmnr_ip6_link_local_multicast_addr = {FNET_IP6_ADDR_INIT(0xFF, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0x00, 0x03)};
+const fnet_ip6_addr_t fnet_llmnr_ip6_link_local_multicast_addr = FNET_IP6_ADDR_INIT(0xFF, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0x00, 0x03);
 
 /* Error strings.*/
 #define FNET_LLMNR_ERR_PARAMS            "LLMNR: Wrong input parameters."
@@ -236,7 +236,7 @@ static int fnet_llmnr_hostname_cmp(const unsigned char *req_hostname, const unsi
     {
         for (i=0; i<req_hostname_len; i++)
         {
-            if (hostname[hostname_index++] != fnet_tolower(req_hostname[req_hostname_index++]))
+            if (fnet_tolower(hostname[hostname_index++]) != fnet_tolower(req_hostname[req_hostname_index++]))
             {
                 return FNET_FALSE;
             }
@@ -297,10 +297,13 @@ fnet_llmnr_desc_t fnet_llmnr_init( struct fnet_llmnr_params *params )
     /* Set parameters.*/
     llmnr_if->netif = params->netif_desc;
     llmnr_if->host_name = params->host_name;
-    llmnr_if->host_name_ttl = params->host_name_ttl;
-    if(llmnr_if->host_name_ttl == 0)
+    if(params->host_name_ttl == 0)
     {
         llmnr_if->host_name_ttl = FNET_CFG_LLMNR_HOSTNAME_TTL;
+    }
+    else
+    {
+        llmnr_if->host_name_ttl = params->host_name_ttl;
     }
 
     /* Init local socket address.*/
@@ -511,6 +514,8 @@ static void fnet_llmnr_state_machine( void *fnet_llmnr_if_p )
                 /* else = wrong message.*/
             }
             break;
+        default:
+        	break;
     }
 }
 

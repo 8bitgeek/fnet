@@ -12,8 +12,8 @@
 **                          IAR ANSI C/C++ Compiler for ARM
 **
 **     Reference manual:    K64P144M120SF5RM, Rev.2, January 2014
-**     Version:             rev. 2.6, 2014-08-28
-**     Build:               b140904
+**     Version:             rev. 2.7, 2014-10-14
+**     Build:               b141016
 **
 **     Abstract:
 **         CMSIS Peripheral Access Layer for MK64F12
@@ -77,14 +77,16 @@
 **     - rev. 2.6 (2014-08-28)
 **         Update of system files - default clock configuration changed.
 **         Update of startup files - possibility to override DefaultISR added.
+**     - rev. 2.7 (2014-10-14)
+**         Interrupt INT_LPTimer renamed to INT_LPTMR0, interrupt INT_Watchdog renamed to INT_WDOG_EWM.
 **
 ** ###################################################################
 */
 
 /*!
  * @file MK64F12.h
- * @version 2.6
- * @date 2014-08-28
+ * @version 2.7
+ * @date 2014-10-14
  * @brief CMSIS Peripheral Access Layer for MK64F12
  *
  * CMSIS Peripheral Access Layer for MK64F12
@@ -112,7 +114,7 @@
  * compatible) */
 #define MCU_MEM_MAP_VERSION 0x0200u
 /** Memory map minor version */
-#define MCU_MEM_MAP_VERSION_MINOR 0x0006u
+#define MCU_MEM_MAP_VERSION_MINOR 0x0007u
 
 /**
  * @brief Macro to calculate address of an aliased word in the peripheral
@@ -202,7 +204,7 @@ typedef enum IRQn {
   Read_Collision_IRQn          = 19,               /**< Read Collision Interrupt */
   LVD_LVW_IRQn                 = 20,               /**< Low Voltage Detect, Low Voltage Warning */
   LLW_IRQn                     = 21,               /**< Low Leakage Wakeup */
-  Watchdog_IRQn                = 22,               /**< WDOG Interrupt */
+  WDOG_EWM_IRQn                = 22,               /**< WDOG Interrupt */
   RNG_IRQn                     = 23,               /**< RNG Interrupt */
   I2C0_IRQn                    = 24,               /**< I2C0 interrupt */
   I2C1_IRQn                    = 25,               /**< I2C1 interrupt */
@@ -238,7 +240,7 @@ typedef enum IRQn {
   Reserved71_IRQn              = 55,               /**< Reserved interrupt 71 */
   DAC0_IRQn                    = 56,               /**< DAC0 interrupt */
   MCG_IRQn                     = 57,               /**< MCG Interrupt */
-  LPTimer_IRQn                 = 58,               /**< LPTimer interrupt */
+  LPTMR0_IRQn                  = 58,               /**< LPTimer interrupt */
   PORTA_IRQn                   = 59,               /**< Port A interrupt */
   PORTB_IRQn                   = 60,               /**< Port B interrupt */
   PORTC_IRQn                   = 61,               /**< Port C interrupt */
@@ -5897,7 +5899,7 @@ typedef struct {
 /** Array initializer of EWM peripheral base pointers */
 #define EWM_BASE_PTRS                            { EWM }
 /** Interrupt vectors for the EWM peripheral type */
-#define EWM_IRQS                                 { Watchdog_IRQn }
+#define EWM_IRQS                                 { WDOG_EWM_IRQn }
 
 /* ----------------------------------------------------------------------------
    -- EWM - Register accessor macros
@@ -8512,7 +8514,7 @@ typedef struct {
 /** Array initializer of LPTMR peripheral base pointers */
 #define LPTMR_BASE_PTRS                          { LPTMR0 }
 /** Interrupt vectors for the LPTMR peripheral type */
-#define LPTMR_IRQS                               { LPTimer_IRQn }
+#define LPTMR_IRQS                               { LPTMR0_IRQn }
 
 /* ----------------------------------------------------------------------------
    -- LPTMR - Register accessor macros
@@ -14065,7 +14067,7 @@ typedef struct {
 /** Array initializer of WDOG peripheral base pointers */
 #define WDOG_BASE_PTRS                           { WDOG }
 /** Interrupt vectors for the WDOG peripheral type */
-#define WDOG_IRQS                                { Watchdog_IRQn }
+#define WDOG_IRQS                                { WDOG_EWM_IRQn }
 
 /* ----------------------------------------------------------------------------
    -- WDOG - Register accessor macros
@@ -14408,6 +14410,10 @@ typedef struct {
 #define USBDCD_BASES                 USBDCD_BASE_PTRS
 #define VREF_BASES                   VREF_BASE_PTRS
 #define WDOG_BASES                   WDOG_BASE_PTRS
+#define Watchdog_IRQn                WDOG_EWM_IRQn
+#define Watchdog_IRQHandler          WDOG_EWM_IRQHandler
+#define LPTimer_IRQn                 LPTMR0_IRQn
+#define LPTimer_IRQHandler           LPTMR0_IRQHandler
 
 /*!
  * @}

@@ -73,11 +73,11 @@
         __root
     #endif      
 #endif
-#if FNET_CFG_COMP_UV
-__attribute__((section(".fapp_params"))) 
+#if FNET_CFG_COMP_UV || FNET_CFG_COMP_GNUC
+__attribute__((section(".fapp_params")))
 #endif
    const struct fapp_params_flash fapp_params_config 
-#if FNET_CFG_COMP_UV
+#if FNET_CFG_COMP_UV || FNET_CFG_COMP_GNUC
 __attribute__((used))
 #endif	 
  =  {

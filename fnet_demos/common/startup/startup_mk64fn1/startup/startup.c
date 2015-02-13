@@ -67,31 +67,33 @@ void init_data_bss(void)
 
     #define __VECTOR_TABLE Image$$VECTOR_ROM$$Base  
     #define __VECTOR_RAM Image$$VECTOR_RAM$$Base  
-    #define __VECTOR_TABLE_SIZE (((uint32_t)Image$$RW_m_data$$Base - (uint32_t)Image$$VECTOR_RAM$$Base))
+    #define __RAM_VECTOR_TABLE_SIZE (((uint32_t)Image$$RW_m_data$$Base - (uint32_t)Image$$VECTOR_RAM$$Base))
 #elif defined(__ICCARM__)
-    extern uint32_t __VECTOR_TABLE_SIZE[];
+    extern uint32_t __RAM_VECTOR_TABLE_SIZE[];
     extern uint32_t __VECTOR_TABLE[];  
     extern uint32_t __VECTOR_RAM[];  
 #elif defined(__GNUC__)
     extern uint32_t __VECTOR_TABLE[];
     extern uint32_t __VECTOR_RAM[];
-    extern uint32_t __VECTOR_TABLE_SIZE_BYTES[];
-    uint32_t __VECTOR_TABLE_SIZE = (uint32_t)(__VECTOR_TABLE_SIZE_BYTES);
+    extern uint32_t __RAM_VECTOR_TABLE_SIZE_BYTES[];
+    uint32_t __RAM_VECTOR_TABLE_SIZE = (uint32_t)(__RAM_VECTOR_TABLE_SIZE_BYTES);
 #endif
 
-    /* Copy the vector table from ROM to RAM */
     if (__VECTOR_RAM != __VECTOR_TABLE)
     {   
-        
-        for (n = 0; n < ((uint32_t)__VECTOR_TABLE_SIZE)/sizeof(uint32_t); n++)
+        /* Copy the vector table from ROM to RAM */
+        for (n = 0; n < ((uint32_t)__RAM_VECTOR_TABLE_SIZE)/sizeof(uint32_t); n++)
         {
             __VECTOR_RAM[n] = __VECTOR_TABLE[n];
         }
-
-    }
-
-        /* Point the VTOR to the new copy of the vector table */
+        /* Point the VTOR to the position of vector table */
         SCB->VTOR = (uint32_t)__VECTOR_RAM;
+    }
+    else
+    {
+        /* Point the VTOR to the position of vector table */
+        SCB->VTOR = (uint32_t)__VECTOR_TABLE;
+    }
 
 #if !defined(__CC_ARM) && !defined(__ICCARM__)
     

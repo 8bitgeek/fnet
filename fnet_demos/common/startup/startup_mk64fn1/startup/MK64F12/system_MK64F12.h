@@ -12,8 +12,8 @@
 **                          IAR ANSI C/C++ Compiler for ARM
 **
 **     Reference manual:    K64P144M120SF5RM, Rev.2, January 2014
-**     Version:             rev. 2.6, 2014-08-28
-**     Build:               b140904
+**     Version:             rev. 2.7, 2014-10-14
+**     Build:               b141016
 **
 **     Abstract:
 **         Provides a system configuration function and a global variable that
@@ -79,14 +79,16 @@
 **     - rev. 2.6 (2014-08-28)
 **         Update of system files - default clock configuration changed.
 **         Update of startup files - possibility to override DefaultISR added.
+**     - rev. 2.7 (2014-10-14)
+**         Interrupt INT_LPTimer renamed to INT_LPTMR0, interrupt INT_Watchdog renamed to INT_WDOG_EWM.
 **
 ** ###################################################################
 */
 
 /*!
  * @file MK64F12
- * @version 2.6
- * @date 2014-08-28
+ * @version 2.7
+ * @date 2014-10-14
  * @brief Device specific configuration file for MK64F12 (header file)
  *
  * Provides a system configuration function and a global variable that contains

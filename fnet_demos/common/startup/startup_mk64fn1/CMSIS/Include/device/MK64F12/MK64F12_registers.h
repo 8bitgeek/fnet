@@ -7,8 +7,8 @@
 **                          IAR ANSI C/C++ Compiler for ARM
 **
 **     Reference manual:    K64P144M120SF5RM, Rev.2, January 2014
-**     Version:             rev. 2.6, 2014-08-28
-**     Build:               b140904
+**     Version:             rev. 2.7, 2014-10-14
+**     Build:               b141016
 **
 **     Abstract:
 **         Extension to the CMSIS register access layer header.
@@ -72,6 +72,8 @@
 **     - rev. 2.6 (2014-08-28)
 **         Update of system files - default clock configuration changed.
 **         Update of startup files - possibility to override DefaultISR added.
+**     - rev. 2.7 (2014-10-14)
+**         Interrupt INT_LPTimer renamed to INT_LPTMR0, interrupt INT_Watchdog renamed to INT_WDOG_EWM.
 **
 ** ###################################################################
 */
@@ -1230,7 +1232,7 @@ typedef union _hw_adc_sc3
 /*@}*/
 
 /*!
- * @name Register ADC_SC3, field CALF[6] (RO)
+ * @name Register ADC_SC3, field CALF[6] (W1C)
  *
  * Displays the result of the calibration sequence. The calibration sequence
  * will fail if SC2[ADTRG] = 1, any ADC register is written, or any stop mode is
@@ -1247,6 +1249,12 @@ typedef union _hw_adc_sc3
 
 /*! @brief Read current value of the ADC_SC3_CALF field. */
 #define BR_ADC_SC3_CALF(x)   (BITBAND_ACCESS32(HW_ADC_SC3_ADDR(x), BP_ADC_SC3_CALF))
+
+/*! @brief Format value for bitfield ADC_SC3_CALF. */
+#define BF_ADC_SC3_CALF(v)   ((uint32_t)((uint32_t)(v) << BP_ADC_SC3_CALF) & BM_ADC_SC3_CALF)
+
+/*! @brief Set the CALF field to a new value. */
+#define BW_ADC_SC3_CALF(x, v) (BITBAND_ACCESS32(HW_ADC_SC3_ADDR(x), BP_ADC_SC3_CALF) = (v))
 /*@}*/
 
 /*!
@@ -93329,6 +93337,7 @@ typedef struct _hw_wdog
 #define HW_JTAG (0) /*!< Instance number for JTAG. */
 #define HW_TPIU (0) /*!< Instance number for TPIU. */
 #define HW_SCB (0) /*!< Instance number for SCB. */
+#define HW_CoreDebug (0) /*!< Instance number for CoreDebug. */
 
 #endif /* __HW_MK64F12_REGISTERS_H__ */
 /* EOF */

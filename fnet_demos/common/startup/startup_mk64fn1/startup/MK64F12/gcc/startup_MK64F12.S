@@ -2,9 +2,9 @@
 /*  @file:    startup_MK64F12.s                                                           */
 /*  @purpose: CMSIS Cortex-M4 Core Device Startup File                                    */
 /*            MK64F12                                                                     */
-/*  @version: 2.6                                                                         */
-/*  @date:    2014-8-28                                                                   */
-/*  @build:   b140918                                                                     */
+/*  @version: 2.7                                                                         */
+/*  @date:    2014-10-14                                                                  */
+/*  @build:   b141016                                                                     */
 /* ---------------------------------------------------------------------------------------*/
 /*                                                                                        */
 /* Copyright (c) 1997 - 2014 , Freescale Semiconductor, Inc.                              */
@@ -84,7 +84,7 @@ __isr_vector:
     .long   Read_Collision_IRQHandler                       /* Read Collision Interrupt*/
     .long   LVD_LVW_IRQHandler                              /* Low Voltage Detect, Low Voltage Warning*/
     .long   LLW_IRQHandler                                  /* Low Leakage Wakeup*/
-    .long   Watchdog_IRQHandler                             /* WDOG Interrupt*/
+    .long   WDOG_EWM_IRQHandler                             /* WDOG Interrupt*/
     .long   RNG_IRQHandler                                  /* RNG Interrupt*/
     .long   I2C0_IRQHandler                                 /* I2C0 interrupt*/
     .long   I2C1_IRQHandler                                 /* I2C1 interrupt*/
@@ -120,7 +120,7 @@ __isr_vector:
     .long   Reserved71_IRQHandler                           /* Reserved interrupt 71*/
     .long   DAC0_IRQHandler                                 /* DAC0 interrupt*/
     .long   MCG_IRQHandler                                  /* MCG Interrupt*/
-    .long   LPTimer_IRQHandler                              /* LPTimer interrupt*/
+    .long   LPTMR0_IRQHandler                               /* LPTimer interrupt*/
     .long   PORTA_IRQHandler                                /* Port A interrupt*/
     .long   PORTB_IRQHandler                                /* Port B interrupt*/
     .long   PORTC_IRQHandler                                /* Port C interrupt*/
@@ -402,7 +402,7 @@ DefaultISR:
     def_irq_handler    Read_Collision_IRQHandler
     def_irq_handler    LVD_LVW_IRQHandler
     def_irq_handler    LLW_IRQHandler
-    def_irq_handler    Watchdog_IRQHandler
+    def_irq_handler    WDOG_EWM_IRQHandler
     def_irq_handler    RNG_IRQHandler
     def_irq_handler    I2C0_IRQHandler
     def_irq_handler    I2C1_IRQHandler
@@ -438,7 +438,7 @@ DefaultISR:
     def_irq_handler    Reserved71_IRQHandler
     def_irq_handler    DAC0_IRQHandler
     def_irq_handler    MCG_IRQHandler
-    def_irq_handler    LPTimer_IRQHandler
+    def_irq_handler    LPTMR0_IRQHandler
     def_irq_handler    PORTA_IRQHandler
     def_irq_handler    PORTB_IRQHandler
     def_irq_handler    PORTC_IRQHandler

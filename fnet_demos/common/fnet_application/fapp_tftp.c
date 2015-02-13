@@ -243,7 +243,7 @@ static void fapp_tftp_tx_image_begin_end(unsigned char * FNET_COMP_PACKED_VAR *d
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fapp_tftp_rx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
+int fapp_tftp_rx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
 {
     struct fapp_tftp_rx_handler_bin * bin = &tftp_handler->rx_bin;
     int result = FNET_OK;
@@ -337,7 +337,7 @@ static /* inline */ void fapp_tftp_tx_bin_gen (struct fapp_tftp_tx_handler_bin *
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fapp_tftp_tx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
+int fapp_tftp_tx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
 {
     struct fapp_tftp_tx_handler_bin * tx_bin = &tftp_handler->tx_bin;
     
@@ -386,7 +386,7 @@ static int fapp_tftp_tx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, 
 * DESCRIPTION: 
 ************************************************************************/
 #if FAPP_CFG_TFTP_RX_RAW
-static int fapp_tftp_rx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
+int fapp_tftp_rx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
 {
     struct fapp_tftp_rx_handler_raw * raw = &tftp_handler->rx_raw;
     int result;
@@ -436,7 +436,7 @@ static /* inline */ void fapp_tftp_tx_raw_gen (struct fapp_tftp_tx_handler_raw *
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fapp_tftp_tx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
+int fapp_tftp_tx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
 {
     struct fapp_tftp_tx_handler_raw * tx_raw = &tftp_handler->tx_raw;
     unsigned long send_size;
@@ -484,7 +484,7 @@ static int fapp_tftp_tx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, 
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fapp_tftp_rx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
+int fapp_tftp_rx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
 {
     struct fapp_tftp_rx_handler_srec * srec = &tftp_handler->rx_srec;
     int result = FNET_OK;
@@ -682,7 +682,7 @@ static /*inline*/ void fapp_tftp_tx_srec_gen (struct fapp_tftp_tx_handler_srec *
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fapp_tftp_tx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
+int fapp_tftp_tx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
 {
     struct fapp_tftp_tx_handler_srec *tx_srec = &tftp_handler->tx_srec;
     unsigned long send_size;

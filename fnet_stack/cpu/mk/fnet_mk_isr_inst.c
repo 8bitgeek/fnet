@@ -73,7 +73,7 @@ int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority)
             FNET_MK_NVIC_ICPR(div) |= 1 << (irq_number%32); /* Clear-pending. */
             FNET_MK_NVIC_ISER(div) |= 1 << (irq_number%32); /* Set-enable.*/
             /* Set priority.*/
-            FNET_MK_NVIC_IP(irq_number) = (0x7-priority&0x7)<<4;
+            FNET_MK_NVIC_IP(irq_number) = (0x7-(priority&0x7))<<4;
         }
         result = FNET_OK;
     }

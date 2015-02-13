@@ -2,9 +2,9 @@
 ;  @file:    startup_MK64F12.s
 ;  @purpose: CMSIS Cortex-M4 Core Device Startup File
 ;            MK64F12
-;  @version: 2.6
-;  @date:    2014-8-28
-;  @build:   b140904
+;  @version: 2.7
+;  @date:    2014-10-14
+;  @build:   b141016
 ; ---------------------------------------------------------------------------------------
 ;
 ; Copyright (c) 1997 - 2014 , Freescale Semiconductor, Inc.
@@ -111,7 +111,7 @@ __vector_table_0x1c
         DCD     Read_Collision_IRQHandler                     ;Read Collision Interrupt
         DCD     LVD_LVW_IRQHandler                            ;Low Voltage Detect, Low Voltage Warning
         DCD     LLW_IRQHandler                                ;Low Leakage Wakeup
-        DCD     Watchdog_IRQHandler                           ;WDOG Interrupt
+        DCD     WDOG_EWM_IRQHandler                           ;WDOG Interrupt
         DCD     RNG_IRQHandler                                ;RNG Interrupt
         DCD     I2C0_IRQHandler                               ;I2C0 interrupt
         DCD     I2C1_IRQHandler                               ;I2C1 interrupt
@@ -147,7 +147,7 @@ __vector_table_0x1c
         DCD     Reserved71_IRQHandler                         ;Reserved interrupt 71
         DCD     DAC0_IRQHandler                               ;DAC0 interrupt
         DCD     MCG_IRQHandler                                ;MCG Interrupt
-        DCD     LPTimer_IRQHandler                            ;LPTimer interrupt
+        DCD     LPTMR0_IRQHandler                             ;LPTimer interrupt
         DCD     PORTA_IRQHandler                              ;Port A interrupt
         DCD     PORTB_IRQHandler                              ;Port B interrupt
         DCD     PORTC_IRQHandler                              ;Port C interrupt
@@ -441,7 +441,7 @@ SysTick_Handler
         PUBWEAK Read_Collision_IRQHandler
         PUBWEAK LVD_LVW_IRQHandler
         PUBWEAK LLW_IRQHandler
-        PUBWEAK Watchdog_IRQHandler
+        PUBWEAK WDOG_EWM_IRQHandler
         PUBWEAK RNG_IRQHandler
         PUBWEAK I2C0_IRQHandler
         PUBWEAK I2C1_IRQHandler
@@ -477,7 +477,7 @@ SysTick_Handler
         PUBWEAK Reserved71_IRQHandler
         PUBWEAK DAC0_IRQHandler
         PUBWEAK MCG_IRQHandler
-        PUBWEAK LPTimer_IRQHandler
+        PUBWEAK LPTMR0_IRQHandler
         PUBWEAK PORTA_IRQHandler
         PUBWEAK PORTB_IRQHandler
         PUBWEAK PORTC_IRQHandler
@@ -529,7 +529,7 @@ FTFE_IRQHandler
 Read_Collision_IRQHandler
 LVD_LVW_IRQHandler
 LLW_IRQHandler
-Watchdog_IRQHandler
+WDOG_EWM_IRQHandler
 RNG_IRQHandler
 I2C0_IRQHandler
 I2C1_IRQHandler
@@ -565,7 +565,7 @@ USBDCD_IRQHandler
 Reserved71_IRQHandler
 DAC0_IRQHandler
 MCG_IRQHandler
-LPTimer_IRQHandler
+LPTMR0_IRQHandler
 PORTA_IRQHandler
 PORTB_IRQHandler
 PORTC_IRQHandler

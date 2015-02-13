@@ -249,7 +249,7 @@ static int fapp_mem_erase( void *addr, unsigned n)
 *
 * DESCRIPTION: 
 ************************************************************************/
-static void fapp_mem_erase_all(fnet_shell_desc_t desc)
+void fapp_mem_erase_all(fnet_shell_desc_t desc)
 {
     unsigned long addr;
     const struct fapp_mem_region *region = fapp_mem_regions;

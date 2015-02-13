@@ -131,7 +131,7 @@
 #define FNET_CFG_PING                   (1)
 
 /*****************************************************************************
-*  TWR-K70F120 board uses the default port number 2.
+*  FRDMK64F board uses the default port number 0.
 ******************************************************************************/
 #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (0) 
 

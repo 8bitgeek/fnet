@@ -26,7 +26,6 @@ Useful links:
 The FNET Overview is divided into the following sections:
 - @subpage key_features
 - @subpage structure 
-- @subpage demos 
 - @subpage appendix 
 @n
 @n
@@ -71,6 +70,7 @@ preferred way to configure stack features). @n
 	- @b ARM:
 		- Keil uVision, version 4.7 (MK60N512).
 	- @b Freescale:
+		- Kinetis Design Studio, version 2.0 (MK64F)
 		- CodeWarrior Development Studio for Microcontrollers, version 10.6 (MK60N512, MK70FN1M, MCF52259, MCF54418).
 		- CodeWarrior for ColdFire, version 7.2.2 (MCF5282, MCF52235, MCF52259).
 		- CodeWarrior Development Studio for MPC55xx/MPC56xx, version 2.10  (MPC5668G).
@@ -178,6 +178,9 @@ fnet                      - FNET root directory.
 //*************************DEMOS************************************
 /*! 
 @page demos FNET Demo Applications
+*- @subpage quick_start_shell  
+*- @subpage quick_start_boot 
+*- @subpage quick_start_benchmark 
 
 The FNET project supplied with several demo applications. They can be used for demonstration of FNET features or as an example of FNET User-API usage. @n
 It is recommended to use them as starting point for your new applications.@n 
@@ -224,8 +227,8 @@ The following table summarizes the supported demo applications, platforms and co
 </tr>
 <tr>
  <td class="fnet_td_grey">MK64FN1M (Kinetis)</td>
- <td ALIGN=CENTER>IAR7.2</td>
- <td ALIGN=CENTER>IAR7.2</td>
+ <td ALIGN=CENTER>IAR7.2<br/>KDS2.0</td>
+ <td ALIGN=CENTER>IAR7.2<br/>KDS2.0</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
@@ -260,13 +263,6 @@ The following table summarizes the supported demo applications, platforms and co
 //***********************************************************************
 //************************** QUICK_START ********************************
 //***********************************************************************
-
-/*!
-* @page quick_start FNET Quick Start 
-*- @subpage quick_start_shell  
-*- @subpage quick_start_boot 
-*- @subpage quick_start_benchmark 
-*/
 
 
 //********************************************************************
@@ -1539,6 +1535,11 @@ Press any key to continue . . .
 
 FNET public releases:
 
+- Version 2.7.1:
+	- Added support of Kinetis Design Studio (GCC compiler) for FRDM-K64F board.
+	- New configuration parameter:
+		- @ref FNET_CFG_ARP_TABLE_SIZE sets maximum number of entries in the ARP table, per interface.
+
 - Version 2.7.0:
 	- Added Link-Local Multicast Name Resolution (LLMNR) Server/Responder.
 	- Added new "host" parameter to example applications, used as a host name for LLMNR. Its value is controlled by @c FAPP_CFG_PARAMS_HOST_NAME.
@@ -1556,7 +1557,7 @@ FNET public releases:
 	- Other minor changes.
 
 - Version 2.6.4:
-	- Added support of Kinetis K64FN1M (FRDM-K60F board).
+	- Added support of Kinetis K64FN1M (FRDM-K64F board).
 	- Added fnet_netif_get_mtu()
 	- Fixed ARP response, which could cause issue with iOS nodes. Thanks to Markus Muller.
 	- The assembler *.asm files renamed to *.s.

@@ -1,7 +1,7 @@
 /*
 ** ###################################################################
-**     Version:             rev. 2.7, 2014-08-28
-**     Build:               b140918
+**     Version:             rev. 2.8, 2014-10-14
+**     Build:               b141105
 **
 **     Abstract:
 **         Chip specific module features.
@@ -67,6 +67,8 @@
 **     - rev. 2.7 (2014-08-28)
 **         Update of system files - default clock configuration changed.
 **         Update of startup files - possibility to override DefaultISR added.
+**     - rev. 2.8 (2014-10-14)
+**         Interrupt INT_LPTimer renamed to INT_LPTMR0, interrupt INT_Watchdog renamed to INT_WDOG_EWM.
 **
 ** ###################################################################
 */
@@ -150,6 +152,8 @@
 #define FSL_FEATURE_DAC_BUFFER_SIZE (16)
 /* @brief Define whether the buffer supports watermark event detection or not. */
 #define FSL_FEATURE_DAC_HAS_WATERMARK_DETECTION (1)
+/* @brief Define whether the buffer supports watermark selection detection or not. */
+#define FSL_FEATURE_DAC_HAS_WATERMARK_SELECTION (1)
 /* @brief Define whether the buffer supports watermark event 1 word before buffer upper limit. */
 #define FSL_FEATURE_DAC_HAS_WATERMARK_1_WORD (1)
 /* @brief Define whether the buffer supports watermark event 2 words before buffer upper limit. */
@@ -831,11 +835,15 @@
 #define FSL_FEATURE_PIT_HAS_LIFETIME_TIMER (0)
 /* @brief Has chain mode (related to existence of register bit field TCTRLn[CHN]). */
 #define FSL_FEATURE_PIT_HAS_CHAIN_MODE (1)
+/* @brief Has shared interrupt handler (has not individual interrupt handler for each channel). */
+#define FSL_FEATURE_PIT_HAS_SHARED_IRQ_HANDLER (0)
 
 /* PMC module features */
 
 /* @brief Has Bandgap Enable In VLPx Operation support. */
 #define FSL_FEATURE_PMC_HAS_BGEN (1)
+/* @brief Has Bandgap Buffer Drive Select. */
+#define FSL_FEATURE_PMC_HAS_BGBDS (0)
 
 /* PORT module features */
 
@@ -950,6 +958,8 @@
 #define FSL_FEATURE_SIM_OPT_HAS_MCC (0)
 /* @brief Has UART open drain enable (register bits UARTnODE, where n is a number, in register SOPT5). */
 #define FSL_FEATURE_SIM_OPT_HAS_ODE (0)
+/* @brief Number of LPUART modules (number of register bits LPUARTn, where n is a number, in register SCGC5). */
+#define FSL_FEATURE_SIM_OPT_LPUART_COUNT (0)
 /* @brief Number of UART modules (number of register bits UARTn, where n is a number, in register SCGC4). */
 #define FSL_FEATURE_SIM_OPT_UART_COUNT (4)
 /* @brief Has UART0 open drain enable (register bit SOPT5[UART0ODE]). */
@@ -1165,6 +1175,8 @@
 #define FSL_FEATURE_SMC_HAS_LOW_LEAKAGE_STOP_MODE (1)
 /* @brief Has stop submode 0(state VLLS0 of register bit STOPCTRL[VLLSM]). */
 #define FSL_FEATURE_SMC_HAS_STOP_SUBMODE0 (1)
+/* @brief Has stop submode 2(state VLLS2 of register bit STOPCTRL[VLLSM]). */
+#define FSL_FEATURE_SMC_HAS_STOP_SUBMODE2 (1)
 
 /* DSPI module features */
 
@@ -1184,6 +1196,11 @@
 #define FSL_FEATURE_DSPI_HAS_CHIP_SELECT_STROBE (1)
 /* @brief Has 16-bit data transfer support. */
 #define FSL_FEATURE_DSPI_16BIT_TRANSFERS (1)
+/* @brief Has separate DMA RX and TX requests. */
+#define FSL_FEATURE_DSPI_HAS_SEPARATE_DMA_RX_TX_REQn(x) \
+    ((x) == 0 ? (1) : \
+    ((x) == 1 ? (0) : \
+    ((x) == 2 ? (0) : (-1))))
 
 /* UART module features */
 

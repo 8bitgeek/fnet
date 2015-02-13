@@ -613,6 +613,7 @@ static void fnet_tftp_srv_state_machine( void *fnet_tftp_srv_if_p )
             
             break;
             /*---- CLOSING --------------------------------------------*/
+        default:
         case FNET_TFTP_SRV_STATE_CLOSE:
             FNET_DEBUG_TFTP_SRV("TFTP_SRV: STATE_CLOSING");
 
