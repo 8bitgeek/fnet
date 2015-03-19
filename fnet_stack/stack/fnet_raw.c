@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -55,7 +55,6 @@ static int fnet_raw_connect( fnet_socket_t *sk, struct sockaddr *foreign_addr);
 static int fnet_raw_snd( fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *foreign_addr);
 static int fnet_raw_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr);
 static int fnet_raw_shutdown( fnet_socket_t *sk, int how );
-static void fnet_raw_input( fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, int protocol_number);
 static void fnet_raw_release(void);
 static int fnet_raw_output(struct sockaddr *src_addr, const struct sockaddr *dest_addr, unsigned char protocol_number, fnet_socket_option_t *sockoption, fnet_netbuf_t *nb);
 
@@ -90,14 +89,9 @@ fnet_prot_if_t fnet_raw_prot_if =
     0,                      /* Protocol number.*/   
     0,                      /* Protocol initialization function.*/
     fnet_raw_release,       /* Protocol release function.*/
-#if FNET_CFG_IP4     
-    fnet_raw_input_ip4,     /* Protocol input function, from IPv4.*/
-#endif    
+    fnet_raw_input,         /* Protocol input function,.*/
     0,                      /* Protocol input control function.*/     
     0,                      /* protocol drain function.*/
-#if FNET_CFG_IP6    
-    fnet_raw_input_ip6,      /* Protocol input function, from IPv6.*/
-#endif /* FNET_CFG_IP6 */      
     &fnet_raw_socket_api    /* Socket API */
 };
 
@@ -163,70 +157,35 @@ static int fnet_raw_output(  struct sockaddr *src_addr, const struct sockaddr *d
 }
 
 /************************************************************************
-* NAME: fnet_raw_input_ip4
-*
-* DESCRIPTION: RAW input function, from IPv4.
-*************************************************************************/
-#if FNET_CFG_IP4 
-void fnet_raw_input_ip4( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip,
-                           fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb)
-{
-    struct sockaddr     src_addr;
-    struct sockaddr     dest_addr;
-    fnet_ip_header_t    *hdr = ip4_nb->data_ptr;
-    
-    fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-     src_addr.sa_family = AF_INET;
-    ((struct sockaddr_in*)(&src_addr))->sin_addr.s_addr = src_ip;
-    
-    fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-    dest_addr.sa_family = AF_INET;
-    ((struct sockaddr_in*)(&dest_addr))->sin_addr.s_addr = dest_ip;
-
-    fnet_raw_input(netif, &src_addr,  &dest_addr, nb, hdr->protocol);    
-}
-#endif /* FNET_CFG_IP4 */
-
-/************************************************************************
-* NAME: fnet_raw_input_ip6
-*
-* DESCRIPTION: RAW input function, from IPv6.
-*************************************************************************/
-#if FNET_CFG_IP6 
-void fnet_raw_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
-{
-    struct sockaddr     src_addr;
-    struct sockaddr     dest_addr;
-    fnet_ip6_header_t   *hdr = ip6_nb->data_ptr;
-    
-    fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-    src_addr.sa_family = AF_INET6;
-    FNET_IP6_ADDR_COPY(src_ip, &((struct sockaddr_in6 *)(&src_addr))->sin6_addr.s6_addr);
-    ((struct sockaddr_in6 *)(&src_addr))->sin6_scope_id = netif->scope_id;
-    
-    
-    fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-    dest_addr.sa_family = AF_INET6;
-    FNET_IP6_ADDR_COPY(dest_ip, &((struct sockaddr_in6 *)(&dest_addr))->sin6_addr.s6_addr);
-    ((struct sockaddr_in6 *)(&dest_addr))->sin6_scope_id = netif->scope_id;
-
-    fnet_raw_input(netif, &src_addr,  &dest_addr, nb, hdr->next_header);    
-}
-#endif /* FNET_CFG_IP6*/
-
-/************************************************************************
 * NAME: fnet_raw_input
 *
 * DESCRIPTION: RAW input function.
 *************************************************************************/
-static void fnet_raw_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, int protocol_number)
+void fnet_raw_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb)
 {
     fnet_socket_t       *sock;
     fnet_socket_t       *last;
     fnet_netbuf_t       *nb_tmp;
+    int                 protocol_number;
 
     if(netif && nb && nb->total_length)
     {
+    #if FNET_CFG_IP4
+        if(foreign_addr->sa_family == AF_INET)
+        {
+            protocol_number = ((fnet_ip_header_t *)(ip_nb->data_ptr))->protocol;
+        }
+        else
+    #endif
+    #if FNET_CFG_IP6
+        if(foreign_addr->sa_family == AF_INET6)
+        {
+            protocol_number = ((fnet_ip6_header_t *)(ip_nb->data_ptr))->next_header;
+        }
+    #endif
+        else
+        {}
+
         /* Demultiplex broadcast & multicast datagrams.*/
         if(fnet_socket_addr_is_broadcast(local_addr, netif) || fnet_socket_addr_is_multicast(local_addr)) 
         {

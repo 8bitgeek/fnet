@@ -27,6 +27,9 @@
 /*  "info" command. */
 #define FAPP_CFG_INFO_CMD               (1)
 
+/*  "stat" command.*/
+#define FAPP_CFG_STAT_CMD               (1)
+
 /*  "http" command.*/
 #define FAPP_CFG_HTTP_CMD               (0)
 
@@ -59,5 +62,5 @@
     #define FAPP_CFG_STARTUP_SCRIPT     "http; telnet" 
 #endif
 
-#endif
+#endif /* _FAPP_USER_CONFIG_H_ */
 

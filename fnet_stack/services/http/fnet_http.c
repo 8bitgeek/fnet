@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -96,11 +96,13 @@ static const struct fnet_http_file_handler fnet_http_default_handler =
         fnet_http_default_send,  
         fnet_http_default_close
 };
-
+                                                  /*File extension*/ /* MIME type*/    
 const struct fnet_http_content_type fnet_http_content_css = {"css", "text/css"};
 const struct fnet_http_content_type fnet_http_content_jpg = {"jpg", "image/jpeg"};
 const struct fnet_http_content_type fnet_http_content_gif = {"gif", "image/gif"};
 const struct fnet_http_content_type fnet_http_content_js = {"js", "application/javascript"};
+const struct fnet_http_content_type fnet_http_content_gzip = {"gz", "application/x-gzip"};
+const struct fnet_http_content_type fnet_http_content_zip = {"zip", "application/zip"};
 
 /************************************************************************
 *    File content-type list.
@@ -111,6 +113,8 @@ const struct fnet_http_content_type *fnet_http_content_type_list[] =
     &fnet_http_content_jpg,
     &fnet_http_content_gif,
     &fnet_http_content_js,
+    &fnet_http_content_gzip,
+    &fnet_http_content_zip,
     /* Add your content-type here. */
     0
 };

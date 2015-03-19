@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
@@ -406,13 +406,12 @@ SOCKET socket( fnet_address_family_t family, fnet_socket_type_t type, int protoc
         goto ERROR_2;
     }
 
-    if((sock = (fnet_socket_t *)fnet_malloc(sizeof(fnet_socket_t))) == 0)
+    if((sock = (fnet_socket_t *)fnet_malloc_zero(sizeof(fnet_socket_t))) == 0)
     {
         error = FNET_ERR_NOMEM; /* Cannot allocate memory.*/
         goto ERROR_2;
     }
 
-    fnet_memset_zero(sock, sizeof(fnet_socket_t));
     fnet_socket_desc_set(res, sock);
     sock->protocol_interface = prot;
     sock->local_addr.sa_family = family;
@@ -534,13 +533,17 @@ int connect( SOCKET s, struct sockaddr *name, int namelen )
                 case AF_INET6:
                     {
                         const fnet_ip6_addr_t *local_ip6_addr;
-                        if((local_ip6_addr = fnet_ip6_select_src_addr(FNET_NULL, &((struct sockaddr_in6 *)(&foreign_addr))->sin6_addr.s6_addr))== FNET_NULL)
+                        /* Check if can find a route to the destination.*/
+                        if((local_ip6_addr = fnet_ip6_select_src_addr(fnet_netif_get_by_scope_id(((struct sockaddr_in6 *)(&foreign_addr))->sin6_scope_id), 
+                                                                    &((struct sockaddr_in6 *)(&foreign_addr))->sin6_addr.s6_addr))== FNET_NULL)
                         {
                             error = FNET_ERR_NETUNREACH; /* No route. */
                             goto ERROR_SOCK;
                         }
                         
+                        /* Init local address.*/
                         FNET_IP6_ADDR_COPY(local_ip6_addr, &((struct sockaddr_in6 *)(&local_addr_tmp))->sin6_addr.s6_addr);
+                        ((struct sockaddr_in6 *)(&local_addr_tmp))->sin6_scope_id = ((struct sockaddr_in6 *)(&foreign_addr))->sin6_scope_id;
                     }
                     break;
     #endif /* FNET_CFG_IP6 */

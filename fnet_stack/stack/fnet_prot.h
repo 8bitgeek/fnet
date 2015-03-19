@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -79,24 +79,16 @@ struct fnet_netif; /* Forward declaration.*/
 *************************************************************************/
 typedef struct fnet_prot_if
 {
-    fnet_socket_t           *head;          /* Pointer to the head of the protocol's socket list.*/
-    fnet_address_family_t   family;  /* Address domain family.*/
+    fnet_socket_t           *head;      /* Pointer to the head of the protocol's socket list.*/
+    fnet_address_family_t   family;     /* Address domain family.*/
     fnet_socket_type_t      type;       /* Socket type used for.*/
     int                     protocol; 
     int                     (*prot_init)( void );      /* (Optional) Protocol initialization function.*/
     void                    (*prot_release)( void );   /* (Optional) Protocol release function.*/
-#if FNET_CFG_IP4     
-    void                    (*prot_input_ip4)(fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb); /* Protocol input function.*/
-#endif        
+    void                    (*prot_input)(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb); /* Protocol input function.*/       
     void                    (*prot_control_input)(fnet_prot_notify_t command, fnet_ip_header_t * ip_hdr);  /* (Optional) Protocol input control function.*/ 
-    void                    (*prot_drain)( void );     /* Protocol drain function. */
-    
-#if FNET_CFG_IP6    
-    void                    (*prot_input_ip6)(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb); /* Protocol IPv6 input function.*/
-#endif /* FNET_CFG_IP6 */
-    
-    const fnet_socket_prot_if_t *socket_api;    /* Pointer to Transport Protocol API structure.*/
-
+    void                    (*prot_drain)( void );      /* Protocol drain function. */
+    const fnet_socket_prot_if_t *socket_api;            /* Pointer to Transport Protocol API structure.*/
 } fnet_prot_if_t;
 
 

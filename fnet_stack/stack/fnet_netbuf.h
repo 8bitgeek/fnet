@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -91,6 +91,7 @@ typedef struct fnet_netbuf
 int fnet_heap_init( unsigned char *heap_ptr, unsigned long heap_size );
 void fnet_free( void *ap );
 void *fnet_malloc( unsigned nbytes );
+void *fnet_malloc_zero( unsigned nbytes );
 unsigned long fnet_free_mem_status( void );
 unsigned long fnet_malloc_max( void );
 void fnet_mem_release( void );

@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
@@ -480,6 +480,8 @@ static void fnet_ip_input_low( void *cookie )
     fnet_ip4_addr_t     destination_addr;
     unsigned long       total_length;
     unsigned long       header_length;
+    struct sockaddr     src_addr;
+    struct sockaddr     dest_addr;
 
     FNET_COMP_UNUSED_ARG(cookie);
     
@@ -570,15 +572,25 @@ static void fnet_ip_input_low( void *cookie )
             /**************************************
              *  Send to upper layers. 
              **************************************/
-#if FNET_CFG_RAW
+
+            /* Prepare addreses for upper protocol.*/
+            fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
+            src_addr.sa_family = AF_INET;
+            ((struct sockaddr_in*)(&src_addr))->sin_addr.s_addr = source_addr;
+    
+            fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
+            dest_addr.sa_family = AF_INET;
+            ((struct sockaddr_in*)(&dest_addr))->sin_addr.s_addr = destination_addr;
+
+    #if FNET_CFG_RAW
             /* RAW Sockets inpput.*/
-            fnet_raw_input_ip4(netif, source_addr, destination_addr, nb, ip4_nb);                         
-#endif            
+            fnet_raw_input(netif, &src_addr, &dest_addr, nb, ip4_nb);                         
+    #endif            
 
             /* Find transport protocol.*/
             if((protocol = fnet_prot_find(AF_INET, SOCK_UNSPEC, hdr->protocol)) != FNET_NULL)
             {
-                protocol->prot_input_ip4(netif, source_addr, destination_addr, nb, ip4_nb);
+                protocol->prot_input(netif, &src_addr,  &dest_addr, nb, ip4_nb);
                 /* After that nb may point to wrong place. Do not use it.*/
             }
             else 
@@ -648,7 +660,7 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
 
     if(frag_list_ptr == 0)                                                  /* The first fragment of the new datagram.*/
     {
-        if((frag_list_ptr = fnet_malloc(sizeof(fnet_ip_frag_list_t))) == 0) /* Create list.*/
+        if((frag_list_ptr = fnet_malloc_zero(sizeof(fnet_ip_frag_list_t))) == 0) /* Create list.*/
             goto DROP_FRAG;
 
         fnet_ip_frag_list_add(&ip_frag_list_head, frag_list_ptr);
@@ -658,7 +670,6 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
         frag_list_ptr->protocol = iphdr->protocol;
         frag_list_ptr->source_addr = iphdr->source_addr;
         frag_list_ptr->desination_addr = iphdr->desination_addr;
-        frag_list_ptr->frag_ptr = 0;
         frag_ptr = 0;
 
         if(iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF)) 

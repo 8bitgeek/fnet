@@ -1,8 +1,7 @@
 /**************************************************************************
 *
-* Copyright 2012-2014 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
-* Copyright 2003 by Andrey Butok, Alexey Shervashidze. Motorola SPS
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -94,7 +93,7 @@
  *        string.
  * @showinitializer 
  ******************************************************************************/
-#define FNET_VERSION            "2.7.1dev"
+#define FNET_VERSION            "2.7.2"
 
 /*! @} */
 

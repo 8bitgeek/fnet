@@ -1,7 +1,7 @@
 /**************************************************************************
 *
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -63,8 +63,7 @@
 #define FNET_ARP_OP_REQUEST     (1)         /* ARP request.*/
 #define FNET_ARP_OP_REPLY       (2)         /* ARP reply.*/
 
-#define FNET_ARP_TIMER_PERIOD   (300000)    /* in ms (=5min).*/
-#define FNET_ARP_TIMEOUT    	(1200000)   /* in ms (=20min).*/
+#define FNET_ARP_TIMER_PERIOD   ((FNET_CFG_ARP_EXPIRE_TIMEOUT*1000)/4)     /* in ms (20/4=5min).*/
 
 /**************************************************************************/ /*!
  * @internal

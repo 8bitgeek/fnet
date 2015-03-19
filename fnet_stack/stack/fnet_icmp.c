@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
@@ -55,7 +55,7 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fnet_icmp_input( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
+static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
 static void fnet_icmp_output( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb );
                         
 #if FNET_CFG_DEBUG_TRACE_ICMP
@@ -79,9 +79,6 @@ fnet_prot_if_t fnet_icmp_prot_if =
     fnet_icmp_input,        /* Protocol input function.*/
     0,                      /* Protocol input control function.*/     
     0,                      /* protocol drain function.*/
-#if FNET_CFG_IP6    
-    0,                      /* Protocol IPv6 input function.*/
-#endif /* FNET_CFG_IP6 */      
     0                       /* Socket API */
 };
                         
@@ -91,15 +88,17 @@ fnet_prot_if_t fnet_icmp_prot_if =
 *
 * DESCRIPTION: ICMP input function.
 *************************************************************************/
-static void fnet_icmp_input( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb )
+static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb)
 {
     fnet_icmp_header_t      *hdr;
     fnet_icmp_err_header_t  *hdr_err;
     fnet_prot_notify_t      prot_cmd;
     fnet_prot_if_t          *protocol;
     fnet_netbuf_t           *tmp_nb;
+    fnet_ip4_addr_t         src_ip;
+    fnet_ip4_addr_t         dest_ip;
     
-    fnet_netbuf_free_chain(ip4_nb);
+    fnet_netbuf_free_chain(ip4_nb); /* Not used.*/
     
     if((netif != 0) && (nb != 0) )
     {
@@ -107,6 +106,9 @@ static void fnet_icmp_input( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_i
         {
             goto DISCARD;
         }
+
+        src_ip = ((struct sockaddr_in*)(src_addr))->sin_addr.s_addr;
+        dest_ip = ((struct sockaddr_in*)(dest_addr))->sin_addr.s_addr;
 
         nb = tmp_nb;
 

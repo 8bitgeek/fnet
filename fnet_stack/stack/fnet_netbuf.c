@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
@@ -535,7 +535,10 @@ void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, int len )
             *nb_ptr = nb->next;
             
             nb = fnet_netbuf_free(nb); /* In some cases we delete some net_bufs.*/
-            tot_len += nb->length;
+            if(nb != 0)
+            {
+                tot_len += nb->length;
+            }
         }
 
         if(nb != 0)
@@ -550,8 +553,12 @@ void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, int len )
     {
         while(nb != 0 && (total_rem + len > tot_len))
         {
-            nb = nb->next;         /* Run up th the first net_buf, which points */
-            tot_len += nb->length; /* to the data, which should be erased.*/
+            nb = nb->next;         /* Run up to the first net_buf, which points */
+                                    /* to the data, which should be erased.*/
+            if(nb != 0)
+            {
+                tot_len += nb->length;
+            }
         }
 
         /* Cut the part of the first net_buf, which should be modified.*/
@@ -823,7 +830,7 @@ void fnet_free_netbuf( void *ap )
 }
 
 /************************************************************************
-* NAME: fnet_malloc
+* NAME: fnet_malloc_netbuf
 *
 * DESCRIPTION: Allocates memory in heap for TCP/IP
 *              
@@ -887,6 +894,25 @@ void fnet_free( void *ap )
 void *fnet_malloc( unsigned nbytes )
 {
     return fnet_mempool_malloc( fnet_mempool_main, nbytes );
+}
+
+/************************************************************************
+* NAME: fnet_malloc
+*
+* DESCRIPTION: Allocates memory in heap for TCP/IP
+*              
+*************************************************************************/
+void *fnet_malloc_zero( unsigned nbytes )
+{
+    void *result;
+
+    result = fnet_malloc(nbytes);
+    if(result)
+    {
+        fnet_memset_zero(result, nbytes);
+    }
+
+    return result;
 }
 
 /************************************************************************

@@ -1,7 +1,7 @@
 /**************************************************************************
 *
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
@@ -58,8 +58,10 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-
+#if FNET_CFG_ARP_EXPIRE_TIMEOUT
 static void fnet_arp_timer( void *cookie );
+#endif
+
 static fnet_arp_entry_t *fnet_arp_add_entry( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, 
                                             const fnet_mac_addr_t ethaddr );
 static fnet_arp_entry_t *fnet_arp_update_entry( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr,
@@ -87,8 +89,10 @@ int fnet_arp_init( fnet_netif_t *netif )
     for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; i++)
       fnet_memset_zero(&(arpif->arp_table[i]), sizeof(fnet_arp_entry_t));
 
+#if FNET_CFG_ARP_EXPIRE_TIMEOUT
     arpif->arp_tmr = fnet_timer_new((FNET_ARP_TIMER_PERIOD / FNET_TIMER_PERIOD_MS), 
                         fnet_arp_timer, arpif);
+#endif
 
     if(arpif->arp_tmr)
     {
@@ -118,8 +122,9 @@ void fnet_arp_release( fnet_netif_t *netif )
 /************************************************************************
 * NAME: fnet_arp_timer
 *
-* DESCRIPTION: ARP timer.
+* DESCRIPTION: ARP aging timer.
 *************************************************************************/
+#if FNET_CFG_ARP_EXPIRE_TIMEOUT
 static void fnet_arp_timer( void *cookie )
 {
     fnet_arp_if_t *arpif =  (fnet_arp_if_t *)cookie;
@@ -129,7 +134,7 @@ static void fnet_arp_timer( void *cookie )
     {
         if((arpif->arp_table[i].prot_addr)
              && ((fnet_timer_ticks() - arpif->arp_table[i].cr_time))
-                              > (unsigned long)(FNET_ARP_TIMEOUT / FNET_TIMER_PERIOD_MS))
+                              > (unsigned long)((FNET_CFG_ARP_EXPIRE_TIMEOUT*1000) / FNET_TIMER_PERIOD_MS))
         {
             if(arpif->arp_table[i].hold)
                 fnet_netbuf_free_chain(arpif->arp_table[i].hold);
@@ -137,8 +142,8 @@ static void fnet_arp_timer( void *cookie )
             fnet_memset_zero(&(arpif->arp_table[i]), sizeof(fnet_arp_entry_t));
         }
     }
-
 }
+#endif
 
 /************************************************************************
 * NAME: fnet_arp_add_entry

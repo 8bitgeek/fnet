@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -80,7 +80,7 @@ static
 *
 * DESCRIPTION: FTFL command 
 ************************************************************************/
-void fnet_ftfl_command( unsigned char command, unsigned long *address, unsigned char *data )
+static void fnet_ftfl_command( unsigned char command, unsigned long *address, unsigned char *data )
 {
     fnet_cpu_irq_desc_t irq_desc;
     

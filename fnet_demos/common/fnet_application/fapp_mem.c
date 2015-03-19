@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -88,7 +88,8 @@ static const struct fapp_mem_region_reserved fapp_mem_regions_reserved[] =
 #define FAPP_MEM_ERASE_FAILED   " 0x%08X t7yo 0x%08X failed"
 
 
-#define FAPP_MEM_ERROR_WRITEFAILED "\n Writing %d bytes to 0x%08X failed!"
+#define FAPP_MEM_ERROR_WRITEFAILED  "\n ERR: Writing %d bytes to 0x%08X failed!"
+#define FAPP_MEM_ERROR_NOTERASED    "\n ERR: Memory is not erased!"
 
 /************************************************************************
 * NAME: fapp_mem_region_is_protected
@@ -143,9 +144,8 @@ static const struct fapp_mem_region *fapp_mem_region_find( unsigned long start, 
 ************************************************************************/
 int fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, unsigned n )
 {
-    int i;
-    int result = FNET_ERR;
-    const struct fapp_mem_region *region;
+    int             i;
+    const struct    fapp_mem_region *region;
 	
 	if(fapp_mem_region_is_protected( (unsigned long)dest, n) == 0)
 	{
@@ -154,25 +154,38 @@ int fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, unsign
         
         if(region && region->memcpy)
         {
+            if(region->erase)
+            {
+                /* Check if memory is erased.*/
+                for(i=0; i<n; i++)
+                {
+                    if(((char *)dest)[i] != 0xFF)
+                    {
+                        fnet_shell_println(desc, FAPP_MEM_ERROR_NOTERASED);
+                        goto FAIL;
+                    }
+                }
+            }
+            
+            /* Write. */
             region->memcpy(dest, src, n);
                 
             /* Verify result. */
             for(i=0; i<n; i++)
             {
                 if(((char *)dest)[i]!=((char *)src)[i])
-                    break;    
+                {
+                    goto FAIL;   
+                }
             }
-            if(i==n)
-                result = FNET_OK;
+
+            return FNET_OK;
         }
 	}
-	
-	if(result == FNET_ERR)
-	{
-	    fnet_shell_println(desc, FAPP_MEM_ERROR_WRITEFAILED, n, dest);
-	}
-	    
-    return result;
+
+FAIL:	
+    fnet_shell_println(desc, FAPP_MEM_ERROR_WRITEFAILED, n, dest);
+    return FNET_ERR;
 }
 
 /************************************************************************

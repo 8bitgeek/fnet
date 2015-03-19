@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
@@ -172,7 +172,7 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
     int                 result;
     fnet_isr_entry_t    *isr_temp;
 
-    isr_temp = (fnet_isr_entry_t *)fnet_malloc(sizeof(fnet_isr_entry_t));
+    isr_temp = (fnet_isr_entry_t *)fnet_malloc_zero(sizeof(fnet_isr_entry_t));
 
     if(isr_temp)
     {
@@ -180,7 +180,6 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
         isr_temp->handler_top = (void (*)(void *cookie))handler_top;
         isr_temp->handler_bottom = (void (*)(void *cookie))handler_bottom;
         isr_temp->next = fnet_isr_table;
-        isr_temp->pended = 0;
         isr_temp->cookie = cookie;
         fnet_isr_table = isr_temp;
         

@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -59,7 +59,7 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fnet_igmp_input( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
+static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
                         
 #if FNET_CFG_DEBUG_TRACE_IGMP
     static void fnet_igmp_trace(char *str, fnet_igmp_header_t *icmpp_hdr);
@@ -82,9 +82,6 @@ fnet_prot_if_t fnet_igmp_prot_if =
     fnet_igmp_input,        /* Protocol input function.*/
     0,                      /* Protocol input control function.*/     
     0,                      /* protocol drain function.*/
-#if FNET_CFG_IP6    
-    0,                      /* Protocol IPv6 input function.*/
-#endif /* FNET_CFG_IP6 */    
     0                       /* Socket API */
 };
 
@@ -93,16 +90,16 @@ fnet_prot_if_t fnet_igmp_prot_if =
 *
 * DESCRIPTION: IGMP input function.
 *************************************************************************/
-static void fnet_igmp_input( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb)
+static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb)
 {
     fnet_igmp_header_t *hdr;
     fnet_netbuf_t *tmp_nb;
     int i;
     
-    FNET_COMP_UNUSED_ARG(dest_ip);
-    FNET_COMP_UNUSED_ARG(src_ip);
+    FNET_COMP_UNUSED_ARG(src_addr);
+    FNET_COMP_UNUSED_ARG(dest_addr);
     
-    fnet_netbuf_free_chain(ip4_nb);
+    fnet_netbuf_free_chain(ip4_nb); /* Not used*/
 
     if((netif != 0) && (nb != 0) )
     {

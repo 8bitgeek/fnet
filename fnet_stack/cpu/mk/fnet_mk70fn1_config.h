@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2009 by Andrey Butok. Freescale Semiconductor, Inc. 
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -31,10 +31,6 @@
 **********************************************************************/ /*!
 *
 * @file fnet_mk70FN1_config.h
-*
-* @date Dec-2-2012
-*
-* @version 0.1.0.0
 *
 * @brief K70FN1 specific configuration file.
 *

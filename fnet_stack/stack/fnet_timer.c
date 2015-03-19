@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
@@ -186,7 +186,7 @@ fnet_timer_desc_t fnet_timer_new( unsigned long period_ticks, void (*handler)( v
 
     if( period_ticks && handler )
     {
-        timer = (struct fnet_net_timer *)fnet_malloc(sizeof(struct fnet_net_timer));
+        timer = (struct fnet_net_timer *)fnet_malloc_zero(sizeof(struct fnet_net_timer));
 
         if(timer)
         {
@@ -194,10 +194,7 @@ fnet_timer_desc_t fnet_timer_new( unsigned long period_ticks, void (*handler)( v
 
             fnet_tl_head = timer;
 
-            timer->timer_cnt = 0;
-
             timer->timer_rv = period_ticks;
-
             timer->handler = handler;
             timer->cookie = cookie;
         }

@@ -1,8 +1,8 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
-* Copyright 2003 by Alexey Shervashidze. Motorola SPS.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2003 by Alexey Shervashidze, Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -101,12 +101,6 @@ static void fnet_tcp_urgprocessing( fnet_socket_t *sk, fnet_netbuf_t ** segment,
 static void fnet_tcp_finprocessing( fnet_socket_t *sk, unsigned long ack );
 static int fnet_tcp_init( void );
 static void fnet_tcp_release( void );
-#if FNET_CFG_IP4
-static void fnet_tcp_input_ip4( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
-#endif
-#if FNET_CFG_IP6
-static void fnet_tcp_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
-#endif
 static void fnet_tcp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
 static void fnet_tcp_ctrlinput( fnet_prot_notify_t command, fnet_ip_header_t *ip_hdr );
 static int fnet_tcp_attach( fnet_socket_t *sk );
@@ -173,14 +167,9 @@ fnet_prot_if_t fnet_tcp_prot_if =
     FNET_IP_PROTOCOL_TCP,   /* Protocol number.*/ 
     fnet_tcp_init,       
     fnet_tcp_release,
-#if FNET_CFG_IP4     
-    fnet_tcp_input_ip4,     /* Input to protocol (from below).*/
-#endif    
+    fnet_tcp_input,
     fnet_tcp_ctrlinput,     /* Control input (from below).*/
     fnet_tcp_drain, 
-#if FNET_CFG_IP6    
-    fnet_tcp_input_ip6,     /* Protocol IPv6 input function.*/
-#endif /* FNET_CFG_IP6 */                              
     &fnet_tcp_socket_api    /* Socket API */
 };
 
@@ -244,55 +233,6 @@ static void fnet_tcp_release( void )
 
     fnet_isr_unlock();
 }
-
-/************************************************************************
-* NAME: fnet_tcp_input_ip4
-*
-* DESCRIPTION: TCP input function, from IPv4.
-*************************************************************************/
-#if FNET_CFG_IP4 
-static void fnet_tcp_input_ip4( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb)
-{
-    struct sockaddr     src_addr;
-    struct sockaddr     dest_addr;;
-    
-    fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-     src_addr.sa_family = AF_INET;
-    ((struct sockaddr_in*)(&src_addr))->sin_addr.s_addr = src_ip;
-    
-    fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-    dest_addr.sa_family = AF_INET;
-    ((struct sockaddr_in*)(&dest_addr))->sin_addr.s_addr = dest_ip;
-
-    fnet_tcp_input(netif, &src_addr,  &dest_addr, nb, ip4_nb);  
-}
-#endif /* FNET_CFG_IP4 */
-
-/************************************************************************
-* NAME: fnet_tcp_input_ip6
-*
-* DESCRIPTION: TCP input function, from IPv6.
-*************************************************************************/
-#if FNET_CFG_IP6 
-static void fnet_tcp_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
-{
-    struct sockaddr     src_addr;
-    struct sockaddr     dest_addr;;
-    
-    fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-    src_addr.sa_family = AF_INET6;
-    FNET_IP6_ADDR_COPY(src_ip, &((struct sockaddr_in6 *)(&src_addr))->sin6_addr.s6_addr);
-    ((struct sockaddr_in6 *)(&src_addr))->sin6_scope_id = netif->scope_id;
-    
-    
-    fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-    dest_addr.sa_family = AF_INET6;
-    FNET_IP6_ADDR_COPY(dest_ip, &((struct sockaddr_in6 *)(&dest_addr))->sin6_addr.s6_addr);
-    ((struct sockaddr_in6 *)(&dest_addr))->sin6_scope_id = netif->scope_id;
-
-    fnet_tcp_input(netif, &src_addr,  &dest_addr, nb, ip6_nb);    
-}
-#endif /* FNET_CFG_IP4 */
 
 /************************************************************************
 * NAME: fnet_tcp_input
@@ -486,7 +426,7 @@ static int fnet_tcp_attach( fnet_socket_t *sk )
     struct tcpcb *cb; 
 
     /* Create the control block.*/
-    cb = (struct tcpcb *)fnet_malloc(sizeof(fnet_tcp_control_t));
+    cb = (struct tcpcb *)fnet_malloc_zero(sizeof(fnet_tcp_control_t));
 
     /* Check the memory allocation.*/
     if(!cb)
@@ -494,8 +434,6 @@ static int fnet_tcp_attach( fnet_socket_t *sk )
         fnet_socket_set_error(sk, FNET_ERR_NOMEM);
         return FNET_ERR;
     }
-
-    fnet_memset_zero(cb, sizeof(fnet_tcp_control_t));
 
     sk->protocol_control = (void *)cb;
 
@@ -1795,7 +1733,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
             psk->local_addr = *dest_addr;
 
             /* Create the control block.*/
-            pcb = (fnet_tcp_control_t *)fnet_malloc(sizeof(fnet_tcp_control_t));
+            pcb = (fnet_tcp_control_t *)fnet_malloc_zero(sizeof(fnet_tcp_control_t));
 
             /* Check the memory allocation.*/
             if(!pcb)

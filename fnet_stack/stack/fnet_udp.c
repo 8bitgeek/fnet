@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
@@ -62,12 +62,6 @@ static int fnet_udp_shutdown( fnet_socket_t *sk, int how );
 static void fnet_udp_input( fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
 static void fnet_udp_release(void);
 static int fnet_udp_output(struct sockaddr * src_addr, const struct sockaddr * dest_addr, fnet_socket_option_t *sockoption, fnet_netbuf_t *nb );
-#if FNET_CFG_IP4
-static void fnet_udp_input_ip4(fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
-#endif
-#if FNET_CFG_IP6
-static void fnet_udp_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
-#endif
 
 #if FNET_CFG_DEBUG_TRACE_UDP
     static void fnet_udp_trace(char *str, fnet_udp_header_t *udp_hdr);
@@ -105,14 +99,9 @@ fnet_prot_if_t fnet_udp_prot_if =
     FNET_IP_PROTOCOL_UDP,   /* Protocol number.*/   
     0,                      /* Protocol initialization function.*/
     fnet_udp_release,       /* Protocol release function.*/
-#if FNET_CFG_IP4     
-    fnet_udp_input_ip4,     /* Protocol input function, from IPv4.*/
-#endif    
+    fnet_udp_input,         /* Protocol input function.*/
     fnet_udp_control_input, /* Protocol input control function.*/     
     0,                      /* protocol drain function.*/
-#if FNET_CFG_IP6    
-    fnet_udp_input_ip6,     /* Protocol input function, from IPv6.*/
-#endif /* FNET_CFG_IP6 */      
     &fnet_udp_socket_api    /* Socket API */
 };
 
@@ -140,17 +129,22 @@ static int fnet_udp_output(  struct sockaddr *src_addr, const struct sockaddr *d
     fnet_udp_header_t                       *udp_header;
     int                                     error =  FNET_OK;
     FNET_COMP_PACKED_VAR unsigned short     *checksum_p;
-    fnet_netif_t                            *netif;
+    fnet_netif_t                            *netif = FNET_NULL;
 
 #if FNET_CFG_IP6    
     if(dest_addr->sa_family == AF_INET6)
     {
         /* Check Scope ID.*/
-        netif = fnet_netif_get_by_scope_id( ((struct sockaddr_in6 *)dest_addr)->sin6_scope_id );
+        if(((struct sockaddr_in6 *)dest_addr)->sin6_scope_id) /* Take scope id from destination address.*/
+        {
+            netif = fnet_netif_get_by_scope_id( ((struct sockaddr_in6 *)dest_addr)->sin6_scope_id );
+        }
+        else if (((struct sockaddr_in6 *)src_addr)->sin6_scope_id) /* Take scope id from source address.*/
+        {
+            netif = fnet_netif_get_by_scope_id( ((struct sockaddr_in6 *)src_addr)->sin6_scope_id );
+        }
     }
-    else
 #endif
-        netif = FNET_NULL;  
 
     /* Construct UDP header.*/
     if((nb_header = fnet_netbuf_new(sizeof(fnet_udp_header_t), FNET_TRUE)) == 0)
@@ -234,56 +228,6 @@ static int fnet_udp_output(  struct sockaddr *src_addr, const struct sockaddr *d
 
     return (error);
 }
-
-/************************************************************************
-* NAME: fnet_udp_input_ip4
-*
-* DESCRIPTION: UDP input function, from IPv4.
-*************************************************************************/
-#if FNET_CFG_IP4 
-static void fnet_udp_input_ip4( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip,
-                           fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb)
-{
-    struct sockaddr     src_addr;
-    struct sockaddr     dest_addr;
-    
-    fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-     src_addr.sa_family = AF_INET;
-    ((struct sockaddr_in*)(&src_addr))->sin_addr.s_addr = src_ip;
-    
-    fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-    dest_addr.sa_family = AF_INET;
-    ((struct sockaddr_in*)(&dest_addr))->sin_addr.s_addr = dest_ip;
-
-    fnet_udp_input(netif, &src_addr,  &dest_addr, nb, ip4_nb);    
-}
-#endif /* FNET_CFG_IP4 */
-
-/************************************************************************
-* NAME: fnet_udp_input_ip6
-*
-* DESCRIPTION: UDP input function, from IPv6.
-*************************************************************************/
-#if FNET_CFG_IP6 
-static void fnet_udp_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
-{
-    struct sockaddr     src_addr;
-    struct sockaddr     dest_addr;
-    
-    fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-    src_addr.sa_family = AF_INET6;
-    FNET_IP6_ADDR_COPY(src_ip, &((struct sockaddr_in6 *)(&src_addr))->sin6_addr.s6_addr);
-    ((struct sockaddr_in6 *)(&src_addr))->sin6_scope_id = netif->scope_id;
-    
-    
-    fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-    dest_addr.sa_family = AF_INET6;
-    FNET_IP6_ADDR_COPY(dest_ip, &((struct sockaddr_in6 *)(&dest_addr))->sin6_addr.s6_addr);
-    ((struct sockaddr_in6 *)(&dest_addr))->sin6_scope_id = netif->scope_id;
-
-    fnet_udp_input(netif, &src_addr,  &dest_addr, nb, ip6_nb);    
-}
-#endif /* FNET_CFG_IP6*/
 
 /************************************************************************
 * NAME: fnet_udp_input

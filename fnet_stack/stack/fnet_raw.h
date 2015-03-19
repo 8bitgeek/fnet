@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -64,8 +64,7 @@ extern fnet_prot_if_t fnet_raw_prot_if;
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-void fnet_raw_input_ip4(fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
-void fnet_raw_input_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
+void fnet_raw_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
 
 #endif  /* FNET_CFG_RAW */
 

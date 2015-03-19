@@ -227,9 +227,9 @@ The following table summarizes the supported demo applications, platforms and co
 </tr>
 <tr>
  <td class="fnet_td_grey">MK64FN1M (Kinetis)</td>
- <td ALIGN=CENTER>IAR7.2<br/>KDS2.0</td>
- <td ALIGN=CENTER>IAR7.2<br/>KDS2.0</td>
- <td ALIGN=CENTER>x</td>
+ <td ALIGN=CENTER>IAR7.4<br/>KDS2.0</td>
+ <td ALIGN=CENTER>IAR7.4<br/>KDS2.0</td>
+ <td ALIGN=CENTER>IAR7.4</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK60N512 (Kinetis)</td>
@@ -245,8 +245,8 @@ The following table summarizes the supported demo applications, platforms and co
  </tr>
 <tr>
  <td class="fnet_td_grey">MK60FN1M (Kinetis)</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.2</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.2</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.4</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.4</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
@@ -1534,6 +1534,13 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+
+- Version 2.7.2:
+	- New configuration parameter:
+		- @ref FNET_CFG_ARP_EXPIRE_TIMEOUT sets period of time after which ARP cache entries are automatically expired.
+	- Fixed potential issue in fnet_netbuf_trim(), thanks to Johan Brouwer.
+	- Added additional check to the bootloader example if flash memory is erased before writing.
+	- Other minor changes and optimizations.
 
 - Version 2.7.1:
 	- Added support of Kinetis Design Studio (GCC compiler) for FRDM-K64F board.

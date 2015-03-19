@@ -1,7 +1,7 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
-* Copyright 2005-2011 by Andrey Butok. Freescale Semiconductor, Inc.
+* Copyright 2011-2015 by Andrey Butok. FNET Community.
+* Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -56,7 +56,7 @@
 *     Function Prototypes
 *************************************************************************/
 void fnet_icmp6_output( fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, unsigned char hop_limit, fnet_netbuf_t *nb );
-static void fnet_icmp6_input(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
+static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
 
 /************************************************************************
 * Protocol API structure.
@@ -69,12 +69,9 @@ fnet_prot_if_t fnet_icmp6_prot_if =
     FNET_IP_PROTOCOL_ICMP6, /* Protocol number.*/   
     0,                      /* Protocol initialization function.*/
     0,                      /* Protocol release function.*/
-#if FNET_CFG_IP4    
-    0,                      /* Protocol input function, from IPv4.*/
-#endif    
+    fnet_icmp6_input,       /* Protocol input function,.*/
     0,                      /* Protocol input control function.*/     
     0,                      /* protocol drain function.*/
-    fnet_icmp6_input,       /* Protocol input function, from IPv6.*/
     0                       /* Socket API */
 };
 
@@ -83,12 +80,13 @@ fnet_prot_if_t fnet_icmp6_prot_if =
 *
 * DESCRIPTION: ICMPv6 input function.
 *************************************************************************/
-static void fnet_icmp6_input(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
+static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
 {
     fnet_icmp6_header_t     *hdr;
     fnet_netbuf_t           *tmp_nb;
     unsigned short          sum;
-
+    fnet_ip6_addr_t         *src_ip;
+    fnet_ip6_addr_t         *dest_ip;
 
     if((netif != 0) && (nb != 0))
     {
@@ -101,6 +99,9 @@ static void fnet_icmp6_input(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_
         nb = tmp_nb;
 
         hdr = nb->data_ptr;
+
+        dest_ip = &((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr;
+        src_ip = &((struct sockaddr_in6 *)(src_addr))->sin6_addr.s6_addr;
 
     /* Drop Multicast loopback.*/
     #if FNET_CFG_LOOPBACK     
