@@ -249,6 +249,7 @@ void fnet_ip_drain( void );
 int fnet_ip_queue_append( fnet_ip_queue_t *queue, fnet_netif_t *netif, fnet_netbuf_t *nb );
 fnet_netbuf_t *fnet_ip_queue_read( fnet_ip_queue_t *queue, fnet_netif_t ** netif );
 int fnet_ip_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_size);
+void fnet_ip_set_socket_addr(fnet_ip_header_t *ip_hdr, struct sockaddr *src_addr,  struct sockaddr *dest_addr );
 
 #if FNET_CFG_MULTICAST
     fnet_ip4_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fnet_ip4_addr_t group_addr );

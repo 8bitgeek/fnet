@@ -57,7 +57,7 @@ static int fnet_udp_detach( fnet_socket_t *sk );
 static int fnet_udp_connect( fnet_socket_t *sk, struct sockaddr *foreign_addr);
 static int fnet_udp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *foreign_addr);
 static int fnet_udp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr);
-static void fnet_udp_control_input( fnet_prot_notify_t command, fnet_ip_header_t *ip_hdr );
+static void fnet_udp_control_input(fnet_prot_notify_t command, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb);
 static int fnet_udp_shutdown( fnet_socket_t *sk, int how );
 static void fnet_udp_input( fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
 static void fnet_udp_release(void);
@@ -622,59 +622,48 @@ ERROR:
 /************************************************************************
 * NAME: fnet_udp_control_input
 *
-* DESCRIPTION: This function processes the ICMP error.
+* DESCRIPTION: This function processes the ICMP errors.
 *************************************************************************/
-static void fnet_udp_control_input( fnet_prot_notify_t command, fnet_ip_header_t *ip_header )
+static void fnet_udp_control_input(fnet_prot_notify_t command, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb)
 {
     fnet_udp_header_t   *udp_header;
-    fnet_ip4_addr_t     foreign_addr; /* Foreign IP address.*/
-    unsigned short      foreign_port; /* Foreign port.*/
-    fnet_ip4_addr_t     local_addr;   /* Local IP address.*/
-    unsigned short      local_port;   /* Local port.*/
     int                 error;
     fnet_socket_t       *sock;
 
-    if(ip_header)
+    if(src_addr && dest_addr && nb)
     {
-        udp_header = (fnet_udp_header_t *)((char *)ip_header + (FNET_IP_HEADER_GET_HEADER_LENGTH(ip_header) << 2));
-        foreign_addr = ip_header->desination_addr;
-        foreign_port = udp_header->destination_port;
-        local_addr = ip_header->source_addr;
-        local_port = udp_header->source_port;
-
-        if(foreign_addr == INADDR_ANY)
-            return;
+        udp_header = nb->data_ptr;
 
         switch(command)
         {
             case FNET_PROT_NOTIFY_MSGSIZE:          /* Message size forced drop.*/
               error = FNET_ERR_MSGSIZE;
               break;
-
             case FNET_PROT_NOTIFY_UNREACH_HOST:     /* No route to host.*/
             case FNET_PROT_NOTIFY_UNREACH_NET:      /* No route to network.*/
             case FNET_PROT_NOTIFY_UNREACH_SRCFAIL:  /* Source route failed.*/
               error = FNET_ERR_HOSTUNREACH;
               break;
-
             case FNET_PROT_NOTIFY_UNREACH_PROTOCOL: /* Dst says bad protocol.*/
             case FNET_PROT_NOTIFY_UNREACH_PORT:     /* Bad port #.*/
               error = FNET_ERR_CONNRESET;
               break;
-
             case FNET_PROT_NOTIFY_PARAMPROB:        /* Header incorrect.*/
               error = FNET_ERR_NOPROTOOPT;          /* Bad protocol option.*/
               break;
-
             default:
               return;
         }
 
         for (sock = fnet_udp_prot_if.head; sock != 0; sock = sock->next)
         {
-            if((((struct sockaddr_in *)(&sock->foreign_addr))->sin_addr.s_addr != foreign_addr) || (sock->foreign_addr.sa_port != foreign_port)
-                   || (sock->local_addr.sa_port != local_port) || (((struct sockaddr_in *)(&sock->local_addr))->sin_addr.s_addr != local_addr))
+            if(fnet_socket_addr_are_equal(&sock->foreign_addr, dest_addr) 
+                && (sock->foreign_addr.sa_port == udp_header->destination_port)
+                && (sock->local_addr.sa_port != udp_header->source_port)
+                && fnet_socket_addr_are_equal(&sock->local_addr, src_addr))
+            {
                 continue;
+            }
 
             sock->options.local_error = error;
         }

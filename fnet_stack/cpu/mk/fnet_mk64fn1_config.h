@@ -78,6 +78,10 @@
 
 /* SRAM size.*/
 #define FNET_CFG_CPU_SRAM_SIZE              (1024 * 256)    /* 256 KB */  
+/* SRAM address.*/
+#ifndef FNET_CFG_CPU_SERIAL_PORT_DEFAULT
+    #define FNET_CFG_CPU_SRAM_ADDRESS       (0x1FFF0000)      
+#endif
 
 #ifndef FNET_CFG_CPU_SERIAL_PORT_DEFAULT
     #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT        (0) /* FRDMK64F board uses the default port number 0.*/

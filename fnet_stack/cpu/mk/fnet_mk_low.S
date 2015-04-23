@@ -30,7 +30,7 @@
 *
 **********************************************************************//*!
 *
-* @file fnet_mk_low.asm
+* @file fnet_mk_low.S
 *
 * @author Andrey Butok
 *

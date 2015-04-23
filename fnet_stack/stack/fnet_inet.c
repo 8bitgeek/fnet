@@ -169,6 +169,8 @@ int fnet_inet_ptos (char *str, struct sockaddr *addr)
     else    
 #endif /* FNET_CFG_IP6 */ 
         return FNET_ERR;
+
+    addr->sa_port = 0;
         
     return FNET_OK;    
 }

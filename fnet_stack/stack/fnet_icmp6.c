@@ -87,6 +87,7 @@ static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  st
     unsigned short          sum;
     fnet_ip6_addr_t         *src_ip;
     fnet_ip6_addr_t         *dest_ip;
+    fnet_prot_notify_t      prot_cmd;
 
     if((netif != 0) && (nb != 0))
     {
@@ -203,7 +204,69 @@ static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  st
                     }                
                 }
                 goto DISCARD;
-        #endif                       
+        #endif   
+           /**************************
+            * Destination Unreachable. 
+            **************************/
+            case FNET_ICMP6_TYPE_DEST_UNREACH:
+                switch(hdr->code)
+                {
+                    case FNET_ICMP6_CODE_DU_NO_ROUTE:           /* No route to destination. */
+                    case FNET_ICMP6_CODE_DU_BEYOND_SCOPE:       /* Beyond scope of source address.*/
+                        prot_cmd = FNET_PROT_NOTIFY_UNREACH_NET;
+                        break;
+                    case FNET_ICMP6_CODE_DU_ADMIN_PROHIBITED:   /* Communication with destination administratively prohibited. */
+                    case FNET_ICMP6_CODE_DU_ADDR_UNREACH:       /* Address unreachable.*/
+                        prot_cmd = FNET_PROT_NOTIFY_UNREACH_HOST;
+                        break;
+                    case FNET_ICMP6_CODE_DU_PORT_UNREACH:       /* Port unreachable.*/
+                        prot_cmd = FNET_PROT_NOTIFY_UNREACH_PORT;
+                        break;
+                    default:
+                        goto DISCARD;
+                }
+
+                /* Protocol notification.*/
+                {
+                    fnet_ip6_header_t       *ip_header;
+                    fnet_prot_if_t          *protocol;
+                    unsigned int            hdr_err_length = sizeof(fnet_icmp6_err_header_t) + sizeof(fnet_ip6_header_t); 
+                    unsigned int            hdr_err_data_length = hdr_err_length + 8; /* 8 bytes is enough for transport protocol (port numbers).*/
+
+
+                    if(nb->total_length < hdr_err_data_length) 
+                    {
+                        goto DISCARD;
+                    }
+                    if(nb->total_length > hdr_err_data_length)
+                    {
+                        fnet_netbuf_trim(&nb, (int)(hdr_err_data_length - nb->total_length));
+                    }
+                    if((tmp_nb = fnet_netbuf_pullup(nb, (int)nb->total_length)) == 0) /* The header must reside in contiguous area of memory.*/
+                    {
+                        goto DISCARD;
+                    }
+                    nb = tmp_nb;
+
+                    ip_header = (fnet_ip6_header_t *)((char *)nb->data_ptr  + sizeof(fnet_icmp6_err_header_t));
+
+                    if((protocol = fnet_prot_find(AF_INET6, SOCK_UNSPEC, ip_header->next_header)) != 0)
+                    {
+                        if(protocol->prot_control_input)
+                        {
+                            struct sockaddr     err_src_addr;
+                            struct sockaddr     err_dest_addr;
+
+                            /* Prepare addreses for upper protocol.*/
+                            fnet_ip6_set_socket_addr(netif, ip_header, &err_src_addr, &err_dest_addr );
+
+                            fnet_netbuf_trim(&nb, (int)(hdr_err_length)); /* Cut the ICMP error header.*/
+
+                            protocol->prot_control_input(prot_cmd, &err_src_addr, &err_dest_addr, nb);
+                        }
+                    }
+                }
+                goto DISCARD;                                                
             default:
                 goto DISCARD;
         }                

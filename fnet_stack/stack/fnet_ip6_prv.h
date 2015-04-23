@@ -431,5 +431,6 @@ void fnet_ip6_multicast_leave_entry(fnet_ip6_multicast_list_entry_t *multicasten
 void fnet_ip6_multicast_leave(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr); 
 fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_find_entry(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr);
 void fnet_ip6_multicast_leave_all(fnet_netif_t *netif);
+void fnet_ip6_set_socket_addr(fnet_netif_t *netif, fnet_ip6_header_t *ip_hdr, struct sockaddr *src_addr,  struct sockaddr *dest_addr );
 
 #endif /* _FNET_IP6_PRV_H_ */

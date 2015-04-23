@@ -166,6 +166,7 @@ SECTIONS
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
+    . = ALIGN(8);
   } > m_text
 
   .fini_array :
@@ -174,6 +175,7 @@ SECTIONS
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
+    . = ALIGN(8);
   } > m_text
 
   __etext = .;    /* define a global symbol at end of code */

@@ -102,7 +102,7 @@ static void fnet_tcp_finprocessing( fnet_socket_t *sk, unsigned long ack );
 static int fnet_tcp_init( void );
 static void fnet_tcp_release( void );
 static void fnet_tcp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
-static void fnet_tcp_ctrlinput( fnet_prot_notify_t command, fnet_ip_header_t *ip_hdr );
+static void fnet_tcp_control_input(fnet_prot_notify_t command, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb);
 static int fnet_tcp_attach( fnet_socket_t *sk );
 static int fnet_tcp_close( fnet_socket_t *sk );
 static int fnet_tcp_connect( fnet_socket_t *sk, struct sockaddr *foreign_addr);
@@ -162,13 +162,13 @@ static const fnet_socket_prot_if_t fnet_tcp_socket_api =
 fnet_prot_if_t fnet_tcp_prot_if =
 {
     0, 
-    AF_SUPPORTED,      /* Protocol domain.*/
+    AF_SUPPORTED,           /* Protocol domain.*/
     SOCK_STREAM,            /* Socket type.*/
     FNET_IP_PROTOCOL_TCP,   /* Protocol number.*/ 
     fnet_tcp_init,       
     fnet_tcp_release,
     fnet_tcp_input,
-    fnet_tcp_ctrlinput,     /* Control input (from below).*/
+    fnet_tcp_control_input, /* Control input (from below).*/
     fnet_tcp_drain, 
     &fnet_tcp_socket_api    /* Socket API */
 };
@@ -337,38 +337,29 @@ DROP:
 
 
 /************************************************************************
-* NAME: fnet_tcp_ctrlinput
+* NAME: fnet_tcp_control_input
 *
 * DESCRIPTION: This function process ICMP errors.
 *
 * RETURNS: None.          
 *************************************************************************/
-static void fnet_tcp_ctrlinput( fnet_prot_notify_t command, fnet_ip_header_t *ip_header )
+static void fnet_tcp_control_input(fnet_prot_notify_t command, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb)
 {
     fnet_tcp_header_t   *tcp_header;    /* Pointer to the TCP header.*/
     fnet_socket_t       *sk;            /* Pointer to the socket.*/
     fnet_tcp_control_t  *cb;
-    struct sockaddr     src_addr;
-    struct sockaddr     dest_addr;
+ //   struct sockaddr     src_addr;
+ //   struct sockaddr     dest_addr;
 
-    if(ip_header)
+    if(src_addr && dest_addr && nb)
     {
+        tcp_header = nb->data_ptr; 
+
         /* Find the corresponding socket.*/
-        tcp_header = (fnet_tcp_header_t *)((char *)ip_header + (FNET_IP_HEADER_GET_HEADER_LENGTH(ip_header) << 2));
-     
-        /* Foreign addr.*/
-        fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-        src_addr.sa_family = AF_INET;
-        src_addr.sa_port = tcp_header->destination_port;
-        ((struct sockaddr_in*)(&src_addr))->sin_addr.s_addr = ip_header->desination_addr;
-        
-        /* Local addr.*/
-        fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-        dest_addr.sa_family = AF_INET;
-        dest_addr.sa_port = tcp_header->source_port;
-        ((struct sockaddr_in*)(&dest_addr))->sin_addr.s_addr = ip_header->source_addr;
+        dest_addr->sa_port = tcp_header->destination_port;
+        src_addr->sa_port = tcp_header->source_port;
          
-        sk = fnet_tcp_findsk(&src_addr, &dest_addr);
+        sk = fnet_tcp_findsk(dest_addr, src_addr);
  
         if(sk)
         {
@@ -381,21 +372,17 @@ static void fnet_tcp_ctrlinput( fnet_prot_notify_t command, fnet_ip_header_t *ip
                   /* Begin the Slow Start algorithm.*/
                   cb->tcpcb_cwnd = cb->tcpcb_sndmss;
                   break;
-
-                case FNET_PROT_NOTIFY_MSGSIZE: /* Message size forced drop.*/
+                case FNET_PROT_NOTIFY_MSGSIZE:          /* Message size forced drop.*/
                   sk->options.local_error = FNET_ERR_MSGSIZE;
                   break;
-
-                case FNET_PROT_NOTIFY_UNREACH_HOST:    /* No route to host.*/
-                case FNET_PROT_NOTIFY_UNREACH_NET:     /* No route to network.*/
-                case FNET_PROT_NOTIFY_UNREACH_SRCFAIL: /* Source route failed.*/
+                case FNET_PROT_NOTIFY_UNREACH_HOST:     /* No route to host.*/
+                case FNET_PROT_NOTIFY_UNREACH_NET:      /* No route to network.*/
+                case FNET_PROT_NOTIFY_UNREACH_SRCFAIL:  /* Source route failed.*/
                   sk->options.local_error = FNET_ERR_HOSTUNREACH;
                   break;
-
                 case FNET_PROT_NOTIFY_PARAMPROB:                 /* Header incorrect.*/
                   sk->options.local_error = FNET_ERR_NOPROTOOPT; /* Bad protocol option.*/
                   break;
-
                 case FNET_PROT_NOTIFY_UNREACH_PORT:              /* bad port #.*/
                 case FNET_PROT_NOTIFY_UNREACH_PROTOCOL:
                     if(sk->state != SS_LISTENING) /* Avoid listening sockets.*/
@@ -404,7 +391,6 @@ static void fnet_tcp_ctrlinput( fnet_prot_notify_t command, fnet_ip_header_t *ip
                         fnet_tcp_closesk(sk);
                     }
                     break;
-
                 default:
                   break;
             }
@@ -1501,9 +1487,9 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
                   sk->options.local_error = FNET_ERR_CONNRESET;
 
               fnet_tcp_closesk(sk);
-        }
 
-        return FNET_TRUE;
+              return FNET_TRUE;
+        }
     }
 
     /* Process the reset segment without acknowledgment.*/

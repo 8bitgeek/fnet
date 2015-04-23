@@ -472,6 +472,24 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_fragment
 #endif
 
 /************************************************************************
+* NAME: fnet_ip6_set_socket_addr
+*
+* DESCRIPTION: Prepare sockets addreses for upper protocol.
+*************************************************************************/
+void fnet_ip6_set_socket_addr(fnet_netif_t *netif, fnet_ip6_header_t *ip_hdr, struct sockaddr *src_addr,  struct sockaddr *dest_addr )
+{
+    fnet_memset_zero(src_addr, sizeof(struct sockaddr));
+    src_addr->sa_family = AF_INET6;
+    FNET_IP6_ADDR_COPY(&ip_hdr->source_addr, &((struct sockaddr_in6 *)(src_addr))->sin6_addr.s6_addr);
+    ((struct sockaddr_in6 *)(src_addr))->sin6_scope_id = netif->scope_id;
+    
+    fnet_memset_zero(dest_addr, sizeof(struct sockaddr));
+    dest_addr->sa_family = AF_INET6;
+    FNET_IP6_ADDR_COPY(&ip_hdr->destination_addr, &((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr);
+    ((struct sockaddr_in6 *)(dest_addr))->sin6_scope_id = netif->scope_id;
+}
+
+/************************************************************************
 * NAME: fnet_ip6_input
 *
 * DESCRIPTION: IPv6 input function.
@@ -585,16 +603,8 @@ static void fnet_ip6_input_low( void *cookie )
                 continue;    
 
             /* Prepare addreses for upper protocol.*/
-            fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-            src_addr.sa_family = AF_INET6;
-            FNET_IP6_ADDR_COPY(source_addr, &((struct sockaddr_in6 *)(&src_addr))->sin6_addr.s6_addr);
-            ((struct sockaddr_in6 *)(&src_addr))->sin6_scope_id = netif->scope_id;
-    
-            fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-            dest_addr.sa_family = AF_INET6;
-            FNET_IP6_ADDR_COPY(destination_addr, &((struct sockaddr_in6 *)(&dest_addr))->sin6_addr.s6_addr);
-            ((struct sockaddr_in6 *)(&dest_addr))->sin6_scope_id = netif->scope_id;
-           
+            fnet_ip6_set_socket_addr(netif, hdr, &src_addr,  &dest_addr );
+
     #if FNET_CFG_RAW
             /* RAW Sockets input.*/
             fnet_raw_input(netif, &src_addr, &dest_addr, nb, ip6_nb);                         

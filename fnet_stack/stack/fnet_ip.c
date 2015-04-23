@@ -443,6 +443,22 @@ static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_
 }
 
 /************************************************************************
+* NAME: fnet_ip_set_socket_addr
+*
+* DESCRIPTION: Prepare sockets addreses for upper protocol.
+*************************************************************************/
+void fnet_ip_set_socket_addr(fnet_ip_header_t *ip_hdr, struct sockaddr *src_addr,  struct sockaddr *dest_addr )
+{
+    fnet_memset_zero(src_addr, sizeof(struct sockaddr));
+    src_addr->sa_family = AF_INET;
+    ((struct sockaddr_in*)(src_addr))->sin_addr.s_addr = ip_hdr->source_addr;
+    
+    fnet_memset_zero(dest_addr, sizeof(struct sockaddr));
+    dest_addr->sa_family = AF_INET;
+    ((struct sockaddr_in*)(dest_addr))->sin_addr.s_addr = ip_hdr->desination_addr;
+}
+
+/************************************************************************
 * NAME: fnet_ip_input
 *
 * DESCRIPTION: IP input function.
@@ -476,7 +492,6 @@ static void fnet_ip_input_low( void *cookie )
     fnet_prot_if_t      *protocol;
     fnet_netif_t        *netif;
     fnet_netbuf_t       *nb;
-    fnet_ip4_addr_t     source_addr;
     fnet_ip4_addr_t     destination_addr;
     unsigned long       total_length;
     unsigned long       header_length;
@@ -502,7 +517,6 @@ static void fnet_ip_input_low( void *cookie )
 
         hdr = nb->data_ptr;
         destination_addr = hdr->desination_addr;
-        source_addr = hdr->source_addr;
         total_length = fnet_ntohs(hdr->total_length);
         header_length = (unsigned long)FNET_IP_HEADER_GET_HEADER_LENGTH(hdr) << 2;
         
@@ -574,13 +588,7 @@ static void fnet_ip_input_low( void *cookie )
              **************************************/
 
             /* Prepare addreses for upper protocol.*/
-            fnet_memset_zero(&src_addr, sizeof(struct sockaddr));
-            src_addr.sa_family = AF_INET;
-            ((struct sockaddr_in*)(&src_addr))->sin_addr.s_addr = source_addr;
-    
-            fnet_memset_zero(&dest_addr, sizeof(struct sockaddr));
-            dest_addr.sa_family = AF_INET;
-            ((struct sockaddr_in*)(&dest_addr))->sin_addr.s_addr = destination_addr;
+            fnet_ip_set_socket_addr(hdr, &src_addr,  &dest_addr );
 
     #if FNET_CFG_RAW
             /* RAW Sockets inpput.*/

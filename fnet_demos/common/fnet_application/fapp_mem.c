@@ -171,13 +171,29 @@ int fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, unsign
             region->memcpy(dest, src, n);
                 
             /* Verify result. */
+        #if 0 /* Old code.*/
             for(i=0; i<n; i++)
             {
-                if(((char *)dest)[i]!=((char *)src)[i])
+                if(((volatile char *)dest)[i] !=((char *)src)[i])
                 {
                     goto FAIL;   
                 }
             }
+        #else
+            /* Workaround of the Flash cache issue discovered on K60.*/
+            /* Delay.  fnet_timer_delay(1); is too big - 100ms.*/
+            for(i=0; i<100000000; i++)
+            {
+                if(fnet_memcmp(dest, src, n) == 0)
+                {
+                    break;
+                }
+            }
+            if(i==100000000)
+            {
+                goto FAIL;
+            }
+        #endif
 
             return FNET_OK;
         }

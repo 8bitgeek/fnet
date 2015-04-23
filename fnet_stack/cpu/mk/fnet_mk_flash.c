@@ -85,9 +85,11 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, un
     fnet_cpu_irq_desc_t irq_desc;
     
     #if FNET_CFG_CPU_MK60N512 /* This problem exists in first-released-version product (mask set: 0M33Z). */
-        
+       
+    #if 0  /* For restoring.*/
     	fnet_uint32 fmc_pfb0cr_reg = FNET_MK_FMC_PFB0CR;
     	fnet_uint32 fmc_pfb1cr_reg = FNET_MK_FMC_PFB1CR;
+    #endif
         
         /* Workaround:  Allow pflash_only or pflash_only with pflash_swap 
          * configurations but disable speculation when in these configurations 
@@ -135,7 +137,7 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, un
             FNET_MK_FMC_PFB1CR &= 0xFFFFFFEF; /* Data Cache disable. */
           #endif
     #endif
-      
+
     irq_desc = fnet_cpu_irq_disable();
     
     /* The CCIF flag must read 1 to verify that any previous command has
@@ -178,7 +180,7 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, un
 
     fnet_ftfl_command_lunch_inram();
 
-#if FNET_CFG_CPU_MK60N512 /* Restore FMC registers.*/
+#if 0 /* FNET_CFG_CPU_MK60N512*/ /* Restore FMC registers.*/
     FNET_MK_FMC_PFB0CR = fmc_pfb0cr_reg;
     FNET_MK_FMC_PFB1CR = fmc_pfb1cr_reg;
 #endif

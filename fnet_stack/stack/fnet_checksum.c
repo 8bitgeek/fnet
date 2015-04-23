@@ -184,7 +184,9 @@ unsigned short fnet_checksum(fnet_netbuf_t * nb, int len)
     /* Add potential carries - no branches. */
 
     sum = (sum >> 16) + (sum & 0xffff) + 0xffff; /* Add in accumulated carries + 0xffff acording to RFC1624*/
-    sum += sum >> 16;                   /* Add potential last carry   */
+   //DM sum += sum >> 16;                   /* Add potential last carry   */
+    while (sum>>16) 
+        sum = (sum & 0xffff) + (sum >> 16);
     
     return (unsigned short)(0xffff & ~sum);
 }
@@ -201,7 +203,9 @@ unsigned short fnet_checksum_buf(char *buf, int buf_len)
     unsigned long sum = fnet_checksum_low(0, buf_len, (unsigned short *)buf); 
 
     sum = (sum >> 16) + (sum & 0xffff) + 0xffff; /* Add in accumulated carries + 0xffff acording to RFC1624*/
-    sum += sum >> 16;                           /* Add potential last carry   */
+   //DM sum += sum >> 16;                   /* Add potential last carry   */
+    while (sum>>16) 
+        sum = (sum & 0xffff) + (sum >> 16);
 
     return (unsigned short)(0xffff & ~sum);
 }
@@ -221,7 +225,9 @@ unsigned short fnet_checksum_pseudo_buf(char *buf, unsigned short buf_len, unsig
     sum = fnet_checksum_low(sum, addr_size, (unsigned short *)ip_dest);
 
     sum = (sum >> 16) + (sum & 0xffff); /* Add in accumulated carries */
-    sum += sum >> 16;                   /* Add potential last carry   */
+   //DM sum += sum >> 16;                   /* Add potential last carry   */
+    while (sum>>16) 
+        sum = (sum & 0xffff) + (sum >> 16);
 
     return (unsigned short)(0xffff & ~sum);
 }
@@ -240,8 +246,9 @@ unsigned short fnet_checksum_pseudo_start( fnet_netbuf_t *nb,
     sum += protocol + fnet_htons(protocol_len);
 
     sum = (sum >> 16) + (sum & 0xffff) + 0xffff; /* Add in accumulated carries + 0xffff acording to RFC1624*/
-    sum += sum >> 16;                           /* Add potential last carry   */
-
+   //DM sum += sum >> 16;                   /* Add potential last carry   */
+    while (sum>>16) 
+        sum = (sum & 0xffff) + (sum >> 16);
     return (unsigned short)(sum);
 }
 
@@ -262,7 +269,9 @@ unsigned short fnet_checksum_pseudo_end( unsigned short sum_s, char *ip_src, cha
     sum = fnet_checksum_low(sum, addr_size, (unsigned short *)ip_dest);
 
     sum = (sum >> 16) + (sum & 0xffff) + 0xffff; /* Add in accumulated carries + 0xffff acording to RFC1624*/
-    sum += sum >> 16;                            /* Add potential last carry   */
+   //DM sum += sum >> 16;                   /* Add potential last carry   */
+    while (sum>>16) 
+        sum = (sum & 0xffff) + (sum >> 16);
 
     return (unsigned short)(0xffff & ~sum);
 }

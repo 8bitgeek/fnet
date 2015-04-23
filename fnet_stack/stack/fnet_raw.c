@@ -182,8 +182,8 @@ void fnet_raw_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct 
         {
             protocol_number = ((fnet_ip6_header_t *)(ip_nb->data_ptr))->next_header;
         }
-    #endif
         else
+    #endif
         {}
 
         /* Demultiplex broadcast & multicast datagrams.*/

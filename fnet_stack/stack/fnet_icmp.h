@@ -133,7 +133,7 @@ typedef struct
 
     union
     {
-        unsigned long unused ;       /**< Unused.*/
+        unsigned long unused;       /**< Unused.*/
         unsigned short mtu;         /**< MTU.*/
         unsigned short ptr;         /**< Pointer indicates the error.*/
     } fields FNET_COMP_PACKED;

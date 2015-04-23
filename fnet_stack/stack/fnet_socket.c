@@ -1755,14 +1755,14 @@ int fnet_socket_addr_is_unspecified(const struct sockaddr *addr)
             result = FNET_IP6_ADDR_IS_UNSPECIFIED( &((struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
         }
         else
-#endif /* FNET_CFG_IP4 */
+#endif 
 #if FNET_CFG_IP4
         if(addr->sa_family & AF_INET)
         {
             result = FNET_IP4_ADDR_IS_UNSPECIFIED( ((struct sockaddr_in *)addr)->sin_addr.s_addr);
         }
         else
-#endif /* FNET_CFG_IP4 */
+#endif 
         {};
     }
 
@@ -1786,14 +1786,14 @@ int fnet_socket_addr_are_equal(const struct sockaddr *addr1, const struct sockad
             result =  FNET_IP6_ADDR_EQUAL( &((struct sockaddr_in6 *)addr1)->sin6_addr.s6_addr, &((struct sockaddr_in6 *)addr2)->sin6_addr.s6_addr);
         }
         else
-#endif /* FNET_CFG_IP4 */
+#endif
 #if FNET_CFG_IP4
         if(addr1->sa_family & AF_INET)
         {
             result = (((struct sockaddr_in *)addr1)->sin_addr.s_addr == (((struct sockaddr_in *)addr2)->sin_addr.s_addr));
         }
         else
-#endif /* FNET_CFG_IP4 */
+#endif
         {};
     }
 
@@ -1816,14 +1816,14 @@ void fnet_socket_ip_addr_copy(const struct sockaddr *from_addr, struct sockaddr 
             FNET_IP6_ADDR_COPY(&((struct sockaddr_in6 *)from_addr)->sin6_addr.s6_addr, &((struct sockaddr_in6 *)to_addr)->sin6_addr.s6_addr);
         }
         else
-#endif /* FNET_CFG_IP4 */
+#endif 
 #if FNET_CFG_IP4
         if(from_addr->sa_family & AF_INET)
         {
             ((struct sockaddr_in *)to_addr)->sin_addr.s_addr = ((struct sockaddr_in *)from_addr)->sin_addr.s_addr;
         }
         else
-#endif /* FNET_CFG_IP4 */
+#endif 
         {};
     }
 }
@@ -1843,14 +1843,14 @@ void fnet_socket_addr_copy(const struct sockaddr *from_addr, struct sockaddr *to
             fnet_memcpy(to_addr, from_addr, sizeof(struct sockaddr_in6));
         }
         else
-#endif /* FNET_CFG_IP4 */
+#endif
 #if FNET_CFG_IP4
         if(from_addr->sa_family & AF_INET)
         {
             fnet_memcpy(to_addr, from_addr, sizeof(struct sockaddr_in));
         }
         else
-#endif /* FNET_CFG_IP4 */
+#endif
         {};
     }
 }
@@ -1872,7 +1872,7 @@ fnet_netif_t *fnet_socket_addr_route(const struct sockaddr *dest_addr)
             case AF_INET:
                 result = fnet_ip_route(((struct sockaddr_in *)dest_addr)->sin_addr.s_addr);
                 break;
-#endif /* FNET_CFG_IP4 */
+#endif 
 #if FNET_CFG_IP6                
             case AF_INET6:
 
@@ -1888,7 +1888,7 @@ fnet_netif_t *fnet_socket_addr_route(const struct sockaddr *dest_addr)
                     } 
                 }
                 break;
-#endif /* FNET_CFG_IP6 */
+#endif 
         }
     }
     

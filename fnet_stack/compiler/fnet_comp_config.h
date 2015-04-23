@@ -60,6 +60,7 @@
  *            - @c FNET_CFG_COMP_CW  = Used compiler is the CodeWarrior.
  *            - @c FNET_CFG_COMP_IAR = Used compiler is the IAR.
  *            - @c FNET_CFG_COMP_UV  = Used compiler is the Keil uVision. 
+ *            - @c FNET_CFG_COMP_GHS = Used compiler is the Green Hills. 
  *            @n @n
  *            Selected compiler definition should be only one and must be defined as 1. 
  *            All others may be defined but must have the 0 value.
@@ -89,6 +90,11 @@
     #define FNET_CFG_COMP_GNUC   (0)
 #endif
 
+/* GHS compiler. */
+#ifndef FNET_CFG_COMP_GHS
+    #define FNET_CFG_COMP_GHS   (0)
+#endif
+
 #if FNET_CFG_COMP_CW
     #define FNET_COMP_STR    "CW"
 #elif FNET_CFG_COMP_IAR
@@ -97,6 +103,8 @@
     #define FNET_COMP_STR    "UV"
 #elif FNET_CFG_COMP_GNUC
    #define FNET_COMP_STR     "GCC"
+#elif FNET_CFG_COMP_GHS
+    #define FNET_COMP_STR    "GHS"
 #else
     #if (defined(__MWERKS__) || defined(__CODEWARRIOR__))
         #undef FNET_CFG_COMP_CW
@@ -106,6 +114,10 @@
         #undef FNET_CFG_COMP_IAR 
         #define FNET_CFG_COMP_IAR   (1)
         #define FNET_COMP_STR       "IAR"
+    #elif (defined(__ghs__))
+        #undef FNET_CFG_COMP_GHS 
+        #define FNET_CFG_COMP_GHS   (1)
+        #define FNET_COMP_STR       "GHS"
     #elif (defined(__GNUC__))
         #undef FNET_CFG_COMP_GNUC
         #define FNET_CFG_COMP_GNUC  (1)

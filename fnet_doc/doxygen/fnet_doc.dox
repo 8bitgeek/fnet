@@ -1535,6 +1535,15 @@ Press any key to continue . . .
 
 FNET public releases:
 
+- Version 2.7.3:
+	- Added handling of ICMPv6 errors by transport protocols.
+	- Fixed fnet_inet_ptos(), reported by Kiyoshi
+	- Fixed checksum calculation, reported by Abhilash.
+	- Fixed SRAM start address for K64, reported by Kiyoshi.
+	- Fixed possible flash write error for K60N.
+	- Fixed KDS 2.0 compilation issue of assembler code.
+
+
 - Version 2.7.2:
 	- New configuration parameter:
 		- @ref FNET_CFG_ARP_EXPIRE_TIMEOUT sets period of time after which ARP cache entries are automatically expired.

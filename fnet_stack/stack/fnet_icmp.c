@@ -91,7 +91,6 @@ fnet_prot_if_t fnet_icmp_prot_if =
 static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb)
 {
     fnet_icmp_header_t      *hdr;
-    fnet_icmp_err_header_t  *hdr_err;
     fnet_prot_notify_t      prot_cmd;
     fnet_prot_if_t          *protocol;
     fnet_netbuf_t           *tmp_nb;
@@ -106,13 +105,12 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
         {
             goto DISCARD;
         }
-
-        src_ip = ((struct sockaddr_in*)(src_addr))->sin_addr.s_addr;
-        dest_ip = ((struct sockaddr_in*)(dest_addr))->sin_addr.s_addr;
-
         nb = tmp_nb;
 
         hdr = nb->data_ptr;
+
+        src_ip = ((struct sockaddr_in*)(src_addr))->sin_addr.s_addr;
+        dest_ip = ((struct sockaddr_in*)(dest_addr))->sin_addr.s_addr;
 
         if(
         #if FNET_CFG_CPU_ETH_HW_RX_PROTOCOL_CHECKSUM || FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM
@@ -267,26 +265,46 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                 prot_cmd = FNET_PROT_NOTIFY_QUENCH;
 
     NOTIFY_PROT: /* Protocol notification.*/
-                if(nb->total_length < (sizeof(fnet_icmp_err_header_t) + 8))
-                    goto DISCARD;
-
-                if(nb->total_length > (sizeof(fnet_icmp_err_header_t) + 8))
-                    fnet_netbuf_trim(&nb, (int)((sizeof(fnet_icmp_err_header_t) + 8) - nb->total_length));
-
-                if((tmp_nb = fnet_netbuf_pullup(nb, (int)nb->total_length)) == 0) /* The header must reside in contiguous area of memory.*/
                 {
-                    goto DISCARD;
-                }
+                    fnet_icmp_err_header_t  *hdr_err = (fnet_icmp_err_header_t *)nb->data_ptr;
+                    fnet_ip_header_t        *ip_header = &hdr_err->ip;
+                    unsigned int            hdr_err_length = sizeof(fnet_icmp_err_header_t) /*+ ((FNET_IP_HEADER_GET_HEADER_LENGTH(ip_header) << 2) - sizeof(fnet_ip_header_t))*/; 
+                    unsigned int            hdr_err_data_length = hdr_err_length+8; /* 8 bytes is enough for transport protocol (port numbers).*/
 
-                nb = tmp_nb;
+                    if(nb->total_length < hdr_err_data_length) 
+                    {
+                        goto DISCARD;
+                    }
 
-                hdr_err = (fnet_icmp_err_header_t *)nb->data_ptr;
-              
+                    if(nb->total_length > hdr_err_data_length)
+                    {
+                        fnet_netbuf_trim(&nb, (int)(hdr_err_data_length - nb->total_length));
+                    }
 
-                if((protocol = fnet_prot_find(AF_INET, SOCK_UNSPEC, hdr_err->ip.protocol)) != 0)
-                {
-                    if(protocol->prot_control_input)
-                        protocol->prot_control_input(prot_cmd, (void *)(&hdr_err->ip));
+                    if((tmp_nb = fnet_netbuf_pullup(nb, (int)nb->total_length)) == 0) /* The header must reside in contiguous area of memory.*/
+                    {
+                        goto DISCARD;
+                    }
+                    nb = tmp_nb;
+
+                    hdr_err = (fnet_icmp_err_header_t *)nb->data_ptr;
+                    ip_header = &hdr_err->ip;
+
+                    if((protocol = fnet_prot_find(AF_INET, SOCK_UNSPEC, hdr_err->ip.protocol)) != 0)
+                    {
+                        if(protocol->prot_control_input)
+                        {
+                            struct sockaddr     err_src_addr;
+                            struct sockaddr     err_dest_addr;
+
+                            /* Prepare addreses for upper protocol.*/
+                            fnet_ip_set_socket_addr(ip_header, &err_src_addr,  &err_dest_addr );
+
+                            fnet_netbuf_trim(&nb, (int)(hdr_err_length)); /* Cut the ICMP error header.*/
+
+                            protocol->prot_control_input(prot_cmd, &err_src_addr, &err_dest_addr, nb);
+                        }
+                    }
                 }
                 goto DISCARD;
 

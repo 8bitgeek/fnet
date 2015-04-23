@@ -91,7 +91,7 @@
         </option>
         <option>
           <name>GeneralEnableMisra</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>GeneralMisraVerbose</name>
@@ -608,7 +608,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state></state>
+          <state>frdmk64f_bench.srec</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -699,7 +699,7 @@
         </option>
         <option>
           <name>IlinkMapFile</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IlinkLogFile</name>
@@ -2074,7 +2074,7 @@
           <name>$PROJ_DIR$\..\..\..\..\fnet_stack\cpu\mk\fnet_mk_isr_inst.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.S</name>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.s</name>
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\fnet_stack\cpu\mk\fnet_mk_serial.c</name>

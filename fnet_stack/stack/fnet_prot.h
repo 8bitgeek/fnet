@@ -86,7 +86,7 @@ typedef struct fnet_prot_if
     int                     (*prot_init)( void );      /* (Optional) Protocol initialization function.*/
     void                    (*prot_release)( void );   /* (Optional) Protocol release function.*/
     void                    (*prot_input)(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb); /* Protocol input function.*/       
-    void                    (*prot_control_input)(fnet_prot_notify_t command, fnet_ip_header_t * ip_hdr);  /* (Optional) Protocol input control function.*/ 
+    void                    (*prot_control_input)(fnet_prot_notify_t command, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb);  /* (Optional) Protocol input control function.*/ 
     void                    (*prot_drain)( void );      /* Protocol drain function. */
     const fnet_socket_prot_if_t *socket_api;            /* Pointer to Transport Protocol API structure.*/
 } fnet_prot_if_t;
