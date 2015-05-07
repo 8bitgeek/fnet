@@ -98,6 +98,18 @@
 #endif
 
 /**************************************************************************/ /*!
+ * @def      FAPP_CFG_CHECK_FLASH_BEFORE_WRITE
+ * @brief    Checking of the flash memory if is erased before write:
+ *               - @c 1 = is enabled (default).
+ *               - @c 0 = is disabled.
+ * @showinitializer
+ ******************************************************************************/
+#ifndef FAPP_CFG_CHECK_FLASH_BEFORE_WRITE
+    #define FAPP_CFG_CHECK_FLASH_BEFORE_WRITE       (1)
+#endif
+
+
+/**************************************************************************/ /*!
  * @def      FAPP_CFG_BOOTLOADER
  * @brief    Bootloader:
  *               - @c 1 = is enabled. @n

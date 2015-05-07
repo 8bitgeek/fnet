@@ -154,18 +154,20 @@ int fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, unsign
         
         if(region && region->memcpy)
         {
+        #if FAPP_CFG_CHECK_FLASH_BEFORE_WRITE
             if(region->erase)
             {
                 /* Check if memory is erased.*/
                 for(i=0; i<n; i++)
                 {
-                    if(((char *)dest)[i] != 0xFF)
+                    if(((unsigned char *)dest)[i] != 0xFF)
                     {
                         fnet_shell_println(desc, FAPP_MEM_ERROR_NOTERASED);
                         goto FAIL;
                     }
                 }
             }
+        #endif
             
             /* Write. */
             region->memcpy(dest, src, n);

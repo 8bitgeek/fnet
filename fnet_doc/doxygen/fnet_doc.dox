@@ -1535,6 +1535,13 @@ Press any key to continue . . .
 
 FNET public releases:
 
+- Version 2.7.4:
+	- Fixed potential crash in checksum calculation, thanks to Patrice Cavin.
+	- Fixed compilation error of boot example in KDS 2.0, K64.
+	- Fixed issue of the erased memory check.
+	- Added FAPP_CFG_CHECK_FLASH_BEFORE_WRITE enable/disables checking of the flash memory if is erased before write.
+	- Added MPC5744P configuration, thanks to Patrice Cavin.
+
 - Version 2.7.3:
 	- Added handling of ICMPv6 errors by transport protocols.
 	- Fixed fnet_inet_ptos(), reported by Kiyoshi

@@ -327,7 +327,11 @@ int fnet_fec_init(fnet_netif_t *netif)
         /*The MII_SPEED field must be programmed with a value to provide
         * an EMDC frequency of less than or equal to 2.5 MHz to be compliant
         * with the IEEE 802.3 MII specification.*/
+    #if FNET_CFG_CPU_MPC5744P
+        ethif->reg_phy->MSCR = FNET_FEC_MSCR_MII_SPEED((FNET_FEC_CLOCK_KHZ/FNET_FEC_MII_CLOCK_KHZ) - 1) & ~1;
+    #else
         ethif->reg_phy->MSCR = FNET_FEC_MSCR_MII_SPEED((FNET_FEC_CLOCK_KHZ/FNET_FEC_MII_CLOCK_KHZ) + 1) & ~1;
+    #endif 
             
         /* Enable interrupts (Receive frame interrupt).*/
     #if FNET_FEC_INTERRUPT_ENABLE 
@@ -482,7 +486,9 @@ void fnet_fec_input(fnet_netif_t *netif)
         {
             /* Error handling */
             if (ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_LG /* Frame too long.*/
+#if !FNET_CFG_CPU_MPC5744P                     
                                                  |FNET_FEC_RX_BD_SH /* Frame too short.*/
+#endif                                                 
                                                  |FNET_FEC_RX_BD_NO /* Frame alignment.*/
                                                  |FNET_FEC_RX_BD_CR /* CRC Error.*/
                                                  |FNET_FEC_RX_BD_OV /* FIFO overrun.*/
@@ -566,7 +572,9 @@ int fnet_fec_input_frame(fnet_netif_t *netif, char* buf, int buf_size)
         {
             /* Error handling */
             if (ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_LG /* Frame too long.*/
+#if !FNET_CFG_CPU_MPC5744P                     
                                                  |FNET_FEC_RX_BD_SH /* Frame too short.*/
+#endif  
                                                  |FNET_FEC_RX_BD_NO /* Frame alignment.*/
                                                  |FNET_FEC_RX_BD_CR /* CRC Error.*/
                                                  |FNET_FEC_RX_BD_OV /* FIFO overrun.*/
@@ -1255,12 +1263,39 @@ void fnet_fec_debug_mii_print_regs(fnet_netif_t *netif)
         fnet_printf("\tANER = 0x%04X\n",reg_value );
         fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_ANNPTR, &reg_value);
         fnet_printf("\tANNPTR = 0x%04X\n",reg_value );
+#if FNET_CFG_CPU_MPC5744P
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_PHYSTS, &reg_value);
+        fnet_printf("\tPHYSTS = 0x%04X\n",reg_value );
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_ICR, &reg_value);
+        fnet_printf("\tICR = 0x%04X\n",reg_value );
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_ISR, &reg_value);
+        fnet_printf("\tISR = 0x%04X\n",reg_value );
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_FCSCR, &reg_value);
+        fnet_printf("\tFCSCR = 0x%04X\n",reg_value );
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_RECR, &reg_value);
+        fnet_printf("\tRECR = 0x%04X\n",reg_value );
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_PCSR, &reg_value);
+        fnet_printf("\tPCSR = 0x%04X\n",reg_value );        
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_RBR, &reg_value);
+        fnet_printf("\tRBR = 0x%04X\n",reg_value ); 
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_LEDCR, &reg_value);
+        fnet_printf("\tLEDCR = 0x%04X\n",reg_value ); 
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_PHYCR, &reg_value);
+        fnet_printf("\tPHYCR = 0x%04X\n",reg_value );
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_10BTSCR, &reg_value);
+        fnet_printf("\t10BTSCR = 0x%04X\n",reg_value ); 
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_CDCTRL1, &reg_value);
+        fnet_printf("\tCDCTRL1 = 0x%04X\n",reg_value );
+        fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_EDCR, &reg_value);
+        fnet_printf("\tEDCR = 0x%04X\n",reg_value );
+#else
         fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_ICR, &reg_value);
         fnet_printf("\tICR = 0x%04X\n",reg_value );
         fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_PSR, &reg_value);
         fnet_printf("\tPSR = 0x%04X\n",reg_value );
         fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_PCR, &reg_value);
         fnet_printf("\tPCR = 0x%04X\n",reg_value );
+#endif
     }
 }
 

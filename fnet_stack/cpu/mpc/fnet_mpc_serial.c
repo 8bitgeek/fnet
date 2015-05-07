@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2015 by Andrey Butok. FNET Community.
 * Copyright 2011 by Andrey Butok and Gordon Jahn. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -52,6 +52,17 @@
 /********************************************************************/
 void fnet_cpu_serial_putchar( long port_number, int character)
 {
+#if FNET_CFG_CPU_MPC5744P
+    /* Send the character */
+    FNET_MPC_LIN_BDRL(port_number) = (unsigned char)character;
+    
+    while(!(FNET_MPC_LIN_UARTSR(port_number) & 0x2))
+    {};
+    
+    /* Clear Data Send Complete */
+    FNET_MPC_LIN_UARTSR(port_number) = 0x2;
+#endif
+    
 #if FNET_CFG_CPU_MPC5668G
 	while(!(FNET_MPC_ESCI_IFSR1(port_number) & 0x8000)) 
 	{};  /* Wait for previous transmissions to finish */
@@ -86,7 +97,7 @@ void fnet_cpu_serial_putchar( long port_number, int character)
 /********************************************************************/
 int fnet_cpu_serial_getchar( long port_number )
 {
-
+  
 #if FNET_CFG_CPU_MPC5668G
     /* If character received. */
 	if(FNET_MPC_ESCI_IFSR1(port_number) & 0x2000)
@@ -97,7 +108,7 @@ int fnet_cpu_serial_getchar( long port_number )
 	}
 #endif 
 
-#if FNET_CFG_CPU_MPC564xBC
+#if FNET_CFG_CPU_MPC564xBC || FNET_CFG_CPU_MPC5744P
     /* If character received.*/
     if (FNET_MPC_LIN_UARTSR(port_number) & 0x4)
     { 
@@ -130,6 +141,26 @@ static inline void fnet_cpu_serial_gpio_init(long port_number)
     }
 #endif
 
+#if FNET_CFG_CPU_MPC5744P
+    switch (port_number)
+    {
+        case 1:
+
+            break;
+        case 0:
+        default:
+               /* LINFlex 0 is connected to the MPC5746M MB
+               PB[2]    MSCR[18]   TXD      LIN0 O      SRC[1:0]=00    OBE=1    ODE=0    SMC=0    APC=0    IBE=0    HYS=0    PUS=0    PUE=0    INV=0    SSS=0001
+               PB[3]    MSCR[19]   RXD      LIN0 O      SRC[1:0]=00    OBE=0    ODE=0    SMC=0    APC=0    IBE=1    HYS=0    PUS=0    PUE=0    INV=0    SSS=0000
+               */
+               FNET_MPC5744_GPIO_MSCR(18)  = 0x02000001;    /* Set to LIN0_TXD */
+               FNET_MPC5744_GPIO_MSCR(19)  = 0x00080000;    /* Set to LIN0_RXD */
+
+               FNET_MPC5744_GPIO_IMCR(165) = 0x00000001;
+            break;
+    }
+#endif
+    
 
 #if FNET_CFG_CPU_MPC564xBC
     switch (port_number)
@@ -182,6 +213,8 @@ static inline void fnet_cpu_serial_gpio_init(long port_number)
 /********************************************************************/
 void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
 {
+    int lfdivx16;
+    
 	/*
 	 * Initialize UART for serial communications
 	 */
@@ -197,19 +230,26 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
 
 #endif	
 
-#if FNET_CFG_CPU_MPC564xBC
+#if FNET_CFG_CPU_MPC564xBC || FNET_CFG_CPU_MPC5744P
 	/*
 	 * Reset Transmitter - set sleep = 0 and init = 1
 	 */
 	FNET_MPC_LIN_CR1(port_number) = (FNET_MPC_LIN_CR1(port_number) & 0x0000FFFC) | 0x00000001;
 	FNET_MPC_LIN_UARTCR(port_number) = 0x0001;	/* Turn on UART mode so settings can be... set.*/
 	FNET_MPC_LIN_UARTCR(port_number) = 0x0033;
-	
-	/* Calculate LINIBRR and LINFBRR based on baud rate, assumes 120MHz and /4 on Peripheral Set 1 on B3M
+
+#if FNET_CFG_CPU_MPC5744P    
+	/* Calculate LINIBRR and LINFBRR based on baud rate, assumes 200MHz and /2 on HALFSYS_CLK on Panther
 			
 	*/
-	int lfdivx16 = (FNET_CFG_CPU_CLOCK_HZ / 4) / baud_rate;
-
+	lfdivx16 = (FNET_CFG_CPU_CLOCK_HZ / 2) / baud_rate;
+#else
+    /* Calculate LINIBRR and LINFBRR based on baud rate, assumes 120MHz and /4 on Peripheral Set 1 on B3M
+            
+    */
+    lfdivx16 = (FNET_CFG_CPU_CLOCK_HZ / 4) / baud_rate;   
+#endif
+    
 	FNET_MPC_LIN_LINIBRR(port_number) = lfdivx16 / 16;	
 	FNET_MPC_LIN_LINFBRR(port_number) = lfdivx16 % 16;
 	

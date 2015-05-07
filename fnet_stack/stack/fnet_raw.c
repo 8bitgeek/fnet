@@ -184,7 +184,7 @@ void fnet_raw_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct 
         }
         else
     #endif
-        {}
+        {protocol_number = 0;}
 
         /* Demultiplex broadcast & multicast datagrams.*/
         if(fnet_socket_addr_is_broadcast(local_addr, netif) || fnet_socket_addr_is_multicast(local_addr)) 

@@ -137,35 +137,37 @@ static unsigned long fnet_checksum_nb(fnet_netbuf_t * nb, int len)
 
         sum = fnet_checksum_low(sum, current_length, d_ptr); 
         
-        
-        tmp_nb = tmp_nb->next;
-        d_ptr = tmp_nb->data_ptr;
-        
-        if(current_length & 1)
+        if(len)
         {
-            if(len)
+            tmp_nb = tmp_nb->next;
+            d_ptr = tmp_nb->data_ptr;
+            
+            if(current_length & 1)
             {
-                /* If previous fragment was odd, add in first byte in lower 8 bits. */
-                p_byte2 = fnet_ntohs((unsigned short)((*((unsigned char *)d_ptr)) & 0x00FF));
-                d_ptr = (unsigned short *)((unsigned char *)d_ptr + 1);
-                
-                sum += (unsigned short)p_byte2;
-                len--;
-                current_length = -1;
+                if(len)
+                {
+                    /* If previous fragment was odd, add in first byte in lower 8 bits. */
+                    p_byte2 = fnet_ntohs((unsigned short)((*((unsigned char *)d_ptr)) & 0x00FF));
+                    d_ptr = (unsigned short *)((unsigned char *)d_ptr + 1);
+                    
+                    sum += (unsigned short)p_byte2;
+                    len--;
+                    current_length = -1;
+                }
+                else
+                    current_length = 0;
             }
             else
+            {
                 current_length = 0;
-        }
-        else
-        {
-            current_length = 0;
-        }
-          
+            }
+              
 
-        if(tmp_nb->length > len)
-            current_length = len;
-        else
-            current_length += tmp_nb->length;
+            if(tmp_nb->length > len)
+                current_length = len;
+            else
+                current_length += tmp_nb->length;
+        }
     }
 
     return sum;

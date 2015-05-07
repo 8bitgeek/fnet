@@ -428,7 +428,7 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 
     /* Put here you debugging information.*/
 #if 0
-    fnet_eth_debug_mii_print_regs(fapp_default_netif);
+    fnet_fec_debug_mii_print_regs(fapp_default_netif);
 #endif
 
 #if 0
@@ -446,7 +446,7 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     }
 #endif
 
-#if 1 /* Test ctacrypt library.*/
+#if 0 /* Test ctacrypt library.*/
     extern void ctaocrypt_test(void);
     
     ctaocrypt_test();

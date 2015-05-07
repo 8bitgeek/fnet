@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2015 by Andrey Butok. FNET Community.
 * Copyright 2011 by Andrey Butok and Gordon Jahn. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -54,7 +54,9 @@
 *************************************************************************/
 void fnet_cpu_reset (void)
 {
+#if !FNET_CFG_CPU_MPC5744P
     FNET_MPC_SIU_SRCR = 0x80000000; /* Software System Reset */
+#endif
 }
 
 /************************************************************************

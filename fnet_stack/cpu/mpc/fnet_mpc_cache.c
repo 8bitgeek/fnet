@@ -54,8 +54,18 @@
 *
 * DESCRIPTION: Invalidate cache.
 *************************************************************************/
-void fnet_cpu_cache_invalidate()
-{}   
-        
+#if FNET_CFG_CPU_CACHE
+    void fnet_cpu_cache_invalidate()
+    {
+#if FNET_CFG_CPU_MPC5744P
+       fnet_mpc5744p_cacr_wr();
+#else
+       fnet_mcf_cacr_wr((0|FNET_CFG_MCF_CACHE_CACR|FNET_MCF_CACR_CINV));
+#endif        
+    }
+#else
+    void fnet_cpu_cache_invalidate()
+    {}   
+#endif        
 #endif /*FNET_MPC*/
 

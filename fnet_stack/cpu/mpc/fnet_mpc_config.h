@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2015 by Andrey Butok. FNET Community.
 *
 ***************************************************************************
 * This program is free software: you can redistribute it and/or modify
@@ -68,6 +68,9 @@
 #if FNET_CFG_CPU_MPC5668G
 	#define FNET_CFG_CPU_ETH0_VECTOR_NUMBER      (299)
 #endif
+#if FNET_CFG_CPU_MPC5744P
+    #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER      (218)
+#endif
 
 #endif
 /*! @endcond */
@@ -80,6 +83,9 @@
 #ifndef FNET_CFG_CPU_TIMER_VECTOR_NUMBER
 	#if FNET_CFG_CPU_MPC5668G
 		#define FNET_CFG_CPU_TIMER_VECTOR_NUMBER    (149+FNET_CFG_CPU_TIMER_NUMBER)
+
+    #elif FNET_CFG_CPU_MPC5744P
+        #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER    (226+FNET_CFG_CPU_TIMER_NUMBER)
 
 	#elif FNET_CFG_CPU_MPC564xBC	
 		#if (FNET_CFG_CPU_TIMER_NUMBER<3)
@@ -97,7 +103,6 @@
 #ifndef FNET_CFG_CPU_SRAM_ADDRESS 
     #define FNET_CFG_CPU_SRAM_ADDRESS   (0x40000000)    
 #endif
-
 
 #endif /* FNET_MPC */
 

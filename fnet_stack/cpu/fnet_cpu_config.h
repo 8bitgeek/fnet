@@ -113,7 +113,9 @@
 #ifndef FNET_CFG_CPU_MPC564xBC 
     #define FNET_CFG_CPU_MPC564xBC  (0)
 #endif  
-
+#ifndef FNET_CFG_CPU_MPC5744P 
+    #define FNET_CFG_CPU_MPC5744P   (0)
+#endif 
 
 /*********** MFC ********************/
 #if FNET_CFG_CPU_MCF52235 /* Kirin2 */
@@ -228,6 +230,15 @@
     
     #include "cpu/mpc/fnet_mpc564xbc_config.h"
     #define FNET_CPU_STR    "MPC56xBC"
+#endif
+
+#if FNET_CFG_CPU_MPC5744P /* Panther */ 
+    #ifdef FNET_CPU_STR
+        #error "More than one CPU selected FNET_CPU_XXXX"
+    #endif
+    
+    #include "fnet_mpc5744p_config.h"
+    #define FNET_CPU_STR    "MPC5744P"
 #endif
 
 /*-----------*/

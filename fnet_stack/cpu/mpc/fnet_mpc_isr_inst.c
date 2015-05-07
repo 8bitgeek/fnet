@@ -1,6 +1,6 @@
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2015 by Andrey Butok. FNET Community.
 * Copyright 2011 by Andrey Butok and Gordon Jahn. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -71,12 +71,17 @@ int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority)
     }
 	
     if(*irq_vec == (unsigned long)fnet_cpu_isr)
-    {
-#if FNET_CFG_CPU_INDEX==0
-	    FNET_MPC_INTC_PSR(vector_number) = (unsigned char)(0xF & priority);
-#else
-	    FNET_MPC_INTC_PSR(vector_number) = (unsigned char)(0xC0 | (0xF & priority));
-#endif
+    {    
+    #if FNET_CFG_CPU_INDEX==0
+       #if FNET_CFG_CPU_MPC5744P
+            FNET_MPC_INTC_PSR(vector_number) = (unsigned short int)(0x8000 | (0x1F & priority));
+      #else
+            FNET_MPC_INTC_PSR(vector_number) = (unsigned char)(0xF & priority);
+      #endif
+    #else
+            FNET_MPC_INTC_PSR(vector_number) = (unsigned char)(0xC0 | (0xF & priority));
+    #endif
+
         result = FNET_OK;
     }
     else

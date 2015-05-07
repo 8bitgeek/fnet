@@ -73,6 +73,6 @@ int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority);
 #endif /* FNET_CFG_OS_ISR */
 
 /* Defines number of the first event handler. MUST be higher than any HW-vector number. */
-#define FNET_EVENT_VECTOR_NUMBER (500) 
+#define FNET_EVENT_VECTOR_NUMBER (1025) 
 
 #endif

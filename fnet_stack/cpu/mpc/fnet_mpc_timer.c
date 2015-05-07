@@ -89,9 +89,22 @@ int fnet_cpu_timer_init( unsigned int period_ms )
     
     if(result == FNET_OK)
     {
-		FNET_MPC_PITRTI_MCR = 0x04;
+
+#if FNET_CFG_CPU_MPC5744P
+        /* FRZ = 1 (stopped in Debug mode), MDIS = 0 */
+        FNET_MPC_PITRTI_MCR = 0x01;
+#else
+        FNET_MPC_PITRTI_MCR = 0x04;
+#endif
+        
 		FNET_MPC_PITRTI_TCTRL(FNET_TIMER_NUMBER) = 0x0;
-		FNET_MPC_PITRTI_LDVAL(FNET_TIMER_NUMBER) = period_ms * FNET_TIMER_CLKIN_PER_MS;
+
+#if FNET_CFG_CPU_MPC5744P
+      /* assumes SYS_CLK = 200MHz and MC_CGM_SC_DC0 = 4, then PBRIDGE_CLK is /4 */
+      FNET_MPC_PITRTI_LDVAL(FNET_TIMER_NUMBER) = period_ms * (FNET_TIMER_CLKIN_PER_MS/4); 
+#else
+      FNET_MPC_PITRTI_LDVAL(FNET_TIMER_NUMBER) = period_ms * FNET_TIMER_CLKIN_PER_MS;
+#endif
 		FNET_MPC_PITRTI_TCTRL(FNET_TIMER_NUMBER) = 0x3;
     }
 

@@ -1,7 +1,7 @@
 
 /**************************************************************************
 * 
-* Copyright 2012-2013 by Andrey Butok. FNET Community.
+* Copyright 2012-2015 by Andrey Butok. FNET Community.
 * Copyright 2011 by Andrey Butok and Gordon Jahn. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
@@ -61,7 +61,11 @@ void fnet_cpu_isr(void)
 {
 #if FNET_CFG_CPU_INDEX==0
     /* ICSR register [VECTACTIVE].*/ 
-    fnet_uint16 vector_number = (fnet_uint16) ((FNET_MPC_INTC_IACKR_PRC0 & 0x7FC) >> 2);
+   #if FNET_CFG_CPU_MPC5744P
+      fnet_uint16 vector_number = (fnet_uint16) ((FNET_MPC_INTC_IACKR_PRC0 & 0xFFC) >> 2);
+   #else
+      fnet_uint16 vector_number = (fnet_uint16) ((FNET_MPC_INTC_IACKR_PRC0 & 0x7FC) >> 2);
+   #endif
 #else
     /* ICSR register [VECTACTIVE].*/ 
     fnet_uint16 vector_number = (fnet_uint16) ((FNET_MPC_INTC_IACKR_PRC1 & 0x7FC) >> 2);
