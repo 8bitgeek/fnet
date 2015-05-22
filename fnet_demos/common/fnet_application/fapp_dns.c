@@ -48,15 +48,14 @@
 /************************************************************************
 *     Definitions.
 *************************************************************************/
-//#define FNET_DNS_RESOLUTION_FAILED  "Resolution is failed!"
-
 const char FNET_DNS_RESOLUTION_FAILED[]="Resolution is FAILED";
 const char FNET_DNS_UNKNOWN[]="DNS server is unknown";
+
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-
-
+static void fapp_dns_handler_resolved (fnet_address_family_t addr_family, const char *addr_list, int addr_list_size, long shl_desc);
+static void fapp_dns_on_ctrlc(fnet_shell_desc_t desc);
 
 /************************************************************************
 * NAME: fapp_dhcp_handler_updated
@@ -149,14 +148,14 @@ void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     {
     #if FNET_CFG_IP6
         /* IPv6 DNS has higher priority over IPv4.*/
-        if(fnet_netif_get_ip6_dns(netif, 0, (fnet_ip6_addr_t *)&dns_params.dns_server_addr.sa_data) == FNET_TRUE)
+        if(fnet_netif_get_ip6_dns(netif, 0U, (fnet_ip6_addr_t *)&dns_params.dns_server_addr.sa_data) == FNET_TRUE)
         {
             dns_params.dns_server_addr.sa_family = AF_INET6;
         }
         else
     #endif
     #if FNET_CFG_IP4
-        if( (((struct sockaddr_in*)(&dns_params.dns_server_addr))->sin_addr.s_addr = fnet_netif_get_ip4_dns(netif)) != 0)
+        if( (((struct sockaddr_in*)(&dns_params.dns_server_addr))->sin_addr.s_addr = fnet_netif_get_ip4_dns(netif)) != (fnet_ip4_addr_t)0)
         {
             dns_params.dns_server_addr.sa_family = AF_INET;
         }

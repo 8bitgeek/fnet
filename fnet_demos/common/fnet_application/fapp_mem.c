@@ -91,6 +91,12 @@ static const struct fapp_mem_region_reserved fapp_mem_regions_reserved[] =
 #define FAPP_MEM_ERROR_WRITEFAILED  "\n ERR: Writing %d bytes to 0x%08X failed!"
 #define FAPP_MEM_ERROR_NOTERASED    "\n ERR: Memory is not erased!"
 
+static const struct fapp_mem_region *fapp_mem_region_find( unsigned long start, unsigned long n);
+
+#if FAPP_CFG_ERASE_CMD
+static int fapp_mem_erase( void *addr, unsigned n);
+#endif
+
 /************************************************************************
 * NAME: fapp_mem_region_is_protected
 *

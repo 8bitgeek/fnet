@@ -45,11 +45,11 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static char *fnet_inet_ntop_ip4(fnet_ip4_addr_t *addr, char *str, int size);
+static char *fnet_inet_ntop_ip4(fnet_ip4_addr_t *addr, char *str, unsigned long size);
 static int fnet_inet_pton_ip4(const char *str, fnet_ip4_addr_t *addr);
 
 #if FNET_CFG_IP6
-static char *fnet_inet_ntop_ip6(fnet_ip6_addr_t *addr, char *str, int size);
+static char *fnet_inet_ntop_ip6(fnet_ip6_addr_t *addr, char *str, unsigned long size);
 static int fnet_inet_pton_ip6(const char *str, fnet_ip6_addr_t *addr);
 #endif
 
@@ -82,7 +82,7 @@ int fnet_inet_aton( char *cp, struct in_addr *addr )
 * DESCRIPTION:The function converts network format IPv4 and IPv6 address 
 *               to presentation/text format (string).
 *************************************************************************/ 
-char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, int str_len)
+char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, unsigned long str_len)
 {
 	switch (family)
 	{
@@ -105,7 +105,7 @@ char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, 
 * DESCRIPTION:The function converts from presentation format (string)
 *	        to network format.
 *************************************************************************/
-int fnet_inet_pton(fnet_address_family_t family, const char *str, void *addr, int addr_len)
+int fnet_inet_pton(fnet_address_family_t family, const char *str, void *addr, unsigned long addr_len)
 {   
     switch (family)
     {
@@ -354,7 +354,7 @@ ERROR:
 * DESCRIPTION:The function converts IPv4 address 
 *               to presentation format (string).
 *************************************************************************/  
-static char *fnet_inet_ntop_ip4 ( fnet_ip4_addr_t *addr, char *str, int str_len)
+static char *fnet_inet_ntop_ip4 ( fnet_ip4_addr_t *addr, char *str, unsigned long str_len)
 {
 	char                tmp[FNET_IP4_ADDR_STR_SIZE];
 	int                 length;
@@ -381,7 +381,7 @@ static char *fnet_inet_ntop_ip4 ( fnet_ip4_addr_t *addr, char *str, int str_len)
 *               presentation (printable) format.
 *************************************************************************/  
 #if FNET_CFG_IP6 
-static char *fnet_inet_ntop_ip6 (fnet_ip6_addr_t *addr, char *str, int str_len)
+static char *fnet_inet_ntop_ip6 (fnet_ip6_addr_t *addr, char *str, unsigned long str_len)
 {
     char    tmp[FNET_IP6_ADDR_STR_SIZE];
     char    *tp;

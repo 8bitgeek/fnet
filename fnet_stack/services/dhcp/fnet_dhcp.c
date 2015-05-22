@@ -62,23 +62,23 @@
 *************************************************************************/
 
 
-#define FNET_DHCP_OP_BOOTREQUEST        (1)
-#define FNET_DHCP_FLAGS_BROADCAST       (0x8000)
+#define FNET_DHCP_OP_BOOTREQUEST        (1U)
+#define FNET_DHCP_FLAGS_BROADCAST       (0x8000U)
 
 #if !FNET_CFG_DHCP_BOOTP /* Not used by BOOTP */
-    #define FNET_DHCP_OP_BOOTREPLY          (2)
+    #define FNET_DHCP_OP_BOOTREPLY          (2U)
 
-    #define FNET_DHCP_LEASE_MAX             (0xFFFFFFFF/(1000*2)) /* Maximum lease time value (cause of timer counter is in ms) */
+    #define FNET_DHCP_LEASE_MAX             (0xFFFFFFFFU/(1000U*2U)) /* Maximum lease time value (cause of timer counter is in ms) */
 
-    #define FNET_DHCP_STATE_REBOOTING_SEND_TIMEOUT      (4*1000)          /*(ms) timeout for ACK => request retransmission.*/
-    #define FNET_DHCP_STATE_REBOOTING_TIMEOUT           (2*FNET_DHCP_STATE_REBOOTING_SEND_TIMEOUT)  /*(ms) timeout to go to INIT state.*/
-    #define FNET_DHCP_STATE_RENEWING_SEND_TIMEOUT       (60*1000)                                   /*(ms) timeout for ACK => request retransmission.*/
-    #define FNET_DHCP_STATE_REBINDING_SEND_TIMEOUT      (60*1000)                                   /*(ms) timeout for ACK => request retransmission.*/
+    #define FNET_DHCP_STATE_REBOOTING_SEND_TIMEOUT      (4U*1000U)          /*(ms) timeout for ACK => request retransmission.*/
+    #define FNET_DHCP_STATE_REBOOTING_TIMEOUT           (2U*FNET_DHCP_STATE_REBOOTING_SEND_TIMEOUT)  /*(ms) timeout to go to INIT state.*/
+    #define FNET_DHCP_STATE_RENEWING_SEND_TIMEOUT       (60U*1000U)                                   /*(ms) timeout for ACK => request retransmission.*/
+    #define FNET_DHCP_STATE_REBINDING_SEND_TIMEOUT      (60U*1000U)                                   /*(ms) timeout for ACK => request retransmission.*/
 #endif /* !FNET_CFG_DHCP_BOOTP */
 
-#define FNET_DHCP_STATE_REQUESTING_SEND_TIMEOUT     (4*1000)          /*(ms) timeout for ACK => request retransmission.*/
-#define FNET_DHCP_STATE_REQUESTING_TIMEOUT          (4*FNET_DHCP_STATE_REQUESTING_SEND_TIMEOUT) /*(ms) timeout to go to INIT state.*/
-#define FNET_DHCP_STATE_SELECTING_SEND_TIMEOUT      (FNET_CFG_DHCP_RESPONSE_TIMEOUT*1000)     /*(ms) timeout for OFFER => INIT.*/
+#define FNET_DHCP_STATE_REQUESTING_SEND_TIMEOUT     (4U*1000U)          /*(ms) timeout for ACK => request retransmission.*/
+#define FNET_DHCP_STATE_REQUESTING_TIMEOUT          (4U*FNET_DHCP_STATE_REQUESTING_SEND_TIMEOUT) /*(ms) timeout to go to INIT state.*/
+#define FNET_DHCP_STATE_SELECTING_SEND_TIMEOUT      (FNET_CFG_DHCP_RESPONSE_TIMEOUT*1000U)     /*(ms) timeout for OFFER => INIT.*/
 
 #define FNET_DHCP_ERR_SOCKET_CREATION   "ERROR: Socket creation error."
 #define FNET_DHCP_ERR_SOCKET_BIND       "ERROR: Socket Error during bind."
@@ -92,55 +92,55 @@
 /************************************************************************
 *     DHCP Options. [RFC 2132] definitions
 *************************************************************************/
-#define FNET_DHCP_OPTION_PAD                    (0)     /* Pad option.*/
-#define FNET_DHCP_OPTION_SUBNETMASK             (1)     /* Subnet mask.*/
-#define FNET_DHCP_OPTION_SUBNETMASK_LENGTH      (4)
+#define FNET_DHCP_OPTION_PAD                    (0U)     /* Pad option.*/
+#define FNET_DHCP_OPTION_SUBNETMASK             (1U)     /* Subnet mask.*/
+#define FNET_DHCP_OPTION_SUBNETMASK_LENGTH      (4U)
 
-#define FNET_DHCP_OPTION_ROUTER                 (3)     /* Router option (gateway).*/
-#define FNET_DHCP_OPTION_ROUTER_MULTIPLE        (4)
-#define FNET_DHCP_OPTION_DNS                    (6)     /* Domain Name Server option. */
-#define FNET_DHCP_OPTION_DNS_LENGTH_MIN         (4)     /* The minimum length for this option is 4 octets, 
+#define FNET_DHCP_OPTION_ROUTER                 (3U)     /* Router option (gateway).*/
+#define FNET_DHCP_OPTION_ROUTER_MULTIPLE        (4U)
+#define FNET_DHCP_OPTION_DNS                    (6U)     /* Domain Name Server option. */
+#define FNET_DHCP_OPTION_DNS_LENGTH_MIN         (4U)     /* The minimum length for this option is 4 octets, 
                                                          * and the length MUST always be a multiple of 4. */
-#define FNET_DHCP_OPTION_HOSTNAME               (12)    /* Hostname */
-#define FNET_DHCP_OPTION_HOSTNAME_LENGTH        (32)  
-#define FNET_DHCP_OPTION_FILELENGTH             (13)    /* File Length */
-#define FNET_DHCP_OPTION_FILELENGTH_LENGTH      (2)  
-#define FNET_DHCP_OPTION_ROOTPATH               (17)    /* Rootpath.*/
-#define FNET_DHCP_OPTION_ROOTPATH_LENGTH        (32)                                                
-#define FNET_DHCP_OPTION_BROADCAST              (28)    /* Broadcast Address option.  */
-#define FNET_DHCP_OPTION_BROADCAST_LENGTH       (4)
-#define FNET_DHCP_OPTION_REQ_ADDRESS            (50)    /* Requested IP address.*/
-#define FNET_DHCP_OPTION_REQ_ADDRESS_LENGTH     (4)
-#define FNET_DHCP_OPTION_LEASE                  (51)    /* IP Address lease time (seconds).*/
-#define FNET_DHCP_OPTION_LEASE_LENGTH           (4)
-#define FNET_DHCP_OPTION_OVERLOAD               (52)    /* Option overload.*/
-#define FNET_DHCP_OPTION_OVERLOAD_LENGTH        (1)
-#define FNET_DHCP_OPTION_OVERLOAD_NONE          (0)
-#define FNET_DHCP_OPTION_OVERLOAD_FILE          (1)     /* The 'file' field is used to hold options.*/
-#define FNET_DHCP_OPTION_OVERLOAD_SNAME         (2)     /* The 'sname' field is used to hold options.*/
-#define FNET_DHCP_OPTION_OVERLOAD_BOTH          (3)     /* Both fields are used to hold options.*/
-#define FNET_DHCP_OPTION_TYPE                   (53)    /* DHCP Message Type.*/
-#define FNET_DHCP_OPTION_TYPE_LENGTH            (1)
-#define FNET_DHCP_OPTION_TYPE_DISCOVER          (1)
-#define FNET_DHCP_OPTION_TYPE_OFFER             (2)
-#define FNET_DHCP_OPTION_TYPE_REQUEST           (3)
-#define FNET_DHCP_OPTION_TYPE_DECLINE           (4)
-#define FNET_DHCP_OPTION_TYPE_ACK               (5)
-#define FNET_DHCP_OPTION_TYPE_NAK               (6)
-#define FNET_DHCP_OPTION_TYPE_RELEASE           (7)
-#define FNET_DHCP_OPTION_TYPE_INFORM            (8)
-#define FNET_DHCP_OPTION_SERVER_ID              (54)    /* Server Identifier (ip address).*/
-#define FNET_DHCP_OPTION_SERVER_ID_LENGTH       (4)
-#define FNET_DHCP_OPTION_PARAMETER_REQ_LIST     (55)    /* Parameter Request List. */
-#define FNET_DHCP_OPTION_MESSAGE_SIZE           (57)    /* Maximum DHCP Message Size. The minimum legal value is 576.*/
-#define FNET_DHCP_OPTION_MESSAGE_SIZE_LENGTH    (2)
-#define FNET_DHCP_OPTION_T1                     (58)    /* Renewal (T1) Time Value.*/
-#define FNET_DHCP_OPTION_T1_LENGTH              (4)
-#define FNET_DHCP_OPTION_T2                     (59)    /* Rebinding (T2) Time Value. */
-#define FNET_DHCP_OPTION_T2_LENGTH              (4)
-#define FNET_DHCP_OPTION_CLIENT_ID              (61)    /* Client-identifier.*/
-#define FNET_DHCP_OPTION_CLIENT_ID_LENGTH       (sizeof(fnet_mac_addr_t)+1)
-#define FNET_DHCP_OPTION_END                    (255)   /* End option. */
+#define FNET_DHCP_OPTION_HOSTNAME               (12U)    /* Hostname */
+#define FNET_DHCP_OPTION_HOSTNAME_LENGTH        (32U)  
+#define FNET_DHCP_OPTION_FILELENGTH             (13U)    /* File Length */
+#define FNET_DHCP_OPTION_FILELENGTH_LENGTH      (2U)  
+#define FNET_DHCP_OPTION_ROOTPATH               (17U)    /* Rootpath.*/
+#define FNET_DHCP_OPTION_ROOTPATH_LENGTH        (32U)                                                
+#define FNET_DHCP_OPTION_BROADCAST              (28U)    /* Broadcast Address option.  */
+#define FNET_DHCP_OPTION_BROADCAST_LENGTH       (4U)
+#define FNET_DHCP_OPTION_REQ_ADDRESS            (50U)    /* Requested IP address.*/
+#define FNET_DHCP_OPTION_REQ_ADDRESS_LENGTH     (4U)
+#define FNET_DHCP_OPTION_LEASE                  (51U)    /* IP Address lease time (seconds).*/
+#define FNET_DHCP_OPTION_LEASE_LENGTH           (4U)
+#define FNET_DHCP_OPTION_OVERLOAD               (52U)    /* Option overload.*/
+#define FNET_DHCP_OPTION_OVERLOAD_LENGTH        (1U)
+#define FNET_DHCP_OPTION_OVERLOAD_NONE          (0U)
+#define FNET_DHCP_OPTION_OVERLOAD_FILE          (1U)     /* The 'file' field is used to hold options.*/
+#define FNET_DHCP_OPTION_OVERLOAD_SNAME         (2U)     /* The 'sname' field is used to hold options.*/
+#define FNET_DHCP_OPTION_OVERLOAD_BOTH          (3U)     /* Both fields are used to hold options.*/
+#define FNET_DHCP_OPTION_TYPE                   (53U)    /* DHCP Message Type.*/
+#define FNET_DHCP_OPTION_TYPE_LENGTH            (1U)
+#define FNET_DHCP_OPTION_TYPE_DISCOVER          (1U)
+#define FNET_DHCP_OPTION_TYPE_OFFER             (2U)
+#define FNET_DHCP_OPTION_TYPE_REQUEST           (3U)
+#define FNET_DHCP_OPTION_TYPE_DECLINE           (4U)
+#define FNET_DHCP_OPTION_TYPE_ACK               (5U)
+#define FNET_DHCP_OPTION_TYPE_NAK               (6U)
+#define FNET_DHCP_OPTION_TYPE_RELEASE           (7U)
+#define FNET_DHCP_OPTION_TYPE_INFORM            (8U)
+#define FNET_DHCP_OPTION_SERVER_ID              (54U)    /* Server Identifier (ip address).*/
+#define FNET_DHCP_OPTION_SERVER_ID_LENGTH       (4U)
+#define FNET_DHCP_OPTION_PARAMETER_REQ_LIST     (55U)    /* Parameter Request List. */
+#define FNET_DHCP_OPTION_MESSAGE_SIZE           (57U)    /* Maximum DHCP Message Size. The minimum legal value is 576.*/
+#define FNET_DHCP_OPTION_MESSAGE_SIZE_LENGTH    (2U)
+#define FNET_DHCP_OPTION_T1                     (58U)    /* Renewal (T1) Time Value.*/
+#define FNET_DHCP_OPTION_T1_LENGTH              (4U)
+#define FNET_DHCP_OPTION_T2                     (59U)    /* Rebinding (T2) Time Value. */
+#define FNET_DHCP_OPTION_T2_LENGTH              (4U)
+#define FNET_DHCP_OPTION_CLIENT_ID              (61U)    /* Client-identifier.*/
+#define FNET_DHCP_OPTION_CLIENT_ID_LENGTH       (sizeof(fnet_mac_addr_t)+1U)
+#define FNET_DHCP_OPTION_END                    (255U)   /* End option. */
 
 static const unsigned char fnet_dhcp_magic_cookie [] =
 {
@@ -148,7 +148,7 @@ static const unsigned char fnet_dhcp_magic_cookie [] =
 }; /* The first four octets of the vendor information
 *   field have been assigned to the "magic cookie".*/
 
-#define FNET_DHCP_OPTIONS_LENGTH (312) /* [RFC2131, 2] A DHCP client must be prepared to receive DHCP messages 
+#define FNET_DHCP_OPTIONS_LENGTH (312U) /* [RFC2131, 2] A DHCP client must be prepared to receive DHCP messages 
                                         *   with an 'options' field of at least length 312 octets.*/
 
 /**************************************************************************/ /*!
@@ -335,6 +335,8 @@ static void fnet_dhcp_parse_options( fnet_dhcp_message_t *message, struct fnet_d
 static int fnet_dhcp_send_message( fnet_dhcp_if_t *dhcp );
 static int fnet_dhcp_receive_message( fnet_dhcp_if_t *dhcp, struct fnet_dhcp_options_in *options );
 static void fnet_dhcp_apply_params(fnet_dhcp_if_t *dhcp); 
+static void fnet_dhcp_change_state( fnet_dhcp_if_t *dhcp, fnet_dhcp_state_t state );
+static void fnet_dhcp_state_machine( void *fnet_dhcp_if_p );
 
 
 #if FNET_CFG_DEBUG_DHCP /* Debug functions */
@@ -484,12 +486,12 @@ static int fnet_dhcp_add_option( fnet_dhcp_message_t *message, unsigned char opt
                                  unsigned char option_length,  void *option_value )
 {
     if((&message->header.options[FNET_DHCP_OPTIONS_LENGTH] - message->next_option_position)
-           < (option_length + 2))
+           < (unsigned int)(option_length + 2U))
         return 1;
 
     *message->next_option_position++ = option_code;
     *message->next_option_position++ = option_length;
-    fnet_memcpy(message->next_option_position, option_value, option_length);
+    fnet_memcpy(message->next_option_position, option_value, (unsigned int)option_length);
     message->next_option_position += option_length;
 
     return 0;
@@ -635,7 +637,7 @@ static int fnet_dhcp_send_message( fnet_dhcp_if_t *dhcp )
 {
     fnet_dhcp_message_t *message = &dhcp->message;
     struct sockaddr     addr_send;
-    int                 length;
+    unsigned int        length;
     struct in_addr      ip_address;
 #if !FNET_CFG_DHCP_BOOTP    
     unsigned short      max_message_size;
@@ -645,9 +647,9 @@ static int fnet_dhcp_send_message( fnet_dhcp_if_t *dhcp )
     
     fnet_memset_zero(&message->header, sizeof(message->header));
     message->header.op = FNET_DHCP_OP_BOOTREQUEST;
-    message->header.htype = 1; /* Ethernet */
+    message->header.htype = 1U; /* Ethernet */
     message->header.hlen = sizeof(dhcp->macaddr);
-    message->header.xid = fnet_htonl(dhcp->xid); //TBD
+    message->header.xid = fnet_htonl(dhcp->xid); /* TBD PFI */
     message->header.flags = FNET_HTONS(FNET_DHCP_FLAGS_BROADCAST);
 
     fnet_memcpy(message->header.chaddr, dhcp->macaddr, sizeof(dhcp->macaddr)); /* Client HW address */
@@ -758,8 +760,7 @@ static int fnet_dhcp_send_message( fnet_dhcp_if_t *dhcp )
     ((struct sockaddr_in *)(&addr_send))->sin_addr = ip_address;
 
     length = message->next_option_position - (unsigned char *) &message->header;
-    return sendto(dhcp->socket_client, (char *) &message->header, length, 0, (struct sockaddr *) &addr_send,
-                  sizeof(addr_send));
+    return sendto(dhcp->socket_client, (char *) &message->header, length, 0, (struct sockaddr *) &addr_send, sizeof(addr_send));
 }
 
 /************************************************************************
@@ -772,13 +773,14 @@ static int fnet_dhcp_receive_message( fnet_dhcp_if_t *dhcp, struct fnet_dhcp_opt
     int                     size;
     struct sockaddr         addr_from;
     fnet_dhcp_header_t      *dhcp_header = &dhcp->message.header;
-    int                     addr_len = sizeof(addr_from);
+    unsigned int            addr_len = sizeof(addr_from);
+
     size = recvfrom(dhcp->socket_client, (char *) dhcp_header, sizeof(fnet_dhcp_header_t),
-                    0,                   (struct sockaddr *) &addr_from, &addr_len);
+                    0U,                   (struct sockaddr *) &addr_from, &addr_len);
  
     if(fnet_timer_get_interval(dhcp->send_request_time, fnet_timer_ticks()) < dhcp->state_send_timeout)
     {
-        if((size < (sizeof(fnet_dhcp_header_t) - FNET_DHCP_OPTIONS_LENGTH))
+        if((size < (int)(sizeof(fnet_dhcp_header_t) - FNET_DHCP_OPTIONS_LENGTH))
                || (dhcp_header->xid != fnet_htonl(dhcp->xid))  /* Is message for us? */
                || (dhcp_header->hlen != sizeof(dhcp->macaddr))
                || fnet_memcmp(dhcp_header->chaddr, dhcp->macaddr, sizeof(dhcp->macaddr))
@@ -818,7 +820,7 @@ static int fnet_dhcp_receive_message( fnet_dhcp_if_t *dhcp, struct fnet_dhcp_opt
         #endif
 
         }
-        
+
     }
     else
     {
@@ -845,7 +847,7 @@ static void fnet_dhcp_change_state( fnet_dhcp_if_t *dhcp, fnet_dhcp_state_t stat
         case FNET_DHCP_STATE_INIT_REBOOT:
     #endif    
         case FNET_DHCP_STATE_INIT:
-            fnet_netif_set_ip4_addr(dhcp->netif, 0);   /* Set zero address. DHCP messages broadcast 
+            fnet_netif_set_ip4_addr(dhcp->netif, 0U);   /* Set zero address. DHCP messages broadcast 
                                                         * by a client prior to that client obtaining 
                                                         * its IP address must have the source address 
                                                         * field in IP header set to 0.*/
@@ -865,7 +867,7 @@ static void fnet_dhcp_change_state( fnet_dhcp_if_t *dhcp, fnet_dhcp_state_t stat
             if(dhcp->current_options.public_options.t1 == FNET_HTONL(FNET_DHCP_LEASE_INFINITY))
                 dhcp->state_timeout = FNET_DHCP_LEASE_INFINITY;
             else
-                dhcp->state_timeout = (fnet_ntohl(dhcp->current_options.public_options.t1) * 1000) / FNET_TIMER_PERIOD_MS;
+                dhcp->state_timeout = (fnet_ntohl(dhcp->current_options.public_options.t1) * 1000U) / FNET_TIMER_PERIOD_MS;
     #endif /* !FNET_CFG_DHCP_BOOTP */
           break;
 
@@ -890,7 +892,7 @@ static void fnet_dhcp_change_state( fnet_dhcp_if_t *dhcp, fnet_dhcp_state_t stat
         case FNET_DHCP_STATE_RENEWING:
           fnet_dhcp_send_message(dhcp); /* Send REQUEST.*/
           dhcp->state_timeout_next_state = FNET_DHCP_STATE_REBINDING;
-          dhcp->state_timeout = (fnet_ntohl(dhcp->current_options.public_options.t2) * 1000)
+          dhcp->state_timeout = (fnet_ntohl(dhcp->current_options.public_options.t2) * 1000U)
                                                                 / FNET_TIMER_PERIOD_MS;
      
           dhcp->state_send_timeout = FNET_DHCP_STATE_RENEWING_SEND_TIMEOUT / FNET_TIMER_PERIOD_MS;
@@ -899,7 +901,7 @@ static void fnet_dhcp_change_state( fnet_dhcp_if_t *dhcp, fnet_dhcp_state_t stat
         case FNET_DHCP_STATE_REBINDING:
           fnet_dhcp_send_message(dhcp); /* Send REQUEST.*/
           dhcp->state_timeout_next_state = FNET_DHCP_STATE_INIT;
-          dhcp->state_timeout = (fnet_ntohl(dhcp->current_options.public_options.lease_time) * 1000) / FNET_TIMER_PERIOD_MS;
+          dhcp->state_timeout = (fnet_ntohl(dhcp->current_options.public_options.lease_time) * 1000U) / FNET_TIMER_PERIOD_MS;
           dhcp->state_send_timeout = FNET_DHCP_STATE_REBINDING_SEND_TIMEOUT / FNET_TIMER_PERIOD_MS;
           break;
 
@@ -1055,12 +1057,12 @@ static void fnet_dhcp_state_machine( void *fnet_dhcp_if_p )
         #else /* DHCP */
             if(fnet_netif_get_ip4_addr_automatic(dhcp->netif)) /* If user changed parameters manually.*/
             {
-                struct sockaddr addr_from;
-                int             addr_len = sizeof(addr_from);
+                struct sockaddr     addr_from;
+                unsigned int        addr_len = sizeof(addr_from);
 
                 /* Discard all input data. */
                 recvfrom(dhcp->socket_client, (char *) &dhcp->message.header, sizeof(fnet_dhcp_header_t),
-                       0,                   (struct sockaddr *) &addr_from, &addr_len);
+                       0U,                   (struct sockaddr *) &addr_from, &addr_len);
 
             
                 /* If T1 expired. */
@@ -1136,10 +1138,10 @@ static void fnet_dhcp_state_machine( void *fnet_dhcp_if_p )
                                 options.public_options.lease_time = FNET_HTONL(FNET_DHCP_LEASE_MAX);
                             }
 
-                            if(options.public_options.t1 == 0 || options.public_options.t2 == 0 || orig_lease_time != options.public_options.lease_time)
+                            if(options.public_options.t1 == 0U || options.public_options.t2 == 0U || orig_lease_time != options.public_options.lease_time)
                             {
                                 options.public_options.t1 = fnet_htonl(fnet_ntohl(options.public_options.lease_time) >> 1); /* t1=(lease * 0.5) */
-                                options.public_options.t2 = fnet_htonl(fnet_ntohl(options.public_options.lease_time) - fnet_ntohl(options.public_options.lease_time)/ 8); /* t2=(lease * 0.875) */
+                                options.public_options.t2 = fnet_htonl(fnet_ntohl(options.public_options.lease_time) - fnet_ntohl(options.public_options.lease_time)/ 8U); /* t2=(lease * 0.875) */
                             }
                         }
 

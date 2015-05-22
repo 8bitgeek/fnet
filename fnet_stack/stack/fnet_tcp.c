@@ -110,8 +110,8 @@ static fnet_socket_t *fnet_tcp_accept( fnet_socket_t *listensk );
 static int fnet_tcp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr);
 static int fnet_tcp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *foreign_addr);
 static int fnet_tcp_shutdown( fnet_socket_t *sk, int how );
-static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, char *optval, int optlen );
-static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, char *optval, int *optlen );
+static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, char *optval, unsigned int optlen );
+static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, char *optval, unsigned int *optlen );
 static int fnet_tcp_listen( fnet_socket_t *sk, int backlog );
 static void fnet_tcp_drain( void );
 
@@ -348,8 +348,6 @@ static void fnet_tcp_control_input(fnet_prot_notify_t command, struct sockaddr *
     fnet_tcp_header_t   *tcp_header;    /* Pointer to the TCP header.*/
     fnet_socket_t       *sk;            /* Pointer to the socket.*/
     fnet_tcp_control_t  *cb;
- //   struct sockaddr     src_addr;
- //   struct sockaddr     dest_addr;
 
     if(src_addr && dest_addr && nb)
     {
@@ -480,7 +478,7 @@ static int fnet_tcp_close( fnet_socket_t *sk )
     if(sk->options.flags & SO_LINGER)
     {
         
-        if(sk->options.linger == 0)
+        if(sk->options.linger_ticks == 0)
         /* Linger is 0 so close the socket immediately. */
         {
             /* Hard reset.*/
@@ -529,8 +527,8 @@ static int fnet_tcp_close( fnet_socket_t *sk )
     {
         if(cb->tcpcb_connection_state != FNET_TCP_CS_TIME_WAIT)
         {
-            if((sk->options.flags & SO_LINGER) && sk->options.linger)
-                cb->tcpcb_timers.connection = ((sk->options.linger * FNET_TIMER_PERIOD_MS)
+            if((sk->options.flags & SO_LINGER) && sk->options.linger_ticks)
+                cb->tcpcb_timers.connection = ((sk->options.linger_ticks * FNET_TIMER_PERIOD_MS)
                                                                  / FNET_TCP_SLOWTIMO);
             else
                 cb->tcpcb_timers.connection = FNET_TCP_ABORT_INTERVAL;
@@ -838,7 +836,7 @@ static int fnet_tcp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
         /* Check maximum allocated memory chunck */
         malloc_max = fnet_malloc_max_netbuf();
 
-        if(malloc_max < (long)(FNET_CFG_CPU_ETH0_MTU*1.5)) //TBD I do not like it ????
+        if(malloc_max < (long)(FNET_CFG_CPU_ETH0_MTU*1.5)) /* TBD I do not like it ????*/
         {
             freespace = 0;     
         }
@@ -901,8 +899,11 @@ static int fnet_tcp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
 
        
         /* Receive the freespace value.*/
-    //      freespace = (long)(sk->send_buffer.count_max - sk->send_buffer.count);
-
+        /* TBD*/
+    #if 0
+        freespace = (long)(sk->send_buffer.count_max - sk->send_buffer.count);
+    #endif
+    
         /* Try to add the data.*/
         if(freespace > 0)
         {
@@ -1043,7 +1044,7 @@ static int fnet_tcp_shutdown( fnet_socket_t *sk, int how )
 * RETURNS: If no error occurs, this function returns FNET_OK. Otherwise
 *          it returns FNET_ERR.
 *************************************************************************/
-static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, char *optval, int optlen )
+static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, char *optval, unsigned int optlen )
 {
     int error_code;
     
@@ -1157,7 +1158,7 @@ ERROR:
 * RETURNS: If no error occurs, this function returns FNET_OK. Otherwise
 *          it returns FNET_ERR.
 *************************************************************************/
-static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, char *optval, int *optlen )
+static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, char *optval, unsigned int *optlen )
 {
   
     fnet_tcp_control_t  *cb = (fnet_tcp_control_t *)sk->protocol_control;
@@ -1301,9 +1302,11 @@ static void fnet_tcp_drain( void )
         else if(delsk->state == SS_LISTENING)
         {
             while(delsk->partial_con)
-              fnet_tcp_abortsk(delsk->partial_con);
-        /* while (delsk->incoming_con)
-           fnet_tcp_abortsk(delsk->incoming_con); */
+                fnet_tcp_abortsk(delsk->partial_con);
+        #if 0
+            while (delsk->incoming_con)
+                fnet_tcp_abortsk(delsk->incoming_con); 
+        #endif
         }
 #if !FNET_CFG_TCP_DISCARD_OUT_OF_ORDER        
         else
@@ -1819,7 +1822,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
               {
                   /* Initialize the keepalive timer.*/
                   if(sk->options.flags & SO_KEEPALIVE)
-                      cb->tcpcb_timers.keepalive = sk->options.tcp_opt.keep_idle;//FNET_TCP_KEEP_ALIVE_TIMEO;
+                      cb->tcpcb_timers.keepalive = sk->options.tcp_opt.keep_idle;
               }
 
               break;
@@ -2029,7 +2032,7 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
 
     /* Acknowledgment of the final segment must be send immediatelly.*/
     if((*ackparam & FNET_TCP_AP_FIN_ACK)
-         ||(FNET_TCP_FLAGS(insegment) & FNET_TCP_SGT_PSH)) //TBD
+         ||(FNET_TCP_FLAGS(insegment) & FNET_TCP_SGT_PSH))
     {
            fnet_tcp_sendack(sk);
     }
@@ -2976,7 +2979,7 @@ static void fnet_tcp_ktimeo( fnet_socket_t *sk )
     segment.optlen = 0;
     segment.data = data;
     
-    fnet_tcp_sendseg(&segment);    //TBD res check       
+    fnet_tcp_sendseg(&segment);    /* TBD res check */
 
     /* Set the timers.*/
     cb->tcpcb_timers.keepalive = sk->options.tcp_opt.keep_intvl;
@@ -3310,7 +3313,7 @@ static int fnet_tcp_senddataseg( fnet_socket_t *sk, void *options, char optlen, 
 
 #if FNET_CFG_IP4
     tmp = fnet_ip_maximum_packet(((struct sockaddr_in *)(&sk->foreign_addr))->sin_addr.s_addr);
-#else //TBD
+#else /* TBD */
     tmp = 0;
 #endif    
 
@@ -3701,7 +3704,7 @@ static void fnet_tcp_setsynopt( fnet_socket_t *sk, char *options, char *optionle
     /* If 0, detect MSS based on interface MTU minus "TCP,IP header size".*/
     if(cb->tcpcb_rcvmss == 0)
     {
-    #if FNET_CFG_IP4 //TBD
+    #if FNET_CFG_IP4 /* TBD*/
         fnet_netif_t *netif;
         
         if((netif = fnet_ip_route(((struct sockaddr_in *)(&sk->foreign_addr))->sin_addr.s_addr)) != 0) 
@@ -3709,8 +3712,8 @@ static void fnet_tcp_setsynopt( fnet_socket_t *sk, char *options, char *optionle
             cb->tcpcb_rcvmss = (unsigned short) (netif->mtu - 40); /* MTU - [TCP,IP header size].*/
         }
     #else
-        cb->tcpcb_rcvmss = 0; // TBD create FNET
-    #endif /* FNET_CFG_IP4 */ //TBD        
+        cb->tcpcb_rcvmss = 0; /* TBD create FNET*/
+    #endif /* FNET_CFG_IP4 */ /* TBD */
     }
     
 

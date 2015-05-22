@@ -155,7 +155,7 @@ int fnet_inet_aton( char *cp, struct in_addr *addr );
  * fnet_inet_ntoa() is now considered to be deprecated.
  *
  ******************************************************************************/
-char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, int str_len);
+char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, unsigned long str_len);
 
 /***************************************************************************/ /*!
  *
@@ -192,7 +192,7 @@ char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, 
  * fnet_inet_aton() is now considered to be deprecated. 
  *
  ******************************************************************************/
-int fnet_inet_pton (fnet_address_family_t family, const char *str, void *addr, int addr_len);
+int fnet_inet_pton (fnet_address_family_t family, const char *str, void *addr, unsigned long addr_len);
 
 
 /***************************************************************************/ /*!

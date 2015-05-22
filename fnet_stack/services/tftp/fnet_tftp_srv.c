@@ -174,7 +174,9 @@ static struct fnet_tftp_srv_if tftp_srv_if_list[FNET_CFG_TFTP_SRV_MAX];
 *************************************************************************/
 static void fnet_tftp_srv_state_machine(void *tftp_srv_if_p);
 static void fnet_tftp_srv_send_error(struct fnet_tftp_srv_if *tftp_srv_if, SOCKET s, unsigned short error_code, const char *error_message, struct sockaddr *dest_addr);
-
+static void fnet_tftp_srv_send_data(struct fnet_tftp_srv_if *tftp_srv_if);
+static void fnet_tftp_srv_send_ack(struct fnet_tftp_srv_if *tftp_srv_if);
+static int fnet_tftp_srv_data_handler(struct fnet_tftp_srv_if *tftp_srv_if, unsigned short data_size);
 
 /************************************************************************
 * NAME: fnet_tftp_srv_init
@@ -369,7 +371,7 @@ static int fnet_tftp_srv_data_handler(struct fnet_tftp_srv_if *tftp_srv_if, unsi
 static void fnet_tftp_srv_state_machine( void *fnet_tftp_srv_if_p )
 {
     struct sockaddr         addr;
-    int                     addr_len;      
+    unsigned int            addr_len;      
     int                     received;    
     struct fnet_tftp_srv_if *tftp_srv_if = (struct fnet_tftp_srv_if *)fnet_tftp_srv_if_p;
     fnet_tftp_error_t       error_code;

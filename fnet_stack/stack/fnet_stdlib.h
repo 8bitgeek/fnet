@@ -150,7 +150,7 @@ void fnet_memset(void *dest, int value, unsigned int n);
  * @c dest with zeros.
  *
  ******************************************************************************/
-void fnet_memset_zero(void *dest, unsigned n );
+void fnet_memset_zero(void *dest, unsigned int n );
 
 /***************************************************************************/ /*!
  *
@@ -172,7 +172,7 @@ void fnet_memset_zero(void *dest, unsigned n );
  * they all match, otherwise returns @c 1.
  *
  ******************************************************************************/
-int fnet_memcmp(const void *src1, const void *src2, int n );
+int fnet_memcmp(const void *src1, const void *src2, unsigned int n );
 
 /***************************************************************************/ /*!
  *
@@ -228,7 +228,7 @@ void fnet_strcat (char *dest, const char *src);
  * The resulting string is null-terminated. 
  *
  ******************************************************************************/
-void fnet_strncat (char *dest, const char *src, int n);
+void fnet_strncat (char *dest, const char *src, unsigned int n);
 
 /***************************************************************************/ /*!
  *

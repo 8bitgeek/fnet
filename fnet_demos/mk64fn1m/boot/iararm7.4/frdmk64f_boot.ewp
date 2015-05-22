@@ -91,7 +91,7 @@
         </option>
         <option>
           <name>GeneralEnableMisra</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>GeneralMisraVerbose</name>
@@ -129,7 +129,7 @@
         <option>
           <name>GeneralMisraRules04</name>
           <version>0</version>
-          <state>011101010110111110111110110011011100111110101010110110010110101111010101111110110101101111101111111111110010110001111111010010111110111101111</state>
+          <state>011101111111111110111111110011111111111010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000</state>
         </option>
         <option>
           <name>RTConfigPath2</name>
@@ -2066,7 +2066,7 @@
           <name>$PROJ_DIR$\..\..\..\..\fnet_stack\cpu\mk\fnet_mk_isr_inst.c</name>
         </file>
         <file>
-          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.s</name>
+          <name>$PROJ_DIR$\..\..\..\..\fnet_stack\cpu\mk\fnet_mk_low.S</name>
         </file>
         <file>
           <name>$PROJ_DIR$\..\..\..\..\fnet_stack\cpu\mk\fnet_mk_serial.c</name>

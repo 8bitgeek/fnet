@@ -168,10 +168,10 @@ struct fnet_fs * fnet_fs_find_name( char *name )
 *************************************************************************/
 int fnet_fs_mount( char *fs_name, const char *mount_name, void *arg )
 {
-    int result = FNET_ERR;
-    struct fnet_fs_mount_point *mount_point = 0;
-    struct fnet_fs * fs;
-    int i;
+    int             result = FNET_ERR;
+    struct          fnet_fs_mount_point *mount_point = 0;
+    struct          fnet_fs * fs;
+    unsigned int    i;
         
     if(fs_name && mount_name)
     {
@@ -179,7 +179,7 @@ int fnet_fs_mount( char *fs_name, const char *mount_name, void *arg )
         fs = fnet_fs_find_name(fs_name);
         if(fs)
         {
-            for(i=0; i< FNET_CFG_FS_MOUNT_MAX; i++)
+            for(i=0U; i< FNET_CFG_FS_MOUNT_MAX; i++)
             {
                 if(fnet_fs_mount_list[i].fs == 0)
                 {
@@ -199,7 +199,7 @@ int fnet_fs_mount( char *fs_name, const char *mount_name, void *arg )
                 {
                     mount_point->arg = arg; /* Fill mount info structure. */
                     mount_point->fs = fs;
-                    fnet_strncpy( mount_point->name, mount_name, FNET_CFG_FS_MOUNT_NAME_MAX+1 );    
+                    fnet_strncpy( mount_point->name, mount_name, FNET_CFG_FS_MOUNT_NAME_MAX+1U );    
                 }  
             }
         }
@@ -239,7 +239,7 @@ int fnet_fs_path_cmp( const char **path, const char *name)
     }
     else
     {
-        result = (*s1p - *s2p);
+        result = (int)(*s1p - *s2p);
     }
    
     if(result == 0) /* Save end of compare */ 
@@ -256,12 +256,12 @@ int fnet_fs_path_cmp( const char **path, const char *name)
 *************************************************************************/
 static struct fnet_fs_mount_point * fnet_fs_find_mount( const char **name )
 {
-    struct fnet_fs_mount_point *result = 0;
-    struct fnet_fs_mount_point *tmp;
-    int i;
+    struct fnet_fs_mount_point  *result = 0;
+    struct fnet_fs_mount_point  *tmp;
+    unsigned int                i;
 
     if(name && *name)
-        for(i=0; i<FNET_CFG_FS_MOUNT_MAX; i++)
+        for(i=0U; i<FNET_CFG_FS_MOUNT_MAX; i++)
         {
             tmp = &fnet_fs_mount_list[i];
             if(tmp->fs && fnet_fs_path_cmp(name, tmp->name) == 0)
@@ -314,15 +314,15 @@ int fnet_fs_unmount( const char *mount_name )
 *************************************************************************/
 FNET_FS_DIR fnet_fs_opendir( const char *dirname)
 {
-    FNET_FS_DIR result = 0;
-    int i; 
-    struct fnet_fs_desc *dir = 0;
-    struct fnet_fs_mount_point *mount_point;
+    FNET_FS_DIR                 result = 0;
+    unsigned int                i; 
+    struct fnet_fs_desc         *dir = 0;
+    struct fnet_fs_mount_point  *mount_point;
 
     if(dirname)
     {
         fnet_os_mutex_lock();
-        for(i=0; i < FNET_CFG_FS_DESC_MAX; i++) /* Free descriptor? */
+        for(i=0U; i < FNET_CFG_FS_DESC_MAX; i++) /* Free descriptor? */
         {
             if(fnet_fs_desc_list[i].id == 0)
             {
@@ -413,7 +413,7 @@ void fnet_fs_rewinddir( FNET_FS_DIR dir )
     {
         fnet_os_mutex_lock();
         /* Reset current index. */
-        dirp->pos = 0; 
+        dirp->pos = 0U; 
         fnet_os_mutex_unlock();	
     }
 }
@@ -435,12 +435,12 @@ FNET_FS_FILE fnet_fs_fopen(const char *filename, const char *mode)
 *************************************************************************/
 FNET_FS_FILE fnet_fs_fopen_re(const char *filename, const char *mode, FNET_FS_FILE dir )
 {
-    char mode_in = 0;
-    FNET_FS_FILE result = 0;
-    int i;
-    struct fnet_fs_desc *file = 0;
-    struct fnet_fs_mount_point *mount_point;
-    struct fnet_fs_desc * cur_dir = (struct fnet_fs_desc *) dir;    
+    char                        mode_in = 0U;
+    FNET_FS_FILE                result = 0;
+    int                         i;
+    struct fnet_fs_desc         *file = 0;
+    struct fnet_fs_mount_point  *mount_point;
+    struct fnet_fs_desc         *cur_dir = (struct fnet_fs_desc *) dir;    
     
     if(filename && mode)
     {

@@ -1535,6 +1535,16 @@ Press any key to continue . . .
 
 FNET public releases:
 
+- Version 2.7.5:
+	- Fixed compilation error for Classical CW.
+	- Fixed compilation warnings for KDS 2.0.
+	- Fixed "MISRA-C:2004 2.2 Source code shall inly use ISO9899:1990 'C' style comments."
+	- Fixed "MISRA-C:2004 2.4 Sections of code should not be 'commented out'".
+	- Fixed "MISRA-C:2004 4.1 Only those escape sequences that are defined in the ISO C standard shall be used".
+	- Fixed "MISRA-C:2004 5.2 Identifiers in an inner scope shall not use the same name as an identifier in an outer scope, and therefore hide that identifier".
+	- Fixed "MISRA-C:2004 8.1 Functions shall have prototype declaration and the prototype shall be visible at both the function definition and call ".
+	- Fixed "MISRA-C:2004 8.3 For each function parameter the type given in the declaration and definition shall be identical, and the return types shall also be identical".
+
 - Version 2.7.4:
 	- Fixed potential crash in checksum calculation, thanks to Patrice Cavin.
 	- Fixed compilation error of boot example in KDS 2.0, K64.

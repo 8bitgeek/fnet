@@ -53,25 +53,25 @@
 /************************************************************************
 *    Definitions.
 *************************************************************************/
-#define FNET_IP6_HOPLIMIT_DEFAULT     (64)  /* Default hop-limit */
+#define FNET_IP6_HOPLIMIT_DEFAULT       (64U)  /* Default hop-limit */
 
-#define FNET_IP6_MAX_PACKET     (FNET_CFG_IP_MAX_PACKET)
+#define FNET_IP6_MAX_PACKET             (FNET_CFG_IP_MAX_PACKET)
 
 /* Check max. values.*/
-#if (FNET_IP6_MAX_PACKET > 65535)
+#if (FNET_IP6_MAX_PACKET > 65535U)
     #undef FNET_IP6_MAX_PACKET
-    #define FNET_IP6_MAX_PACKET      (65535)
+    #define FNET_IP6_MAX_PACKET         (65535U)
 #endif
 
 /************************************************************************
 *    IP implementation parameters.
 *************************************************************************/
-#define FNET_IP6_VERSION            (6)   /* IPv6 version. */
-#define FNET_IP6_HOP_LIMIT_MAX      (255) /* Maximum hop limit. */
-#define FNET_IP6_HOP_LIMIT_DEFAULT  (64)  /* Default hop limit. */
+#define FNET_IP6_VERSION                (6U)   /* IPv6 version. */
+#define FNET_IP6_HOP_LIMIT_MAX          (255U) /* Maximum hop limit. */
+#define FNET_IP6_HOP_LIMIT_DEFAULT      (64U)  /* Default hop limit. */
 
 
-#define FNET_IP6_TIMER_PERIOD    (500)
+#define FNET_IP6_TIMER_PERIOD           (500U)
 
 /* Time to live of a datagram awaiting reassembly (no relation to the IP TTL) */
 /* RFC 2460: If insufficient fragments are received to complete reassembly of a
@@ -79,7 +79,7 @@
  * fragment of that packet, reassembly of that packet must be
  * abandoned and all the fragments that have been received for that
  * packet must be discarded.*/
-#define FNET_IP6_FRAG_TTL        (60000/FNET_IP6_TIMER_PERIOD) /* TTL for fragments to complete a datagram (60sec)*/
+#define FNET_IP6_FRAG_TTL        (60000U/FNET_IP6_TIMER_PERIOD) /* TTL for fragments to complete a datagram (60sec)*/
 
 
 /* RFC4484:
@@ -164,14 +164,14 @@ FNET_COMP_PACKED_END
 /******************************************************************
 * Extension header types
 *******************************************************************/
-#define FNET_IP6_TYPE_HOP_BY_HOP_OPTIONS                     (0)
-#define FNET_IP6_TYPE_DESTINATION_OPTIONS                    (60)
-#define FNET_IP6_TYPE_ROUTING_HEADER                         (43)
-#define FNET_IP6_TYPE_FRAGMENT_HEADER                        (44)
-#define FNET_IP6_TYPE_AUTHENTICATION_HEADER                  (51)
-#define FNET_IP6_TYPE_ENCAPSULATION_SECURITY_PAYLOAD_HEADER  (50)
-#define FNET_IP6_TYPE_MOBILITY_HEADER                        (135)
-#define FNET_IP6_TYPE_NO_NEXT_HEADER                         (59)   /* RFC 2460: The value 59 in the Next Header field of an IPv6 header or any
+#define FNET_IP6_TYPE_HOP_BY_HOP_OPTIONS                     (0U)
+#define FNET_IP6_TYPE_DESTINATION_OPTIONS                    (60U)
+#define FNET_IP6_TYPE_ROUTING_HEADER                         (43U)
+#define FNET_IP6_TYPE_FRAGMENT_HEADER                        (44U)
+#define FNET_IP6_TYPE_AUTHENTICATION_HEADER                  (51U)
+#define FNET_IP6_TYPE_ENCAPSULATION_SECURITY_PAYLOAD_HEADER  (50U)
+#define FNET_IP6_TYPE_MOBILITY_HEADER                        (135U)
+#define FNET_IP6_TYPE_NO_NEXT_HEADER                         (59U)   /* RFC 2460: The value 59 in the Next Header field of an IPv6 header or any
                                                                     * extension header indicates that there is nothing following that
                                                                     * header. If the Payload Length field of the IPv6 header indicates the
                                                                     * presence of octets past the end of a header whose Next Header field
@@ -312,7 +312,7 @@ FNET_COMP_PACKED_END
  * fragment of that packet, reassembly of that packet must be
  * abandoned and all the fragments that have been received for that
  * packet must be discarded.*/
-#define FNET_IP6REASM_TTL           60000       /* 60 secs */
+#define FNET_IP6REASM_TTL           60000U       /* 60 secs */
 
 /***********************************************************************
  * Fragment Header
@@ -423,8 +423,8 @@ fnet_netif_t *fnet_ip6_route(fnet_ip6_addr_t *src_ip /*optional*/, fnet_ip6_addr
 int fnet_ip6_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_size);
 
 struct _socket; /* Forward declaration.*/
-int fnet_ip6_getsockopt(struct _socket *sock, int optname, char *optval, int *optlen); 
-int fnet_ip6_setsockopt(struct _socket *sock, int optname, char *optval, int optlen );      
+int fnet_ip6_getsockopt(struct _socket *sock, int optname, char *optval, unsigned int *optlen); 
+int fnet_ip6_setsockopt(struct _socket *sock, int optname, char *optval, unsigned int optlen );      
 
 fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_join(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr);
 void fnet_ip6_multicast_leave_entry(fnet_ip6_multicast_list_entry_t *multicastentry); 

@@ -56,12 +56,12 @@
 *     Definitions
 *************************************************************************/
 /* Ethernet Frame Types */
-#define FNET_ETH_TYPE_IP4       (0x0800)
-#define FNET_ETH_TYPE_ARP       (0x0806)
-#define FNET_ETH_TYPE_IP6       (0x86DD)
+#define FNET_ETH_TYPE_IP4       (0x0800U)
+#define FNET_ETH_TYPE_ARP       (0x0806U)
+#define FNET_ETH_TYPE_IP6       (0x86DDU)
 
-#define FNET_ETH_HDR_SIZE       (14)    /* Size of Ethernet header.*/
-#define FNET_ETH_CRC_SIZE       (4)     /* Size of Ethernet CRC.*/
+#define FNET_ETH_HDR_SIZE       (14U)    /* Size of Ethernet header.*/
+#define FNET_ETH_CRC_SIZE       (4U)     /* Size of Ethernet CRC.*/
 
 
 /************************************************************************

@@ -193,6 +193,7 @@ FNET_COMP_PACKED_END
 
 
 static void fnet_llmnr_state_machine(void *);
+static int fnet_llmnr_hostname_cmp(const unsigned char *req_hostname, const unsigned char *hostname);
 
 /************************************************************************
 *    LLMNR server interface structure
@@ -402,7 +403,7 @@ ERROR_1:
 static void fnet_llmnr_state_machine( void *fnet_llmnr_if_p )
 {
     struct sockaddr         addr;
-    int                     addr_len;      
+    unsigned int            addr_len;      
     int                     received;    
     struct fnet_llmnr_if    *llmnr_if = (struct fnet_llmnr_if *)fnet_llmnr_if_p;
     fnet_llmnr_header_t     *llmnr_header;

@@ -185,7 +185,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
     fnet_icmp_echo_header_t *hdr;
     fnet_ping_if_t          *ping_if = (fnet_ping_if_t *)fnet_ping_if_p;
     struct sockaddr         addr;
-    int                     addr_len = sizeof(addr);
+    unsigned int            addr_len = sizeof(addr);
 
     switch(ping_if->state)
     {
@@ -215,7 +215,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
 #if FNET_CFG_IP6
             if(ping_if->family == AF_INET6)
             {
-                fnet_ip6_addr_t   *src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(FNET_NULL, (fnet_ip6_addr_t *)ping_if->target_addr.sa_data); //TBD  Check result.
+                fnet_ip6_addr_t   *src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(FNET_NULL, (fnet_ip6_addr_t *)ping_if->target_addr.sa_data); /*TBD  Check result.*/
 
                 hdr->header.checksum = fnet_checksum_pseudo_buf(&fnet_ping_if.buffer[0], 
                                                                 (unsigned short)(sizeof(*hdr) + ping_if->packet_size), 
@@ -257,7 +257,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
                 }
                 else
 #endif  
-#if 0 /* #if FNET_CFG_IP6  */ // TBD case to receive from multicast address ff02::1
+#if 0 /* #if FNET_CFG_IP6  */ /* TBD case to receive from multicast address ff02::1*/
                 if(ping_if->family == AF_INET6)
                 {
                      checksum = fnet_checksum_pseudo_buf(&fnet_ping_if.buffer[0], 
@@ -293,8 +293,8 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
                 /* Call handler.*/
                 if(ping_if->handler)
                 {
-                    int     sock_err ;
-                    int     option_len;
+                    int             sock_err ;
+                    unsigned int    option_len;
                     
                     /* Get socket error.*/
                     option_len = sizeof(sock_err); 

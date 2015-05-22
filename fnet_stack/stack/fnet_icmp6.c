@@ -169,7 +169,7 @@ static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  st
                 if(FNET_IP6_ADDR_IS_MULTICAST(dest_ip))
                      dest_ip = FNET_NULL;
                 
-                fnet_icmp6_output(netif, dest_ip/*ipsrc*/, src_ip/*ipdest*/, 0, nb);   //MD
+                fnet_icmp6_output(netif, dest_ip/*ipsrc*/, src_ip/*ipdest*/, 0, nb);
                 fnet_netbuf_free_chain(ip6_nb);
                 break;   
         #if FNET_CFG_IP6_PMTU_DISCOVERY 
@@ -329,7 +329,7 @@ void fnet_icmp6_error( fnet_netif_t *netif, unsigned char type, unsigned char co
          *******************************************************************/
         /* (e.1) An ICMPv6 error message. */ 
         /* (e.2) An ICMPv6 REDIRECT message [IPv6-DISC].*/
-        if (ip6_header->next_header == FNET_IP_PROTOCOL_ICMP6) //TBD Extension header case.
+        if (ip6_header->next_header == FNET_IP_PROTOCOL_ICMP6) /* TBD Extension header case.*/
         {
             /* Make sure the packet has at least a 'TYPE' field */
             if (ip6_header->length == 0)

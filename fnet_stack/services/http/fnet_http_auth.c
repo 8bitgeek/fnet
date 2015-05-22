@@ -64,7 +64,7 @@ static unsigned char decode_base64_char(int c);
 static const struct fnet_http_auth_scheme  fnet_http_auth_scheme_table[FNET_HTTP_AUTH_SCHEME_TABLE_SIZE]=
 {
     {FNET_HTTP_AUTH_SCHEME_BASIC, "Basic", fnet_http_auth_scheme_basic_validate, fnet_http_auth_scheme_basic_generate},
-    /* TBD {FNET_HTTP_AUTH_SCHEME_DIGEST, "Digest",0} */
+    /* TBD FNET_HTTP_AUTH_SCHEME_DIGEST, "Digest" */
 };
 
 /************************************************************************

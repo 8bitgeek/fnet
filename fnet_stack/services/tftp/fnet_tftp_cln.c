@@ -279,10 +279,10 @@ ERROR:
 static void fnet_tftp_cln_state_machine( void *fnet_tftp_cln_if_p )
 {
     struct sockaddr addr;
-    int addr_len;
-    int sent_size;
-    int received;    
-    fnet_tftp_if_t *tftp_if = (fnet_tftp_if_t *)fnet_tftp_cln_if_p;
+    unsigned int    addr_len;
+    int             sent_size;
+    int             received;    
+    fnet_tftp_if_t  *tftp_if = (fnet_tftp_if_t *)fnet_tftp_cln_if_p;
 
     switch(tftp_if->state)
     {

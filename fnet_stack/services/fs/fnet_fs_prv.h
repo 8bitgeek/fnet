@@ -65,7 +65,7 @@ fnet_fs_open_mode_t;
 /* Mount point. */
 struct fnet_fs_mount_point
 {
-    char name[FNET_CFG_FS_MOUNT_NAME_MAX+1];
+    char name[FNET_CFG_FS_MOUNT_NAME_MAX+1U];
     struct fnet_fs * fs;
     void * arg; /* Argument passed by mount(). */
 };

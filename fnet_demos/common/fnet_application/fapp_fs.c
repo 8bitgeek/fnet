@@ -84,7 +84,7 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 *     File Explorer definitions.
 *************************************************************************/
 /* maximum path length */ 
-#define FAPP_FS_DIR_PATH_MAX     (50) 
+#define FAPP_FS_DIR_PATH_MAX     (50U) 
 
 /* Explorer shell prompt */
 static const char FAPP_FS_PROMPT_STR_HEADER[]="EXP:";
@@ -95,7 +95,7 @@ static char FAPP_FS_PROMPT_STR [FAPP_FS_DIR_PATH_MAX+
 
 
 /* Current path */
-static char fapp_fs_current_path[FAPP_FS_DIR_PATH_MAX+1] = {FNET_FS_SPLITTER,'\0'};
+static char fapp_fs_current_path[FAPP_FS_DIR_PATH_MAX+1U] = {FNET_FS_SPLITTER,'\0',0};
 
 /************************************************************************
 *     The table of the File Explorer commands.
@@ -190,7 +190,7 @@ void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 	if (*path != FNET_FS_SPLITTER) /* Realative path.*/
 	{
 	    /* Add splitter if not yet.*/
-	    if(fapp_fs_current_path[size_cd-1] != FNET_FS_SPLITTER) 
+	    if(fapp_fs_current_path[size_cd-1U] != FNET_FS_SPLITTER) 
 	        fnet_strncat( &fapp_fs_current_path[0], splitter, FAPP_FS_DIR_PATH_MAX);
 	        
 	    fnet_strncat( &fapp_fs_current_path[0], path, FAPP_FS_DIR_PATH_MAX);
@@ -204,9 +204,9 @@ void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     }
     
     /* Strip possible ending slashes. */
-    if((size_path = fnet_strlen(path))>0)
+    if((size_path = fnet_strlen(path)) > 0U)
     {
-        path_end = &path[size_path-1]; 
+        path_end = &path[size_path - 1U]; 
         while(*path_end == FNET_FS_SPLITTER)
         {
             *path_end = '\0';
@@ -249,14 +249,14 @@ void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 *************************************************************************/
 void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
-    FNET_FS_FILE file;
-    char * path = argv[1];
-    char * path_end;
-    unsigned long size_cd = fnet_strlen (fapp_fs_current_path);
-    unsigned long size_path;
-    char splitter[] = {FNET_FS_SPLITTER,'\0'};
-    char data;
-    struct fnet_fs_dirent dirent;    
+    FNET_FS_FILE    file;
+    char            *path = argv[1];
+    char            *path_end;
+    unsigned long   size_cd = fnet_strlen (fapp_fs_current_path);
+    unsigned long   size_path;
+    char            splitter[] = {FNET_FS_SPLITTER,'\0'};
+    char            data;
+    struct          fnet_fs_dirent dirent;    
 
     FNET_COMP_UNUSED_ARG(desc);
     FNET_COMP_UNUSED_ARG(argc);
@@ -264,7 +264,7 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 	if (*path != FNET_FS_SPLITTER) /* Realative path.*/
 	{
 	    /* Add splitter if not yet.*/
-	    if(fapp_fs_current_path[size_cd-1] != FNET_FS_SPLITTER) 
+	    if(fapp_fs_current_path[size_cd-1U] != FNET_FS_SPLITTER) 
 	        fnet_strncat( &fapp_fs_current_path[0], splitter, FAPP_FS_DIR_PATH_MAX);
 	        
 	    fnet_strncat( &fapp_fs_current_path[0], path, FAPP_FS_DIR_PATH_MAX);
@@ -278,9 +278,9 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     }
     
     /* Strip possible ending slashes. */
-    if((size_path = fnet_strlen(path))>0)
+    if((size_path = fnet_strlen(path)) > 0U)
     {
-        path_end = &path[size_path-1]; 
+        path_end = &path[size_path-1U]; 
         while(*path_end == FNET_FS_SPLITTER)
         {
             *path_end = '\0';
@@ -299,7 +299,7 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
         fnet_shell_println(desc, FAPP_FS_DIR_STR, "Content of:", dirent.d_size, dirent.d_name);
         
         while(fnet_fs_fread(&data, sizeof(data), file))
-            fnet_shell_putchar(desc, data);
+            fnet_shell_putchar(desc, (int)data);
                   
         /* Close file. */    
         fnet_fs_fclose(file);                  

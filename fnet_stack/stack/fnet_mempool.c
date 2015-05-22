@@ -363,15 +363,18 @@ unsigned long fnet_mempool_free_mem_status( fnet_mempool_desc_t mpool)
     if(t_mem)
     {
         total_size += t_mem->size;
-        /* FNET_DEBUG("%d,",t_mem->size*sizeof(FNET_ALLOC_HDR_T));*/
+        #if 0
+         FNET_DEBUG("%d,",t_mem->size*sizeof(FNET_ALLOC_HDR_T));
+        #endif
 
         while(t_mem->ptr != mempool->free_ptr)
         {
             t_mem = t_mem->ptr;
             total_size += t_mem->size;
-        /* FNET_DEBUG("%d,",t_mem->size*sizeof(FNET_ALLOC_HDR_T));*/
+        #if 0
+            FNET_DEBUG("%d,",t_mem->size*sizeof(FNET_ALLOC_HDR_T));*/
+        #endif
         }
-        /*FNET_DEBUG("");*/
     }
 
     fnet_isr_unlock();
@@ -399,7 +402,9 @@ unsigned long fnet_mempool_malloc_max( fnet_mempool_desc_t mpool )
     {
 
         max = t_mem->size;
-        /*FNET_DEBUG("%d,", t_mem->size * sizeof(FNET_ALLOC_HDR_T));*/
+    #if 0
+        FNET_DEBUG("%d,", t_mem->size * sizeof(FNET_ALLOC_HDR_T));
+    #endif
 
         while(t_mem->ptr && (t_mem->ptr != mempool->free_ptr))
         {
@@ -407,11 +412,13 @@ unsigned long fnet_mempool_malloc_max( fnet_mempool_desc_t mpool )
 
             if(t_mem->size > max)
                 max = t_mem->size;
-
-            /*FNET_DEBUG("%d,", t_mem->size * sizeof(FNET_ALLOC_HDR_T));*/
+        #if 0
+            FNET_DEBUG("%d,", t_mem->size * sizeof(FNET_ALLOC_HDR_T));
+        #endif
         }
-
-    /*FNET_DEBUG("");*/
+    #if 0
+        FNET_DEBUG("");
+    #endif
     }
 
     fnet_isr_unlock();

@@ -57,7 +57,7 @@
 #endif
 
 
-#define FNET_FEC_ALIGN_DIV(div, x)     (((fnet_uint32)(x) + ((fnet_uint32)(div)-1))  & (~((fnet_uint32)(div)-1)))
+#define FNET_FEC_ALIGN_DIV(div, x)     (((fnet_uint32)(x) + ((fnet_uint32)(div)-1U))  & (~((fnet_uint32)(div)-1U)))
 
 /************************************************************************
 *     Function Prototypes
@@ -73,13 +73,15 @@ static void fnet_fec_isr_rx_handler_bottom(void *cookie);
 
 static void fnet_fec_get_mac_addr(fnet_fec_if_t *ethif, fnet_mac_addr_t *mac_addr);
 
-static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned int phy_addr_start);
+static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned char phy_addr_start);
 void fnet_fec_debug_mii_print_regs(fnet_netif_t *netif) ;
 
 #if FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM && FNET_FEC_HW_TX_PROTOCOL_CHECKSUM_FIX
 static void fnet_fec_checksum_clear(unsigned short type, char *datagram, unsigned long datagram_size);
 #endif
-
+#if FNET_CFG_MULTICAST
+static fnet_uint32 fnet_fec_crc_hash(fnet_mac_addr_t multicast_addr);
+#endif
 /************************************************************************
 *     Global Data Structures
 *************************************************************************/
@@ -138,9 +140,9 @@ const fnet_netif_api_t fnet_fec_api =
 *************************************************************************/
 int fnet_fec_init(fnet_netif_t *netif)
 {
-    fnet_fec_if_t  *ethif;
-    int            i;
-    int            result;
+    fnet_fec_if_t   *ethif;
+    unsigned int    i;
+    int             result;
     
     ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
     
@@ -176,10 +178,10 @@ int fnet_fec_init(fnet_netif_t *netif)
     {};  /* Wait for the reset sequence to complete.*/
         
     /* Disable FEC interrupts.*/
-    ethif->reg->EIMR = 0;
+    ethif->reg->EIMR = 0U;
 
     /* Clear any pending interrupts.*/
-    ethif->reg->EIR = 0xFFFFFFFF;
+    ethif->reg->EIR = 0xFFFFFFFFU;
         
     /* ======== Ethernet buffers initialisation ===============*/
     ethif->tx_buf_desc = (fnet_fec_buf_desc_t *)FNET_FEC_ALIGN_DIV(FNET_FEC_BUF_DESC_DIV, ethif->tx_buf_desc_buf);
@@ -190,10 +192,10 @@ int fnet_fec_init(fnet_netif_t *netif)
     ethif->rx_buf_desc_cur=ethif->rx_buf_desc;
 
     /* Initialize Tx descriptor rings.*/
-    for (i = 0; i < FNET_FEC_TX_BUF_NUM; i++)
+    for (i = 0U; i < FNET_FEC_TX_BUF_NUM; i++)
     {
         ethif->tx_buf_desc[i].status = FNET_HTONS(FNET_FEC_TX_BD_L | FNET_FEC_TX_BD_TC);
-        ethif->tx_buf_desc[i].length = FNET_HTONS(0);
+        ethif->tx_buf_desc[i].length = FNET_HTONS(0U);
             
         ethif->tx_buf_desc[i].buf_ptr = (unsigned char *)fnet_htonl(FNET_FEC_ALIGN_DIV(FNET_FEC_TX_BUF_DIV, ethif->tx_buf[i]));
     }
@@ -201,10 +203,10 @@ int fnet_fec_init(fnet_netif_t *netif)
     ethif->tx_buf_desc_num=FNET_FEC_TX_BUF_NUM;
 
     /* Initialize Rx descriptor rings.*/
-    for (i = 0; i < FNET_FEC_RX_BUF_NUM; i++)
+    for (i = 0U; i < FNET_FEC_RX_BUF_NUM; i++)
     {
         ethif->rx_buf_desc[i].status = FNET_HTONS(FNET_FEC_RX_BD_E);
-        ethif->rx_buf_desc[i].length = FNET_HTONS(0);
+        ethif->rx_buf_desc[i].length = FNET_HTONS(0U);
             
         ethif->rx_buf_desc[i].buf_ptr = (unsigned char *)fnet_htonl(FNET_FEC_ALIGN_DIV(FNET_FEC_RX_BUF_DIV, ethif->rx_buf[i]));
     }
@@ -212,8 +214,8 @@ int fnet_fec_init(fnet_netif_t *netif)
     ethif->rx_buf_desc_num = FNET_FEC_RX_BUF_NUM;
 
     /* Set the Wrap bit on the last one in the ring.*/
-    ethif->tx_buf_desc[FNET_FEC_TX_BUF_NUM - 1].status |= FNET_HTONS(FNET_FEC_TX_BD_W);
-    ethif->rx_buf_desc[FNET_FEC_RX_BUF_NUM - 1].status |= FNET_HTONS(FNET_FEC_RX_BD_W);
+    ethif->tx_buf_desc[FNET_FEC_TX_BUF_NUM - 1U].status |= FNET_HTONS(FNET_FEC_TX_BD_W);
+    ethif->rx_buf_desc[FNET_FEC_RX_BUF_NUM - 1U].status |= FNET_HTONS(FNET_FEC_RX_BD_W);
  
     /*======== END of Ethernet buffers initialisation ========*/
     
@@ -223,11 +225,11 @@ int fnet_fec_init(fnet_netif_t *netif)
     if( result == FNET_OK)
     {
         /* Reset all multicast (hash table registers).*/
-        ethif->reg->GAUR = 0;
-        ethif->reg->GALR = 0;
+        ethif->reg->GAUR = 0U;
+        ethif->reg->GALR = 0U;
 
-        ethif->reg->IAUR = 0;
-        ethif->reg->IALR = 0;
+        ethif->reg->IAUR = 0U;
+        ethif->reg->IALR = 0U;
 
         /* Set Receive Buffer Size.*/
         ethif->reg->EMRBR = FNET_FEC_BUF_SIZE;
@@ -262,7 +264,7 @@ int fnet_fec_init(fnet_netif_t *netif)
 					            #endif
 					            ;      
         /* Configure the transmit block.*/
-        ethif->reg->TCR = 0
+        ethif->reg->TCR = 0U
 			    	    #if FNET_CFG_CPU_ETH_FULL_DUPLEX
 			                |FNET_FEC_TCR_FDEN  /* Enable Full duplex.*/
 			            #endif  
@@ -328,9 +330,9 @@ int fnet_fec_init(fnet_netif_t *netif)
         * an EMDC frequency of less than or equal to 2.5 MHz to be compliant
         * with the IEEE 802.3 MII specification.*/
     #if FNET_CFG_CPU_MPC5744P
-        ethif->reg_phy->MSCR = FNET_FEC_MSCR_MII_SPEED((FNET_FEC_CLOCK_KHZ/FNET_FEC_MII_CLOCK_KHZ) - 1) & ~1;
+        ethif->reg_phy->MSCR = FNET_FEC_MSCR_MII_SPEED((FNET_FEC_CLOCK_KHZ/FNET_FEC_MII_CLOCK_KHZ) - 1U) & ~1U;
     #else
-        ethif->reg_phy->MSCR = FNET_FEC_MSCR_MII_SPEED((FNET_FEC_CLOCK_KHZ/FNET_FEC_MII_CLOCK_KHZ) + 1) & ~1;
+        ethif->reg_phy->MSCR = FNET_FEC_MSCR_MII_SPEED((FNET_FEC_CLOCK_KHZ/FNET_FEC_MII_CLOCK_KHZ) + 1U) & ~1U;
     #endif 
             
         /* Enable interrupts (Receive frame interrupt).*/
@@ -348,19 +350,19 @@ int fnet_fec_init(fnet_netif_t *netif)
         fnet_eth_phy_init(ethif);
 
         /* Set to not valid zero MAC address.*/
-        ethif->reg->PALR = 0;
-        ethif->reg->PAUR = 0;
+        ethif->reg->PALR = 0U;
+        ethif->reg->PAUR = 0U;
             
         /* Clear Ethernet statistics. */
     #if FNET_CFG_CPU_ETH_MIB 
         ethif->reg->MIBC = FNET_FEC_MIBC_MIB_DISABLE; /* Disable MIB */
-        ethif->reg->RMON_T_PACKETS = 0;
-        ethif->reg->RMON_R_PACKETS = 0;
+        ethif->reg->RMON_T_PACKETS = 0U;
+        ethif->reg->RMON_R_PACKETS = 0U;
         ethif->reg->MIBC &= ~FNET_FEC_MIBC_MIB_DISABLE; /* Enable MIB */
     #endif         
     #if FNET_CFG_MULTICAST
-        ethif->GALR_double = 0;
-        ethif->GAUR_double = 0;
+        ethif->GALR_double = 0U;
+        ethif->GAUR_double = 0U;
     #endif /*FNET_CFG_MULTICAST*/
 
     #if FNET_CFG_CPU_ETH_ATONEGOTIATION_TIMEOUT
@@ -370,7 +372,7 @@ int fnet_fec_init(fnet_netif_t *netif)
             unsigned long   last_time;
                 
             if (fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_SR, &status) == FNET_ERR) 
-                status = 0;
+                status = 0U;
                     
             if (status & FNET_FEC_MII_REG_SR_AN_ABILITY)
             { /* Has auto-negotiate ability. */
@@ -410,13 +412,13 @@ void fnet_fec_release(fnet_netif_t *netif)
      * all reads come back as 0xFFFF. It appears that the problem is 
      * that we need to disable the MDC clock by writing 0 to MSCR 
      * before disabling the FEC: */
-    ethif->reg->MSCR = 0;           /* Disable the MDC clock. */
+    ethif->reg->MSCR = 0U;           /* Disable the MDC clock. */
                                     
-    ethif->reg->ECR = 0;            /* Disable the Ethernet FEC. */
+    ethif->reg->ECR = 0U;            /* Disable the Ethernet FEC. */
     
-    ethif->reg->EIMR = 0x0;         /* Disable FEC interrupts. */
+    ethif->reg->EIMR = 0x0U;         /* Disable FEC interrupts. */
 
-    ethif->reg->EIR = 0xFFFFFFFF;   /* Clear any pending FEC interrupt flags. */
+    ethif->reg->EIR = 0xFFFFFFFFU;   /* Clear any pending FEC interrupt flags. */
     
     fnet_isr_vector_release(ethif->vector_number);
 
@@ -433,7 +435,7 @@ void fnet_fec_stop(fnet_netif_t *netif)
 {
     fnet_fec_if_t * ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
     
-    ethif->reg->EIMR = 0x0;  /* Disable FEC interrupts. */
+    ethif->reg->EIMR = 0x0U;  /* Disable FEC interrupts. */
 }
 
 /************************************************************************
@@ -486,9 +488,7 @@ void fnet_fec_input(fnet_netif_t *netif)
         {
             /* Error handling */
             if (ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_LG /* Frame too long.*/
-#if !FNET_CFG_CPU_MPC5744P                     
                                                  |FNET_FEC_RX_BD_SH /* Frame too short.*/
-#endif                                                 
                                                  |FNET_FEC_RX_BD_NO /* Frame alignment.*/
                                                  |FNET_FEC_RX_BD_CR /* CRC Error.*/
                                                  |FNET_FEC_RX_BD_OV /* FIFO overrun.*/
@@ -541,11 +541,11 @@ NEXT_FRAME:
 * DESCRIPTION: Ethernet input function. 
 *   !!!! Used for debug needs only!!!!!
 *************************************************************************/
-int fnet_fec_input_frame(fnet_netif_t *netif, char* buf, int buf_size)
+int fnet_fec_input_frame(fnet_netif_t *netif, char* buf, unsigned int buf_size)
 {
-    fnet_fec_if_t * ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
-    fnet_eth_header_t * ethheader;
-    int result = 0;
+    fnet_fec_if_t       *ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
+    fnet_eth_header_t   *ethheader;
+    int                 result = 0;
 
     fnet_mac_addr_t local_mac_addr;
 
@@ -572,9 +572,7 @@ int fnet_fec_input_frame(fnet_netif_t *netif, char* buf, int buf_size)
         {
             /* Error handling */
             if (ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_LG /* Frame too long.*/
-#if !FNET_CFG_CPU_MPC5744P                     
                                                  |FNET_FEC_RX_BD_SH /* Frame too short.*/
-#endif  
                                                  |FNET_FEC_RX_BD_NO /* Frame alignment.*/
                                                  |FNET_FEC_RX_BD_CR /* CRC Error.*/
                                                  |FNET_FEC_RX_BD_OV /* FIFO overrun.*/
@@ -596,7 +594,7 @@ int fnet_fec_input_frame(fnet_netif_t *netif, char* buf, int buf_size)
             if(fnet_ntohs(ethif->rx_buf_desc_cur->length) < buf_size)
             {
                 fnet_memcpy(buf, (const void *)ethheader, (unsigned int)fnet_ntohs(ethif->rx_buf_desc_cur->length));
-                result = fnet_ntohs(ethif->rx_buf_desc_cur->length);
+                result = (int)fnet_ntohs(ethif->rx_buf_desc_cur->length);
             }
             
             fnet_eth_trace("\nRX", ethheader); /* Print ETH header.*/
@@ -782,12 +780,12 @@ void fnet_fec_output(fnet_netif_t *netif, unsigned short type, const fnet_mac_ad
 * DESCRIPTION: Ethernet low-level output frame function. 
 *   !!!! Used for debug needs only!!!!!
 *************************************************************************/
-void fnet_fec_output_frame(fnet_netif_t *netif, char* frame, int frame_size)
+void fnet_fec_output_frame(fnet_netif_t *netif, char* frame, unsigned int frame_size)
 {
-    fnet_fec_if_t *ethif =  ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
-    fnet_eth_header_t * ethheader;
+    fnet_fec_if_t       *ethif =  ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
+    fnet_eth_header_t   *ethheader;
  
-    if((frame!=0) && (frame_size<=netif->mtu)) 
+    if((frame!=0U) && (frame_size<=netif->mtu)) 
     {
         while(ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_TX_BD_R))
         {};
@@ -837,10 +835,10 @@ int fnet_fec_set_hw_addr(fnet_netif_t *netif, unsigned char * hw_addr)
         && hw_addr
         && fnet_memcmp(hw_addr,fnet_eth_null_addr,sizeof(fnet_mac_addr_t))
         && fnet_memcmp(hw_addr,fnet_eth_broadcast,sizeof(fnet_mac_addr_t))
-        && ((hw_addr[0]&0x01)==0x00)) /* Most significant nibble should always be even.*/
+        && ((hw_addr[0]&0x01U)==0x00U)) /* Most significant nibble should always be even.*/
     { 
-        ethif->reg->PALR = (unsigned long)((hw_addr[0] <<24)|(hw_addr[1] <<16)|(hw_addr[2] <<8)|(hw_addr[3] <<0));
-        ethif->reg->PAUR = (unsigned long)(hw_addr[4] <<24)|(hw_addr[5] <<16);
+        ethif->reg->PALR = (unsigned long)(((unsigned long)hw_addr[0] <<24U)|((unsigned long)hw_addr[1] <<16U)|((unsigned long)hw_addr[2] <<8U)|((unsigned long)hw_addr[3] <<0U));
+        ethif->reg->PAUR = (unsigned long)((unsigned long)hw_addr[4] <<24U)|((unsigned long)hw_addr[5] <<16U);
         
         fnet_eth_change_addr_notify(netif);
         
@@ -969,21 +967,21 @@ static void fnet_fec_isr_rx_handler_bottom (void *cookie)
 * DESCRIPTION: Looking for a valid PHY address.
 *************************************************************************/
 #if FNET_CFG_CPU_ETH_PHY_ADDR_DISCOVER
-static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned int phy_addr_start)
+static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned char phy_addr_start)
 { 
 	unsigned char i;
     unsigned char phy_addr = ethif->phy_addr; /* Save old value just in case the discover 
                                                * is failed, in case ommunication with 
                                                * the PHY via MDIO is not possible.*/
         
-    for (i = (unsigned char)phy_addr_start; i < 32; i++) 
+    for (i = (unsigned char)phy_addr_start; i < 32U; i++) 
     {
         fnet_uint16 id;
           
         ethif->phy_addr = i;
         fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_IDR1, &id);
           
-        if (!(id == 0 || id == 0xffff || id == 0x7fff))
+        if (!(id == 0U || id == 0xffffU || id == 0x7fffU))
         {
             return; /* FHY address is discovered.*/
         }
@@ -1000,11 +998,11 @@ static void fnet_fec_phy_discover_addr (fnet_fec_if_t *ethif, unsigned int phy_a
 * data < Pointer to storage for the Data to be read from the PHY register (passed by reference)
 * Return FNET_ERR on failure, FNET_OK on success
 *************************************************************************/ 
-int fnet_fec_mii_read(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 *data) 
+int fnet_fec_mii_read(fnet_fec_if_t *ethif, unsigned int reg_addr, fnet_uint16 *data) 
 {
-    int          timeout;
-    fnet_uint32  eimr;
-    int          result;
+    unsigned int    timeout;
+    fnet_uint32     eimr;
+    int             result;
     
     /* Clear the MII interrupt bit */
      ethif->reg_phy->EIR = FNET_FEC_EIR_MII;
@@ -1014,15 +1012,15 @@ int fnet_fec_mii_read(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 *data)
     ethif->reg_phy->EIMR &= (unsigned long)(~FNET_FEC_EIMR_MII); 
 
     /* Kick-off the MII read */
-    ethif->reg_phy->MMFR = (fnet_vuint32)(0 
+    ethif->reg_phy->MMFR = (fnet_vuint32)(0U 
             | FNET_FEC_MMFR_ST_01
             | FNET_FEC_MMFR_OP_READ
-            | FNET_FEC_MMFR_PA(ethif->phy_addr)
+            | FNET_FEC_MMFR_PA((fnet_uint32)ethif->phy_addr)
             | FNET_FEC_MMFR_RA(reg_addr)
             | FNET_FEC_MMFR_TA_10);
 
     /* Poll for the MII interrupt */
-    for (timeout = 0; timeout < FNET_FEC_MII_TIMEOUT; timeout++)
+    for (timeout = 0U; timeout < FNET_FEC_MII_TIMEOUT; timeout++)
     {
         if(ethif->reg_phy->EIR & FNET_FEC_EIR_MII)
             break;
@@ -1040,7 +1038,7 @@ int fnet_fec_mii_read(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 *data)
     }
     else
     {
-        *data = (fnet_uint16)(ethif->reg_phy->MMFR & 0xFFFF);
+        *data = (fnet_uint16)(ethif->reg_phy->MMFR & 0xFFFFU);
         result = FNET_OK;
     }
 
@@ -1055,12 +1053,11 @@ int fnet_fec_mii_read(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 *data)
 * data < Data to be writen to the PHY register (passed by reference)
 * Return 0 on failure (timeout), 1 on success
 *************************************************************************/ 
-int fnet_fec_mii_write(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 data) 
+int fnet_fec_mii_write(fnet_fec_if_t *ethif, unsigned int reg_addr, fnet_uint16 data) 
 {
-
-    int timeout;
-    fnet_uint32 eimr;
-    int result;
+    unsigned int    timeout;
+    fnet_uint32     eimr;
+    int             result;
 
     /* Clear the MII interrupt bit */
     ethif->reg_phy->EIR = FNET_FEC_EIR_MII;
@@ -1070,16 +1067,16 @@ int fnet_fec_mii_write(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 data)
     ethif->reg_phy->EIMR &= (unsigned long)(~FNET_FEC_EIMR_MII); 
 
     /* Kick-off the MII write */
-    ethif->reg_phy->MMFR = (fnet_vuint32)(0 
+    ethif->reg_phy->MMFR = (fnet_vuint32)(0U 
             | FNET_FEC_MMFR_ST_01
             | FNET_FEC_MMFR_OP_WRITE
-            | FNET_FEC_MMFR_PA(ethif->phy_addr)
-            | FNET_FEC_MMFR_RA(reg_addr)
+            | FNET_FEC_MMFR_PA((fnet_uint32)ethif->phy_addr)
+            | FNET_FEC_MMFR_RA((fnet_uint32)reg_addr)
             | FNET_FEC_MMFR_TA_10
-            | (data & 0xffff));
+            | (fnet_uint32)(data & 0xffffU));
 
     /* Poll for the MII interrupt */
-    for (timeout = 0; timeout < FNET_FEC_MII_TIMEOUT; timeout++)
+    for (timeout = 0U; timeout < FNET_FEC_MII_TIMEOUT; timeout++)
     {
         if(ethif->reg_phy->EIR & FNET_FEC_EIR_MII)
             break;
@@ -1110,8 +1107,8 @@ int fnet_fec_mii_write(fnet_fec_if_t *ethif, int reg_addr, fnet_uint16 data)
 *************************************************************************/
 int fnet_fec_is_connected(fnet_netif_t *netif)
 {
-    fnet_uint16 data;
-    fnet_fec_if_t *ethif;
+    fnet_uint16     data;
+    fnet_fec_if_t   *ethif;
     int res = 0;
     
     ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr;
@@ -1125,7 +1122,7 @@ int fnet_fec_is_connected(fnet_netif_t *netif)
     
     if (fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_SR, &data) == FNET_OK)
     {
-        res = (data & FNET_FEC_MII_REG_SR_LINK_STATUS) ? 1 : 0;
+        res = (int)((data & FNET_FEC_MII_REG_SR_LINK_STATUS) ? 1 : 0);
     }
     
     return res;
@@ -1148,7 +1145,7 @@ static fnet_uint32 fnet_fec_crc_hash(fnet_mac_addr_t multicast_addr )
       fnet_uint8 c = multicast_addr[i];
       for (j=0; j<8; j++)
       {
-         if ((c ^ crc) & 1)
+         if ((c ^ crc) & 1U)
          {
             crc >>= 1;
             c >>= 1;
@@ -1171,19 +1168,19 @@ static fnet_uint32 fnet_fec_crc_hash(fnet_mac_addr_t multicast_addr )
 *************************************************************************/
 void fnet_fec_multicast_join(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr )
 { 
-    fnet_fec_if_t *ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr; 
-    fnet_uint32 reg_value;
-    fnet_uint32 crc;
+    fnet_fec_if_t   *ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr; 
+    fnet_uint32     reg_value;
+    fnet_uint32     crc;
    
      /* Set the appropriate bit in the hash table */
     crc = fnet_fec_crc_hash(multicast_addr );    
     crc >>= 26;
-    crc &= 0x3F;
+    crc &= 0x3FU;
     
-    reg_value = 0x1 << (crc & 0x1F);
+    reg_value = (fnet_uint32)(0x1U << (crc & 0x1FU));
     
    
-    if (crc < 32) 
+    if (crc < 32U) 
     {
         if(ethif->reg->GALR & reg_value)
             ethif->GALR_double |= reg_value;       /* Set double flag => never released.*/
@@ -1206,18 +1203,18 @@ void fnet_fec_multicast_join(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr
 *************************************************************************/
 void fnet_fec_multicast_leave(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr )
 { 
-    fnet_fec_if_t *ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr; 
-    fnet_uint32 reg_value;
-    fnet_uint32 crc;
+    fnet_fec_if_t   *ethif = ((fnet_eth_if_t *)(netif->if_ptr))->if_cpu_ptr; 
+    fnet_uint32     reg_value;
+    fnet_uint32     crc;
    
     /* Set the appropriate bit in the hash table */
     crc = fnet_fec_crc_hash(multicast_addr );    
     crc >>= 26;
-    crc &= 0x3F;
+    crc &= 0x3FU;
     
-    reg_value = 0x1 << (crc & 0x1F);
+    reg_value = (fnet_uint32)(0x1U << (crc & 0x1FU));
     
-    if (crc < 32) 
+    if (crc < 32U) 
     {
         ethif->reg->GALR  = ethif->reg->GALR & ( (~reg_value) | ethif->GALR_double );
     } 

@@ -103,7 +103,7 @@ unsigned long fnet_malloc_max_netbuf( void );
 void fnet_mem_release_netbuf( void );
 
 /* Netbuf service routines */
-fnet_netbuf_t *fnet_netbuf_new( int len, int drain );
+fnet_netbuf_t *fnet_netbuf_new( unsigned int len, int drain );
 fnet_netbuf_t *fnet_netbuf_free( fnet_netbuf_t *nb );
 fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, int offset, int len, int drain );
 fnet_netbuf_t *fnet_netbuf_from_buf( void *data_ptr, int len,int drain );

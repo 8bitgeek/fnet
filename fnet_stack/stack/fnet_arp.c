@@ -83,10 +83,10 @@ static void fnet_arp_ip_duplicated(void *cookie);
 int fnet_arp_init( fnet_netif_t *netif )
 {
     fnet_arp_if_t  *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); 
-    int            i;
+    unsigned int   i;
     int            result= FNET_ERR;
 
-    for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; i++)
+    for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; i++)
       fnet_memset_zero(&(arpif->arp_table[i]), sizeof(fnet_arp_entry_t));
 
 #if FNET_CFG_ARP_EXPIRE_TIMEOUT
@@ -127,14 +127,14 @@ void fnet_arp_release( fnet_netif_t *netif )
 #if FNET_CFG_ARP_EXPIRE_TIMEOUT
 static void fnet_arp_timer( void *cookie )
 {
-    fnet_arp_if_t *arpif =  (fnet_arp_if_t *)cookie;
-    int i;
+    fnet_arp_if_t   *arpif =  (fnet_arp_if_t *)cookie;
+    unsigned int    i;
 
-    for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; i++)
+    for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; i++)
     {
         if((arpif->arp_table[i].prot_addr)
              && ((fnet_timer_ticks() - arpif->arp_table[i].cr_time))
-                              > (unsigned long)((FNET_CFG_ARP_EXPIRE_TIMEOUT*1000) / FNET_TIMER_PERIOD_MS))
+                              > (unsigned long)((FNET_CFG_ARP_EXPIRE_TIMEOUT*1000U) / FNET_TIMER_PERIOD_MS))
         {
             if(arpif->arp_table[i].hold)
                 fnet_netbuf_free_chain(arpif->arp_table[i].hold);
@@ -153,12 +153,13 @@ static void fnet_arp_timer( void *cookie )
 static fnet_arp_entry_t *fnet_arp_add_entry( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, 
                                         const fnet_mac_addr_t ethaddr )
 {
-    fnet_arp_if_t *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if);
-    int i, j;
-    unsigned long max_time;
+    fnet_arp_if_t   *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if);
+    unsigned int    i;
+    unsigned int    j;
+    unsigned long   max_time;
 
     /* Find an entry to update. */
-    for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
+    for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
     {
         /* Check if the source IP address of the incoming packet matches
          * the IP address in this ARP table entry.*/
@@ -174,9 +175,9 @@ static fnet_arp_entry_t *fnet_arp_add_entry( fnet_netif_t *netif, fnet_ip4_addr_
     /* If we get here, no existing ARP table entry was found. */
 
     /* Find an unused entry in the ARP table. */
-    for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
+    for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
     {
-        if(arpif->arp_table[i].prot_addr == 0)
+        if(arpif->arp_table[i].prot_addr == 0U)
         {
             break;
         }
@@ -185,10 +186,10 @@ static fnet_arp_entry_t *fnet_arp_add_entry( fnet_netif_t *netif, fnet_ip4_addr_
     /* If no unused entry is found, we try to find the oldest entry and throw it away.*/
     if(i == FNET_CFG_ARP_TABLE_SIZE)
     {
-        max_time = 0;
-        j = 0;
+        max_time = 0U;
+        j = 0U;
 
-        for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
+        for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
         {
             if((fnet_timer_ticks() - arpif->arp_table[i].cr_time) > max_time)
             {
@@ -205,7 +206,7 @@ static fnet_arp_entry_t *fnet_arp_add_entry( fnet_netif_t *netif, fnet_ip4_addr_
     {
         fnet_netbuf_free_chain(arpif->arp_table[i].hold);
         arpif->arp_table[i].hold = 0;
-        arpif->arp_table[i].hold_time = 0;
+        arpif->arp_table[i].hold_time = 0U;
     }
 
     arpif->arp_table[i].prot_addr = ipaddr;
@@ -225,11 +226,11 @@ ADDED:
 static fnet_arp_entry_t *fnet_arp_update_entry( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, 
                                             fnet_mac_addr_t ethaddr )
 {
-    fnet_arp_if_t *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); //PFI
-    int i;
+    fnet_arp_if_t   *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); 
+    unsigned int    i;
 
     /* Find an entry to update. */
-    for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
+    for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
     {
         /* Check if the source IP address of the incoming packet matches
          * the IP address in this ARP table entry.*/
@@ -253,12 +254,12 @@ static fnet_arp_entry_t *fnet_arp_update_entry( fnet_netif_t *netif, fnet_ip4_ad
 *************************************************************************/
 fnet_mac_addr_t *fnet_arp_lookup( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
 {
-    fnet_arp_if_t   *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); //PFI
-    int             i;
-    fnet_mac_addr_t *result = FNET_NULL;
+    fnet_arp_if_t       *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); /* PFI */
+    unsigned int        i;
+    fnet_mac_addr_t     *result = FNET_NULL;
 
     /* Find an entry. */
-    for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
+    for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
     {
         if(ipaddr == arpif->arp_table[i].prot_addr)
         {
@@ -271,7 +272,7 @@ fnet_mac_addr_t *fnet_arp_lookup( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
             break;
         }
     }
-//NOTFOUND:
+
     return result;
 }
 
@@ -284,11 +285,11 @@ fnet_mac_addr_t *fnet_arp_lookup( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
 *************************************************************************/
 void fnet_arp_resolve( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, fnet_netbuf_t *nb )
 {
-    fnet_arp_if_t *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); //PFI
-    int i;
-    fnet_arp_entry_t *entry;
+    fnet_arp_if_t       *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); /* PFI */
+    unsigned int        i;
+    fnet_arp_entry_t    *entry;
 
-    for (i = 0; i < FNET_CFG_ARP_TABLE_SIZE; i++)
+    for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; i++)
     {
         if(ipaddr == arpif->arp_table[i].prot_addr)
         {
@@ -308,7 +309,7 @@ void fnet_arp_resolve( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, fnet_netbuf_
     }
 
     if((i == FNET_CFG_ARP_TABLE_SIZE)||
-        ((entry->hold)&&(((fnet_timer_ticks()-entry->hold_time)*FNET_TIMER_PERIOD_MS)>1000))||
+        ((entry->hold)&&(((fnet_timer_ticks()-entry->hold_time)*FNET_TIMER_PERIOD_MS)>1000U))||
         (!entry->hold))
     {
         entry->hold_time = fnet_timer_ticks();
@@ -371,7 +372,7 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
                     ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_IP4, entry->hard_addr, entry->hold);
 
                     entry->hold = 0;
-                    entry->hold_time = 0;
+                    entry->hold_time = 0U;
                 }
             }
             else
@@ -447,7 +448,7 @@ static void fnet_arp_ip_duplicated(void *cookie)
 {
 	
     FNET_DEBUG_ARP("");
-    FNET_DEBUG_ARP("\33[31mARP: Duplicate IP address.\33[0m");
+    FNET_DEBUG_ARP("ARP: Duplicate IP address.");
     fnet_netif_dupip_handler_signal((fnet_netif_t *)cookie); 
 }
 
@@ -459,19 +460,19 @@ static void fnet_arp_ip_duplicated(void *cookie)
 *************************************************************************/
 void fnet_arp_drain(fnet_netif_t *netif)
 {
-   int i;
-   fnet_arp_if_t * arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); //PFI
+   unsigned int     i;
+   fnet_arp_if_t    *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); /* PFI */
      
    fnet_isr_lock();
    
    /* ARP table drain.*/
-   for(i=0;i<FNET_CFG_ARP_TABLE_SIZE;i++)
+   for(i=0U; i<FNET_CFG_ARP_TABLE_SIZE; i++)
    {
       if(arpif->arp_table[i].hold)
       {
          fnet_netbuf_free_chain(arpif->arp_table[i].hold);
          arpif->arp_table[i].hold=0;
-         arpif->arp_table[i].hold_time=0;
+         arpif->arp_table[i].hold_time=0U;
       }
    }
   

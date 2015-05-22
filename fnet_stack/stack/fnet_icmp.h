@@ -50,34 +50,34 @@
 *************************************************************************/
 #define FNET_ICMP_ECHOREPLY                (0)  /* Echo reply message.*/
 #define FNET_ICMP_UNREACHABLE              (3)  /* Destination Unreachable Message:*/
-#define FNET_ICMP_UNREACHABLE_NET          (0)  /*    -net unreachable;*/
-#define FNET_ICMP_UNREACHABLE_HOST         (1)  /*    -host unreachable;*/
-#define FNET_ICMP_UNREACHABLE_PROTOCOL     (2)  /*    -protocol unreachable;*/
-#define FNET_ICMP_UNREACHABLE_PORT         (3)  /*    -port unreachable;*/
-#define FNET_ICMP_UNREACHABLE_NEEDFRAG     (4)  /*    -fragmentation needed and DF set;*/
-#define FNET_ICMP_UNREACHABLE_SRCFAIL      (5)  /*    -source route failed;*/
-#define FNET_ICMP_UNREACHABLE_NET_UNKNOWN  (6)  /*    -unknown net;*/
-#define FNET_ICMP_UNREACHABLE_HOST_UNKNOWN (7)  /*    -unknown host;*/
-#define FNET_ICMP_UNREACHABLE_ISOLATED     (8)  /*    -src host isolated;*/
-#define FNET_ICMP_UNREACHABLE_NET_PROHIB   (9)  /*    -prohibited access;*/
-#define FNET_ICMP_UNREACHABLE_HOST_PROHIB  (10) /*    -ditto;*/
-#define FNET_ICMP_UNREACHABLE_TOSNET       (11) /*    -bad tos for net;*/
-#define FNET_ICMP_UNREACHABLE_TOSHOST      (12) /*    -bad tos for host;*/
-#define FNET_ICMP_SOURCEQUENCH             (4)  /* Source Quench Message; packet lost, slow down.*/
+#define FNET_ICMP_UNREACHABLE_NET          (0)  /*    -net unreachable*/
+#define FNET_ICMP_UNREACHABLE_HOST         (1)  /*    -host unreachable*/
+#define FNET_ICMP_UNREACHABLE_PROTOCOL     (2)  /*    -protocol unreachable*/
+#define FNET_ICMP_UNREACHABLE_PORT         (3)  /*    -port unreachable*/
+#define FNET_ICMP_UNREACHABLE_NEEDFRAG     (4)  /*    -fragmentation needed and DF set*/
+#define FNET_ICMP_UNREACHABLE_SRCFAIL      (5)  /*    -source route failed*/
+#define FNET_ICMP_UNREACHABLE_NET_UNKNOWN  (6)  /*    -unknown net*/
+#define FNET_ICMP_UNREACHABLE_HOST_UNKNOWN (7)  /*    -unknown host*/
+#define FNET_ICMP_UNREACHABLE_ISOLATED     (8)  /*    -src host isolated*/
+#define FNET_ICMP_UNREACHABLE_NET_PROHIB   (9)  /*    -prohibited access*/
+#define FNET_ICMP_UNREACHABLE_HOST_PROHIB  (10) /*    -ditto*/
+#define FNET_ICMP_UNREACHABLE_TOSNET       (11) /*    -bad tos for net*/
+#define FNET_ICMP_UNREACHABLE_TOSHOST      (12) /*    -bad tos for host*/
+#define FNET_ICMP_SOURCEQUENCH             (4)  /* Source Quench Message, packet lost, slow down.*/
 #define FNET_ICMP_REDIRECT                 (5)  /* Redirect Message:*/
-#define FNET_ICMP_REDIRECT_NET             (0)  /*    -redirect datagrams for the Network;*/
-#define FNET_ICMP_REDIRECT_HOST            (1)  /*    -redirect datagrams for the Host;*/
-#define FNET_ICMP_REDIRECT_TOSNET          (2)  /*    -redirect datagrams for the Type of Service and Network;*/
-#define FNET_ICMP_REDIRECT_TOSHOST         (3)  /*    -redirect datagrams for the Type of Service and Host;*/
+#define FNET_ICMP_REDIRECT_NET             (0)  /*    -redirect datagrams for the Network*/
+#define FNET_ICMP_REDIRECT_HOST            (1)  /*    -redirect datagrams for the Host*/
+#define FNET_ICMP_REDIRECT_TOSNET          (2)  /*    -redirect datagrams for the Type of Service and Network*/
+#define FNET_ICMP_REDIRECT_TOSHOST         (3)  /*    -redirect datagrams for the Type of Service and Host*/
 #define FNET_ICMP_ECHO                     (8)  /* Echo message.*/
 #define FNET_ICMP_ROUTERADVERT             (9)  /* Router advertisement.*/
 #define FNET_ICMP_ROUTERSOLICIT            (10) /* Router solicitation.*/
 #define FNET_ICMP_TIMXCEED                 (11) /* Time Exceeded Message:*/
-#define FNET_ICMP_TIMXCEED_INTRANS         (0)  /*    -time to live exceeded in transit (ttl==0);*/
-#define FNET_ICMP_TIMXCEED_REASS           (1)  /*    -fragment reassembly time exceeded (ttl==0);*/
+#define FNET_ICMP_TIMXCEED_INTRANS         (0)  /*    -time to live exceeded in transit (ttl==0).*/
+#define FNET_ICMP_TIMXCEED_REASS           (1)  /*    -fragment reassembly time exceeded (ttl==0).*/
 #define FNET_ICMP_PARAMPROB                (12) /* Parameter Problem Message: */
-#define FNET_ICMP_PARAMPROB_IPHEDER        (0)  /*    -IP header bad ;*/
-#define FNET_ICMP_PARAMPROB_OPTABSENT      (1)  /*    -required option missing;*/
+#define FNET_ICMP_PARAMPROB_IPHEDER        (0)  /*    -IP header bad.*/
+#define FNET_ICMP_PARAMPROB_OPTABSENT      (1)  /*    -required option missing.*/
 #define FNET_ICMP_TSTAMP                   (13) /* Timestamp message (request)*/
 #define FNET_ICMP_TSTAMPREPLY              (14) /* Timestamp reply message*/
 #define FNET_ICMP_IREQ                     (15) /* Information request message*/

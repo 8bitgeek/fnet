@@ -67,7 +67,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_FS_MOUNT_MAX
-    #define FNET_CFG_FS_MOUNT_MAX           (2)
+    #define FNET_CFG_FS_MOUNT_MAX           (2U)
 #endif
 
 /**************************************************************************/ /*!
@@ -78,7 +78,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_FS_MOUNT_NAME_MAX
-    #define FNET_CFG_FS_MOUNT_NAME_MAX      (10)
+    #define FNET_CFG_FS_MOUNT_NAME_MAX      (10U)
 #endif
 
 /**************************************************************************/ /*!
@@ -89,7 +89,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_FS_DESC_MAX
-    #define FNET_CFG_FS_DESC_MAX            (5)
+    #define FNET_CFG_FS_DESC_MAX            (5U)
 #endif
 
 /**************************************************************************/ /*!

@@ -60,24 +60,24 @@
 /**************************************************************************/ /*!
  * @brief The maximum length of the signature.
  ******************************************************************************/
-#define FAPP_PARAMS_SIGNATURE_SIZE          (16)
+#define FAPP_PARAMS_SIGNATURE_SIZE          (16U)
 
 /**************************************************************************/ /*!
  * @brief The maximum length of the boot-script.
  ******************************************************************************/
-#define FAPP_PARAMS_BOOT_SCRIPT_SIZE        (60)
+#define FAPP_PARAMS_BOOT_SCRIPT_SIZE        (60U)
 
 /**************************************************************************/ /*!
  * @brief The maximum length of the @c file_name field of the 
  * @ref fapp_params_tftp structure.
  ******************************************************************************/
-#define FAPP_PARAMS_TFTP_FILE_NAME_SIZE     (40)
+#define FAPP_PARAMS_TFTP_FILE_NAME_SIZE     (40U)
 
 /**************************************************************************/ /*!
  * @brief The maximum length of the @c host_name field of the 
  * @ref fapp_params_tftp structure.
  ******************************************************************************/
-#define FAPP_PARAMS_HOST_NAME_SIZE          (40)
+#define FAPP_PARAMS_HOST_NAME_SIZE          (40U)
 
 /**************************************************************************/ /*!
  * @brief Boot mode.

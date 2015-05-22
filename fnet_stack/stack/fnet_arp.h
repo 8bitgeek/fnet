@@ -55,15 +55,15 @@
 /************************************************************************
 *    ARP definitions
 *************************************************************************/
-#define FNET_ARP_HARD_TYPE      (1)         /* for Ethernet.*/
+#define FNET_ARP_HARD_TYPE      (1U)         /* for Ethernet.*/
 
-#define FNET_ARP_HARD_SIZE      (6)         /* for Ethernet.*/
-#define FNET_ARP_PROT_SIZE      (4)         /* for IP.*/
+#define FNET_ARP_HARD_SIZE      (6U)         /* for Ethernet.*/
+#define FNET_ARP_PROT_SIZE      (4U)         /* for IP.*/
 
-#define FNET_ARP_OP_REQUEST     (1)         /* ARP request.*/
-#define FNET_ARP_OP_REPLY       (2)         /* ARP reply.*/
+#define FNET_ARP_OP_REQUEST     (1U)         /* ARP request.*/
+#define FNET_ARP_OP_REPLY       (2U)         /* ARP reply.*/
 
-#define FNET_ARP_TIMER_PERIOD   ((FNET_CFG_ARP_EXPIRE_TIMEOUT*1000)/4)     /* in ms (20/4=5min).*/
+#define FNET_ARP_TIMER_PERIOD   ((FNET_CFG_ARP_EXPIRE_TIMEOUT*1000U)/4U)     /* in ms (20/4=5min).*/
 
 /**************************************************************************/ /*!
  * @internal

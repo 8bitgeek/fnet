@@ -164,7 +164,7 @@
 #endif
 
 #ifndef FAPP_CFG_PARAMS_MAC_ADDR
-    #define FAPP_CFG_PARAMS_MAC_ADDR            (0) /* Defined by FNET */
+    #define FAPP_CFG_PARAMS_MAC_ADDR            {0,0,0,0,0,0} /* Defined by FNET */
 #endif
 
 #ifndef FAPP_CFG_PARAMS_HOST_NAME
@@ -190,7 +190,7 @@
 
 /* TFTP parameters */
 #ifndef FAPP_CFG_PARAMS_TFTP_SERVER
-    #define FAPP_CFG_PARAMS_TFTP_SERVER         {0} 
+    #define FAPP_CFG_PARAMS_TFTP_SERVER         {0,0,{0}} 
 #endif
 
 #ifndef FAPP_CFG_PARAMS_TFTP_FILE_TYPE
@@ -273,10 +273,6 @@
 *************************************************************************/
 #ifndef FAPP_CFG_TELNET_CMD
     #define FAPP_CFG_TELNET_CMD         (0)
-#endif
-
-#ifndef FAPP_CFG_TELNET_CMD_OWN_SHELL
-    #define FAPP_CFG_TELNET_CMD_OWN_SHELL   (0)
 #endif
 
 /************************************************************************

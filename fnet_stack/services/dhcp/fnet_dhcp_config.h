@@ -88,7 +88,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_DHCP_PORT_CLIENT
-    #define FNET_CFG_DHCP_PORT_CLIENT           (FNET_HTONS(68))
+    #define FNET_CFG_DHCP_PORT_CLIENT           (FNET_HTONS(68U))
 #endif
 
 /**************************************************************************/ /*!
@@ -99,7 +99,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_DHCP_PORT_SERVER
-    #define FNET_CFG_DHCP_PORT_SERVER           (FNET_HTONS(67))
+    #define FNET_CFG_DHCP_PORT_SERVER           (FNET_HTONS(67U))
 #endif
     
 /**************************************************************************/ /*!
@@ -113,7 +113,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_DHCP_RESPONSE_TIMEOUT
-    #define FNET_CFG_DHCP_RESPONSE_TIMEOUT      (4) 
+    #define FNET_CFG_DHCP_RESPONSE_TIMEOUT      (4U) 
 #endif
 
 /**************************************************************************/ /*!

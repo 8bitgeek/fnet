@@ -46,6 +46,15 @@
     #error "MK Flash driver supports only 4 and 8 size of program-block"
 #endif 
 
+static  
+#if FNET_CFG_COMP_UV
+    __attribute__((section("FNET_RAM"))) __attribute__((used))
+#endif
+#if FNET_CFG_COMP_GNUC
+    __attribute__((section(".FNET_RAM")))
+#endif
+    void fnet_ftfl_command_lunch_inram(void);
+static void fnet_ftfl_command(unsigned char command, unsigned long *address, unsigned char *data);
 
 /************************************************************************
 * NAME: fnet_ftfl_command_lunch_inram

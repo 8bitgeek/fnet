@@ -158,7 +158,7 @@ static void fapp_bench_tcp_rx (fnet_shell_desc_t desc, fnet_address_family_t fam
     int                 keepintvl_option = FAPP_BENCH_TCP_KEEPINTVL;
     int                 keepidle_option = FAPP_BENCH_TCP_KEEPIDLE;
     struct sockaddr     foreign_addr;
-    int                 addr_len;
+    unsigned int        addr_len;
     int                 exit_flag = 0;
 	
     
@@ -292,7 +292,7 @@ static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t fam
 	int                     received;
 	char                    ip_str[FNET_IP_ADDR_STR_SIZE];
 	struct sockaddr         addr;
-    int                     addr_len;
+    unsigned int            addr_len;
 	int                     is_first = 1;
 	int                     exit_flag = 0;
 	
@@ -527,7 +527,7 @@ static void fapp_bench_tcp_tx (struct fapp_bench_tx_params *params)
     struct sockaddr         foreign_addr;
     int                     exit_flag = 0;
     int                     sock_err ;
-    int                     option_len;
+    unsigned int            option_len;
     fnet_shell_desc_t       desc = params->desc;
     fnet_socket_state_t     connection_state;
     int                     packet_size = params->packet_size;
@@ -685,7 +685,7 @@ static void fapp_bench_udp_tx (struct fapp_bench_tx_params *params)
     struct sockaddr         foreign_addr;
     int                     exit_flag = 0;
     int                     sock_err;
-    int                     option_len;
+    unsigned int            option_len;
     fnet_shell_desc_t       desc = params->desc;
     int                     packet_size = params->packet_size;
     int                     cur_packet_number;

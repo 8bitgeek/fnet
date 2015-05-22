@@ -65,14 +65,10 @@ fnet_netbuf_t *dm_nb;
 * DESCRIPTION: Creates a new net_buf and allocates memory
 *              for a new data buffer. 
 *************************************************************************/
-fnet_netbuf_t *fnet_netbuf_new( int len, int drain )
+fnet_netbuf_t *fnet_netbuf_new( unsigned int len, int drain )
 {
     fnet_netbuf_t   *nb;
     void            *nb_d;
-
-    if(len < 0)
-        return (fnet_netbuf_t *)0;
-
 
     nb = (fnet_netbuf_t *)fnet_malloc_netbuf(sizeof(fnet_netbuf_t));
 
@@ -489,7 +485,7 @@ fnet_netbuf_t *fnet_netbuf_pullup( fnet_netbuf_t *nb, int len)
     else
         nb_run->data_ptr = (unsigned char *)nb_run->data_ptr + tot_len;
 
-    /* Setting up the params of the first net_buf;*/
+    /* Setting up the params of the first net_buf.*/
     nb->next = nb_run;
 
     nb->length = (unsigned long)len;

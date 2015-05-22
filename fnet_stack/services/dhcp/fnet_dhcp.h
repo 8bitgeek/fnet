@@ -115,14 +115,14 @@
  * address for infinite time.
  * @showinitializer
  ******************************************************************************/
-#define FNET_DHCP_LEASE_INFINITY    (0xFFFFFFFF)
+#define FNET_DHCP_LEASE_INFINITY    (0xFFFFFFFFU)
 
 /**************************************************************************/ /*!
  * @brief Minimum lease-time value in seconds.@n
  * If a client-acquired lease time is less than the @ref FNET_DHCP_LEASE_MIN, 
  * the lease time will be pushed to the @ref FNET_DHCP_LEASE_MIN value.
  ******************************************************************************/
-#define FNET_DHCP_LEASE_MIN         (180)
+#define FNET_DHCP_LEASE_MIN         (180U)
 
 
 

@@ -33,7 +33,7 @@
 *
 * DESCRIPTION: 
 *************************************************************************/
-#if 0 //FNET_CFG_COMP_UV
+#if 0 
 /* Slowest && Smallest */
 void fnet_memcpy( FNET_COMP_PACKED_VAR void *dest, FNET_COMP_PACKED_VAR const void *src, unsigned n )
 {
@@ -203,7 +203,7 @@ void fnet_memset( void *s, int c, unsigned n )
 * DESCRIPTION: Same as "fnet_memset( void *s, 0, unsigned n )"
 *
 *************************************************************************/
-void fnet_memset_zero( void *s, unsigned n )
+void fnet_memset_zero( void *s, unsigned int n )
 {
     /* Not optimized */
     unsigned char *sp = (unsigned char *)s;
@@ -221,7 +221,7 @@ void fnet_memset_zero( void *s, unsigned n )
 *              non-zero otherwise.  If count is zero, return zero.
 *
 *************************************************************************/
-int fnet_memcmp(const void *src1, const void *src2, int count )
+int fnet_memcmp(const void *src1, const void *src2, unsigned int count )
 {
     const unsigned char *p1;
     const unsigned char *p2;
@@ -266,10 +266,10 @@ int fnet_strcmp( const char *s1, const char *s2 )
 unsigned long fnet_strlen (const char *str)
 {
 	char *s = (char *)str;
-	unsigned long len = 0;
+	unsigned long len = 0U;
 
 	if (s == 0)
-		return 0;
+		return 0U;
 
 	while (*s++ != '\0')
 		++len;
@@ -306,16 +306,16 @@ void fnet_strcat (char *dest, const char *src)
 * DESCRIPTION: 
 *
 *************************************************************************/
-void fnet_strncat (char *dest, const char *src, int n)
+void fnet_strncat (char *dest, const char *src, unsigned int n)
 {
 	char *dp;
 	char *sp = (char *)src;
 
-	if ((dest != 0) && (src != 0) && (n > 0))
+	if ((dest != 0) && (src != 0) && (n > 0U))
 	{
 		dp = &dest[fnet_strlen(dest)];
 
-		for(n++;(*sp != '\0') && (--n > 0);)
+		for(n++;(*sp != '\0') && (--n > 0U);)
 		{
 			*dp++ = *sp++;
 		}

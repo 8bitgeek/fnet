@@ -309,8 +309,8 @@
     #define FNET_CFG_CPU_CLOCK_HZ       (xx) /* Just only for Doxygen documentation */
 #endif
 
-#define FNET_CPU_CLOCK_KHZ       (FNET_CFG_CPU_CLOCK_HZ/1000)     
-#define FNET_CPU_CLOCK_MHZ       (FNET_CFG_CPU_CLOCK_HZ/1000000)  
+#define FNET_CPU_CLOCK_KHZ       (FNET_CFG_CPU_CLOCK_HZ/1000U)     
+#define FNET_CPU_CLOCK_MHZ       (FNET_CFG_CPU_CLOCK_HZ/1000000U)  
 
 
 /**************************************************************************/ /*!
@@ -319,7 +319,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_SERIAL_PORT_DEFAULT
-    #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (0)
+    #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (0U)
 #endif
 
 /**************************************************************************/ /*!
@@ -351,7 +351,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_TIMER_NUMBER_MAX
-    #define FNET_CFG_CPU_TIMER_NUMBER_MAX		(3)
+    #define FNET_CFG_CPU_TIMER_NUMBER_MAX		(3U)
 #endif
 
 /**************************************************************************/ /*!
@@ -424,7 +424,7 @@
  *          It is not used by the FNET, but can be useful for an application.
  ******************************************************************************/ 
 #ifndef FNET_CFG_CPU_FLASH_ADDRESS 
-    #define FNET_CFG_CPU_FLASH_ADDRESS      (0x0)
+    #define FNET_CFG_CPU_FLASH_ADDRESS      (0x0U)
 #endif 
 
 /**************************************************************************/ /*!
@@ -434,7 +434,7 @@
  *          @n @n NOTE: User application should not change this parameter.
  ******************************************************************************/  
 #ifndef FNET_CFG_CPU_FLASH_SIZE
-    #define FNET_CFG_CPU_FLASH_SIZE         (0)  
+    #define FNET_CFG_CPU_FLASH_SIZE         (0U)  
 #endif 
 
 /**************************************************************************/ /*!
@@ -447,7 +447,7 @@
  *          @n @n NOTE: User application should not change this parameter.
  ******************************************************************************/    
 #ifndef FNET_CFG_CPU_FLASH_PAGE_SIZE
-    #define FNET_CFG_CPU_FLASH_PAGE_SIZE    (0)
+    #define FNET_CFG_CPU_FLASH_PAGE_SIZE    (0U)
 #endif 
 
 /**************************************************************************/ /*!
@@ -457,7 +457,7 @@
  *          @n @n NOTE: User application should not change this parameter.
  ******************************************************************************/    
 #ifndef FNET_CFG_CPU_FLASH_PROGRAM_SIZE
-    #define FNET_CFG_CPU_FLASH_PROGRAM_SIZE (0)
+    #define FNET_CFG_CPU_FLASH_PROGRAM_SIZE (0U)
 #endif 
 
 /**************************************************************************/ /*!
@@ -466,7 +466,7 @@
  *          It is not used by the FNET stack, but can be useful for an application.
  ******************************************************************************/ 
 #ifndef FNET_CFG_CPU_SRAM_ADDRESS 
-    #define FNET_CFG_CPU_SRAM_ADDRESS       (0x0)
+    #define FNET_CFG_CPU_SRAM_ADDRESS       (0x0U)
 #endif 
           
 /**************************************************************************/ /*!
@@ -476,7 +476,7 @@
  *          @n @n NOTE: User application should not change this parameter.
  ******************************************************************************/  
 #ifndef FNET_CFG_CPU_SRAM_SIZE
-    #define FNET_CFG_CPU_SRAM_SIZE          (0)  
+    #define FNET_CFG_CPU_SRAM_SIZE          (0U)  
 #endif 
 
 /*! @} */
@@ -516,7 +516,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH0_PHY_ADDR
-    #define FNET_CFG_CPU_ETH0_PHY_ADDR	(0)
+    #define FNET_CFG_CPU_ETH0_PHY_ADDR	(0U)
 #endif    
 
 /**************************************************************************/ /*!
@@ -527,7 +527,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH1_PHY_ADDR
-    #define FNET_CFG_CPU_ETH1_PHY_ADDR	(1)
+    #define FNET_CFG_CPU_ETH1_PHY_ADDR	(1U)
 #endif      
 
 /**************************************************************************/ /*!
@@ -699,7 +699,7 @@
  *           Set it to 0 to disable the waiting.
  ******************************************************************************/ 
 #ifndef FNET_CFG_CPU_ETH_ATONEGOTIATION_TIMEOUT 
-    #define FNET_CFG_CPU_ETH_ATONEGOTIATION_TIMEOUT     (2000) /*ms*/
+    #define FNET_CFG_CPU_ETH_ATONEGOTIATION_TIMEOUT     (2000U) /*ms*/
 #endif
 
 /**************************************************************************/ /*!

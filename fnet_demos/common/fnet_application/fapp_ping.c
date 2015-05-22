@@ -76,7 +76,7 @@ static void fapp_ping_handler (int result, unsigned long packet_count, struct so
     {
         fnet_shell_println(desc, FAPP_PING_STR_REPLY, fnet_inet_ntop(target_addr->sa_family, target_addr->sa_data, ip_str, sizeof(ip_str)));
     }    
-    else if(result == FNET_ERR_TIMEDOUT)
+    else if(result == (int)FNET_ERR_TIMEDOUT)
     {
         fnet_shell_println(desc, FAPP_PING_STR_TIMEOUT);
     }
@@ -85,7 +85,7 @@ static void fapp_ping_handler (int result, unsigned long packet_count, struct so
         fnet_shell_println(desc, "Error = %d", result);
     }   
          
-    if(packet_count == 0)
+    if(packet_count == 0U)
     {
         fnet_shell_unblock(desc); /* Unblock the shell. */    
     } 
@@ -135,7 +135,7 @@ void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     }
     else
     {
-        //TBD Optimise parameters parsing.
+        /* TBD Optimise parameters parsing.*/
         if(argc > 2) /* There are additional parameters */
         { 
             /* [-c <count>][-i <seconds>]\n\t[-p <pattern>][-s <size>][-h <hoplimit/ttl>] */
@@ -145,7 +145,7 @@ void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
                 {
                     i++;
                     value = fnet_strtoul(argv[i], &p, 10);
-		            if ((value == 0) && (p == argv[i]))
+		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
@@ -156,18 +156,18 @@ void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
                 {
                     i++;
                     value = fnet_strtoul(argv[i], &p, 10);
-		            if ((value == 0) && (p == argv[i]))
+		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
 		            else
-		                ping_params.timeout = value*1000;
+		                ping_params.timeout = value*1000U;
                 }
                 else if (!fnet_strcmp(argv[i], "-p"))
                 {
                     i++;
                     value = fnet_strtoul(argv[i], &p, 10);
-		            if ((value == 0) && (p == argv[i]))
+		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
@@ -178,7 +178,7 @@ void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
                 {
                     i++;
                     value = fnet_strtoul(argv[i], &p, 10);
-		            if ((value == 0) && (p == argv[i]))
+		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
@@ -189,7 +189,7 @@ void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
                 {
                     i++;
                     value = fnet_strtoul(argv[i], &p, 10);
-		            if ((value == 0) && (p == argv[i]))
+		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }

@@ -54,22 +54,22 @@
 /**************************************************************************/ /*!
  * @brief Timer period in milliseconds (period of one timer tick).
  ******************************************************************************/
-#define FNET_TIMER_PERIOD_MS        (100) /* Do not change it.*/
+#define FNET_TIMER_PERIOD_MS        (100U) /* Do not change it.*/
 
 /**************************************************************************/ /*!
  * @brief Number of timer ticks in one hour.
  ******************************************************************************/
-#define FNET_TIMER_TICK_IN_HOUR     ((1000*60*60)/FNET_TIMER_PERIOD_MS)
+#define FNET_TIMER_TICK_IN_HOUR     ((1000U*60U*60U)/FNET_TIMER_PERIOD_MS)
 
 /**************************************************************************/ /*!
  * @brief Number of timer ticks in one minute.
  ******************************************************************************/
-#define FNET_TIMER_TICK_IN_MIN      ((1000*60)/FNET_TIMER_PERIOD_MS)
+#define FNET_TIMER_TICK_IN_MIN      ((1000U*60U)/FNET_TIMER_PERIOD_MS)
 
 /**************************************************************************/ /*!
  * @brief Number of timer ticks in one second.
  ******************************************************************************/
-#define FNET_TIMER_TICK_IN_SEC      (1000/FNET_TIMER_PERIOD_MS)
+#define FNET_TIMER_TICK_IN_SEC      (1000U/FNET_TIMER_PERIOD_MS)
 
 /***************************************************************************/ /*!
  *

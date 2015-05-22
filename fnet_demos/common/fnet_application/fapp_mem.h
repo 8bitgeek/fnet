@@ -67,7 +67,7 @@ struct fapp_mem_region
     unsigned long address;
     unsigned long size;
     void (*memcpy)( FNET_COMP_PACKED_VAR void *dest, const FNET_COMP_PACKED_VAR void *src, unsigned n );
-    void (*erase)( void *address, unsigned n );
+    void (*erase)( void *erase_addr, unsigned n );
     unsigned long erase_size; /* Logical page size, that can be erased separately. */
 };
 

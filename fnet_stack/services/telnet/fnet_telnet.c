@@ -348,7 +348,7 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
     int                             res;
     struct fnet_telnet_if           *telnet = (struct fnet_telnet_if *)telnet_if_p;
     char                            rx_data[1];
-    int                             len;
+    unsigned int                    len;
     int                             i;
     struct fnet_telnet_session_if   *session;
     

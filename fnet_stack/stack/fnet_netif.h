@@ -84,7 +84,7 @@ struct fnet_netif_statistics
 /**************************************************************************/ /*!
  * @brief The maximum length of a network interface name.
  ******************************************************************************/
-#define FNET_NETIF_NAMELEN  (8)
+#define FNET_NETIF_NAMELEN  (8U)
 
 /**************************************************************************/ /*!
  * @brief Network interface descriptor.

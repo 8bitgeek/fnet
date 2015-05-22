@@ -559,9 +559,9 @@ void fnet_netif_set_ip4_subnet_mask( fnet_netif_desc_t netif_desc, fnet_ip4_addr
         netif->ip4_addr.subnetmask = subnet_mask;
         netif->ip4_addr.is_automatic = 0;
 
-        netif->ip4_addr.subnet = netif->ip4_addr.address & netif->ip4_addr.subnetmask; // network and subnet address
+        netif->ip4_addr.subnet = netif->ip4_addr.address & netif->ip4_addr.subnetmask; /* network and subnet address*/
         netif->ip4_addr.subnetbroadcast = netif->ip4_addr.address
-                                          | (~netif->ip4_addr.subnetmask);     // subnet broadcast address
+                                          | (~netif->ip4_addr.subnetmask);     /* subnet broadcast address*/
         fnet_os_mutex_unlock();
     }
 }
@@ -963,7 +963,7 @@ int fnet_netif_connected( fnet_netif_desc_t netif_desc )
     if(netif && netif->api->is_connected)
         result = netif->api->is_connected(netif);
     else
-        result = 1; /* Is connected by default; */
+        result = 1; /* Is connected by default.*/
 
     return result;
 }
@@ -1337,7 +1337,7 @@ fnet_netif_desc_t fnet_netif_get_by_ip6_addr( fnet_ip6_addr_t *ip_addr )
 * DESCRIPTION: Overwrite the last 64 bits with the interface ID.
 *              "addr" contains prefix to form an address
 *************************************************************************/
-int fnet_netif_set_ip6_addr_autoconf(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr) //OK
+int fnet_netif_set_ip6_addr_autoconf(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr)
 {
     int result;
     unsigned char hw_addr[8];

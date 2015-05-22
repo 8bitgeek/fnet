@@ -54,42 +54,48 @@ const struct fnet_serial_stream fnet_serial_stream_port0 =
 {
     0,
     fnet_cpu_serial_putchar,
-    fnet_cpu_serial_getchar
+    fnet_cpu_serial_getchar,
+    0
 };
 
 const struct fnet_serial_stream fnet_serial_stream_port1 =
 {
     1,
     fnet_cpu_serial_putchar,
-    fnet_cpu_serial_getchar
+    fnet_cpu_serial_getchar,
+    0
 };
 
 const struct fnet_serial_stream fnet_serial_stream_port2 =
 {
     2,
     fnet_cpu_serial_putchar,
-    fnet_cpu_serial_getchar
+    fnet_cpu_serial_getchar,
+    0
 };
 
 const struct fnet_serial_stream fnet_serial_stream_port3 =
 {
     3,
     fnet_cpu_serial_putchar,
-    fnet_cpu_serial_getchar
+    fnet_cpu_serial_getchar,
+    0
 };
 
 const struct fnet_serial_stream fnet_serial_stream_port4 =
 {
     4,
     fnet_cpu_serial_putchar,
-    fnet_cpu_serial_getchar
+    fnet_cpu_serial_getchar,
+    0
 };
 
 const struct fnet_serial_stream fnet_serial_stream_port5 =
 {
     5,
     fnet_cpu_serial_putchar,
-    fnet_cpu_serial_getchar
+    fnet_cpu_serial_getchar,
+    0
 };
 
 /********************************************************************/
@@ -371,19 +377,21 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
          */
         if( /* (c = *++p) */*++p == '.')
         {
-            /* precision_used = TRUE; */
+        #if 0
+            precision_used = TRUE; 
+        #endif
 
             /*
              * Must get precision field width, if present.
              */
-            /* precision_width = 0; */
+        #if 0
+            precision_width = 0; */
+        #endif
             done = 0;
 
             while(!done)
             {
-
-#if 0
-
+            #if 0
                 switch( /* c = uncomment if used below */*++p)
                 {
                     case '0':
@@ -397,11 +405,9 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                     case '8':
                     case '9':
 
-    #if 0
-
+                    #if 0
                           precision_width = (precision_width * 10) + (c - '0');
-
-    #endif
+                    #endif
 
                       break;
 
@@ -411,7 +417,7 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                       done = 1;
                       break;
                 }
-#else
+            #else
                 c = *++p;
                 if(c >= '0' && c <= '9')
                 {
@@ -425,11 +431,7 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                     --p;
                     done = 1;
                 }
-
-
-#endif
-
-                
+            #endif
             }
         }
         else
@@ -437,33 +439,36 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
             /* we've gone one char too far */
             --p;
 
-#if 0
-
+        #if 0
             precision_used = FALSE;
             precision_width = 0;
-
-#endif
+        #endif
 
         }
 
         /*
          * Check for the length modifier.
          */
-        /* length_modifier = 0; */
-        switch( /* c = */*++p)
+        #if 0
+         length_modifier = 0; 
+        #endif
+        switch( *++p)
         {
             case 'h':
-              /* length_modifier |= LENMOD_h; */
+            #if 0    
+              length_modifier |= LENMOD_h; 
+            #endif
               break;
-
             case 'l':
-              /* length_modifier |= LENMOD_l; */
+            #if 0 
+               length_modifier |= LENMOD_l; 
+            #endif
               break;
-
             case 'L':
-              /* length_modifier |= LENMOD_L; */
+            #if 0 
+              length_modifier |= LENMOD_L; 
+            #endif
               break;
-
             default:
               /* we've gone one char too far */
               --p;
@@ -568,7 +573,6 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                         fnet_serial_putchar(stream, '0');
                         fnet_serial_putchar(stream, 'x');
                       
-                        /*vlen += 2;*/
                         dschar = 1;
                     }
 
@@ -787,7 +791,7 @@ int fnet_sprintf( char *str, const char *format, ... )
         buffer_id.dest = str;
         buffer_id.dest_size = (unsigned int)-1; /* No limit.*/
 
-        buffer_stream.id = (long)&buffer_id;//(long)&str;
+        buffer_stream.id = (long)&buffer_id;
         buffer_stream.putchar = fnet_serial_buffer_putchar;
         
         /*

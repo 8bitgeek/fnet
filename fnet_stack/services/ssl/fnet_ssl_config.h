@@ -45,7 +45,7 @@
 
 #define _FNET_SSL_CONFIG_H_
 
-// TBD under development
+/* TBD under development */
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_SSL //TBD under development

@@ -87,7 +87,7 @@ __attribute__((used))
             FAPP_CFG_PARAMS_IP_MASK,    /* netmask */
             FAPP_CFG_PARAMS_IP_GW,      /* gateway */
             FAPP_CFG_PARAMS_IP_DNS,     /* DNS */
-            {FAPP_CFG_PARAMS_MAC_ADDR},   /* MAC address */
+            FAPP_CFG_PARAMS_MAC_ADDR,   /* MAC address */
             FAPP_CFG_PARAMS_HOST_NAME   /* Host name*/
         },
         {

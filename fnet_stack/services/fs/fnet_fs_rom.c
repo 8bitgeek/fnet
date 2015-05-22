@@ -78,7 +78,8 @@ static const struct fnet_fs_file_operations fnet_fs_rom_file_operations =
 /* FS operations */
 static const struct fnet_fs_operations fnet_fs_rom_operations =
 {
-    fnet_fs_rom_mount
+    fnet_fs_rom_mount,
+    0
 };
 
 /* FS interface structure */

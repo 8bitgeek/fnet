@@ -56,44 +56,44 @@
 #define FNET_IP_MAX_PACKET     (FNET_CFG_IP_MAX_PACKET)
 
 /* Check max. values.*/
-#if (FNET_IP_MAX_PACKET > 65535)
+#if (FNET_IP_MAX_PACKET > 65535U)
     #undef FNET_IP_MAX_PACKET
-    #define FNET_IP_MAX_PACKET      (65535)
+    #define FNET_IP_MAX_PACKET      (65535U)
 #endif
 
-#if (FNET_IP_MAX_PACKET < 200)
+#if (FNET_IP_MAX_PACKET < 200U)
     #undef FNET_IP_MAX_PACKET
-    #define FNET_IP_MAX_PACKET      (200)
+    #define FNET_IP_MAX_PACKET      (200U)
 #endif
 
-#define FNET_IP_MAX_OPTIONS     (40) /* Maximum option field length */
+#define FNET_IP_MAX_OPTIONS     (40U) /* Maximum option field length */
 
 /************************************************************************
 *    IP implementation parameters.
 *************************************************************************/
-#define FNET_IP_VERSION         (4)   /* IP version */
-#define FNET_IP_TTL_MAX         (255) /* maximum time to live */
-#define FNET_IP_TTL_DEFAULT     (64)  /* default ttl, from RFC 1340 */
+#define FNET_IP_VERSION         (4U)   /* IP version */
+#define FNET_IP_TTL_MAX         (255U) /* maximum time to live */
+#define FNET_IP_TTL_DEFAULT     (64U)  /* default ttl, from RFC 1340 */
 
 /************************************************************************
 *    Supported protocols.
 *************************************************************************/
-#define FNET_IP_PROTOCOL_ICMP   (1)
-#define FNET_IP_PROTOCOL_IGMP   (2)
-#define FNET_IP_PROTOCOL_UDP    (17)
-#define FNET_IP_PROTOCOL_TCP    (6)
-#define FNET_IP_PROTOCOL_ICMP6  (58)
+#define FNET_IP_PROTOCOL_ICMP   (1U)
+#define FNET_IP_PROTOCOL_IGMP   (2U)
+#define FNET_IP_PROTOCOL_UDP    (17U)
+#define FNET_IP_PROTOCOL_TCP    (6U)
+#define FNET_IP_PROTOCOL_ICMP6  (58U)
 
-#define FNET_IP_DF              (0x4000)    /* dont fragment flag */
-#define FNET_IP_MF              (0x2000)    /* more fragments flag */
-#define FNET_IP_FLAG_MASK       (0xE000)    /* mask for fragmenting bits */
-#define FNET_IP_OFFSET_MASK     (0x1fff)    /* mask for fragmenting bits */
+#define FNET_IP_DF              (0x4000U)    /* dont fragment flag */
+#define FNET_IP_MF              (0x2000U)    /* more fragments flag */
+#define FNET_IP_FLAG_MASK       (0xE000U)    /* mask for fragmenting bits */
+#define FNET_IP_OFFSET_MASK     (0x1fffU)    /* mask for fragmenting bits */
 
-#define FNET_IP_TIMER_PERIOD    (500)
-#define FNET_IP_FRAG_TTL        (10000/FNET_IP_TIMER_PERIOD) /* TTL for fragments to complete a datagram (10sec)*/
+#define FNET_IP_TIMER_PERIOD    (500U)
+#define FNET_IP_FRAG_TTL        (10000U/FNET_IP_TIMER_PERIOD) /* TTL for fragments to complete a datagram (10sec)*/
 
 /* Maximum size of IP input queue.*/
-#define FNET_IP_QUEUE_COUNT_MAX (FNET_CFG_IP_MAX_PACKET/2)
+#define FNET_IP_QUEUE_COUNT_MAX (FNET_CFG_IP_MAX_PACKET/2U)
 
 /************************************************************************
 *    Timestamp option

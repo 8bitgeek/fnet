@@ -47,15 +47,15 @@
 #include "fnet_netbuf.h"
 
 
-unsigned short fnet_checksum_buf(char *buf, int buf_len);
-unsigned short fnet_checksum_pseudo_buf(char *buf, unsigned short buf_len, unsigned short protocol, char *ip_src, char *ip_dest, int addr_size);
+unsigned short fnet_checksum_buf(char *buf, unsigned int buf_len);
+unsigned short fnet_checksum_pseudo_buf(char *buf, unsigned short buf_len, unsigned short protocol, char *ip_src, char *ip_dest, unsigned int addr_size);
 
-unsigned short fnet_checksum(fnet_netbuf_t * nb, int len);
+unsigned short fnet_checksum(fnet_netbuf_t * nb, unsigned int len);
 
 unsigned short fnet_checksum_pseudo_start( fnet_netbuf_t *nb,
                                            unsigned short protocol, unsigned short protocol_len );
 
-unsigned short fnet_checksum_pseudo_end( unsigned short sum_s, char *ip_src, char *ip_dest, int addr_size );
+unsigned short fnet_checksum_pseudo_end( unsigned short sum_s, char *ip_src, char *ip_dest, unsigned int addr_size );
 
 
 #endif

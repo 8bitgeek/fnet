@@ -73,7 +73,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_PING_PACKET_MAX
-    #define FNET_CFG_PING_PACKET_MAX            (64)
+    #define FNET_CFG_PING_PACKET_MAX            (64U)
 #endif
 
 /**************************************************************************/ /*!
@@ -84,7 +84,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_PING_IDENTIFIER
-    #define FNET_CFG_PING_IDENTIFIER            (FNET_HTONS(1))
+    #define FNET_CFG_PING_IDENTIFIER            (FNET_HTONS(1U))
 #endif
 
 

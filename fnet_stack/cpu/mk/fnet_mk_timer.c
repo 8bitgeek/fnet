@@ -44,6 +44,8 @@
 #include "fnet.h"
 #include "stack/fnet_timer_prv.h"
 
+static void fnet_cpu_timer_handler_top(void *cookie);
+
 /************************************************************************
 * NAME: fnet_timer_handler_top
 *

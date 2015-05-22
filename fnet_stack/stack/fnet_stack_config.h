@@ -192,7 +192,7 @@
     #define FNET_CFG_NETIF_IP6_ADDR_MAX         (5)
 #endif
 
-#if FNET_CFG_NETIF_IP6_ADDR_MAX <2 
+#if FNET_CFG_NETIF_IP6_ADDR_MAX < 2 
     #undef FNET_CFG_NETIF_IP6_ADDR_MAX
     #define FNET_CFG_NETIF_IP6_ADDR_MAX         (2)
 #endif 
@@ -260,7 +260,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_ETH0_IP4_MASK
-    #define FNET_CFG_ETH0_IP4_MASK        (FNET_IP4_ADDR_INIT(255, 255, 255, 0))
+    #define FNET_CFG_ETH0_IP4_MASK        (FNET_IP4_ADDR_INIT(255U, 255U, 255U, 0U))
 #endif
     
 /**************************************************************************/ /*!
@@ -270,7 +270,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_ETH0_IP4_GW
-    #define FNET_CFG_ETH0_IP4_GW          (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+    #define FNET_CFG_ETH0_IP4_GW          (FNET_IP4_ADDR_INIT(0U, 0U, 0U, 0U))
 #endif
 
 /**************************************************************************/ /*!
@@ -280,7 +280,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_ETH0_IP4_DNS
-    #define FNET_CFG_ETH0_IP4_DNS        (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+    #define FNET_CFG_ETH0_IP4_DNS        (FNET_IP4_ADDR_INIT(0U, 0U, 0U, 0U))
 #endif
 
 /**************************************************************************/ /*!
@@ -290,7 +290,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_ETH1_IP4_ADDR
-    #define FNET_CFG_ETH1_IP4_ADDR        (FNET_IP4_ADDR_INIT(192, 168, 0, 21))
+    #define FNET_CFG_ETH1_IP4_ADDR        (FNET_IP4_ADDR_INIT(192U, 168U, 0U, 21U))
 #endif
     
 /**************************************************************************/ /*!
@@ -300,7 +300,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_ETH1_IP4_MASK
-    #define FNET_CFG_ETH1_IP4_MASK        (FNET_IP4_ADDR_INIT(255, 255, 255, 0))
+    #define FNET_CFG_ETH1_IP4_MASK        (FNET_IP4_ADDR_INIT(255U, 255U, 255U, 0U))
 #endif
     
 /**************************************************************************/ /*!
@@ -310,7 +310,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_ETH1_IP4_GW
-    #define FNET_CFG_ETH1_IP4_GW          (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+    #define FNET_CFG_ETH1_IP4_GW          (FNET_IP4_ADDR_INIT(0U, 0U, 0U, 0U))
 #endif
 
 /**************************************************************************/ /*!
@@ -320,7 +320,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_ETH1_IP4_DNS
-    #define FNET_CFG_ETH1_IP4_DNS        (FNET_IP4_ADDR_INIT(0, 0, 0, 0))
+    #define FNET_CFG_ETH1_IP4_DNS        (FNET_IP4_ADDR_INIT(0U, 0U, 0U, 0U))
 #endif
 
 
@@ -333,7 +333,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_LOOPBACK_IP4_ADDR
-    #define FNET_CFG_LOOPBACK_IP4_ADDR   (FNET_IP4_ADDR_INIT(127, 0, 0, 1))
+    #define FNET_CFG_LOOPBACK_IP4_ADDR   (FNET_IP4_ADDR_INIT(127U, 0U, 0U, 1U))
 #endif
 
 /**************************************************************************/ /*!
@@ -442,7 +442,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_LOOPBACK_MTU
-    #define FNET_CFG_LOOPBACK_MTU           (1576)
+    #define FNET_CFG_LOOPBACK_MTU           (1576U)
 #endif
 
 /**************************************************************************/ /*!
@@ -491,7 +491,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_MULTICAST_MAX
-    #define FNET_CFG_MULTICAST_MAX          (5)
+    #define FNET_CFG_MULTICAST_MAX          (5U)
 #endif
 
 /**************************************************************************/ /*!
@@ -522,7 +522,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_ARP_TABLE_SIZE
-    #define FNET_CFG_ARP_TABLE_SIZE         (10)    
+    #define FNET_CFG_ARP_TABLE_SIZE         (10U)    
 #endif
 
 
@@ -534,7 +534,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_ARP_EXPIRE_TIMEOUT
-    #define FNET_CFG_ARP_EXPIRE_TIMEOUT         (1200)    
+    #define FNET_CFG_ARP_EXPIRE_TIMEOUT     (1200U)    
 #endif
 
 /**************************************************************************/ /*!
@@ -616,7 +616,7 @@
  * @hideinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_HEAP_SIZE
-    #define FNET_CFG_HEAP_SIZE                  (50 * 1024)
+    #define FNET_CFG_HEAP_SIZE                  (50U * 1024U)
 #endif
 
 /**************************************************************************/ /*!
@@ -625,7 +625,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_SOCKET_MAX
-    #define FNET_CFG_SOCKET_MAX                 (10)
+    #define FNET_CFG_SOCKET_MAX                 (10U)
 #endif
 
 /**************************************************************************/ /*!
@@ -665,7 +665,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_SOCKET_TCP_TX_BUF_SIZE
-    #define FNET_CFG_SOCKET_TCP_TX_BUF_SIZE     (2 * 1024)
+    #define FNET_CFG_SOCKET_TCP_TX_BUF_SIZE     (2U * 1024U)
 #endif
 
 /**************************************************************************/ /*!
@@ -676,7 +676,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_SOCKET_TCP_RX_BUF_SIZE
-    #define FNET_CFG_SOCKET_TCP_RX_BUF_SIZE     (2 * 1024)
+    #define FNET_CFG_SOCKET_TCP_RX_BUF_SIZE     (2U * 1024U)
 #endif
 
 /**************************************************************************/ /*!
@@ -687,7 +687,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_SOCKET_UDP_TX_BUF_SIZE
-    #define FNET_CFG_SOCKET_UDP_TX_BUF_SIZE     (2 * 1024)
+    #define FNET_CFG_SOCKET_UDP_TX_BUF_SIZE     (2U * 1024U)
 #endif
 
 /**************************************************************************/ /*!
@@ -698,7 +698,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_SOCKET_UDP_RX_BUF_SIZE
-    #define FNET_CFG_SOCKET_UDP_RX_BUF_SIZE     (2 * 1024)
+    #define FNET_CFG_SOCKET_UDP_RX_BUF_SIZE     (2U * 1024U)
 #endif
 
 /**************************************************************************/ /*!
@@ -709,7 +709,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_SOCKET_RAW_TX_BUF_SIZE
-    #define FNET_CFG_SOCKET_RAW_TX_BUF_SIZE     (2 * 1024)
+    #define FNET_CFG_SOCKET_RAW_TX_BUF_SIZE     (2U * 1024U)
 #endif
 
 /**************************************************************************/ /*!
@@ -720,7 +720,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_SOCKET_RAW_RX_BUF_SIZE
-    #define FNET_CFG_SOCKET_RAW_RX_BUF_SIZE     (2 * 1024)
+    #define FNET_CFG_SOCKET_RAW_RX_BUF_SIZE     (2U * 1024U)
 #endif
 
 /**************************************************************************/ /*!
@@ -731,7 +731,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_IP_MAX_PACKET
-    #define FNET_CFG_IP_MAX_PACKET              (10*1024)  
+    #define FNET_CFG_IP_MAX_PACKET              (10U*1024U)  
 #endif
 
 /*****************************************************************************

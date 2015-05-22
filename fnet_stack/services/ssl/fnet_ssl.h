@@ -44,7 +44,7 @@
 
 #include "fnet_config.h"
 
-#if FNET_CFG_SSL // TBD under development
+#if FNET_CFG_SSL /* TBD under development */
  
 #include "fnet.h"
 

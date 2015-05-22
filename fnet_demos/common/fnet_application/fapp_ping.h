@@ -48,11 +48,11 @@
 #if FNET_CFG_PING && (FAPP_CFG_PING_CMD || FAPP_CFG_PING6_CMD)
 
 /* Default parameters.*/
-#define FAPP_PING_DEFAULT_SIZE      (63)
-#define FAPP_PING_DEFAULT_NUMBER    (4)
-#define FAPP_PING_DEFAULT_TIMEOUT   (1000) /* ms */
-#define FAPP_PING_DEFAULT_PATTERN   (0x00) 
-#define FAPP_PING_DEFAULT_HOP_LIMIT (64) 
+#define FAPP_PING_DEFAULT_SIZE      (63U)
+#define FAPP_PING_DEFAULT_NUMBER    (4U)
+#define FAPP_PING_DEFAULT_TIMEOUT   (1000U) /* ms */
+#define FAPP_PING_DEFAULT_PATTERN   (0x00U) 
+#define FAPP_PING_DEFAULT_HOP_LIMIT (64U) 
 
 void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** );
 

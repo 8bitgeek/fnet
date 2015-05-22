@@ -82,26 +82,27 @@ char *fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac )
 *************************************************************************/
 int fnet_str_to_mac( char *str_mac, fnet_mac_addr_t addr )
 {
-    unsigned long val;
-    int c;
-    unsigned long octet[6], *octetptr = octet;
-    int i;
+    unsigned long   val;
+    char            c;
+    unsigned long   octet[6];
+    unsigned long   *octetptr = octet;
+    int             i;
 
     while(1)
     {
-        val = 0;
+        val = 0U;
 
-        while((c = *str_mac) != 0)
+        while((c = *str_mac) != 0U)
         {
             if((c >= '0') && (c <= '9'))
             {
-                val = (val * 16) + (c - '0');
+                val = (val * 16U) + (unsigned long)(c - '0');
                 str_mac++;
                 continue;
             }
             else if(((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')))
             {
-                val = (val << 4) + (c + 10 - (((c >= 'a') && (c <= 'f')) ? 'a' : 'A'));
+                val = (val << 4U) + (unsigned long)(c + 10U - (((c >= 'a') && (c <= 'f')) ? 'a' : 'A'));
                 str_mac++;
                 continue;
             }
@@ -147,7 +148,7 @@ ERROR:
 
 
 /* Number of initialised ethernet devices.*/
-unsigned int fnet_eth_number = 0;
+unsigned int fnet_eth_number = 0U;
 
 /************************************************************************
 *     List of Network Layer Protocols used by Ethernet Interface.
@@ -186,17 +187,17 @@ static const fnet_eth_prot_if_t fnet_eth_prot_if_list[] =
  * 23 bits of the Ethernet multicast address 01-00-5E-00-00-00 (hex).
  */
 #define FNET_ETH_MULTICAST_IP4_TO_MAC(ip4_addr, mac_addr)  \
-            (mac_addr)[0] = 0x01, \
-            (mac_addr)[1] = 0x00, \
-            (mac_addr)[2] = 0x5E, \
-            (mac_addr)[3] = (unsigned char)(((unsigned char *)(&ip4_addr))[1] & 0x7F), \
+            (mac_addr)[0] = 0x01U, \
+            (mac_addr)[1] = 0x00U, \
+            (mac_addr)[2] = 0x5EU, \
+            (mac_addr)[3] = (unsigned char)(((unsigned char *)(&ip4_addr))[1] & 0x7FU), \
             (mac_addr)[4] = ((unsigned char *)(&ip4_addr))[2], \
             (mac_addr)[5] = ((unsigned char *)(&ip4_addr))[3]
 
 /* For IPv6 */
 #define FNET_ETH_MULTICAST_IP6_TO_MAC(ip6_addr, mac_addr)        \
-            (mac_addr)[0] = 0x33,               \
-            (mac_addr)[1] = 0x33,               \
+            (mac_addr)[0] = 0x33U,               \
+            (mac_addr)[1] = 0x33U,               \
             (mac_addr)[2] = ip6_addr->addr[12], \
             (mac_addr)[3] = ip6_addr->addr[13], \
             (mac_addr)[4] = ip6_addr->addr[14], \
@@ -207,7 +208,7 @@ static const fnet_eth_prot_if_t fnet_eth_prot_if_list[] =
 /******************************************************************************
 *     Function Prototypes
 *******************************************************************************/
-#define FNET_ETH_TIMER_PERIOD (4000) /*ms*/
+#define FNET_ETH_TIMER_PERIOD (4000U) /*ms*/
 static void fnet_eth_timer( void *cookie );
 
 
@@ -219,12 +220,12 @@ static void fnet_eth_timer( void *cookie );
 *************************************************************************/
 void fnet_eth_prot_input( fnet_netif_t *netif, fnet_netbuf_t *nb, unsigned short protocol )
 {
-    int i;
+    unsigned int i;
     
     if(netif && nb)
     {
         /* Find Network-layer protocol.*/
-        for(i=0; i<FNET_ETH_PROT_IF_LIST_SIZE; i++)
+        for(i=0U; i<FNET_ETH_PROT_IF_LIST_SIZE; i++)
         {
             if( protocol == fnet_eth_prot_if_list[i].protocol)
             {
@@ -422,13 +423,13 @@ void fnet_eth_output_ip4(fnet_netif_t *netif, fnet_ip4_addr_t dest_ip_addr, fnet
     else if(FNET_IP4_ADDR_IS_MULTICAST(dest_ip_addr))
     {
         /* Hash IP multicast address to MAC address. */
-        destination_addr[0] = 0x01;
-        destination_addr[1] = 0x0;
-        destination_addr[2] = 0x5e;
-        destination_addr[3] = (unsigned char)(FNET_IP4_ADDR2(dest_ip_addr)& 0x7f);
+        destination_addr[0] = 0x01U;
+        destination_addr[1] = 0x0U;
+        destination_addr[2] = 0x5eU;
+        destination_addr[3] = (unsigned char)(FNET_IP4_ADDR2(dest_ip_addr)& 0x7fU);
         destination_addr[4] = (unsigned char)(FNET_IP4_ADDR3(dest_ip_addr));
         destination_addr[5] = (unsigned char)(FNET_IP4_ADDR4(dest_ip_addr));
-        //TBD Use macro
+        /* TBD Use macro. */
     }
     else
     /* Unicast address. */
@@ -531,8 +532,8 @@ void fnet_eth_output_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip_addr,  fne
         
         /* Link -layer address is not initialized.*/
         if((neighbor->state != FNET_ND6_NEIGHBOR_STATE_INCOMPLETE) 
-            && (neighbor->ll_addr[0]==0) && (neighbor->ll_addr[1]==0) && (neighbor->ll_addr[2]==0)
-            && (neighbor->ll_addr[3]==0) && (neighbor->ll_addr[4]==0) && (neighbor->ll_addr[5]==0) )
+            && (neighbor->ll_addr[0]==0U) && (neighbor->ll_addr[1]==0U) && (neighbor->ll_addr[2]==0U)
+            && (neighbor->ll_addr[3]==0U) && (neighbor->ll_addr[4]==0U) && (neighbor->ll_addr[5]==0U) )
         {
             neighbor->state = FNET_ND6_NEIGHBOR_STATE_INCOMPLETE;
             neighbor->state_time = fnet_timer_ms();

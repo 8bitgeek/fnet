@@ -51,8 +51,8 @@
 
 /* Neighbor Cache and Default Router List combined to one list.*/
 #define FNET_ND6_NEIGHBOR_CACHE_SIZE         (FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE + FNET_CFG_ND6_ROUTER_LIST_SIZE) 
-#define FNET_ND6_PREFIX_LIST_SIZE            (FNET_CFG_ND6_PREFIX_LIST_SIZE + 1) /* One more for link-local prefix.*/
-#define FNET_ND6_REDIRECT_TABLE_SIZE         (4) /* TBD config parameter.*/
+#define FNET_ND6_PREFIX_LIST_SIZE            (FNET_CFG_ND6_PREFIX_LIST_SIZE + 1U) /* One more for link-local prefix.*/
+#define FNET_ND6_REDIRECT_TABLE_SIZE         (4U) /* TBD config parameter.*/
 
 /**************************************************************
 * RFC4861. 10. Protocol Constants.
@@ -84,16 +84,16 @@
  * Solicitation messages, each separated by at least
  * RTR_SOLICITATION_INTERVAL seconds.
  */
-#define FNET_ND6_MAX_RTR_SOLICITATIONS       (3)        /* transmissions */
-#define FNET_ND6_MAX_RTR_SOLICITATION_DELAY  (1000)     /* ms */
-#define FNET_ND6_RTR_SOLICITATION_INTERVAL   (4000)     /* ms */
+#define FNET_ND6_MAX_RTR_SOLICITATIONS       (3U)        /* transmissions */
+#define FNET_ND6_MAX_RTR_SOLICITATION_DELAY  (1000U)     /* ms */
+#define FNET_ND6_RTR_SOLICITATION_INTERVAL   (4000U)     /* ms */
 
 /* If no Neighbor Advertisement is received after MAX_MULTICAST_SOLICIT
 * solicitations, address resolution has failed. The sender MUST return
 * ICMP destination unreachable indications with code 3 (Address
 * Unreachable) for each packet queued awaiting address resolution.
 */
-#define FNET_ND6_MAX_MULTICAST_SOLICIT       (3)        /* transmissions */
+#define FNET_ND6_MAX_MULTICAST_SOLICIT       (3U)        /* transmissions */
 
 /*
  * Default value of the time between retransmissions of Neighbor
@@ -102,7 +102,7 @@
  * reachability of a neighbor. Also used during Duplicate
  * Address Detection (RFC4862).
  */
-#define FNET_ND6_RETRANS_TIMER               (1000)     /* ms */
+#define FNET_ND6_RETRANS_TIMER               (1000U)     /* ms */
 
 /*
  * Default value of the time a neighbor is considered reachable after
@@ -116,7 +116,7 @@
  * Router Advertisements) or at least every few
  * hours even if
  */
-#define FNET_ND6_REACHABLE_TIME              (30000)    /* ms */ 
+#define FNET_ND6_REACHABLE_TIME              (30000U)    /* ms */ 
 
 /*
  * If no reachability confirmation is received
@@ -124,7 +124,7 @@
  * DELAY state, send a Neighbor Solicitation and change
  * the state to PROBE.
  */
-#define FNET_ND6_DELAY_FIRST_PROBE_TIME      (5000)     /*ms*/
+#define FNET_ND6_DELAY_FIRST_PROBE_TIME      (5000U)     /*ms*/
 
 /*
  * If no response is
@@ -132,16 +132,16 @@
  * MAX_UNICAST_SOLICIT solicitations, retransmissions cease and the
  * entry SHOULD be deleted.
  */
-#define FNET_ND6_MAX_UNICAST_SOLICIT         (3)        /*times*/
+#define FNET_ND6_MAX_UNICAST_SOLICIT         (3U)        /*times*/
 
 /*
  * ND6 general timer resolution.
  */
-#define FNET_ND6_TIMER_PERIOD                (100)      /* ms */
+#define FNET_ND6_TIMER_PERIOD                (100U)      /* ms */
 
-#define FNET_ND6_PREFIX_LENGTH_DEFAULT       (64)            /* Default prefix length, in bits.*/
-#define FNET_ND6_PREFIX_LIFETIME_INFINITE    (0xFFFFFFFF)    /* A lifetime value of all one bits (0xffffffff) represents infinity. */
-#define FNET_ND6_RDNSS_LIFETIME_INFINITE     (0xFFFFFFFF)    /* A lifetime value of all one bits (0xffffffff) represents infinity. */
+#define FNET_ND6_PREFIX_LENGTH_DEFAULT       (64U)            /* Default prefix length, in bits.*/
+#define FNET_ND6_PREFIX_LIFETIME_INFINITE    (0xFFFFFFFFU)    /* A lifetime value of all one bits (0xffffffff) represents infinity. */
+#define FNET_ND6_RDNSS_LIFETIME_INFINITE     (0xFFFFFFFFU)    /* A lifetime value of all one bits (0xffffffff) represents infinity. */
 
                                     
 /***********************************************************************
@@ -332,18 +332,18 @@ typedef struct fnet_nd6_na_header
 FNET_COMP_PACKED_END
 
 /* NA flags.*/
-#define FNET_ND6_NA_FLAG_ROUTER      (0x80) /* Router flag. When set, the R-bit indicates that
+#define FNET_ND6_NA_FLAG_ROUTER      (0x80U) /* Router flag. When set, the R-bit indicates that
                                              * the sender is a router. The R-bit is used by
                                              * Neighbor Unreachability Detection to detect a
                                              * router that changes to a host.*/
-#define FNET_ND6_NA_FLAG_SOLICITED   (0x40) /* Solicited flag. When set, the S-bit indicates that
+#define FNET_ND6_NA_FLAG_SOLICITED   (0x40U) /* Solicited flag. When set, the S-bit indicates that
                                              * the advertisement was sent in response to a
                                              * Neighbor Solicitation from the Destination address.
                                              * The S-bit is used as a reachability confirmation
                                              * for Neighbor Unreachability Detection. It MUST NOT
                                              * be set in multicast advertisements or in
                                              * unsolicited unicast advertisements.*/
-#define FNET_ND6_NA_FLAG_OVERRIDE    (0x20) /* Override flag. When set, the O-bit indicates that
+#define FNET_ND6_NA_FLAG_OVERRIDE    (0x20U) /* Override flag. When set, the O-bit indicates that
                                              * the advertisement should override an existing cache
                                              * entry and update the cached link-layer address.
                                              * When it is not set the advertisement will not
@@ -475,13 +475,13 @@ typedef struct fnet_nd6_ra_header
 FNET_COMP_PACKED_END
 
 /* RA flags */
-#define FNET_ND6_RA_FLAG_M   (0x80) /* 1-bit "Managed address configuration" flag. When
+#define FNET_ND6_RA_FLAG_M   (0x80U) /* 1-bit "Managed address configuration" flag. When
                                      * set, it indicates that addresses are available via
                                      * Dynamic Host Configuration Protocol [DHCPv6].
                                      * If the M flag is set, the O flag is redundant and
                                      * can be ignored because DHCPv6 will return all
                                      * available configuration information.*/
-#define FNET_ND6_RA_FLAG_O   (0x40) /* 1-bit "Other configuration" flag. When set, it
+#define FNET_ND6_RA_FLAG_O   (0x40U) /* 1-bit "Other configuration" flag. When set, it
                                      * indicates that other configuration information is
                                      * available via DHCPv6. Examples of such information
                                      * are DNS-related information or information on other
@@ -490,15 +490,15 @@ FNET_COMP_PACKED_END
                                      * information is available via DHCPv6.*/
 
 /* Hop Limit when sending/receiving Neighbor Discovery messages. */
-#define FNET_ND6_HOP_LIMIT                  (255)
+#define FNET_ND6_HOP_LIMIT                  (255U)
 
 /* ND option types (RFC4861). */
-#define FNET_ND6_OPTION_SOURCE_LLA          (1)     /* Source Link-layer Address.*/
-#define FNET_ND6_OPTION_TARGET_LLA          (2)     /* Target Link-layer Address.*/
-#define FNET_ND6_OPTION_PREFIX              (3)     /* Prefix Information.*/
-#define FNET_ND6_OPTION_REDIRECTED_HEADER   (4)     /* Redirected Header.*/
-#define FNET_ND6_OPTION_MTU                 (5)     /* MTU. */
-#define FNET_ND6_OPTION_RDNSS               (25)    /* RDNSS RFC6106. */
+#define FNET_ND6_OPTION_SOURCE_LLA          (1U)     /* Source Link-layer Address.*/
+#define FNET_ND6_OPTION_TARGET_LLA          (2U)     /* Target Link-layer Address.*/
+#define FNET_ND6_OPTION_PREFIX              (3U)     /* Prefix Information.*/
+#define FNET_ND6_OPTION_REDIRECTED_HEADER   (4U)     /* Redirected Header.*/
+#define FNET_ND6_OPTION_MTU                 (5U)     /* MTU. */
+#define FNET_ND6_OPTION_RDNSS               (25U)    /* RDNSS RFC6106. */
 
 /***********************************************************************
  * ND option header
@@ -609,7 +609,7 @@ typedef struct fnet_nd6_option_prefix_header
 FNET_COMP_PACKED_END
 
 
-#define FNET_ND6_OPTION_FLAG_L  (0x80)  /* 1-bit on-link flag. When set, indicates that this
+#define FNET_ND6_OPTION_FLAG_L  (0x80U)  /* 1-bit on-link flag. When set, indicates that this
                                          * prefix can be used for on-link determination. When
                                          * not set the advertisement makes no statement about
                                          * on-link or off-link properties of the prefix. In
@@ -617,7 +617,7 @@ FNET_COMP_PACKED_END
                                          * NOT conclude that an address derived from the
                                          * prefix is off-link. That is, it MUST NOT update a
                                          * previous indication that the address is on-link.*/    
-#define FNET_ND6_OPTION_FLAG_A  (0x40)  /* 1-bit autonomous address-configuration flag. When
+#define FNET_ND6_OPTION_FLAG_A  (0x40U)  /* 1-bit autonomous address-configuration flag. When
                                          * set indicates that this prefix can be used for
                                          * stateless address configuration as specified in
                                          * [ADDRCONF].*/  

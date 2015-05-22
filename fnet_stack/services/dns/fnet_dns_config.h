@@ -70,7 +70,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_DNS_PORT
-    #define FNET_CFG_DNS_PORT                       (FNET_HTONS(53))
+    #define FNET_CFG_DNS_PORT                       (FNET_HTONS(53U))
 #endif
 
 /**************************************************************************/ /*!
@@ -81,7 +81,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_DNS_RETRANSMISSION_MAX
-    #define FNET_CFG_DNS_RETRANSMISSION_MAX         (5)
+    #define FNET_CFG_DNS_RETRANSMISSION_MAX         (5U)
 #endif
 
 /**************************************************************************/ /*!
@@ -95,7 +95,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_DNS_RETRANSMISSION_TIMEOUT
-    #define FNET_CFG_DNS_RETRANSMISSION_TIMEOUT     (1)  /* seconds */
+    #define FNET_CFG_DNS_RETRANSMISSION_TIMEOUT     (1U)  /* seconds */
 #endif
 
 /*! @} */

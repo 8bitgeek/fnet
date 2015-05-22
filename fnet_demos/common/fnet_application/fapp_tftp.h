@@ -50,14 +50,14 @@
 
 /********************** RAW **************************************/
 /* RAW Rx handler control structure. */
-struct fapp_tftp_rx_handler_raw
+struct fapp_tftp_rx_handler_raw_context
 {
     unsigned long dest; /* Destination address */
 };
 
 /* RAW Tx handler control structure. */
 #define FAPP_TFTP_RAW_DATA_MAX     (128)
-struct fapp_tftp_tx_handler_raw
+struct fapp_tftp_tx_handler_raw_context
 {
     unsigned char data[FAPP_TFTP_RAW_DATA_MAX];
     int data_size;
@@ -85,7 +85,7 @@ fapp_tftp_handler_bin_state_t;
 
 /* TFTP BIN handler control structure. */
 FNET_COMP_PACKED_BEGIN
-struct fapp_tftp_rx_handler_bin
+struct fapp_tftp_rx_handler_bin_context
 {
     union 
     {
@@ -106,7 +106,7 @@ FNET_COMP_PACKED_END
 #define FAPP_TFTP_BIN_DATA_MAX     (252)
 
 FNET_COMP_PACKED_BEGIN
-struct fapp_tftp_tx_handler_bin
+struct fapp_tftp_tx_handler_bin_context
 {
     struct
     {
@@ -157,7 +157,7 @@ fapp_tftp_tx_handler_srec_state_t;
 
 /* TFTP SREC handler control structure. */
 FNET_COMP_PACKED_BEGIN
-struct fapp_tftp_rx_handler_srec
+struct fapp_tftp_rx_handler_srec_context
 {
     fapp_tftp_rx_handler_srec_state_t state FNET_COMP_PACKED;
     unsigned char type 						FNET_COMP_PACKED;	/* Record type */
@@ -177,7 +177,7 @@ FNET_COMP_PACKED_END
 /* TFTP SREC TX handler control structure. */
 #define FAPP_TFTP_SREC_DATA_MAX     (28)
 FNET_COMP_PACKED_BEGIN
-struct fapp_tftp_tx_handler_srec
+struct fapp_tftp_tx_handler_srec_context
 {
     fapp_tftp_tx_handler_srec_state_t state	FNET_COMP_PACKED;
     struct
@@ -201,12 +201,12 @@ typedef struct
 {
     union
     {
-        struct fapp_tftp_rx_handler_raw rx_raw;
-        struct fapp_tftp_tx_handler_raw tx_raw;
-        struct fapp_tftp_rx_handler_bin rx_bin;
-        struct fapp_tftp_tx_handler_bin tx_bin;
-        struct fapp_tftp_rx_handler_srec rx_srec;
-        struct fapp_tftp_tx_handler_srec tx_srec;
+        struct fapp_tftp_rx_handler_raw_context rx_raw;
+        struct fapp_tftp_tx_handler_raw_context tx_raw;
+        struct fapp_tftp_rx_handler_bin_context rx_bin;
+        struct fapp_tftp_tx_handler_bin_context tx_bin;
+        struct fapp_tftp_rx_handler_srec_context rx_srec;
+        struct fapp_tftp_tx_handler_srec_context tx_srec;
     };
     struct image_type *current_type;
     unsigned long image_size;

@@ -73,67 +73,6 @@
     void fapp_telnet_test_cmd( fnet_shell_desc_t desc );
 #endif
 
-#if FAPP_CFG_TELNET_CMD_OWN_SHELL
-    void fapp_telnet_exit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
-
-    /************************************************************************
-    *     The table of the telnet shell commands.
-    *************************************************************************/
-    static const struct fnet_shell_command fapp_telnet_cmd_table [] =
-    {
-        { FNET_SHELL_CMD_TYPE_NORMAL, "help", 0, 0, (void *)fapp_help_cmd,"Display this help message", ""},
-
-    #if FAPP_CFG_SETGET_CMD
-        { FNET_SHELL_CMD_TYPE_NORMAL, "set", 0, 2, (void *)fapp_set_cmd,      "Set parameter", "[<parameter> <value>]"},
-        { FNET_SHELL_CMD_TYPE_NORMAL, "get", 0, 1, (void *)fapp_get_cmd,    "Get parameters", "[<parameter>]" },
-    #endif    
-    #if FAPP_CFG_INFO_CMD
-        { FNET_SHELL_CMD_TYPE_NORMAL, "info", 0, 0, (void *)fapp_info_cmd,    "Show interface info", ""},
-    #endif
-    #if FAPP_CFG_STAT_CMD
-        { FNET_SHELL_CMD_TYPE_NORMAL, "stat", 0, 0, (void *)fapp_stat_cmd,    "Show interface statistics", ""},
-    #endif
-    #if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP
-        { FNET_SHELL_CMD_TYPE_NORMAL, "dhcp", 0, 1, (void *)fapp_dhcp_cmd,    "Start DHCP client", "[release]"},
-    #endif
-    #if FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP
-        { FNET_SHELL_CMD_TYPE_NORMAL, "http", 0, 1, (void *)fapp_http_cmd,    "Start HTTP Server", "[release]"},
-    #endif
-    #if FAPP_CFG_EXP_CMD && FNET_CFG_FS
-        { FNET_SHELL_CMD_TYPE_SHELL,  "exp", 0, 1, &fapp_fs_shell,   "File Explorer submenu...", ""},
-    #endif
-    #if FAPP_CFG_TFTP_CMD
-        { FNET_SHELL_CMD_TYPE_NORMAL, "tftp", 0, 3, (void *)fapp_tftp_cmd,  "TFTP firmware loader", "[<image name>[<server ip>[<type>]]]"},
-    #endif
-    #if FAPP_CFG_TFTPUP_CMD
-        { FNET_SHELL_CMD_TYPE_NORMAL, "tftpup", 0, 3, (void *)fapp_tftp_cmd,  "TFTP firmware uploader", "[<image name>[<server ip>[<type>]]]"},
-    #endif  
-    #if FAPP_CFG_TFTPS_CMD
-        { FNET_SHELL_CMD_TYPE_NORMAL, "tftps", 0, 1, (void *)fapp_tftps_cmd,  "TFTP firmware server", "[release]"},
-    #endif 
-
-    #if FAPP_CFG_MEM_CMD    
-        { FNET_SHELL_CMD_TYPE_NORMAL, "mem", 0, 0, (void *)fapp_mem_cmd,    "Show memory map", ""},
-    #endif  
-    #if FAPP_CFG_ERASE_CMD    
-        { FNET_SHELL_CMD_TYPE_NORMAL, "erase", 1, 2, (void *)fapp_mem_erase_cmd,    "Erase flash memory", "all|[0x<erase address> <bytes>]"},
-    #endif 
-    #if FAPP_CFG_SAVE_CMD    
-        { FNET_SHELL_CMD_TYPE_NORMAL, "save", 0, 0, (void *)fapp_save_cmd,    "Save parameters to the FLASH", ""},
-    #endif 
-    #if FAPP_CFG_GO_CMD    
-        { FNET_SHELL_CMD_TYPE_NORMAL, "go", 0, 1, (void *)fapp_go_cmd,    "Start application at address", "[0x<address>]"},
-    #endif 
-    #if FAPP_CFG_RESET_CMD    
-        { FNET_SHELL_CMD_TYPE_NORMAL, "reset", 0, 0, (void *)fapp_reset_cmd,    "Reset the board", ""},
-    #endif   
-        { FNET_SHELL_CMD_TYPE_NORMAL, "exit", 0, 0, (void *)fapp_telnet_exit_cmd,    "Close telnet session", ""},
-#if FAPP_CFG_TELNET_TEST_CMD
-    { FNET_SHELL_CMD_TYPE_NORMAL, "test", 0, 0, (void *)fapp_telnet_test_cmd,    "Test", ""},
-#endif            
-        { FNET_SHELL_CMD_TYPE_END, 0, 0, 0, 0, 0, 0}     
-    };
-#endif
 
 
 /************************************************************************
@@ -141,11 +80,7 @@
 *************************************************************************/
 const struct fnet_shell fapp_telnet_shell =
 {
-#if FAPP_CFG_TELNET_CMD_OWN_SHELL /* Owm command table.*/
-    fapp_telnet_cmd_table,                                 
-#else  /* Use same commands as main shell. */  
-    fapp_cmd_table,
-#endif    
+    fapp_cmd_table, /* You may replace by your own command table.*/
     FAPP_TELNET_PROMPT_STR,     /* prompt_str */
     fapp_shell_init,            /* shell_init */
 };
@@ -212,7 +147,7 @@ void fapp_telnet_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 *
 * DESCRIPTION: 
 ************************************************************************/
-#if FAPP_CFG_TELNET_CMD_OWN_SHELL
+#if 0
 static void fapp_telnet_exit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     FNET_COMP_UNUSED_ARG(desc);

@@ -313,7 +313,6 @@ fnet_socket_t *fnet_socket_lookup( fnet_socket_t *head,  struct sockaddr *local_
 *	           FNET_SOCKET_PORT_RESERVED < local_port <= FNET_SOCKET_PORT_USERRESERVED (ephemeral port).
 *              In network byte order.
 *************************************************************************/
-//unsigned short fnet_socket_uniqueport( fnet_socket_t *head, fnet_ip4_addr_t local_addr )
 unsigned short fnet_socket_get_uniqueport( fnet_socket_t *head, struct sockaddr *local_addr )
 {
     unsigned short local_port = fnet_port_last; 
@@ -452,7 +451,7 @@ SOCKET socket( fnet_address_family_t family, fnet_socket_type_t type, int protoc
 * DESCRIPTION: This function establishes a connection to 
 *              a specified socket.
 *************************************************************************/
-int connect( SOCKET s, struct sockaddr *name, int namelen )
+int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
 {
     fnet_socket_t       *sock;
     int                 error = FNET_OK;
@@ -466,7 +465,7 @@ int connect( SOCKET s, struct sockaddr *name, int namelen )
     {
         if(sock->state == SS_LISTENING) /* The socket is marked to accept connections (listen).*/
         {
-            error = FNET_ERR_OPNOTSUPP; /*  Operation not supported.*/
+            error = (int)FNET_ERR_OPNOTSUPP; /*  Operation not supported.*/
             goto ERROR_SOCK;
         }
         
@@ -476,13 +475,13 @@ int connect( SOCKET s, struct sockaddr *name, int namelen )
             /* A connection has already been initiated.*/
             if(sock->state == SS_CONNECTED)
             {
-                error = FNET_ERR_ISCONN; /* Socket is already connected.*/
+                error = (int)FNET_ERR_ISCONN; /* Socket is already connected.*/
                 goto ERROR_SOCK;
             }
 
             if(sock->state == SS_CONNECTING)
             {
-                error = FNET_ERR_INPROGRESS; /* The action is in progress. */
+                error = (int)FNET_ERR_INPROGRESS; /* The action is in progress. */
                 goto ERROR_SOCK;
             }
         }
@@ -497,13 +496,13 @@ int connect( SOCKET s, struct sockaddr *name, int namelen )
 
         if (fnet_socket_addr_is_unspecified(&foreign_addr))
         {
-            error = FNET_ERR_DESTADDRREQ; /* Destination address required.*/
+            error = (int)FNET_ERR_DESTADDRREQ; /* Destination address required.*/
             goto ERROR_SOCK;
         }
 
-        if((foreign_addr.sa_port == 0) && (sock->protocol_interface->type != SOCK_RAW))
+        if((foreign_addr.sa_port == 0U) && (sock->protocol_interface->type != SOCK_RAW))
         {
-            error = FNET_ERR_ADDRNOTAVAIL; /* Can't assign requested port.*/
+            error = (int)FNET_ERR_ADDRNOTAVAIL; /* Can't assign requested port.*/
             goto ERROR_SOCK;
         }
         
@@ -595,7 +594,7 @@ ERROR:
 *
 * DESCRIPTION: This function associates a local address with a socket.
 *************************************************************************/
-int bind( SOCKET s, const struct sockaddr *name, int namelen )
+int bind( SOCKET s, const struct sockaddr *name, unsigned int namelen )
 {
     fnet_socket_t   *sock;
     int             error = FNET_OK;
@@ -736,7 +735,7 @@ int closesocket( SOCKET s )
 *
 * DESCRIPTION: This function to disable reception, transmission, or both.
 *************************************************************************/
-int shutdown( SOCKET s, int how )
+int shutdown( SOCKET s, unsigned int how )
 {
     fnet_socket_t *sock;
     int result = FNET_OK;
@@ -831,7 +830,7 @@ ERROR:
 *
 * DESCRIPTION: This function accepts a connection on a specified socket.
 *************************************************************************/
-SOCKET accept( SOCKET s, struct sockaddr *addr, int *addrlen )
+SOCKET accept( SOCKET s, struct sockaddr *addr, unsigned int *addrlen )
 {
     fnet_socket_t   *sock;
     fnet_socket_t   *sock_new;
@@ -914,7 +913,7 @@ ERROR:
 *
 * DESCRIPTION: This function sends data on a connected socket. 
 *************************************************************************/
-int send( SOCKET s, char *buf, int len, int flags )
+int send( SOCKET s, char *buf, unsigned int len, unsigned int flags )
 {
     return sendto(s, buf, len, flags, FNET_NULL, 0);
 }
@@ -924,7 +923,7 @@ int send( SOCKET s, char *buf, int len, int flags )
 *
 * DESCRIPTION: This function sends data to a specific destination. 
 *************************************************************************/
-int sendto( SOCKET s, char *buf, int len, int flags, const struct sockaddr *to, int tolen )
+int sendto( SOCKET s, char *buf, unsigned int len, int flags, const struct sockaddr *to, unsigned int tolen )
 {
     fnet_socket_t   *sock;
     int             error;
@@ -959,7 +958,7 @@ int sendto( SOCKET s, char *buf, int len, int flags, const struct sockaddr *to, 
             }
         }    
         
-        if(buf && (len >= 0))
+        if(buf)
         {
 
             /* If the socket is shutdowned, return.*/
@@ -1008,7 +1007,7 @@ ERROR:
 *
 * DESCRIPTION: This function receives data from a connected socket. 
 *************************************************************************/
-int recv( SOCKET s, char *buf, int len, int flags )
+int recv( SOCKET s, char *buf, unsigned int len, unsigned int flags )
 {
     return recvfrom(s, buf, len, flags, FNET_NULL, FNET_NULL);
 }
@@ -1019,7 +1018,7 @@ int recv( SOCKET s, char *buf, int len, int flags )
 * DESCRIPTION: This function reads incoming data of socket and captures 
 *              the address from which the data was sent.  
 *************************************************************************/
-int recvfrom( SOCKET s, char *buf, int len, const int flags, struct sockaddr *from, int *fromlen )
+int recvfrom( SOCKET s, char *buf, unsigned int len, unsigned int flags, struct sockaddr *from, unsigned int *fromlen )
 {
     fnet_socket_t   *sock;
     int             error;
@@ -1029,7 +1028,7 @@ int recvfrom( SOCKET s, char *buf, int len, const int flags, struct sockaddr *fr
 
     if((sock = fnet_socket_desc_find(s)) != 0)
     {
-        if(buf && (len >= 0))
+        if(buf)
         {
 
             /* The sockets must be bound before calling recv.*/
@@ -1093,7 +1092,7 @@ ERROR:
 * DESCRIPTION: This function retrieves the current name 
 *              for the specified socket. 
 *************************************************************************/
-int getsockname( SOCKET s, struct sockaddr *name, int *namelen )
+int getsockname( SOCKET s, struct sockaddr *name, unsigned int *namelen )
 {
     fnet_socket_t   *sock;
     int             error;
@@ -1104,7 +1103,7 @@ int getsockname( SOCKET s, struct sockaddr *name, int *namelen )
     {
         if((name == 0) || (namelen == 0))
         {
-            error = FNET_ERR_INVAL;
+            error = (int)FNET_ERR_INVAL;
             goto ERROR_SOCK;
         }
         
@@ -1113,9 +1112,9 @@ int getsockname( SOCKET s, struct sockaddr *name, int *namelen )
             goto ERROR_SOCK;
         }
 
-        if((sock->local_addr.sa_port == 0) && (sock->protocol_interface->type != SOCK_RAW))
+        if((sock->local_addr.sa_port == 0U) && (sock->protocol_interface->type != SOCK_RAW))
         {
-            error = FNET_ERR_BOUNDREQ; /* The socket has not been bound with bind().*/
+            error = (int)FNET_ERR_BOUNDREQ; /* The socket has not been bound with bind().*/
             goto ERROR_SOCK;
         }
         
@@ -1123,7 +1122,7 @@ int getsockname( SOCKET s, struct sockaddr *name, int *namelen )
     }
     else
     {
-        fnet_error_set(FNET_ERR_BAD_DESC);/* Bad descriptor.*/
+        fnet_error_set((int)FNET_ERR_BAD_DESC);/* Bad descriptor.*/
         goto ERROR;
     }
 
@@ -1144,7 +1143,7 @@ ERROR:
 * DESCRIPTION: This function retrieves the name of the peer 
 *              connected to the socket
 *************************************************************************/
-int getpeername( SOCKET s, struct sockaddr *name, int *namelen )
+int getpeername( SOCKET s, struct sockaddr *name, unsigned int *namelen )
 {
     fnet_socket_t   *sock;
     int             error;
@@ -1195,7 +1194,7 @@ ERROR:
 * DESCRIPTION: This function sets the current value for a socket option 
 *              associated with a socket
 *************************************************************************/
-int setsockopt( SOCKET s, int level, int optname, char *optval, int optlen )
+int setsockopt( SOCKET s, int level, int optname, char *optval, unsigned int optlen )
 {
     fnet_socket_t   *sock;
     int             error;
@@ -1228,8 +1227,8 @@ int setsockopt( SOCKET s, int level, int optname, char *optval, int optlen )
                           goto ERROR_SOCK;
                       }
 
-                      sock->options.linger = ((struct linger *)optval)->l_linger
-                                                 * (1000 / FNET_TIMER_PERIOD_MS);
+                      sock->options.linger_ticks = ((struct linger *)optval)->l_linger
+                                                    * (1000 / FNET_TIMER_PERIOD_MS);
 
                       if(((struct linger *)optval)->l_onoff)
                           sock->options.flags |= optname;
@@ -1305,7 +1304,7 @@ ERROR:
 * DESCRIPTION: This function retrieves the current value for 
 *              a socket option associated with a socket 
 *************************************************************************/
-int getsockopt( SOCKET s, int level, int optname, char *optval, int *optlen )
+int getsockopt( SOCKET s, int level, int optname, char *optval, unsigned int *optlen )
 {
     fnet_socket_t   *sock;
     int             error;
@@ -1342,8 +1341,8 @@ int getsockopt( SOCKET s, int level, int optname, char *optval, int *optlen )
                         ((struct linger *)optval)->l_onoff
                                 = (unsigned short)((sock->options.flags & SO_LINGER) > 0);
                         ((struct linger *)optval)->l_linger
-                            = (unsigned short)((sock->options.linger * FNET_TIMER_PERIOD_MS) / 1000);
-                        sock->options.linger = ((struct linger *)optval)->l_linger;
+                            = (unsigned short)((sock->options.linger_ticks * FNET_TIMER_PERIOD_MS) / 1000);
+                        sock->options.linger_ticks = ((struct linger *)optval)->l_linger;
                         break;
 
                     case SO_KEEPALIVE: /* Keep connections alive.*/

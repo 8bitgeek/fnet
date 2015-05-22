@@ -246,7 +246,7 @@ static int fnet_ip6_ext_header_process(fnet_netif_t *netif, unsigned char **next
          * any order and occurring any number of times in the same packet,
          * except for the Hop-by-Hop Options header which is restricted to
          * appear immediately after an IPv6 header only.*/
-        //TBD try to put it to main handler 
+        /*TBD try to put it to main handler */
         if( (next_header == FNET_IP6_TYPE_HOP_BY_HOP_OPTIONS) && ext_header_counter)
         {
             fnet_netbuf_free_chain(*nb_p);
@@ -367,7 +367,7 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_options 
                     case FNET_IP6_OPTION_TYPE_UNRECOGNIZED_DISCARD_ICMP:
                         fnet_netbuf_free_chain(nb);
                         fnet_icmp6_error( netif, FNET_ICMP6_TYPE_PARAM_PROB, FNET_ICMP6_CODE_PP_OPTION, 
-                                    (unsigned long)(&option->type) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); //TBD not tested.
+                                    (unsigned long)(&option->type) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); /* TBD not tested.*/
                         return FNET_IP6_EXT_HEADER_HANDLER_RESULT_EXIT; 
                     /* 11 - discard the packet and, only if the packet’s Destination
                      *      Address was not a multicast address, send an ICMP Parameter
@@ -377,7 +377,7 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_options 
                         fnet_netbuf_free_chain(nb);
                         if(!FNET_IP6_ADDR_IS_MULTICAST(dest_ip))
                             fnet_icmp6_error( netif, FNET_ICMP6_TYPE_PARAM_PROB, FNET_ICMP6_CODE_PP_OPTION, 
-                                    (unsigned long)(&option->type) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); //TBD not tested.
+                                    (unsigned long)(&option->type) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); /* TBD not tested.*/
                         else
                             fnet_netbuf_free_chain(ip6_nb); 
                                                                   
@@ -425,7 +425,7 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_routing_
     {
         fnet_netbuf_free_chain(nb);
         fnet_icmp6_error( netif, FNET_ICMP6_TYPE_PARAM_PROB, FNET_ICMP6_CODE_PP_HEADER, 
-                            (unsigned long)(&routing_h->routing_type) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); //TBD not tested.
+                            (unsigned long)(&routing_h->routing_type) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); /* TBD not tested.*/
         result = FNET_IP6_EXT_HEADER_HANDLER_RESULT_EXIT;
     }
     else
@@ -533,8 +533,7 @@ static void fnet_ip6_input_low( void *cookie )
  
     while((nb = fnet_ip_queue_read(&ip6_queue, &netif)) != 0)
     {
-        fnet_netbuf_t   *ip6_nb = FNET_NULL;
-        
+       
         nb->next_chain = 0;
 
         /* RFC 4862: By disabling IP operation, 
@@ -552,7 +551,7 @@ static void fnet_ip6_input_low( void *cookie )
         nb = tmp_nb; 
 
         hdr = nb->data_ptr;
-        source_addr = &hdr->source_addr; //TBD Save copy or do ICMP copy
+        source_addr = &hdr->source_addr; /* TBD Save copy or do ICMP copy*/
         destination_addr = &hdr->destination_addr;        
         
         
@@ -645,17 +644,14 @@ static void fnet_ip6_input_low( void *cookie )
                  * a node encounters a Next Header value of zero in any header other
                  * than an IPv6 header.*/ 
                 fnet_icmp6_error( netif, FNET_ICMP6_TYPE_PARAM_PROB, FNET_ICMP6_CODE_PP_NEXT_HEADER, 
-                                    (unsigned long)(next_header) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); //TBD not tested.
+                                    (unsigned long)(next_header) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); /* TBD not tested.*/
             }
         }
         else
         {
     DROP:   
-            fnet_netbuf_free_chain(ip6_nb);   
             fnet_netbuf_free_chain(nb);
         }                        
-        
-           
     } /* while end */
    
     fnet_isr_unlock();    
@@ -863,7 +859,7 @@ const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.
                     {
                         if(best_scope < dest_scope)
                         {
-                            best_addr = &if_dest_cur->ip6_addr[i].address; //PFI take pointer at the begining.
+                            best_addr = &if_dest_cur->ip6_addr[i].address; /* PFI take pointer at the begining.*/
                             if_dest_best = if_dest_cur;
                         }
                         continue;
@@ -1433,7 +1429,7 @@ void fnet_ip6_get_solicited_multicast_addr(fnet_ip6_addr_t *ip_addr, fnet_ip6_ad
 *
 * DESCRIPTION: This function frees list of datagram fragments.
 *************************************************************************/
-#if FNET_CFG_IP6_FRAGMENTATION  //PFI create general library fo list, linked lists etc.
+#if FNET_CFG_IP6_FRAGMENTATION  /* PFI create general library fo list, linked lists etc.*/
 static void fnet_ip6_frag_list_free( fnet_ip6_frag_list_t *list )
 {
     fnet_netbuf_t *nb;
@@ -1606,7 +1602,7 @@ static fnet_netbuf_t *fnet_ip6_reassembly(fnet_netif_t *netif, fnet_netbuf_t ** 
              * source of the fragment, pointing to the Payload Length field of
              * the fragment packet. */
             fnet_icmp6_error( netif, FNET_ICMP6_TYPE_PARAM_PROB, FNET_ICMP6_CODE_PP_HEADER, 
-                                    (unsigned long)((unsigned long)(&iphdr->length) - (unsigned long)ip6_nb->data_ptr), ip6_nb ); //TBD not tested.             
+                                    (unsigned long)((unsigned long)(&iphdr->length) - (unsigned long)ip6_nb->data_ptr), ip6_nb ); /* TBD not tested.*/
             goto DROP_FRAG_0;
         }
     }
@@ -1707,21 +1703,21 @@ static fnet_netbuf_t *fnet_ip6_reassembly(fnet_netif_t *netif, fnet_netbuf_t ** 
     fnet_ip6_frag_add((fnet_ip6_frag_header_t **)(&frag_list_ptr->frag_ptr), cur_frag_ptr, frag_ptr ? frag_ptr->prev : 0); 
     
     {
-        int offset = 0;
+        int offset_l = 0;
         frag_ptr = frag_list_ptr->frag_ptr;
 
         do
         {
-            if(frag_ptr->offset != offset)
+            if(frag_ptr->offset != offset_l)
                 goto NEXT_FRAG;
 
-            offset += frag_ptr->total_length;
+            offset_l += frag_ptr->total_length;
             frag_ptr = frag_ptr->next;
         } while (frag_ptr != frag_list_ptr->frag_ptr);
     }
 
     if(frag_ptr->prev->mf & 1)
-        goto NEXT_FRAG;//????
+        goto NEXT_FRAG;
 
     /* Reconstruct datagram.*/
     frag_ptr = frag_list_ptr->frag_ptr;
@@ -1819,7 +1815,7 @@ static void fnet_ip6_timer(void *cookie)
                 ip6_fragment_header = (fnet_ip6_fragment_header_t*)((unsigned long)ip6_header + sizeof(fnet_ip6_header_t));
                 
                 /* IPv6 header.*/
-                ip6_header->version__tclass = FNET_IP6_VERSION<<4; //PFI copy/save header
+                ip6_header->version__tclass = FNET_IP6_VERSION<<4;  /* PFI copy/save header*/
                 ip6_header->tclass__flowl = 0;
                 ip6_header->flowl = 0;
                 ip6_header->length = frag_list_ptr->hdr_length; 
@@ -1836,7 +1832,7 @@ static void fnet_ip6_timer(void *cookie)
                 ip6_fragment_header->id = frag_list_ptr->id;
                 
                 fnet_icmp6_error( frag_list_ptr->netif, FNET_ICMP6_TYPE_TIME_EXCEED, FNET_ICMP6_CODE_TE_FRG_REASSEMBLY, 
-                            0, nb ); //TBD not tested.
+                            0, nb ); /* TBD not tested.*/
             }
             
         FREE_LIST:     
@@ -1889,7 +1885,7 @@ void fnet_ip6_drain( void )
 * DESCRIPTION: This function retrieves the current value 
 *              of IPv6 socket option.
 *************************************************************************/
-int fnet_ip6_getsockopt(fnet_socket_t *sock, int optname, char *optval, int *optlen )
+int fnet_ip6_getsockopt(fnet_socket_t *sock, int optname, char *optval, unsigned int *optlen )
 {
     int result = FNET_OK;
     
@@ -1928,7 +1924,7 @@ int fnet_ip6_getsockopt(fnet_socket_t *sock, int optname, char *optval, int *opt
 *
 * DESCRIPTION: This function sets the value of IPv6 socket option. 
 *************************************************************************/
-int fnet_ip6_setsockopt( fnet_socket_t *sock, int optname, char *optval, int optlen )
+int fnet_ip6_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigned int optlen )
 {
     int result = FNET_OK;
 

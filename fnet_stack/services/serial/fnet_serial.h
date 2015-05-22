@@ -74,7 +74,7 @@
  ******************************************************************************/
 struct fnet_serial_stream
 {
-    int id;                     /**< @brief  The @c id parameter provides a way for a stream 
+    long id;                     /**< @brief  The @c id parameter provides a way for a stream 
                                  * driver to identify a particular device. @n
                                  * For example it can be used as serial port number 
                                  * or pointer to a stream private structure.@n
@@ -82,20 +82,20 @@ struct fnet_serial_stream
                                  * @c fnet_serial_stream.putchar() and to
                                  * @c fnet_serial_stream.getchar() as the first parameter.
                                  */
-    void (*putchar)(long id, int character);/**< @brief Callback function used 
-                                             * for writing the @c character to the stream.
-                                             */
-    int  (*getchar)(long id);   /**< @brief Callback function used for reading 
-                                 * a character from the stream.
-                                 */
-    void (*flush)(long id);     /**< @brief Callback function used for 
-                                 * immediate data sending from internal stream buffer
-                                 * to the steam client.@n
-                                 * This function is optional and can be set to zero.@n
-                                 * The function only has meaning for buffered streams. 
-                                 * UART stream does not have internal buffer and does 
-                                 * not use this flush function.
-                                 */                                 
+    void (*putchar)(long stream_id, int character);/**< @brief Callback function used 
+                                                    * for writing the @c character to the stream.
+                                                    */
+    int  (*getchar)(long stream_id);   /**< @brief Callback function used for reading 
+                                        * a character from the stream.
+                                        */
+    void (*flush)(long stream_id);     /**< @brief Callback function used for 
+                                        * immediate data sending from internal stream buffer
+                                        * to the steam client.@n
+                                        * This function is optional and can be set to zero.@n
+                                        * The function only has meaning for buffered streams. 
+                                        * UART stream does not have internal buffer and does 
+                                        * not use this flush function.
+                                        */                                 
 };
 
 /**************************************************************************/ /*!

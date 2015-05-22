@@ -79,9 +79,9 @@ FNET_COMP_PACKED_END
 /******************************************************************
 * Constants
 *******************************************************************/
-#define FNET_IP6_HEADSIZE        40     /*                 */
+#define FNET_IP6_HEADSIZE        40u     /*                 */
 
-#define FNET_IP6_DEFAULT_MTU     1280   /* Minimum IPv6 datagram size which    
+#define FNET_IP6_DEFAULT_MTU     1280u   /* Minimum IPv6 datagram size which    
                                          * must be supported by all IPv6 hosts */
 
 /****************************************************************
@@ -132,7 +132,7 @@ extern const fnet_ip6_addr_t fnet_ip6_addr_linklocal_prefix;
 
 /* Equality. */
 #define FNET_IP6_ADDR_EQUAL(a, b)			\
-        (fnet_memcmp(&(a)->addr[0], &(b)->addr[0], sizeof(fnet_ip6_addr_t)) == 0)
+        (fnet_memcmp(&(a)->addr[0], &(b)->addr[0], sizeof(fnet_ip6_addr_t)) == 0U)
 
 /* Copying address. */
 #define FNET_IP6_ADDR_COPY(from_addr, to_addr)  \
@@ -140,27 +140,27 @@ extern const fnet_ip6_addr_t fnet_ip6_addr_linklocal_prefix;
 
 
 /* Unspecified.*/
-#define FNET_IP6_ADDR_IS_UNSPECIFIED(a)	                                \
-    	((*(const unsigned long *)(const void *)(&(a)->addr[0]) == 0) &&	\
-    	 (*(const unsigned long *)(const void *)(&(a)->addr[4]) == 0) &&	\
-    	 (*(const unsigned long *)(const void *)(&(a)->addr[8]) == 0) &&	\
-    	 (*(const unsigned long *)(const void *)(&(a)->addr[12]) == 0))
+#define FNET_IP6_ADDR_IS_UNSPECIFIED(a) \
+    	((((a)->addr32[0]) == 0U) &&	\
+    	 (((a)->addr32[1]) == 0U) &&	\
+    	 (((a)->addr32[2]) == 0U) &&	\
+    	 (((a)->addr32[3]) == 0U))
 
 /* Loopback.*/
-#define FNET_IP6_ADDR_IS_LOOPBACK(a)	                                	\
-    	((*(const unsigned long *)(const void *)(&(a)->addr[0]) == 0) &&	\
-    	 (*(const unsigned long *)(const void *)(&(a)->addr[4]) == 0) &&	\
-    	 (*(const unsigned long *)(const void *)(&(a)->addr[8]) == 0) &&	\
-    	 (*(const unsigned long *)(const void *)(&(a)->addr[12]) == FNET_NTOHL(1)))
+#define FNET_IP6_ADDR_IS_LOOPBACK(a)    \
+    	((((a)->addr32[0]) == 0U) &&	\
+    	 (((a)->addr32[1]) == 0U) &&	\
+    	 (((a)->addr32[2]) == 0U) &&	\
+    	 (((a)->addr32[3]) == FNET_NTOHL(1U)))
 
 /* Multicast. */
-#define FNET_IP6_ADDR_IS_MULTICAST(a)	((a)->addr[0] == 0xff)
+#define FNET_IP6_ADDR_IS_MULTICAST(a)	((a)->addr[0] == 0xffU)
 
 /* Unicast Scope.*/
 #define FNET_IP6_ADDR_IS_LINKLOCAL(a)	\
-    	(((a)->addr[0] == 0xfe) && (((a)->addr[1] & 0xc0) == 0x80))
+    	(((a)->addr[0] == 0xfeU) && (((a)->addr[1] & 0xc0U) == 0x80U))
 #define FNET_IP6_ADDR_IS_SITELOCAL(a)	\
-    	(((a)->addr[0] == 0xfe) && (((a)->addr[1] & 0xc0) == 0xc0))
+    	(((a)->addr[0] == 0xfeU) && (((a)->addr[1] & 0xc0U) == 0xc0U))
 
 
 

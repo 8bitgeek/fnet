@@ -113,7 +113,7 @@ typedef struct
     int                 error;          /**< Socket last error.*/
     int                 local_error;    /**< Socket local error (ICMP, on timeout).*/
     int                 flags;          /**< Socket flags.*/
-    int                 linger;         /**< Lingers on close if unsent data is present (in timer ticks).*/
+    int                 linger_ticks;   /**< Lingers on close if unsent data is present (in timer ticks).*/
 } fnet_socket_option_t;
 
 /************************************************************************
@@ -171,8 +171,8 @@ typedef struct fnet_socket_prot_if
     int  (*prot_rcv)(fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr );     /* Protocol "receive" function. */
     int  (*prot_snd)(fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *foreign_addr );     /* Protocol "send" function. */
     int  (*prot_shutdown)(fnet_socket_t *sk, int how);                                                      /* Protocol "shutdown" function. */
-    int  (*prot_setsockopt)(fnet_socket_t *sk, int level, int optname, char *optval, int optlen);           /* Protocol "setsockopt" function. */
-    int  (*prot_getsockopt)(fnet_socket_t *sk, int level, int optname, char *optval, int *optlen);          /* Protocol "getsockopt" function. */
+    int  (*prot_setsockopt)(fnet_socket_t *sk, int level, int optname, char *optval, unsigned int optlen);           /* Protocol "setsockopt" function. */
+    int  (*prot_getsockopt)(fnet_socket_t *sk, int level, int optname, char *optval, unsigned int *optlen);          /* Protocol "getsockopt" function. */
     int  (*prot_listen)(fnet_socket_t *sk, int backlog);                                                    /* Protocol "listen" function.*/
                                                                            
 } fnet_socket_prot_if_t;
@@ -195,8 +195,8 @@ int fnet_socket_buffer_append_record( fnet_socket_buffer_t *sb, fnet_netbuf_t *n
 int fnet_socket_buffer_read_address( fnet_socket_buffer_t *sb, char *buf, int len, struct sockaddr *foreign_addr, int remove );
 int fnet_socket_buffer_read_record( fnet_socket_buffer_t *sb, char *buf, int len, int remove );
 void fnet_socket_buffer_release( fnet_socket_buffer_t *sb );
-int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, char *optval, int optlen );
-int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optval, int *optlen );
+int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, char *optval, unsigned int optlen );
+int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optval, unsigned int *optlen );
 int fnet_socket_addr_is_broadcast(const struct sockaddr *addr, fnet_netif_t *netif);
 void fnet_socket_ip_addr_copy(const struct sockaddr *from_addr, struct sockaddr *to_addr);
 void fnet_socket_addr_copy(const struct sockaddr *from_addr, struct sockaddr *to_addr);

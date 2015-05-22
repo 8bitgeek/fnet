@@ -66,13 +66,13 @@
  *  Default serial port number.
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_SERIAL_PORT_DEFAULT
-    #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT        (3) /* TWR board uses the default port number 3.*/
+    #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT        (3U) /* TWR board uses the default port number 3.*/
 #endif
 
 /**************************************************************************
  *  Maximum Timer number that is avaiable on the used platform.
  ******************************************************************************/
-#define  FNET_CFG_CPU_TIMER_NUMBER_MAX              (3)
+#define  FNET_CFG_CPU_TIMER_NUMBER_MAX              (3U)
 
 
 /******************************************************************************
@@ -81,9 +81,9 @@
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_TIMER_VECTOR_NUMBER
     #if FNET_CFG_CPU_MK64FN1
-        #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER        (64  + FNET_CFG_CPU_TIMER_NUMBER)
+        #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER        (64U  + FNET_CFG_CPU_TIMER_NUMBER)
     #else
-        #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER        (84  + FNET_CFG_CPU_TIMER_NUMBER)
+        #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER        (84U  + FNET_CFG_CPU_TIMER_NUMBER)
     #endif
 #endif
 
@@ -93,9 +93,9 @@
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH0_VECTOR_NUMBER
     #if FNET_CFG_CPU_MK64FN1
-        #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER        (100)
+        #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER        (100U)
     #else
-        #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER        (93)
+        #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER        (93U)
     #endif
 #endif
 
@@ -103,13 +103,13 @@
  *  Byte order is little endian. 
  ******************************************************************************/ 
 #undef FNET_CFG_CPU_LITTLE_ENDIAN
-#define FNET_CFG_CPU_LITTLE_ENDIAN                  (1)
+#define FNET_CFG_CPU_LITTLE_ENDIAN                      (1)
 
 /*****************************************************************************
  *  On-chip Flash memory start address. 
  ******************************************************************************/ 
 #ifndef FNET_CFG_CPU_FLASH_ADDRESS 
-    #define FNET_CFG_CPU_FLASH_ADDRESS              (0x0)
+    #define FNET_CFG_CPU_FLASH_ADDRESS                  (0x0U)
 #endif 
 
 /*****************************************************************************
@@ -117,13 +117,13 @@
  ******************************************************************************/ 
 #if FNET_CFG_CPU_SRAM_SIZE
 #ifndef FNET_CFG_CPU_SRAM_ADDRESS 
-    #define FNET_CFG_CPU_SRAM_ADDRESS   ((unsigned long)(0x20000000 - (FNET_CFG_CPU_SRAM_SIZE/2))) /* SRAM_L = [0x2000_0000–(SRAM_size/2)]*/
+    #define FNET_CFG_CPU_SRAM_ADDRESS   ((unsigned long)(0x20000000U - (FNET_CFG_CPU_SRAM_SIZE/2U))) /* SRAM_L = [0x2000_0000–(SRAM_size/2)]*/
 #endif
 #endif
 
 
 #ifndef FNET_CFG_CPU_FLASH_PROGRAM_SIZE
-    #define FNET_CFG_CPU_FLASH_PROGRAM_SIZE         (4)
+    #define FNET_CFG_CPU_FLASH_PROGRAM_SIZE             (4U)
 #endif 
 
 #endif /* FNET_MK */

@@ -141,13 +141,13 @@
 /**************************************************************************/ /*!
  * @brief It means to use any network interface.
  ******************************************************************************/
-#define INADDR_ANY       (unsigned long)(0x00000000)
+#define INADDR_ANY       (unsigned long)(0x00000000U)
 
 /**************************************************************************/ /*!
  * @brief  Broadcast address. @n
  * It can be used to send the broadcast UDP datagrams over an IP network.
  ******************************************************************************/
-#define INADDR_BROADCAST (unsigned long)(0xffffffff)
+#define INADDR_BROADCAST (unsigned long)(0xffffffffU)
 
 /**************************************************************************/ /*!
  * @brief Address family type.
@@ -158,27 +158,27 @@ typedef unsigned short fnet_address_family_t;
 /**************************************************************************/ /*!
  * @brief Unspecified address family.
  ******************************************************************************/
-#define AF_UNSPEC   (0) 
+#define AF_UNSPEC   (0U) 
 /**************************************************************************/ /*!
  * @brief IPv4 address family.
  ******************************************************************************/                        
-#define AF_INET     (1) 
+#define AF_INET     (1U) 
 /**************************************************************************/ /*!
  * @brief IPv6 address family.
  ******************************************************************************/                         
-#define AF_INET6    (2) 
+#define AF_INET6    (2U) 
 /**************************************************************************/ /*!
  * @brief Bitmask of supported address families.
  * @showinitializer 
  ******************************************************************************/ 
-#define AF_SUPPORTED ((AF_INET6*FNET_CFG_IP6) | (AF_INET*FNET_CFG_IP4))
+#define AF_SUPPORTED ((fnet_address_family_t)((fnet_address_family_t)(AF_INET6*(fnet_address_family_t)FNET_CFG_IP6) | (fnet_address_family_t)(AF_INET*(fnet_address_family_t)FNET_CFG_IP4)))
     
 
 /* Size of sa_data[]*/
 #if FNET_CFG_IP6
-    #define FNET_SA_DATA_SIZE   (20) /* To cover sockaddr_in and sockaddr_in6. */
+    #define FNET_SA_DATA_SIZE   (20U) /* To cover sockaddr_in and sockaddr_in6. */
 #else /* IPv4 */
-   #define FNET_SA_DATA_SIZE   (4)
+   #define FNET_SA_DATA_SIZE    (4U)
 #endif
 
 /**************************************************************************/ /*!
@@ -337,17 +337,17 @@ struct ipv6_mreq
  ******************************************************************************/
 typedef enum
 {
-    SOCK_UNSPEC = (0),  /**< @brief Unspecified socket type. 
+    SOCK_UNSPEC = (0U),  /**< @brief Unspecified socket type. 
                          */
-    SOCK_STREAM = (1),  /**< @brief Stream socket.@n
+    SOCK_STREAM = (1U),  /**< @brief Stream socket.@n
                          * Provides reliable, two-way, connection-based 
                          * byte stream. It corresponds to the TCP protocol    
                          */
-    SOCK_DGRAM  = (2),  /**< @brief Datagram socket.@n
+    SOCK_DGRAM  = (2U),  /**< @brief Datagram socket.@n
                          * Provides unreliable, connectionless datagrams. 
                          * It corresponds to the UDP protocol. 
                          */
-    SOCK_RAW    = (3)   /**< @brief Raw socket.@n
+    SOCK_RAW    = (3U)   /**< @brief Raw socket.@n
                          * Raw sockets allow an application to have direct access to 
                          * lower-level communication protocols. 
                          * Raw sockets are intended to take advantage of some protocol feature 
@@ -395,7 +395,7 @@ typedef enum
                             */                            
     IPPROTO_ICMPV6  = (58),/**< @brief ICMPv6 protocol number.
                             */                         
-    SOL_SOCKET      = (0xFFFF)  /**< @brief Socket options level number for 
+    SOL_SOCKET      = (255255)  /**< @brief Socket options level number for 
                                  * @ref getsockopt() and @ref setsockopt().
                                  */
 } fnet_protocol_t;
@@ -452,58 +452,58 @@ typedef enum
  ******************************************************************************/
 typedef enum
 {
-    SO_ACCEPTCONN = (0x0001), /**< @brief Returns @c 1 if a socket is in 
+    SO_ACCEPTCONN = (1), /**< @brief Returns @c 1 if a socket is in 
                                *   listening mode and returns @c 0 when vice versa. 
                                *   This is the read-only option and it is 
                                *   valid only for connection-oriented protocols (TCP). 
                                */
-    SO_KEEPALIVE  = (0x0002), /**< @brief This option enables keep-alive probes 
+    SO_KEEPALIVE  = (2), /**< @brief This option enables keep-alive probes 
                                *   for a socket connection. These probes are used 
                                *   to maintain a TCP connection and regularly 
                                *   test the connection to ensure that it's 
                                *   still available. It is only valid for 
                                *   connection-oriented protocols (TCP). 
                                */
-    SO_DONTROUTE  = (0x0004), /**< @brief This option enables bypassing of a routing algorithm.
+    SO_DONTROUTE  = (4), /**< @brief This option enables bypassing of a routing algorithm.
                                *   It means that the network interface tries to send a datagram without
                                *   a gateway. 
                                */
-    SO_LINGER     = (0x0008), /**< @brief This option controls the action 
+    SO_LINGER     = (8), /**< @brief This option controls the action 
                                *   taken when unsent data is present, and 
                                *   @ref closesocket() is called. This option 
                                *   is defined by the @ref linger structure. 
                                */
 #if FNET_CFG_TCP_URGENT || defined(__DOXYGEN__)
-    SO_OOBINLINE  = (0x0010), /**< @brief This option specifies that out-of-band (OOB) 
+    SO_OOBINLINE  = (10), /**< @brief This option specifies that out-of-band (OOB) 
                                *   data will be received in line with regular data.
                                *   It is valid only for the TCP protocol. @n
                                *   This option is avalable only if 
                                *   @ref FNET_CFG_TCP_URGENT is set to @c 1. 
                                */
 #endif /* FNET_CFG_TCP_URGENT */
-    SO_SNDBUF     = (0x1001), /**< @brief This option defines the maximum per-socket 
+    SO_SNDBUF     = (1001), /**< @brief This option defines the maximum per-socket 
                                *   buffer size for output data.
                                */
-    SO_RCVBUF     = (0x1002), /**< @brief This option defines the maximum per-socket 
+    SO_RCVBUF     = (1002), /**< @brief This option defines the maximum per-socket 
                                *   buffer size for input data.
                                */
-    SO_STATE      = (0x1003), /**< @brief This option defines the current state of the socket.@n
+    SO_STATE      = (1003), /**< @brief This option defines the current state of the socket.@n
                                *   This is the read-only option and it is defined by the @ref fnet_socket_state_t type.
                                */
-    SO_ERROR      = (0x1006), /**< @brief This option returns a per-socket-based error code.@n
+    SO_ERROR      = (1006), /**< @brief This option returns a per-socket-based error code.@n
                                *   The error code is defined by the @ref fnet_error_t type.@n
                                *   After the error value has been read in the @ref getsockopt function, it is cleared.
                                *   But a successful call using the socket routines does not clear 
                                *   the socket-based error.
                                */
-    SO_TYPE       = (0x1007), /**< @brief This option defines the type of the socket.
+    SO_TYPE       = (1007), /**< @brief This option defines the type of the socket.
                                *   This is a read-only option and it is defined by the @ref fnet_socket_type_t type.
                                */
-    SO_RCVNUM     = (0x1008), /**< @brief This option is used to determine the amount of data 
+    SO_RCVNUM     = (1008), /**< @brief This option is used to determine the amount of data 
                                *   pending in the socket-input buffer.@n
                                *   This is a read-only option.
                                */
-    SO_SNDNUM     = (0x1009)  /**< @brief This option is used to determine the amount of data 
+    SO_SNDNUM     = (1009)  /**< @brief This option is used to determine the amount of data 
                                *   in the socket output buffer. @n
                                *   This is a read-only option.
                                */
@@ -774,16 +774,16 @@ typedef int SOCKET;
 typedef enum
 {
 #if FNET_CFG_TCP_URGENT || defined(__DOXYGEN__)
-    MSG_OOB       = (0x1),  /**< @brief Process out-of-band 
+    MSG_OOB       = (0x1U),  /**< @brief Process out-of-band 
                              * data instead of regular data. @n 
                              *   This option is avalable only if 
                              *   @ref FNET_CFG_TCP_URGENT is set to @c 1. 
                              */
 #endif /* FNET_CFG_TCP_URGENT */
-    MSG_PEEK      = (0x2),  /**< @brief Receive a copy of the 
+    MSG_PEEK      = (0x2U),  /**< @brief Receive a copy of the 
                              * data without consuming it.
                              */
-    MSG_DONTROUTE = (0x4)   /**< @brief Send without using 
+    MSG_DONTROUTE = (0x4U)   /**< @brief Send without using 
                              * routing tables.
                              */
 } fnet_flags_t;
@@ -795,9 +795,9 @@ typedef enum
  ******************************************************************************/
 typedef enum
 {
-    SD_READ  = (0x1), /**< @brief Data receiving is disabled.
+    SD_READ  = (0x1U), /**< @brief Data receiving is disabled.
                        */
-    SD_WRITE = (0x2), /**< @brief Data sending is disabled.
+    SD_WRITE = (0x2U), /**< @brief Data sending is disabled.
                        */
     SD_BOTH  = (SD_READ | SD_WRITE) /**< @brief Both receiving and 
                                      * sending are disabled.
@@ -889,7 +889,7 @@ SOCKET socket( fnet_address_family_t family, fnet_socket_type_t type, int protoc
  * to assign a unique port to the socket with a value between 1024 and 5000.
  *
  ******************************************************************************/
-int bind( SOCKET s, const struct sockaddr *name, int namelen );
+int bind( SOCKET s, const struct sockaddr *name, unsigned int namelen );
 
 /***************************************************************************/ /*!
  *
@@ -966,7 +966,7 @@ int listen( SOCKET s, int backlog );
  * about the remote address of the accepted socket is returned.
  *
  ******************************************************************************/
-SOCKET accept( SOCKET s, struct sockaddr *addr, int *addrlen );
+SOCKET accept( SOCKET s, struct sockaddr *addr, unsigned int *addrlen );
 
 /***************************************************************************/ /*!
  *
@@ -1020,7 +1020,7 @@ SOCKET accept( SOCKET s, struct sockaddr *addr, int *addrlen );
  * association by the stack, and the socket is marked as bound.
  *
  ******************************************************************************/
-int connect( SOCKET s, struct sockaddr *name, int namelen );
+int connect( SOCKET s, struct sockaddr *name, unsigned int namelen );
 
 /***************************************************************************/ /*!
  *
@@ -1064,7 +1064,7 @@ int connect( SOCKET s, struct sockaddr *name, int namelen );
  * invocation beyond the options specified for the associated socket. 
  *
  ******************************************************************************/
-int recv( SOCKET s, char *buf, int len, int flags );
+int recv( SOCKET s, char *buf, unsigned int len, unsigned int flags );
 
 /***************************************************************************/ /*!
  *
@@ -1121,7 +1121,7 @@ int recv( SOCKET s, char *buf, int len, int flags );
  * invocation beyond the options specified for the associated socket.
  *
  ******************************************************************************/
-int recvfrom( SOCKET s, char *buf, int len, int flags, struct sockaddr *from, int *fromlen );
+int recvfrom( SOCKET s, char *buf, unsigned int len, unsigned int flags, struct sockaddr *from, unsigned int *fromlen );
 
 /***************************************************************************/ /*!
  *
@@ -1168,7 +1168,7 @@ int recvfrom( SOCKET s, char *buf, int len, int flags, struct sockaddr *from, in
  * invocation beyond the options specified for the associated socket. 
  *
  ******************************************************************************/
-int send( SOCKET s, char *buf, int len, int flags );
+int send( SOCKET s, char *buf, unsigned int len, unsigned int flags );
 
 /***************************************************************************/ /*!
  *
@@ -1227,7 +1227,7 @@ int send( SOCKET s, char *buf, int len, int flags );
  * invocation beyond the options specified for the associated socket. 
  *
  ******************************************************************************/
-int sendto( SOCKET s, char *buf, int len, int flags, const struct sockaddr *to, int tolen );
+int sendto( SOCKET s, char *buf, unsigned int len, int flags, const struct sockaddr *to, unsigned int tolen );
 
 /***************************************************************************/ /*!
  *
@@ -1260,7 +1260,7 @@ int sendto( SOCKET s, char *buf, int len, int flags, const struct sockaddr *to, 
  * attached to the socket will not be freed until the @ref closesocket() is invoked.
  *
  ******************************************************************************/
-int shutdown( SOCKET s, int how );
+int shutdown( SOCKET s, unsigned int how );
 
 /***************************************************************************/ /*!
  *
@@ -1346,7 +1346,7 @@ int closesocket( SOCKET s );
  * @ref fnet_ip_options_t, and @ref fnet_tcp_options_t.
  *
  ******************************************************************************/
-int setsockopt( SOCKET s, int level, int optname, char *optval, int optlen );
+int setsockopt( SOCKET s, int level, int optname, char *optval, unsigned int optlen );
 
 /***************************************************************************/ /*!
  *
@@ -1390,7 +1390,7 @@ int setsockopt( SOCKET s, int level, int optname, char *optval, int optlen );
  * @ref fnet_ip_options_t, and @ref fnet_tcp_options_t.
  *
  ******************************************************************************/
-int getsockopt( SOCKET s, int level, int optname, char *optval, int *optlen );
+int getsockopt( SOCKET s, int level, int optname, char *optval, unsigned int *optlen );
 
 /***************************************************************************/ /*!
  *
@@ -1421,7 +1421,7 @@ int getsockopt( SOCKET s, int level, int optname, char *optval, int *optlen );
  * @ref sendto() call will not be returned by the @ref getpeername().
  *
  ******************************************************************************/
-int getpeername( SOCKET s, struct sockaddr *name, int *namelen );
+int getpeername( SOCKET s, struct sockaddr *name, unsigned int *namelen );
 
 /***************************************************************************/ /*!
  *
@@ -1450,7 +1450,7 @@ int getpeername( SOCKET s, struct sockaddr *name, int *namelen );
  * It is used on a bound or connected socket. 
  *
  ******************************************************************************/
-int getsockname( SOCKET s, struct sockaddr *name, int *namelen );
+int getsockname( SOCKET s, struct sockaddr *name, unsigned int *namelen );
 
 /***************************************************************************/ /*!
  *

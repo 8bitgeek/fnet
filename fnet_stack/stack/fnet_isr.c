@@ -103,7 +103,7 @@ void fnet_isr_handler( int vector_number )
         if(isr_cur->vector_number == vector_number) /* we got it. */
         {
             if(isr_cur->handler_top)
-                isr_cur->handler_top(isr_cur->cookie);         /* Call "top half" handler; */
+                isr_cur->handler_top(isr_cur->cookie);         /* Call "top half" handler. */
 
             if(fnet_locked)
             {
@@ -114,7 +114,7 @@ void fnet_isr_handler( int vector_number )
                 isr_cur->pended = 0;
 
                 if(isr_cur->handler_bottom)
-                    isr_cur->handler_bottom(isr_cur->cookie); /* Call "bottom half" handler;*/
+                    isr_cur->handler_bottom(isr_cur->cookie); /* Call "bottom half" handler.*/
             }
 
             break;
@@ -177,8 +177,8 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
     if(isr_temp)
     {
         isr_temp->vector_number = vector_number;
-        isr_temp->handler_top = (void (*)(void *cookie))handler_top;
-        isr_temp->handler_bottom = (void (*)(void *cookie))handler_bottom;
+        isr_temp->handler_top = (void (*)(void *))handler_top;
+        isr_temp->handler_bottom = (void (*)(void *))handler_bottom;
         isr_temp->next = fnet_isr_table;
         isr_temp->cookie = cookie;
         fnet_isr_table = isr_temp;

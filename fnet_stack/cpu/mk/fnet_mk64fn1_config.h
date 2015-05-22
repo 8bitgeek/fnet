@@ -44,47 +44,47 @@
 
 #define _FNET_MK64FN1_CONFIG_H_
 
-#define FNET_MK                             (1)
+#define FNET_MK                                 (1)
 
 /* Size of the internal static heap buffer. */
 #ifndef FNET_CFG_HEAP_SIZE
-    #define FNET_CFG_HEAP_SIZE              (30 * 1024)
+    #define FNET_CFG_HEAP_SIZE                  (30U * 1024U)
 #endif
 
 /* System frequency in Hz. */
 #ifndef FNET_CFG_CPU_CLOCK_HZ
-    #define FNET_CFG_CPU_CLOCK_HZ           (120000000)
+    #define FNET_CFG_CPU_CLOCK_HZ               (120000000U)
 #endif
 
 /* The platform does not have second Ethernet Module.*/
-#define FNET_CFG_CPU_ETH1        		    (0)
+#define FNET_CFG_CPU_ETH1        		        (0)
 
 /* Defines the maximum number of incoming frames that may 
  *           be buffered by the Ethernet module.*/
 #ifndef FNET_CFG_CPU_ETH_RX_BUFS_MAX
-    #define FNET_CFG_CPU_ETH_RX_BUFS_MAX    (4)
+    #define FNET_CFG_CPU_ETH_RX_BUFS_MAX        (4U)
 #endif
 
 /* The platform has Kinetis Flash Memory Module (FTFL).*/
-#define FNET_CFG_CPU_FLASH                  (1)
+#define FNET_CFG_CPU_FLASH                      (1)
 
 /*/ Smallest logical block which can be erased independently.*/
-#define FNET_CFG_CPU_FLASH_PAGE_SIZE        (4*1024)        /* 4KB sector.*/
+#define FNET_CFG_CPU_FLASH_PAGE_SIZE            (4U*1024U)        /* 4KB sector.*/
 
 /* On-chip Flash size.*/
-#define FNET_CFG_CPU_FLASH_SIZE             (1024 * 1024)    /* 1 MB */
+#define FNET_CFG_CPU_FLASH_SIZE                 (1024U * 1024U)    /* 1 MB */
 
-#define FNET_CFG_CPU_FLASH_PROGRAM_SIZE     (8) /*Bytes.*/
+#define FNET_CFG_CPU_FLASH_PROGRAM_SIZE         (8U) /*Bytes.*/
 
 /* SRAM size.*/
-#define FNET_CFG_CPU_SRAM_SIZE              (1024 * 256)    /* 256 KB */  
+#define FNET_CFG_CPU_SRAM_SIZE                  (1024U * 256U)    /* 256 KB */  
 /* SRAM address.*/
 #ifndef FNET_CFG_CPU_SERIAL_PORT_DEFAULT
-    #define FNET_CFG_CPU_SRAM_ADDRESS       (0x1FFF0000)      
+    #define FNET_CFG_CPU_SRAM_ADDRESS           (0x1FFF0000U)      
 #endif
 
 #ifndef FNET_CFG_CPU_SERIAL_PORT_DEFAULT
-    #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT        (0) /* FRDMK64F board uses the default port number 0.*/
+    #define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (0U) /* FRDMK64F board uses the default port number 0.*/
 #endif
 
 #endif 

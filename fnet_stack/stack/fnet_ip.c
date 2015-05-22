@@ -74,8 +74,8 @@ static fnet_event_desc_t ip_event;
 *************************************************************************/
 static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t* nb, int do_not_route);
 static void fnet_ip_input_low( void *cookie );
-static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, int *optlen );
-static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, int optlen );
+static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, unsigned int *optlen );
+static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigned int optlen );
 
 #if FNET_CFG_IP4_FRAGMENTATION
     fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr );
@@ -1112,7 +1112,7 @@ int fnet_ip_addr_is_broadcast( fnet_ip4_addr_t addr, fnet_netif_t *netif )
 }
 
 
-//TBD ???
+/* TBD ??? */
 /*Todo path MTU discovery feature
  *Todo get MTU from a routing table, depending on destination MTU*/
 unsigned long fnet_ip_maximum_packet( fnet_ip4_addr_t dest_ip ) 
@@ -1149,7 +1149,7 @@ unsigned long fnet_ip_maximum_packet( fnet_ip4_addr_t dest_ip )
 * DESCRIPTION: This function retrieves the current value 
 *              of IPv4 socket option.
 *************************************************************************/
-static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, int *optlen )
+static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, unsigned int *optlen )
 {
     int result = FNET_OK;
     
@@ -1200,7 +1200,7 @@ static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, i
 *
 * DESCRIPTION: This function sets the value of IPv4 socket option. 
 *************************************************************************/
-static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, int optlen )
+static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigned int optlen )
 {
     int result = FNET_OK;
 
@@ -1392,7 +1392,7 @@ void fnet_ip_trace(char *str,fnet_ip_header_t *ip_hdr)
 *
 * DESCRIPTION: This function sets the value of IP socket option. 
 *************************************************************************/
-int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, char *optval, int optlen )
+int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, char *optval, unsigned int optlen )
 {
     int error;
 
@@ -1443,7 +1443,7 @@ ERROR_SOCK:
 * DESCRIPTION: This function retrieves the current value 
 *              of IP-layer socket option.
 *************************************************************************/
-int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optval, int *optlen )
+int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optval, unsigned int *optlen )
 {
     int error;
 

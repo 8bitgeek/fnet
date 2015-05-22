@@ -126,7 +126,7 @@ struct fnet_ping_params
     unsigned long       timeout;        /**< @brief Timeout value in milliseconds, that service 
                                          * waits for reply on ping request.
                                          */
-    int                 ttl;            /**< @brief IPv4 Time To Live (TTL) or IPv6 Hop Limit value. @n
+    unsigned char       ttl;            /**< @brief IPv4 Time To Live (TTL) or IPv6 Hop Limit value. @n
                                          */                                         
     unsigned char       pattern;        /**< @brief  Pattern byte to fill out the packet.@n
                                          *   This is useful for diagnosing data-dependent problems in a network.

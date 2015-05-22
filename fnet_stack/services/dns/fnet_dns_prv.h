@@ -46,9 +46,9 @@
 *     Definitions
 *************************************************************************/
 /* Size limits. */
-#define FNET_DNS_MAME_SIZE      (255)     /* RFC1035:To simplify implementations, the total length of a domain name (i.e.,
+#define FNET_DNS_MAME_SIZE      (255U)     /* RFC1035:To simplify implementations, the total length of a domain name (i.e.,
                                            * label octets and label length octets) is restricted to 255 octets or less.*/
-#define FNET_DNS_MESSAGE_SIZE   (512)     /* Messages carried by UDP are restricted to 512 bytes (not counting the IP
+#define FNET_DNS_MESSAGE_SIZE   (512U)     /* Messages carried by UDP are restricted to 512 bytes (not counting the IP
                                            * or UDP headers).  
                                            * Longer messages (not supported) are truncated and the TC bit is set in
                                            * the header.*/    
@@ -56,8 +56,8 @@
 /********************************************************************/ /*!
 * @brief DNS Resorce Record Types 
 *************************************************************************/
-#define    FNET_DNS_TYPE_A      (0x0001)   /**< @brief IPv4 address. */
-#define    FNET_DNS_TYPE_AAAA   (0x001C)    /**< @brief IPv6 address. */
+#define    FNET_DNS_TYPE_A      (0x0001U)   /**< @brief IPv4 address. */
+#define    FNET_DNS_TYPE_AAAA   (0x001CU)    /**< @brief IPv6 address. */
 
 
 /************************************************************************
@@ -100,11 +100,11 @@ typedef struct
 } fnet_dns_header_t;
 FNET_COMP_PACKED_END
 
-#define FNET_DNS_HEADER_FLAGS_QR    (0x8000) /* Query (0), Response (1)*/
-#define FNET_DNS_HEADER_FLAGS_AA    (0x0400) /* Authoritative Answer. */
-#define FNET_DNS_HEADER_FLAGS_TC    (0x0200) /* TrunCation. */
-#define FNET_DNS_HEADER_FLAGS_RD    (0x0100) /* Recursion Desired. */
-#define FNET_DNS_HEADER_FLAGS_RA    (0x0080) /* Recursion Available. */
+#define FNET_DNS_HEADER_FLAGS_QR    (0x8000U) /* Query (0), Response (1)*/
+#define FNET_DNS_HEADER_FLAGS_AA    (0x0400U) /* Authoritative Answer. */
+#define FNET_DNS_HEADER_FLAGS_TC    (0x0200U) /* TrunCation. */
+#define FNET_DNS_HEADER_FLAGS_RD    (0x0100U) /* Recursion Desired. */
+#define FNET_DNS_HEADER_FLAGS_RA    (0x0080U) /* Recursion Available. */
 
 /************************************************************************
 *    DNS Question section [RFC1035, 4.1.2.]
@@ -192,9 +192,9 @@ FNET_COMP_PACKED_END
 * | 1  1|                OFFSET                   |
 * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 */
-#define     FNET_DNS_NAME_COMPRESSED_MASK           (0xC0)       /**< @brief Mark that name is compressed. */
-#define     FNET_DNS_NAME_COMPRESSED_INDEX_MASK     (0x3FFF)     /**< @brief Index of compressed name. */
+#define     FNET_DNS_NAME_COMPRESSED_MASK           (0xC0U)       /**< @brief Mark that name is compressed. */
+#define     FNET_DNS_NAME_COMPRESSED_INDEX_MASK     (0x3FFFU)     /**< @brief Index of compressed name. */
 
-#define FNET_DNS_HEADER_CLASS_IN    (0x01)  /* The Internet.*/
+#define FNET_DNS_HEADER_CLASS_IN    (0x01U)  /* The Internet.*/
 
 #endif /* _FNET_DNS_PRV_H_*/

@@ -118,6 +118,11 @@ static void fapp_set_cmd_raw(fnet_shell_desc_t desc, char *value );
 static void fapp_get_cmd_raw(fnet_shell_desc_t desc);
 #endif
 
+#if FNET_CFG_IP4
+static void fapp_set_ip(fnet_shell_desc_t desc, char *value, void (*set_ip)( fnet_netif_desc_t netif_desc, fnet_ip4_addr_t ipaddr ));
+static void fapp_get_ip(fnet_shell_desc_t desc, fnet_ip4_addr_t (*get_address)( fnet_netif_desc_t netif_desc ));
+#endif
+
 /************************************************************************
 *     The set/show parameterr's entry control data structure definition.
 *************************************************************************/
@@ -185,7 +190,7 @@ static const fapp_setget_cmd_t fapp_setget_cmd_table [] =
 #endif 
 };
 
-#define FAPP_SET_CMD_NUM (sizeof(fapp_setget_cmd_table)/sizeof(fapp_setget_cmd_t))
+#define FAPP_SET_CMD_NUM  ((unsigned)(sizeof(fapp_setget_cmd_table)/sizeof(fapp_setget_cmd_t)))
 
 /************************************************************************
 * NAME: fapp_set_ip
@@ -604,13 +609,13 @@ static void fapp_get_cmd_raw(fnet_shell_desc_t desc)
 ************************************************************************/
 void fapp_set_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
-    int index;
+    unsigned int index;
 
     if(argc == 1) /* Print all set options with syntax description. */
     {
         fnet_shell_println(desc, "Valid 'set' options:");
 
-        for (index = 0; index < FAPP_SET_CMD_NUM; ++index)
+        for (index = 0U; index < FAPP_SET_CMD_NUM; ++index)
         {
             fnet_shell_println(desc, FAPP_SET_OPT_FORMAT, fapp_setget_cmd_table[index].option, fapp_setget_cmd_table[index].syntax);
         }
@@ -621,7 +626,7 @@ void fapp_set_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     }
     else /* Set parameter */
     {
-        for (index = 0; index < FAPP_SET_CMD_NUM; index++)
+        for (index = 0U; index < FAPP_SET_CMD_NUM; index++)
         {
             if(fnet_strcasecmp(fapp_setget_cmd_table[index].option, argv[1]) == 0)
             {
@@ -646,11 +651,11 @@ EXIT:
 ************************************************************************/
 void fapp_get_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
-    int index;
+    unsigned int index;
 
     if(argc == 1) /* Print all prameters. */
     {
-        for (index = 0; index < FAPP_SET_CMD_NUM; ++index)
+        for (index = 0U; index < FAPP_SET_CMD_NUM; ++index)
         {
             fnet_shell_printf(desc, FAPP_GET_OPT_FORMAT, fapp_setget_cmd_table[index].option);
             fapp_setget_cmd_table[index].get(desc);
@@ -659,7 +664,7 @@ void fapp_get_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     else /* Print one parameter. */
     {
        
-        for (index = 0; index < FAPP_SET_CMD_NUM; index++)
+        for (index = 0U; index < FAPP_SET_CMD_NUM; index++)
         {
             if(fnet_strcasecmp(fapp_setget_cmd_table[index].option, argv[1]) == 0)
             {

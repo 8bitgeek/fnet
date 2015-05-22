@@ -34,7 +34,6 @@
 #include "fnet_netbuf.h"
 #include "fnet_netif.h"
 #include "fnet_netif_prv.h"
-//#include "fnet_prot.h"
 
 /************************************************************************
 *    Headers of options
@@ -180,7 +179,7 @@ extern struct fnet_prot_if fnet_tcp_prot_if;
 /************************************************************************
 *    Segment header fields
 *************************************************************************/
-//TBD eliminate these definitions => use structure header. 
+/* TBD eliminate these definitions => use structure header. */
 #define FNET_TCP_DPORT(segment)        FNET_TCP_GETUSHORT(segment->data_ptr, 2)
 #define FNET_TCP_SPORT(segment)        FNET_TCP_GETUSHORT(segment->data_ptr, 0)
 #define FNET_TCP_WND(segment)          FNET_TCP_GETUSHORT(segment->data_ptr, 14)

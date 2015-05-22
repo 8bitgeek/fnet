@@ -85,7 +85,7 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie);
 /* SSI table */
 static const struct fnet_http_ssi fapp_ssi_table[] =
 {
-    {FAPP_HTTP_SSI_COMMAND_ECHO, fapp_http_ssi_echo_handle, fapp_http_string_buffer_respond},//fapp_http_ssi_echo_respond},
+    {FAPP_HTTP_SSI_COMMAND_ECHO, fapp_http_ssi_echo_handle, fapp_http_string_buffer_respond},
     {0,0,0} /* End of the table. */
 };
 
@@ -103,6 +103,8 @@ static int fapp_http_cgi_graph_handle(char * query, long *cookie);
 #if FNET_CFG_HTTP_POST
 static int fapp_http_cgi_post_handle(char * query, long *cookie);
 #endif
+
+static unsigned int fapp_http_cgi_rand(void);
 
 /* CGI table */
 static const struct fnet_http_cgi fapp_cgi_table[] =
@@ -154,11 +156,11 @@ static char fapp_http_post_buffer[FAPP_HTTP_POST_BUFFER_SIZE+1/* For zero-termin
 *************************************************************************/
 static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned long buffer_size, char * eof, long *cookie)
 {
-    unsigned long   result = 0;
+    unsigned long   result = 0U;
     char            *string_buffer_ptr = (char *) *cookie;
     unsigned long   send_size = fnet_strlen(string_buffer_ptr);
     
-    *eof = 1; /* No aditional send by default. */
+    *eof = (char)1; /* No aditional send by default. */
     
     if(buffer && buffer_size)
     {
@@ -169,7 +171,7 @@ static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned lon
 
 	    string_buffer_ptr += send_size;
 	    if(*string_buffer_ptr!='\0') /* If any data for sending.*/ 
-	        *eof = 0;    /* Need more itteration. */
+	        *eof = (char)0;    /* Need more itteration. */
 
 	    result = send_size;
 	    
@@ -270,8 +272,11 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
 *************************************************************************/
 static int fapp_http_cgi_stdata_handle(char * query, long *cookie)
 {
-    unsigned long time, t_hour, t_min, t_sec;
-	struct fnet_netif_statistics statistics;
+    unsigned long                   time;
+    unsigned long                   t_hour;
+    unsigned long                   t_min;
+    unsigned long                   t_sec;
+	struct fnet_netif_statistics    statistics;
 
     FNET_COMP_UNUSED_ARG(query);
     

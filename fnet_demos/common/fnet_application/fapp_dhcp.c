@@ -49,14 +49,17 @@
 *************************************************************************/
 #define FAPP_DHCP_DISCOVER_STR      "Sending DHCP discover..."
 #define FAPP_DHCP_NEWIP_STR         " DHCP has updated/renewed parameters:"
-
-/************************************************************************
-*     Function Prototypes
-*************************************************************************/
 #define FAPP_DHCP_COMMAND_REBOOT    "reboot"
 
 static long fapp_dhcp_discover_counter;
 static fnet_ip4_addr_t fapp_dhcp_ip_old;
+
+/************************************************************************
+*     Function Prototypes
+*************************************************************************/
+static void fapp_dhcp_on_ctrlc(fnet_shell_desc_t desc);
+static void fapp_dhcp_handler_updated(fnet_netif_desc_t netif, void *shl_desc);
+static void fapp_dhcp_handler_discover(fnet_netif_desc_t netif,void *shl_desc);
 
 /************************************************************************
 * NAME: fapp_dhcp_on_ctrlc

@@ -204,7 +204,7 @@ void fnet_nd6_neighbor_cache_del(fnet_netif_t *netif, fnet_nd6_neighbor_entry_t 
         neighbor_entry->state = FNET_ND6_NEIGHBOR_STATE_NOTUSED;
         
         /* Free waiting queue.*/
-        if(neighbor_entry->waiting_netbuf) //TBD for bigger queue.
+        if(neighbor_entry->waiting_netbuf) /* TBD for bigger queue.*/
         {
             fnet_netbuf_free_chain(neighbor_entry->waiting_netbuf);
         }
@@ -262,7 +262,7 @@ fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(fnet_netif_t *netif, fnet
         entry->router_lifetime = 0;
         entry->state = state;
         
-        //TBD Init timers reachable; last send
+        /* TBD Init timers reachable; last send*/
     }
     return entry;
 }
@@ -309,14 +309,14 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif)
                          * alternate default routers are tried.
                          */                        
                         fnet_nd6_neighbor_cache_del(netif, neighbor_entry);
-                        //TBD ICMP error to upper layer.
+                        /* TBD ICMP error to upper layer?*/
                     }
                     else
                     /* AR: transmit NS.*/
                     {
                         fnet_ip6_addr_t *dest_addr = &neighbor_entry->ip_addr;
                         
-                        /* Select source address.*/ //PFI
+                        /* Select source address.*/ /* PFI*/
                         fnet_ip6_addr_t *src_addr = &neighbor_entry->solicitation_src_ip_addr;
                         
                         neighbor_entry->state_time = fnet_timer_ms();
@@ -361,7 +361,7 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif)
 
                     neighbor_entry->state_time = fnet_timer_ms();
                      
-                    /* Select source address.*/ //PFI
+                    /* Select source address.*/ /*PFI*/
                     src_addr = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(netif, dest_addr);
                      
                     if(src_addr)
@@ -371,7 +371,7 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif)
                 }
                 break;
             /* =========== PROBE ================ */    
-            case FNET_ND6_NEIGHBOR_STATE_PROBE:  //PFI the same as INCOMPLETE
+            case FNET_ND6_NEIGHBOR_STATE_PROBE:  /*PFI the same as INCOMPLETE*/
                 /* RFC4861 7.3.3:
                  * While in the PROBE state, a node retransmits Neighbor
                  * Solicitation messages every RetransTimer milliseconds until
@@ -399,7 +399,7 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif)
                     {
                         fnet_ip6_addr_t *dest_addr = &neighbor_entry->ip_addr;
                         
-                        /* Select source address.*/ //PFI
+                        /* Select source address.*/ /*PFI*/
                         fnet_ip6_addr_t *src_addr = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(netif, dest_addr);
                         if(src_addr)
                         {
@@ -427,7 +427,7 @@ void fnet_nd6_neighbor_enqueue_waiting_netbuf(fnet_nd6_neighbor_entry_t *neighbo
     if (neighbor_entry && waiting_netbuf)
     {
         /* When a queue  overflows, the new arrival SHOULD replace the oldest entry.*/
-        //TBD for bigger queue.
+        /*TBD for bigger queue.*/
         if(neighbor_entry->waiting_netbuf != FNET_NULL)
         {
             fnet_netbuf_free_chain(neighbor_entry->waiting_netbuf); /* Free the oldest one.*/
@@ -912,7 +912,7 @@ void fnet_nd6_neighbor_solicitation_send(fnet_netif_t *netif /*MUST*/, fnet_ip6_
             if( fnet_netif_get_hw_addr(netif, nd_option_slla->addr, netif->api->hw_addr_size) != FNET_OK)
                 goto DROP;    
    
-            //TBD Padd if needed.%8
+            /*TBD Padd if needed.%8*/
         }
         else
         {
@@ -957,7 +957,7 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
         ||(ip6_packet->hop_limit != FNET_ND6_HOP_LIMIT)         /* The IP Hop Limit field has a value of 255.*/
         ||(icmp6_packet->code != 0)                             /* ICMP Code is 0.*/ 
         ||FNET_IP6_ADDR_IS_MULTICAST(&ns_packet->target_addr)   /* Target Address is not a multicast address. */
-        ||fnet_netif_is_my_ip6_addr(netif, src_ip)              /* Duplicate IP address check. */ //TBD???
+        ||fnet_netif_is_my_ip6_addr(netif, src_ip)              /* Duplicate IP address check. */ /*TBD???*/
         )
     { 		
         goto DROP;
@@ -1054,7 +1054,7 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
                     else
                     {
                         /* RFC4861: Appendix C 
-                         */ //TBD ???
+                         */ /*TBD ??*/
                         if(neighbor_cache_entry->state == FNET_ND6_NEIGHBOR_STATE_INCOMPLETE)
                             neighbor_cache_entry->state = FNET_ND6_NEIGHBOR_STATE_STALE;
                     }
@@ -1220,7 +1220,7 @@ void fnet_nd6_router_solicitation_send(fnet_netif_t *netif)
             if(fnet_netif_get_hw_addr(netif, nd_option_slla->addr, netif->api->hw_addr_size) != FNET_OK)    /* Link-Layer Target address.*/
                 goto DROP;
 
-            //TBD Padd if needed.%8
+            /* TBD Padd if needed.%8 */
         }
         else
         {
@@ -1567,7 +1567,6 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                 fnet_nd6_option_rdnss_header_t  *nd_option_rdnss = (fnet_nd6_option_rdnss_header_t *)nd_option;
                 /* The number of addresses is equal to (Length - 1) / 2.*/
                 int                             rdnss_number = (nd_option->length - 1)/2;
-                int                             i;
                 
                 for(i=0; i< rdnss_number; i++)
                 {
@@ -1990,7 +1989,7 @@ void fnet_nd6_rd_start(fnet_netif_t *netif)
     netif->nd6_if_ptr->rd_time = fnet_timer_ms();  /* Save send time.*/
     fnet_nd6_router_solicitation_send(netif);
     
-    //TBD Randomise first send.
+    /* TBD Randomise first send.*/
 }
 
 /************************************************************************
@@ -2278,7 +2277,7 @@ static void fnet_nd6_rdnss_timer(fnet_netif_t *netif)
 
 
 
-//////////////// For DEBUG needs only. //////////////////////////////////
+/*=================== For DEBUG needs only. =============================*/
 
 /************************************************************************
 * NAME: fnet_nd6_debug_print_prefix_list

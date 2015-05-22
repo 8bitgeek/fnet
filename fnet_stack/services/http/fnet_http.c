@@ -163,7 +163,7 @@ static void fnet_http_state_machine( void *http_if_p );
 static void fnet_http_state_machine( void *http_if_p )
 {
     struct sockaddr         foreign_addr;
-    int                     len;
+    unsigned int            len;
     int                     res;
     struct fnet_http_if     *http = (struct fnet_http_if *)http_if_p;
     int                     iteration;
@@ -575,7 +575,7 @@ fnet_http_desc_t fnet_http_init( struct fnet_http_params *params )
     struct fnet_http_if     *http_if = 0;
     const struct linger     linger_option ={1, /*l_onoff*/
                                              4  /*l_linger*/};
-    int                     opt_len;                                        
+    unsigned int            opt_len;                                        
     
     
     if(params == 0 || params->root_path == 0 || params->index_path == 0)

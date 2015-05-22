@@ -62,9 +62,9 @@
 
 /* native Flash controller align */
 #if FNET_CFG_CPU_FLASH
-	#if (FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 8)
+	#if (FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 8U)
 	  #define FNET_COMP_PACKED_NATIVE         FNET_COMP_PACKED_8
-	#elif (FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 4)
+	#elif (FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 4U)
 	  #define FNET_COMP_PACKED_NATIVE         FNET_COMP_PACKED_4
 	#else
 	  #error The macro FNET_CFG_CPU_FLASH_PROGRAM_SIZE must be set to correct value.
@@ -87,7 +87,7 @@
  * @brief Macros which converts the unsigned short integer from host byte order to 
  * network byte order.
  ******************************************************************************/
-    #define FNET_HTONS(short_var)   ((((short_var) & 0x00FF) << 8) | (((short_var) & 0xFF00) >> 8))
+    #define FNET_HTONS(short_var)   ((((short_var) & 0x00FFU) << 8U) | (((short_var) & 0xFF00U) >> 8U))
 /**************************************************************************/ /*!
  * @def FNET_NTOHS
  * @param short_var A 16-bit number in network byte order.
@@ -105,7 +105,7 @@
  * @brief Macros which converts the unsigned long integer from host byte order to 
  * network byte order.
  ******************************************************************************/      
-    #define FNET_HTONL(long_var)    ((((long_var) & 0x000000FF) << 24) | (((long_var) & 0x0000FF00) << 8) | (((long_var) & 0x00FF0000) >> 8) | (((long_var) & 0xFF000000) >> 24))   
+    #define FNET_HTONL(long_var)    ((((long_var) & 0x000000FFU) << 24U) | (((long_var) & 0x0000FF00U) << 8U) | (((long_var) & 0x00FF0000U) >> 8U) | (((long_var) & 0xFF000000U) >> 24U))   
 /**************************************************************************/ /*!
  * @def FNET_NTOHL
  * @param long_var A 32-bit number in network byte order.
@@ -213,7 +213,6 @@
 
 /*! @} */
 
-/////////////////////////////////////////////////////////////////////////////////
 
 /*! @addtogroup fnet_cpu
 * The CPU-specific library provides commonly used platform dependent functions.

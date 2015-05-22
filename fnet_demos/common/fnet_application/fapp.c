@@ -108,7 +108,7 @@ const char FAPP_TOCANCEL_STR[] = "Press [Ctr+C] to cancel.";
 
 /* Error mesages */
 const char FAPP_PARAM_ERR[] = "Error: Invalid paremeter \'%s\'";
-const char FAPP_NET_ERR[]   = "Error: Network Interface is not configurated!\n";
+static const char FAPP_NET_ERR[]   = "Error: Network Interface is not configurated!\n";
 const char FAPP_INIT_ERR[]  = "Error: %s initialization is failed!";
 
 
@@ -153,6 +153,30 @@ void fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 #if FAPP_CFG_DEBUG_CMD 
 void fapp_debug_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
 #endif
+static void fapp_boot(fnet_shell_desc_t desc);
+#if FNET_CFG_IP4
+static void fapp_dup_ip_handler( fnet_netif_desc_t netif );
+#endif
+
+#if FAPP_CFG_BIND_CMD && FNET_CFG_IP6
+static void fapp_bind_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+#endif
+#if FAPP_CFG_INFO_CMD
+static void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+#endif
+#if FAPP_CFG_RESET_CMD || FAPP_CFG_REBOOT_CMD
+static void fapp_reset_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+#endif
+#if FAPP_CFG_SAVE_CMD 
+static void fapp_save_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+#endif
+#if FAPP_CFG_STAT_CMD
+static void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+#endif
+#if FAPP_CFG_UNBIND_CMD && FNET_CFG_IP6
+static void fapp_unbind_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+#endif
+static void fapp_info_print( fnet_shell_desc_t desc );
 
 /************************************************************************
 *     The table of the main shell commands.
@@ -247,14 +271,14 @@ static char fapp_cmd_line_buffer[FAPP_CFG_SHELL_MAX_LINE_LENGTH];
 /************************************************************************
 *     The main shell control data structure.
 *************************************************************************/
-const struct fnet_shell fapp_shell =
+static const struct fnet_shell fapp_shell =
 {
     fapp_cmd_table,         /* cmd_table */
     FAPP_CFG_SHELL_PROMPT,  /* prompt_str */
     fapp_shell_init,        /* shell_init */
 };
 
-fnet_shell_desc_t fapp_shell_desc = 0; /* Shell descriptor. */
+static fnet_shell_desc_t fapp_shell_desc = 0; /* Shell descriptor. */
 
 #if FAPP_CFG_BOOTLOADER || FAPP_CFG_SETGET_CMD_BOOT
 
@@ -402,7 +426,7 @@ static void fapp_boot(fnet_shell_desc_t desc)
 * DESCRIPTION: Reset command reboots the system. 
 ************************************************************************/
 #if FAPP_CFG_RESET_CMD || FAPP_CFG_REBOOT_CMD
-void fapp_reset_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_reset_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     FNET_COMP_UNUSED_ARG(desc);
     FNET_COMP_UNUSED_ARG(argc);
@@ -488,7 +512,7 @@ static void fapp_init(void)
 
     /* Input parameters for FNET stack initialization */
     init_params.netheap_ptr = stack_heap;
-    init_params.netheap_size = FNET_CFG_HEAP_SIZE;
+    init_params.netheap_size = (unsigned long)FNET_CFG_HEAP_SIZE;
 
     
     /* Add event handler on duplicated IP address */
@@ -656,7 +680,7 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
         fnet_netif_ip6_addr_info_t  addr_info;
         
         /* Print all assigned IPv6 addreses.*/
-        for(n=0;;n++) 
+        for(n=0U;;n++) 
         {
             result = fnet_netif_get_ip6_addr (netif, n, &addr_info);
             
@@ -682,7 +706,7 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
 *
 * DESCRIPTION: Display detailed information about the stack.
 ************************************************************************/
-void fapp_info_print( fnet_shell_desc_t desc )
+static void fapp_info_print( fnet_shell_desc_t desc )
 {
     char mac_str[FNET_MAC_ADDR_STR_SIZE];
     fnet_mac_addr_t macaddr;
@@ -726,7 +750,7 @@ void fapp_info_print( fnet_shell_desc_t desc )
 * DESCRIPTION: "info" command
 ************************************************************************/
 #if FAPP_CFG_INFO_CMD
-void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     FNET_COMP_UNUSED_ARG(argc);
     FNET_COMP_UNUSED_ARG(argv);
@@ -741,7 +765,7 @@ void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: "stat" command
 ************************************************************************/
 #if FAPP_CFG_STAT_CMD
-void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     struct fnet_netif_statistics statistics;
     fnet_netif_desc_t netif = fapp_default_netif;  
@@ -759,7 +783,7 @@ void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 
 #if FNET_CFG_IP6
     {
-        int                                 i;
+        unsigned int                        i;
         fnet_netif_ip6_prefix_t             ip6_prefix;
         fnet_netif_ip6_neighbor_cache_t     ip6_neighbor_cache;
         char                                numaddr[FNET_IP6_ADDR_STR_SIZE];
@@ -767,16 +791,16 @@ void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 
         /* Print content of IPv6 Prefix List. */
         fnet_shell_println(desc, "\nIPv6 Prefix List:");
-        for(i=0; fnet_netif_get_ip6_prefix(netif, i, &ip6_prefix) == FNET_TRUE; i++)
+        for(i=0U; fnet_netif_get_ip6_prefix(netif, i, &ip6_prefix) == FNET_TRUE; i++)
         {
             fnet_shell_println(desc,"   [%d] %s/%d\n", i, 
                                 fnet_inet_ntop(AF_INET6, &ip6_prefix.prefix, numaddr, sizeof(numaddr)), ip6_prefix.prefix_length);
         }     
 
         /* Print content of IPv6 Neighbor Cache. */
-        for(i=0; fnet_netif_get_ip6_neighbor_cache(netif, i, &ip6_neighbor_cache) == FNET_TRUE; i++)
+        for(i=0U; fnet_netif_get_ip6_neighbor_cache(netif, i, &ip6_neighbor_cache) == FNET_TRUE; i++)
         {
-            if(i == 0)
+            if(i == 0U)
             {
                 fnet_shell_println(desc, "\nIPv6 Neighbor Cache:");
             }
@@ -873,7 +897,7 @@ static void fapp_go ( fnet_shell_desc_t desc, unsigned long address )
 * DESCRIPTION: Save environment variables to persistent storage. 
 ************************************************************************/
 #if FAPP_CFG_SAVE_CMD 
-void fapp_save_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_save_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     (void)argc;
 	(void)argv;
@@ -926,7 +950,7 @@ void fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: Binds IPv6 address to the default interface. 
 ************************************************************************/
 #if FAPP_CFG_BIND_CMD && FNET_CFG_IP6
-void fapp_bind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_bind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     fnet_netif_desc_t   netif = fapp_default_netif;
     fnet_ip6_addr_t     addr;
@@ -950,7 +974,7 @@ void fapp_bind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: Unbinds IPv6 address from the default interface. 
 ************************************************************************/
 #if FAPP_CFG_UNBIND_CMD && FNET_CFG_IP6
-void fapp_unbind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_unbind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 {
     fnet_netif_desc_t   netif = fapp_default_netif;
     fnet_ip6_addr_t     addr;
