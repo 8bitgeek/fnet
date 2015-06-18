@@ -79,7 +79,7 @@ typedef struct fnet_ip6_ext_header
 /******************************************************************
 * Function Prototypes
 *******************************************************************/
-static void fnet_ip6_netif_output(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t* nb);
+static void fnet_ip6_netif_output(struct fnet_netif *netif, const fnet_ip6_addr_t *src_ip, const fnet_ip6_addr_t *dest_ip, fnet_netbuf_t* nb);
 static int fnet_ip6_ext_header_process(fnet_netif_t *netif, unsigned char **next_header_p, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t **nb_p, fnet_netbuf_t *ip6_nb);
 static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_fragment_header(fnet_netif_t *netif, unsigned char **next_header_p, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t **nb_p, fnet_netbuf_t *ip6_nb);
 static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_routing_header(fnet_netif_t *netif, unsigned char **next_header_p, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t **nb_p, fnet_netbuf_t *ip6_nb);
@@ -93,7 +93,7 @@ static void fnet_ip6_input_low( void *cookie );
     static void fnet_ip6_frag_add( fnet_ip6_frag_header_t ** head, fnet_ip6_frag_header_t *frag,  fnet_ip6_frag_header_t *frag_prev );
     static void fnet_ip6_frag_del( fnet_ip6_frag_header_t ** head, fnet_ip6_frag_header_t *frag );
     static void fnet_ip6_frag_list_free( fnet_ip6_frag_list_t *list );
-    static fnet_netbuf_t *fnet_ip6_reassembly(fnet_netif_t *netif, fnet_netbuf_t ** nb_ptr, fnet_netbuf_t *ip6_nb, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip );
+    static fnet_netbuf_t *fnet_ip6_reassembly(fnet_netif_t *netif, fnet_netbuf_t ** nb_p, fnet_netbuf_t *ip6_nb, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip );
     static void fnet_ip6_timer(void *cookie);
 #endif
 
@@ -277,7 +277,9 @@ static int fnet_ip6_ext_header_process(fnet_netif_t *netif, unsigned char **next
                 case FNET_IP6_EXT_HEADER_HANDLER_RESULT_TRANSPORT:
                     try_upper_layer = FNET_TRUE;
                     break;
-            };  
+                default:
+                    break;
+            }  
         }
         else
         {
@@ -326,11 +328,12 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_options 
    
    
     unsigned long               offset;
-    unsigned long               length = (unsigned long)((options_h->hdr_ext_length<<3) + (8-2));
+    unsigned long               length = (((unsigned long)options_h->hdr_ext_length<<3) + (8-2));
    
     FNET_COMP_UNUSED_ARG(src_ip);
-   
-    for(offset = 0; offset < length; )
+    
+    offset = 0;
+    while(offset < length)
     {
         option = (fnet_ip6_option_header_t *)&options_h->options[offset];
         
@@ -382,6 +385,8 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_options 
                             fnet_netbuf_free_chain(ip6_nb); 
                                                                   
                         return FNET_IP6_EXT_HEADER_HANDLER_RESULT_EXIT;
+                    default:
+                        break;
                 }
                 
                 offset += sizeof(fnet_ip6_option_header_t) + option->data_length;
@@ -437,7 +442,7 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_routing_
 
         
         *next_header_p = &routing_h->next_header;
-        fnet_netbuf_trim(nb_p, (routing_h->hdr_ext_length<<3)+(8));  
+        fnet_netbuf_trim(nb_p, ((int)routing_h->hdr_ext_length<<3)+(8));  
         
         result = FNET_IP6_EXT_HEADER_HANDLER_RESULT_NEXT;
     }
@@ -663,7 +668,7 @@ static void fnet_ip6_input_low( void *cookie )
 * DESCRIPTION: Returns scope of the IPv6 address (Node-local, 
 * link-local, site-local or global.).
 *************************************************************************/
-int fnet_ip6_addr_scope(fnet_ip6_addr_t *ip_addr)
+int fnet_ip6_addr_scope(const fnet_ip6_addr_t *ip_addr)
 {
     int result = FNET_IP6_ADDR_SCOPE_GLOBAL;
     
@@ -691,12 +696,16 @@ int fnet_ip6_addr_scope(fnet_ip6_addr_t *ip_addr)
             case FNET_IP6_ADDR_SCOPE_SITELOCAL:    
                 result = FNET_IP6_ADDR_SCOPE_SITELOCAL;                
                 break;
+            default:
+                break;
         }
     }
     else if(FNET_IP6_ADDR_EQUAL(ip_addr, &fnet_ip6_addr_loopback)) /* Loopback interface - special case.*/
     {
         result = FNET_IP6_ADDR_SCOPE_INTERFACELOCAL;    
     }
+    else
+    {}
     
     return result;
 }
@@ -710,7 +719,7 @@ int fnet_ip6_addr_scope(fnet_ip6_addr_t *ip_addr)
 *  most significant, or leftmost, bits) that the two addresses have in
 *  common. It ranges from 0 to 128.
 *************************************************************************/
-int fnet_ip6_common_prefix_length(fnet_ip6_addr_t *ip_addr_1, fnet_ip6_addr_t *ip_addr_2)
+int fnet_ip6_common_prefix_length(const fnet_ip6_addr_t *ip_addr_1, const fnet_ip6_addr_t *ip_addr_2)
 {
     int             length = 0;
     int             i;
@@ -744,7 +753,7 @@ int fnet_ip6_common_prefix_length(fnet_ip6_addr_t *ip_addr_1, fnet_ip6_addr_t *i
 *
 * DESCRIPTION:  Returns label value from policy table.
 *************************************************************************/
-unsigned long fnet_ip6_policy_label( fnet_ip6_addr_t *addr ) 
+unsigned long fnet_ip6_policy_label( const fnet_ip6_addr_t *addr ) 
 { 
     int             i;
     unsigned long   label = 0;
@@ -753,9 +762,9 @@ unsigned long fnet_ip6_policy_label( fnet_ip6_addr_t *addr )
     /* Find the entry in the list. */
     for(i=0; i < FNET_IP6_IF_POLICY_TABLE_SIZE; i++)
     {
-        int prefix_length = (int)(fnet_ip6_if_policy_table[i].prefix_length);
+        unsigned long prefix_length = fnet_ip6_if_policy_table[i].prefix_length;
            
-        if(fnet_ip6_addr_pefix_cmp((fnet_ip6_addr_t*)&fnet_ip6_if_policy_table[i].prefix, addr, (unsigned long)prefix_length) == FNET_TRUE)
+        if(fnet_ip6_addr_pefix_cmp(&fnet_ip6_if_policy_table[i].prefix, addr, prefix_length) == FNET_TRUE)
         {
             if(prefix_length > biggest_prefix_length)
             {
@@ -773,7 +782,7 @@ unsigned long fnet_ip6_policy_label( fnet_ip6_addr_t *addr )
 *
 * DESCRIPTION: Compares first "prefix_length" bits of the addresses.
 *************************************************************************/
-int fnet_ip6_addr_pefix_cmp(fnet_ip6_addr_t *addr_1, fnet_ip6_addr_t *addr_2, unsigned long prefix_length)
+int fnet_ip6_addr_pefix_cmp(const fnet_ip6_addr_t *addr_1, const fnet_ip6_addr_t *addr_2, unsigned long prefix_length)
 {
     int             result;
     unsigned long   prefix_length_bytes = prefix_length>>3;
@@ -799,7 +808,7 @@ int fnet_ip6_addr_pefix_cmp(fnet_ip6_addr_t *addr_1, fnet_ip6_addr_t *addr_2, un
 * DESCRIPTION:  Selects the best source address to use with a 
 *               destination address, Based on RFC3484.
 *************************************************************************/ 
-const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.*/, fnet_ip6_addr_t *dest_addr)
+const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.*/, const fnet_ip6_addr_t *dest_addr)
 {
     int             i;
     fnet_ip6_addr_t *best_addr = FNET_NULL;
@@ -837,6 +846,8 @@ const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.
                         best_addr = &if_dest_cur->ip6_addr[i].address;
                         if_dest_best = if_dest_cur;
                     }
+                    else
+                    {}
                     
                     /* RFC3484 Source Address Selection.*/
                     /* Rule 1:  Prefer same address.*/
@@ -873,6 +884,8 @@ const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.
                         }
                         continue;
                     }
+                    else
+                    {}
                       
                      
                     /* Rule 3:  Avoid deprecated addresses.
@@ -987,7 +1000,7 @@ unsigned long fnet_ip6_mtu( fnet_netif_t *netif)
 * DESCRIPTION: This function performs IPv6 routing 
 *              on an outgoing IP packet. 
 *************************************************************************/
-fnet_netif_t *fnet_ip6_route(fnet_ip6_addr_t *src_ip /*optional*/, fnet_ip6_addr_t *dest_ip)
+fnet_netif_t *fnet_ip6_route(const fnet_ip6_addr_t *src_ip /*optional*/, const fnet_ip6_addr_t *dest_ip)
 {
     fnet_netif_t        *netif = FNET_NULL;
   
@@ -1009,7 +1022,7 @@ fnet_netif_t *fnet_ip6_route(fnet_ip6_addr_t *src_ip /*optional*/, fnet_ip6_addr
         if((src_ip == FNET_NULL) || FNET_IP6_ADDR_IS_UNSPECIFIED(src_ip))
         /* Determine a source address. */
         {
-            src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(FNET_NULL, dest_ip);
+            src_ip = fnet_ip6_select_src_addr(FNET_NULL, dest_ip);
         }
 
         if(src_ip != FNET_NULL)
@@ -1076,7 +1089,7 @@ int fnet_ip6_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_
 *          FNET_ERR_MSGSIZE=Size error
 *          FNET_ERR_NOMEM=No memory
 *************************************************************************/
-int fnet_ip6_output(fnet_netif_t *netif /*optional*/, fnet_ip6_addr_t *src_ip /*optional*/, fnet_ip6_addr_t *dest_ip,
+int fnet_ip6_output(fnet_netif_t *netif /*optional*/, const fnet_ip6_addr_t *src_ip /*optional*/, const fnet_ip6_addr_t *dest_ip,
                     unsigned char protocol, unsigned char hop_limit /*optional*/, fnet_netbuf_t *nb, FNET_COMP_PACKED_VAR unsigned short *checksum)
 {
     int                 error_code;
@@ -1114,7 +1127,7 @@ int fnet_ip6_output(fnet_netif_t *netif /*optional*/, fnet_ip6_addr_t *src_ip /*
     if(src_ip == FNET_NULL) /* It may be any address.*/
     /* Determine a source address. */
     {
-        src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(netif, dest_ip);
+        src_ip = fnet_ip6_select_src_addr(netif, dest_ip);
             
         if(src_ip == FNET_NULL)
         {
@@ -1145,7 +1158,7 @@ int fnet_ip6_output(fnet_netif_t *netif /*optional*/, fnet_ip6_addr_t *src_ip /*
 
     /* Pseudo checksum. */
     if(checksum)
-        *checksum = fnet_checksum_pseudo_end( *checksum, (char *)src_ip, (char *)dest_ip, sizeof(fnet_ip6_addr_t) );    
+        *checksum = fnet_checksum_pseudo_end( *checksum, (const char *)src_ip, (const char *)dest_ip, sizeof(fnet_ip6_addr_t) );    
     
     /****** Construct IP header. ******/
     if((nb_header = fnet_netbuf_new(sizeof(fnet_ip6_header_t), FNET_TRUE)) == 0)
@@ -1360,7 +1373,7 @@ DROP:
 *
 * DESCRIPTION:
 *************************************************************************/
-static void fnet_ip6_netif_output(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t* nb)
+static void fnet_ip6_netif_output(struct fnet_netif *netif, const fnet_ip6_addr_t *src_ip, const fnet_ip6_addr_t *dest_ip, fnet_netbuf_t* nb)
 {
     
 #if FNET_CFG_LOOPBACK    
@@ -1403,7 +1416,7 @@ static void fnet_ip6_netif_output(struct fnet_netif *netif, fnet_ip6_addr_t *src
 *        with the 24 low-order bits of a corresponding IPv6 unicast 
 *        or anycast address.
 *************************************************************************/
-void fnet_ip6_get_solicited_multicast_addr(fnet_ip6_addr_t *ip_addr, fnet_ip6_addr_t *solicited_multicast_addr)
+void fnet_ip6_get_solicited_multicast_addr(const fnet_ip6_addr_t *ip_addr, fnet_ip6_addr_t *solicited_multicast_addr)
 {
     solicited_multicast_addr->addr[0]=0xFF;
     solicited_multicast_addr->addr[1]=0x02;
@@ -1716,7 +1729,7 @@ static fnet_netbuf_t *fnet_ip6_reassembly(fnet_netif_t *netif, fnet_netbuf_t ** 
         } while (frag_ptr != frag_list_ptr->frag_ptr);
     }
 
-    if(frag_ptr->prev->mf & 1)
+    if((frag_ptr->prev->mf & 1) != 0)
         goto NEXT_FRAG;
 
     /* Reconstruct datagram.*/
@@ -1885,7 +1898,7 @@ void fnet_ip6_drain( void )
 * DESCRIPTION: This function retrieves the current value 
 *              of IPv6 socket option.
 *************************************************************************/
-int fnet_ip6_getsockopt(fnet_socket_t *sock, int optname, char *optval, unsigned int *optlen )
+int fnet_ip6_getsockopt(fnet_socket_t *sock, int optname, void *optval, unsigned int *optlen )
 {
     int result = FNET_OK;
     
@@ -1924,7 +1937,7 @@ int fnet_ip6_getsockopt(fnet_socket_t *sock, int optname, char *optval, unsigned
 *
 * DESCRIPTION: This function sets the value of IPv6 socket option. 
 *************************************************************************/
-int fnet_ip6_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigned int optlen )
+int fnet_ip6_setsockopt( fnet_socket_t *sock, int optname, const void *optval, unsigned int optlen )
 {
     int result = FNET_OK;
 
@@ -1938,7 +1951,7 @@ int fnet_ip6_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigne
                 break;
             }
 
-            sock->options.ip6_opt.hops_unicast = (unsigned char) (*((int *)(optval)));
+            sock->options.ip6_opt.hops_unicast = (unsigned char) (*((const int *)(optval)));
             break;
         /******************************/
         case IPV6_MULTICAST_HOPS: /* Set IPv6 hop limit for outgoing multicast datagrams. */
@@ -1948,7 +1961,7 @@ int fnet_ip6_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigne
                 result = FNET_ERR_INVAL;
                 break;
             }
-            sock->options.ip6_opt.hops_multicast = (unsigned char) (*((int *)(optval)));
+            sock->options.ip6_opt.hops_multicast = (unsigned char) (*((const int *)(optval)));
             break;            
         /******************************/
         case IPV6_JOIN_GROUP:     /* Join the socket to the supplied IPv6 multicast group on 
@@ -1957,7 +1970,7 @@ int fnet_ip6_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigne
         {                     
             int                             i;
             fnet_ip6_multicast_list_entry_t **multicast_entry = FNET_NULL;
-            struct ipv6_mreq                *mreq = (struct ipv6_mreq *)optval;
+            const struct ipv6_mreq          *mreq = (const struct ipv6_mreq *)optval;
             fnet_netif_t                    *netif;
                         
                         

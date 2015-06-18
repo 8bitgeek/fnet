@@ -50,7 +50,7 @@
 #if FNET_CFG_DEBUG_PING    
     #define FNET_DEBUG_PING   FNET_DEBUG
 #else
-    #define FNET_DEBUG_PING(...)
+    #define FNET_DEBUG_PING(...)    do{}while(0)
 #endif
 
 /************************************************************************
@@ -152,8 +152,8 @@ int fnet_ping_request( struct fnet_ping_params *params )
         setsockopt(fnet_ping_if.socket_foreign, IPPROTO_IPV6, IPV6_UNICAST_HOPS, (char *) &params->ttl, sizeof(params->ttl));
 #endif        
             
-    setsockopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_RCVBUF, (char *) &bufsize_option, sizeof(bufsize_option));
-    setsockopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_SNDBUF, (char *) &bufsize_option, sizeof(bufsize_option));
+    setsockopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_RCVBUF, &bufsize_option, sizeof(bufsize_option));
+    setsockopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_SNDBUF, &bufsize_option, sizeof(bufsize_option));
 
     /* Register PING service. */
     fnet_ping_if.service_descriptor = fnet_poll_service_register(fnet_ping_state_machine, (void *) &fnet_ping_if);
@@ -215,18 +215,18 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
 #if FNET_CFG_IP6
             if(ping_if->family == AF_INET6)
             {
-                fnet_ip6_addr_t   *src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(FNET_NULL, (fnet_ip6_addr_t *)ping_if->target_addr.sa_data); /*TBD  Check result.*/
+                const fnet_ip6_addr_t   *src_ip = fnet_ip6_select_src_addr(FNET_NULL, (fnet_ip6_addr_t *)ping_if->target_addr.sa_data); /*TBD  Check result.*/
 
                 hdr->header.checksum = fnet_checksum_pseudo_buf(&fnet_ping_if.buffer[0], 
                                                                 (unsigned short)(sizeof(*hdr) + ping_if->packet_size), 
                                                                 FNET_HTONS(IPPROTO_ICMPV6), 
-                                                                (char *)src_ip,
+                                                                (const char *)src_ip,
                                                                 ping_if->target_addr.sa_data, 
                                                                 sizeof(fnet_ip6_addr_t));
             }
             else
 #endif 
-            {};
+            {}
             
             /* Send request.*/    
             sendto(fnet_ping_if.socket_foreign, (char*)(&fnet_ping_if.buffer[0]), (int)(sizeof(*hdr) + ping_if->packet_size), 0,  &ping_if->target_addr, sizeof(ping_if->target_addr));
@@ -269,7 +269,8 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
                 }
                 else    
 #endif                               
-                {}; 
+                {}
+ 
                 /* Check header.*/
                 if( checksum
                     ||(hdr->header.type != (addr.sa_family == AF_INET) ? FNET_ICMP_ECHOREPLY: FNET_ICMP6_TYPE_ECHO_REPLY)

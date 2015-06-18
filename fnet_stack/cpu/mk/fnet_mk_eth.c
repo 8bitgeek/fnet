@@ -74,7 +74,7 @@ fnet_netif_t fnet_eth0_if =
 *
 * DESCRIPTION: Ethernet IO initialization.
 *************************************************************************/
-void fnet_eth_io_init() 
+void fnet_eth_io_init(void) 
 {
     FNET_MK_PORT_MemMapPtr pctl;
     FNET_MK_SIM_MemMapPtr  sim  = (FNET_MK_SIM_MemMapPtr)FNET_MK_SIM_BASE_PTR;

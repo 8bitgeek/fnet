@@ -94,9 +94,9 @@
  * @brief The major version number of HTTP protocol supported by the HTTP server.
  ******************************************************************************/
 #if FNET_CFG_HTTP_VERSION_MAJOR /*HTTP/1.x*/
-    #define FNET_HTTP_VERSION_MAJOR     (1)
+    #define FNET_HTTP_VERSION_MAJOR     (1u)
 #else   /*HTTP/0.9*/
-    #define FNET_HTTP_VERSION_MAJOR     (0)
+    #define FNET_HTTP_VERSION_MAJOR     (0u)
 #endif
 
 /**************************************************************************/ /*!

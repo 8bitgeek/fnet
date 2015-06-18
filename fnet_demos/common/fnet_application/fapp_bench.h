@@ -58,8 +58,8 @@
 #define FAPP_BENCH_TX_ITERATION_NUMBER_MAX      (10000)
 
 
-void fapp_benchrx_cmd( fnet_shell_desc_t desc, int argc, char ** );
-void fapp_benchtx_cmd( fnet_shell_desc_t desc, int argc, char ** );
+void fapp_benchrx_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_benchtx_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 #endif
 
 

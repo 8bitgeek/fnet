@@ -124,13 +124,13 @@
  ******************************************************************************/  
 struct fnet_fs_rom_node
 { 
-	const char *name;           /**< @brief Name of a file or directory 
-	                             * (null-terminated string). */
-	unsigned char *data;        /**< @brief Pointer to a file-content buffer. @n
-	                             * For a directory this field must be set to @c 0.*/
-	unsigned long data_size;    /**< @brief Size of the file buffer pointed to
-	                             * by the @c data field. @n
-	                             * For a directory this field must be set to @c 0.*/
+	const char *name;               /**< @brief Name of a file or directory 
+                                    * (null-terminated string). */
+	const unsigned char *data;      /**< @brief Pointer to a file-content buffer. @n
+                                    * For a directory this field must be set to @c 0.*/
+	unsigned long data_size;        /**< @brief Size of the file buffer pointed to
+                                    * by the @c data field. @n
+                                    * For a directory this field must be set to @c 0.*/
 	const struct fnet_fs_rom_node * parent_node;    /**< @brief Pointer to the
 	                                                 * parent directory. @n
 	                                                 * For the root directory this field must be 

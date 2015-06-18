@@ -105,15 +105,22 @@ typedef enum
 } fnet_dns_state_t;
 
 /**************************************************************************/ /*!
+ * @brief Initialization parameters for the @ref fnet_dns_init() function.
+ ******************************************************************************/
+struct fnet_dns_resolved_addr
+{
+    struct sockaddr             resolved_addr;      /**< @brief Socket address of the resolved host name.*/
+    unsigned long               resolved_addr_ttl;  /**< @brief Specifies the time interval (in seconds) that the 
+                                                    * resolved address may be cached before it should be discarded.*/
+};
+
+/**************************************************************************/ /*!
  * @brief Prototype of the DNS-client callback function that is 
  * called when the DNS client has completed the resolving.
  *
  * @param addr_family       IP address family.@n
  *                          It determines the address pointed to by @c addr.
- * @param addr_list         Pointer to the list of addresses, which equals to:
- *                              - Array of resolved IPv4 addresses @ref fnet_ip4_addr_t (in network byte order), if @ addr_family is equal to @ref AF_INET. 
- *                              - Array of resolved IPv6 addresses @ref fnet_ip6_addr_t, if @ addr_family is equal to @ref AF_INET6. 
- *                              - @ref FNET_NULL if the resolving was failed.
+ * @param addr_list         Pointer to the list of addresses or @ref FNET_NULL if the resolving was failed.
  * @param addr_list_size    Number of resolved addresses in addr_list.
  * @param cookie            User-application specific parameter. It's set during 
  *                          the DNS-client service initialization as part of 
@@ -121,7 +128,7 @@ typedef enum
  *
  * @see fnet_dns_resolve(), fnet_dns_params
  ******************************************************************************/  
-typedef void(*fnet_dns_handler_resolved_t)(fnet_address_family_t addr_family, const char *addr_list, int addr_list_size, long cookie);
+typedef void(*fnet_dns_handler_resolved_t)(const struct fnet_dns_resolved_addr *addr_list, int addr_list_size, long cookie);
 
 /**************************************************************************/ /*!
  * @brief Initialization parameters for the @ref fnet_dns_init() function.

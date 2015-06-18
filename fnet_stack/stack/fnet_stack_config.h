@@ -827,6 +827,10 @@
     #define FNET_CFG_DEBUG_LLMNR        (0)
 #endif
 
+#ifndef FNET_CFG_DEBUG_PING
+    #define FNET_CFG_DEBUG_PING         (0)
+#endif
+
 #ifndef FNET_CFG_DEBUG_TRACE
     #define FNET_CFG_DEBUG_TRACE        (0)
 #endif
@@ -895,6 +899,8 @@
     #define FNET_CFG_DEBUG_IP6          (0)
     #undef  FNET_CFG_DEBUG_LLMNR    
     #define FNET_CFG_DEBUG_LLMNR        (0)
+    #undef FNET_CFG_DEBUG_PING 
+    #define FNET_CFG_DEBUG_PING         0
 #endif
 
 #if !FNET_CFG_DEBUG_TRACE /* Clear all trace flags. */

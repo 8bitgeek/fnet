@@ -46,7 +46,7 @@
 #include "fapp_config.h"
 
 #if FAPP_CFG_DHCP_CMD
-void fapp_dhcp_cmd( fnet_shell_desc_t desc, int argc, char ** );
+void fapp_dhcp_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_dhcp_info(fnet_shell_desc_t desc);
 void fapp_dhcp_release(void);
 #endif

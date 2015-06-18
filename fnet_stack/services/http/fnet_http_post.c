@@ -78,7 +78,9 @@ static int fnet_http_post_handle(struct fnet_http_if * http, struct fnet_http_ur
     {
         /* Skip first '/' and ' ' */
         while(*uri->path == '/' || *uri->path == ' ')
+        {
             uri->path++;
+        }
         
         session->send_param.data_ptr = 0; /* Clear. */    
         
@@ -87,7 +89,7 @@ static int fnet_http_post_handle(struct fnet_http_if * http, struct fnet_http_ur
     	{
     	    if (!fnet_strcmp(uri->path, post_ptr->name)) 
     		{				 
-    		    session->send_param.data_ptr = (void*)post_ptr;
+    		    session->send_param.data_ptr = post_ptr;
     		    if(post_ptr->handle)
     		        result = post_ptr->handle(uri->query, &session->response.cookie);
     		    else

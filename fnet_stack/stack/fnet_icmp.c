@@ -55,13 +55,13 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
+static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
 static void fnet_icmp_output( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb );
                         
 #if FNET_CFG_DEBUG_TRACE_ICMP
 void fnet_icmp_trace(char *str, fnet_icmp_header_t *icmpp_hdr);
 #else
-#define fnet_icmp_trace(str, icmp_hdr)
+#define fnet_icmp_trace(str, icmp_hdr)  do{}while(0)
 #endif
 
 
@@ -379,7 +379,7 @@ void fnet_icmp_error( fnet_netif_t *netif, unsigned char type,
         destination_addr = ipheader->desination_addr;
 
         /* Do not send error if not the first fragment of message (RFC1122)*/
-        if((FNET_IP_HEADER_GET_OFFSET(ipheader)) ||
+        if((FNET_IP_HEADER_GET_OFFSET(ipheader) != 0) ||
             /* Do not send error on ICMP error messages*/
             ((ipheader->protocol == FNET_IP_PROTOCOL_ICMP)
                  && (!FNET_ICMP_IS_QUERY_TYPE(((fnet_icmp_header_t *)((unsigned char *)nb->data_ptr
@@ -395,7 +395,7 @@ void fnet_icmp_error( fnet_netif_t *netif, unsigned char type,
             ||(fnet_ip_addr_is_broadcast(destination_addr, netif)
             || FNET_IP4_ADDR_IS_MULTICAST(destination_addr)
              /* Do not send error on datagram sent as a link-layer broadcast or multicast.*/
-            ||(nb->flags & FNET_NETBUF_FLAG_BROADCAST) || (nb->flags & FNET_NETBUF_FLAG_MULTICAST))
+            ||((nb->flags & FNET_NETBUF_FLAG_BROADCAST) != 0) || ((nb->flags & FNET_NETBUF_FLAG_MULTICAST) != 0))
         )
         {
             goto FREE_NB;
@@ -415,7 +415,11 @@ void fnet_icmp_error( fnet_netif_t *netif, unsigned char type,
             code = 0;
         }
         else if((type == FNET_ICMP_PARAMPROB) && (code == FNET_ICMP_UNREACHABLE_NEEDFRAG) && netif)
+        {    
             icmpheader->fields.mtu = fnet_htons((unsigned short)netif->mtu);
+        }
+        else
+        {}
 
         icmpheader->header.type = type;
         icmpheader->header.code = code;

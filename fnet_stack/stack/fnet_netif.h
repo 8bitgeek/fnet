@@ -247,7 +247,7 @@ fnet_netif_desc_t fnet_netif_get_by_ip4_addr( fnet_ip4_addr_t addr );
  * @brief    Retrieves a name of the specified network interface.
  *
  *
- * @param netif          Network interface descriptor.
+ * @param netif_desc          Network interface descriptor.
  *
  * @param name           String buffer that receives a name of the 
  *                       interface @c netif_desc.
@@ -263,14 +263,14 @@ fnet_netif_desc_t fnet_netif_get_by_ip4_addr( fnet_ip4_addr_t addr );
  * @c netif_desc and stores it in the @c name (for example "eth0", "loop").
  *
  ******************************************************************************/
-void fnet_netif_get_name( fnet_netif_desc_t netif, char *name, unsigned char name_size );
+void fnet_netif_get_name( fnet_netif_desc_t netif_desc, char *name, unsigned char name_size );
 
 /***************************************************************************/ /*!
  *
  * @brief    Assigns the default network interface.
  *
  *
- * @param netif     Network interface descriptor to be assigned as default.
+ * @param netif_desc     Network interface descriptor to be assigned as default.
  *
  * @see fnet_netif_get_default(), FNET_CFG_DEFAULT_IF
  *
@@ -282,7 +282,7 @@ void fnet_netif_get_name( fnet_netif_desc_t netif, char *name, unsigned char nam
  * assigned to the Ethernet.
  *
  ******************************************************************************/
-void fnet_netif_set_default( fnet_netif_desc_t netif );
+void fnet_netif_set_default( fnet_netif_desc_t netif_desc );
 
 /***************************************************************************/ /*!
  *
@@ -308,9 +308,9 @@ fnet_netif_desc_t fnet_netif_get_default( void );
  * @brief    Sets the IPv4 address of the specified network interface.
  *
  *
- * @param netif     Network interface descriptor.
+ * @param netif_desc     Network interface descriptor.
  *
- * @param ipaddr    The IPv4 address of the network interface.
+ * @param ipaddr        The IPv4 address of the network interface.
  *
  * @see fnet_netif_get_ip4_addr()
  *
@@ -321,13 +321,13 @@ fnet_netif_desc_t fnet_netif_get_default( void );
  * to the @c ipaddr. 
  *
  ******************************************************************************/
-void fnet_netif_set_ip4_addr( fnet_netif_desc_t netif, fnet_ip4_addr_t ipaddr );
+void fnet_netif_set_ip4_addr( fnet_netif_desc_t netif_desc, fnet_ip4_addr_t ipaddr );
 
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves an IPv4 address of the specified network interface.
  *
- * @param netif  Network interface descriptor.
+ * @param netif_desc  Network interface descriptor.
  *
  * @return       This function returns the IPv4 address of the @c netif interface.
  *
@@ -338,15 +338,15 @@ void fnet_netif_set_ip4_addr( fnet_netif_desc_t netif, fnet_ip4_addr_t ipaddr );
  * This function returns the IPv4 address of the @c netif interface.
  *
  ******************************************************************************/
-fnet_ip4_addr_t fnet_netif_get_ip4_addr( fnet_netif_desc_t netif );
+fnet_ip4_addr_t fnet_netif_get_ip4_addr( fnet_netif_desc_t netif_desc );
 
 /***************************************************************************/ /*!
  *
  * @brief    Sets the subnet mask of the specified network interface.
  *
- * @param netif     Network interface descriptor.
+ * @param netif_desc     Network interface descriptor.
  *
- * @param netmask   The subnet mask of the network interface.
+ * @param subnet_mask   The subnet mask of the network interface.
  *
  * @see fnet_netif_get_ip4_subnet_mask()
  *
@@ -356,13 +356,13 @@ fnet_ip4_addr_t fnet_netif_get_ip4_addr( fnet_netif_desc_t netif );
  * to the @c netmask value. 
  *
  ******************************************************************************/
-void fnet_netif_set_ip4_subnet_mask( fnet_netif_desc_t netif, fnet_ip4_addr_t netmask );
+void fnet_netif_set_ip4_subnet_mask( fnet_netif_desc_t netif_desc, fnet_ip4_addr_t subnet_mask );
 
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves a subnet mask of the specified network interface.
  *
- * @param netif  Network interface descriptor.
+ * @param netif_desc  Network interface descriptor.
  *
  * @return       This function returns the subnet mask of the @c netif 
  *               interface.
@@ -374,13 +374,13 @@ void fnet_netif_set_ip4_subnet_mask( fnet_netif_desc_t netif, fnet_ip4_addr_t ne
  * This function returns the subnet mask of the @c netif interface.
  *
  ******************************************************************************/
-fnet_ip4_addr_t fnet_netif_get_ip4_subnet_mask( fnet_netif_desc_t netif );
+fnet_ip4_addr_t fnet_netif_get_ip4_subnet_mask( fnet_netif_desc_t netif_desc );
 
 /***************************************************************************/ /*!
  *
  * @brief    Sets the gateway IP address of the specified network interface.
  *
- * @param netif     Network interface descriptor.
+ * @param netif_desc     Network interface descriptor.
  *
  * @param gw        The gateway IP address of the network interface.
  *
@@ -392,13 +392,13 @@ fnet_ip4_addr_t fnet_netif_get_ip4_subnet_mask( fnet_netif_desc_t netif );
  * to the @c gw value. 
  *
  ******************************************************************************/
-void fnet_netif_set_ip4_gateway( fnet_netif_desc_t netif, fnet_ip4_addr_t gw );
+void fnet_netif_set_ip4_gateway( fnet_netif_desc_t netif_desc, fnet_ip4_addr_t gw );
 
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves a gateway IP address of the specified network interface.
  *
- * @param netif  Network interface descriptor.
+ * @param netif_desc  Network interface descriptor.
  *
  * @return       This function returns the gateway IP address of the @c netif 
  *               interface.
@@ -410,7 +410,7 @@ void fnet_netif_set_ip4_gateway( fnet_netif_desc_t netif, fnet_ip4_addr_t gw );
  * This function returns the gateway IP address of the @c netif interface.
  *
  ******************************************************************************/
-fnet_ip4_addr_t fnet_netif_get_ip4_gateway( fnet_netif_desc_t netif );
+fnet_ip4_addr_t fnet_netif_get_ip4_gateway( fnet_netif_desc_t netif_desc );
 
 
 #if FNET_CFG_DNS || defined(__DOXYGEN__)
@@ -418,7 +418,7 @@ fnet_ip4_addr_t fnet_netif_get_ip4_gateway( fnet_netif_desc_t netif );
  *
  * @brief    Sets the DNS server IP address of the specified network interface.
  *
- * @param netif     Network interface descriptor.
+ * @param netif_desc     Network interface descriptor.
  *
  * @param dns       The DNS server IP address of the network interface.
  *
@@ -431,13 +431,13 @@ fnet_ip4_addr_t fnet_netif_get_ip4_gateway( fnet_netif_desc_t netif );
  * It is present only if @ref FNET_CFG_DNS is set to 1.
  *
  ******************************************************************************/
-void fnet_netif_set_ip4_dns( fnet_netif_desc_t netif, fnet_ip4_addr_t dns );
+void fnet_netif_set_ip4_dns( fnet_netif_desc_t netif_desc, fnet_ip4_addr_t dns );
 
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves the DNS server IP address of the specified network interface.
  *
- * @param netif  Network interface descriptor.
+ * @param netif_desc  Network interface descriptor.
  *
  * @return       This function returns the DNS server IP address of the @c netif 
  *               interface.
@@ -451,7 +451,7 @@ void fnet_netif_set_ip4_dns( fnet_netif_desc_t netif, fnet_ip4_addr_t dns );
  * It is present only if @ref FNET_CFG_DNS is set to 1.
  *
  ******************************************************************************/
-fnet_ip4_addr_t fnet_netif_get_ip4_dns( fnet_netif_desc_t netif );
+fnet_ip4_addr_t fnet_netif_get_ip4_dns( fnet_netif_desc_t netif_desc );
 
 #endif /*FNET_CFG_DNS*/
 
@@ -460,7 +460,7 @@ fnet_ip4_addr_t fnet_netif_get_ip4_dns( fnet_netif_desc_t netif );
  *
  * @brief    Sets the hardware address of the specified network interface.
  *
- * @param netif     Network interface descriptor.
+ * @param netif_desc     Network interface descriptor.
  *
  * @param hw_addr        Buffer containing the hardware address 
  *                      (for the @ref FNET_NETIF_TYPE_ETHERNET interface type,
@@ -484,13 +484,13 @@ fnet_ip4_addr_t fnet_netif_get_ip4_dns( fnet_netif_desc_t netif );
  * the MAC address.
  *
  ******************************************************************************/
-int fnet_netif_set_hw_addr( fnet_netif_desc_t netif, unsigned char *hw_addr, unsigned int hw_addr_size );
+int fnet_netif_set_hw_addr( fnet_netif_desc_t netif_desc, unsigned char *hw_addr, unsigned int hw_addr_size );
 
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves a hardware address of the specified network interface.
  *
- * @param netif     Network interface descriptor.
+ * @param netif_desc     Network interface descriptor.
  *
  * @param hw_addr        Buffer that receives a hardware address  
  *                      (for @ref FNET_NETIF_TYPE_ETHERNET interface type,
@@ -514,13 +514,13 @@ int fnet_netif_set_hw_addr( fnet_netif_desc_t netif, unsigned char *hw_addr, uns
  * the MAC address.
  *
  ******************************************************************************/
-int fnet_netif_get_hw_addr( fnet_netif_desc_t netif, unsigned char *hw_addr, unsigned int hw_addr_size );
+int fnet_netif_get_hw_addr( fnet_netif_desc_t netif_desc, unsigned char *hw_addr, unsigned int hw_addr_size );
 
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves the type of the specified network interface.
  *
- * @param netif  Network interface descriptor.
+ * @param netif_desc  Network interface descriptor.
  *
  * @return       This function returns the type of the @c netif 
  *               interface.@n
@@ -532,14 +532,14 @@ int fnet_netif_get_hw_addr( fnet_netif_desc_t netif, unsigned char *hw_addr, uns
  * by the @ref fnet_netif_type_t.
  *
  ******************************************************************************/
-fnet_netif_type_t fnet_netif_type( fnet_netif_desc_t netif );
+fnet_netif_type_t fnet_netif_type( fnet_netif_desc_t netif_desc );
 
 /***************************************************************************/ /*!
  *
  * @brief    Determines, if the IP address parameters were obtained 
  *           automatically.
  *
- * @param netif  Network interface descriptor.
+ * @param netif_desc  Network interface descriptor.
  *
  * @return       This function returns:
  *   - @c 0 if the address IP parameters were set manually .
@@ -554,13 +554,13 @@ fnet_netif_type_t fnet_netif_type( fnet_netif_desc_t netif );
  * @ref fnet_netif_set_ip4_addr() and @ref fnet_netif_set_ip4_gateway().
  *
  ******************************************************************************/
-int fnet_netif_get_ip4_addr_automatic( fnet_netif_desc_t netif );
+int fnet_netif_get_ip4_addr_automatic( fnet_netif_desc_t netif_desc );
 
 /***************************************************************************/ /*!
  *
  * @brief    Determines the link status of the network interface.
  *
- * @param netif  Network interface descriptor.
+ * @param netif_desc  Network interface descriptor.
  *
  * @return       This function returns:
  *   - @c 0 if the network link is unconnected.
@@ -573,13 +573,13 @@ int fnet_netif_get_ip4_addr_automatic( fnet_netif_desc_t netif );
  * The Ethernet network interface gets this status from the PHY. 
  *
  ******************************************************************************/
-int fnet_netif_connected( fnet_netif_desc_t netif );
+int fnet_netif_connected( fnet_netif_desc_t netif_desc );
 
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves the network interface statistics.
  *
- * @param netif  Network interface descriptor.
+ * @param netif_desc  Network interface descriptor.
  *
  * @param statistics  Structure that receives the network interface statistics 
  *                    defined by the @ref fnet_netif_statistics structure.
@@ -596,7 +596,7 @@ int fnet_netif_connected( fnet_netif_desc_t netif );
  * structure.
  *
  ******************************************************************************/
-int fnet_netif_get_statistics( fnet_netif_desc_t netif, struct fnet_netif_statistics *statistics );
+int fnet_netif_get_statistics( fnet_netif_desc_t netif_desc, struct fnet_netif_statistics *statistics );
 
 /**************************************************************************/ /*!
  * @brief Event handler callback function prototype, that is 
@@ -633,7 +633,7 @@ void fnet_netif_dupip_handler_init (fnet_netif_dupip_handler_t handler);
  *
  * @brief    Joins the specified network interface to IPv4 multicast group.
  *
- * @param netif             Network interface descriptor.
+ * @param netif_desc        Network interface descriptor.
  *
  * @param multicast_addr    Multicast-group address to be joined by the interface.
  *
@@ -651,13 +651,13 @@ void fnet_netif_dupip_handler_init (fnet_netif_dupip_handler_t handler);
  * @ref FNET_CFG_IP4 are set to @c 1.
  *
  ******************************************************************************/
-void fnet_netif_join_ip4_multicast ( fnet_netif_desc_t netif, fnet_ip4_addr_t multicast_addr );
+void fnet_netif_join_ip4_multicast ( fnet_netif_desc_t netif_desc, fnet_ip4_addr_t multicast_addr );
 
 /***************************************************************************/ /*!
  *
  * @brief    Leaves the specified network interface from IPv4 multicast group.
  *
- * @param netif             Network interface descriptor.
+ * @param netif_desc        Network interface descriptor.
  *
  * @param multicast_addr    Multicast-group address to be leaved by the interface.
  *
@@ -672,7 +672,7 @@ void fnet_netif_join_ip4_multicast ( fnet_netif_desc_t netif, fnet_ip4_addr_t mu
  * @ref FNET_CFG_IP4 are set to @c 1. 
  *
  ******************************************************************************/
-void fnet_netif_leave_ip4_multicast ( fnet_netif_desc_t netif, fnet_ip4_addr_t multicast_addr );
+void fnet_netif_leave_ip4_multicast ( fnet_netif_desc_t netif_desc, fnet_ip4_addr_t multicast_addr );
 
 
 #endif /* FNET_CFG_MULTICAST & FNET_CFG_IP4*/
@@ -685,7 +685,7 @@ void fnet_netif_leave_ip4_multicast ( fnet_netif_desc_t netif, fnet_ip4_addr_t m
  *
  * @brief    Joins the specified network interface to IPv6 multicast group.
  *
- * @param netif             Network interface descriptor.
+ * @param netif_desc        Network interface descriptor.
  *
  * @param multicast_addr    Multicast-group address to be joined by the interface.
  *
@@ -702,13 +702,13 @@ void fnet_netif_leave_ip4_multicast ( fnet_netif_desc_t netif, fnet_ip4_addr_t m
  * This function is available only if @ref FNET_CFG_IP6 is set to @c 1.
  *
  ******************************************************************************/
-void fnet_netif_join_ip6_multicast ( fnet_netif_desc_t netif, const fnet_ip6_addr_t *multicast_addr );
+void fnet_netif_join_ip6_multicast ( fnet_netif_desc_t netif_desc, const fnet_ip6_addr_t *multicast_addr );
 
 /***************************************************************************/ /*!
  *
  * @brief    Leaves the specified network interface from IPv6 multicast group.
  *
- * @param netif             Network interface descriptor.
+ * @param netif_desc        Network interface descriptor.
  *
  * @param multicast_addr    Multicast-group address to be leaved by the interface.
  *
@@ -722,7 +722,7 @@ void fnet_netif_join_ip6_multicast ( fnet_netif_desc_t netif, const fnet_ip6_add
  * This function is available only if @ref FNET_CFG_IP6 is set to @c 1. 
  *
  ******************************************************************************/
-void fnet_netif_leave_ip6_multicast ( fnet_netif_desc_t netif, fnet_ip6_addr_t *multicast_addr );
+void fnet_netif_leave_ip6_multicast ( fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *multicast_addr );
 
 /***************************************************************************/ /*!
  *
@@ -951,7 +951,7 @@ fnet_netif_desc_t fnet_netif_get_by_scope_id(unsigned long scope_id);
  ******************************************************************************/
 fnet_netif_desc_t fnet_netif_get_by_sockaddr( const struct sockaddr *addr );
 
-void fnet_netif_set_ip4_addr_automatic( fnet_netif_desc_t netif );
+void fnet_netif_set_ip4_addr_automatic( fnet_netif_desc_t netif_desc );
 
 /*! @} */
 

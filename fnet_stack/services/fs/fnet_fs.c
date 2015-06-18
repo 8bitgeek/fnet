@@ -166,7 +166,7 @@ struct fnet_fs * fnet_fs_find_name( char *name )
 *
 * DESCRIPTION: Mounts a FS.
 *************************************************************************/
-int fnet_fs_mount( char *fs_name, const char *mount_name, void *arg )
+int fnet_fs_mount( char *fs_name, const char *mount_name, const void *arg )
 {
     int             result = FNET_ERR;
     struct          fnet_fs_mount_point *mount_point = 0;
@@ -215,11 +215,17 @@ int fnet_fs_path_cmp( const char **path, const char *name)
     int result;
     
     /* No checks for 0 */
-    char *s1p = (char *)*path;
-    char *s2p = (char *)name;
+    const char *s1p = *path;
+    const char *s2p = name;
 
-    while (*s1p == ' ') s1p++;	            /* Strip leading spaces */
-	while (*s1p == FNET_FS_SPLITTER) s1p++;	/* Strip heading slash */
+    while(*s1p == ' ')
+    {
+        s1p++;	            /* Strip leading spaces */
+    }
+	while(*s1p == FNET_FS_SPLITTER)
+    {
+        s1p++;	/* Strip heading slash */
+    }
 
     while(*s2p != '\0')
     {
@@ -669,7 +675,7 @@ long fnet_fs_ftell (FNET_FS_FILE file)
 *
 * DESCRIPTION: Reads file info data.
 *************************************************************************/
-int fnet_fs_finfo (FNET_FS_FILE file, struct fnet_fs_dirent *info)
+int fnet_fs_finfo (FNET_FS_FILE file, struct fnet_fs_dirent *dirent)
 {
     int result = FNET_ERR;
     struct fnet_fs_desc *filep = (struct fnet_fs_desc *) file;
@@ -681,7 +687,7 @@ int fnet_fs_finfo (FNET_FS_FILE file, struct fnet_fs_dirent *info)
             && filep->mount->fs->file_operations
             && filep->mount->fs->file_operations->finfo)
         {
-            result = filep->mount->fs->file_operations->finfo(filep, info);    
+            result = filep->mount->fs->file_operations->finfo(filep, dirent);    
         }
         fnet_os_mutex_unlock();	
     }

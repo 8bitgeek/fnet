@@ -54,7 +54,7 @@ const char FNET_DNS_UNKNOWN[]="DNS server is unknown";
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fapp_dns_handler_resolved (fnet_address_family_t addr_family, const char *addr_list, int addr_list_size, long shl_desc);
+static void fapp_dns_handler_resolved (const struct fnet_dns_resolved_addr *addr_list, int addr_list_size, long shl_desc);
 static void fapp_dns_on_ctrlc(fnet_shell_desc_t desc);
 
 /************************************************************************
@@ -62,9 +62,9 @@ static void fapp_dns_on_ctrlc(fnet_shell_desc_t desc);
 *
 * DESCRIPTION: Event handler on new IP from DHCP client. 
 ************************************************************************/
-static void fapp_dns_handler_resolved (fnet_address_family_t addr_family, const char *addr_list, int addr_list_size, long shl_desc)
+static void fapp_dns_handler_resolved (const struct fnet_dns_resolved_addr *addr_list, int addr_list_size, long shl_desc)
 {
-    char                ip_str[FNET_IP_ADDR_STR_SIZE];
+    char                ip_str[FNET_IP_ADDR_STR_SIZE_MAX];
     fnet_shell_desc_t   desc = (fnet_shell_desc_t) shl_desc;
     int                 i;
     
@@ -74,13 +74,11 @@ static void fapp_dns_handler_resolved (fnet_address_family_t addr_family, const 
     {
         for(i=0; i < addr_list_size; i++)
         {
-            fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Resolved address", 
-                                fnet_inet_ntop(addr_family, addr_list, ip_str, sizeof(ip_str)) );
+            fnet_shell_printf(desc, FAPP_SHELL_INFO_FORMAT_S, "Resolved address", 
+                                fnet_inet_ntop(addr_list->resolved_addr.sa_family, addr_list->resolved_addr.sa_data, ip_str, sizeof(ip_str)));
+            fnet_shell_println(desc, "\t TTL=%d", addr_list->resolved_addr_ttl);
 
-            if(addr_family == AF_INET)
-                addr_list+=sizeof(fnet_ip4_addr_t);
-            else
-                addr_list+=sizeof(fnet_ip6_addr_t);
+            addr_list++;
         }
     }
     else

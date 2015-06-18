@@ -1407,7 +1407,7 @@ fnet_cpu_isr,                        /****  91 (0x16C) FEC Receive frame interru
 /*! 
 @page how_to_add_boot Add FNET Bootloader support to an existing project
 
-The Bootloader reserves the first 48 Kbytes of the on-chip Flash memory for its own needs (actually it can occupy less space). @n The last page of the on-chip Flash memory is used by the Bootloader for parameter storage and may be modified by a user application to change the Bootloader behavior.
+The Bootloader reserves the first 48 Kbytes of the on-chip Flash memory for its own needs (actually it can occupy less space). @n The last page of the on-chip Flash memory is used by the Bootloader for parameter storage and may be modified by a user application to change the Bootloader behaviour.
 
 To use an existing application with the FNET Bootloader, the following changes should be applied in the application project:
 -# Add additional sections to the application linker command file and update the already defined memory sections to avoid section overlapping. 
@@ -1534,6 +1534,26 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+- Version 2.8.0:
+	- Added possibility to get a DNS resolved host-name TTL. Improved fnet_dns_handler_resolved_t.
+	- Fixed "MISRA-C:2004 10.5 if the bitwise operators ~ and << are applied to an operand of underlying type unsigned char or unsigned short, the result shall be immediately cast to the underlying type of the operand."
+	- Fixed "MISRA-C:2004 10.6 A U suffix shall be applied to all constants of unsigned type."
+	- Fixed "MISRA-C:2004 12.6 The operands of logical operators should be effectively Boolean."
+	- Fixed "MISRA-C:2004 12.9 The unary minus operator shall not be applied to an expression whose underlying type is unsigned."
+	- Fixed "MISRA-C:2004 12.10 The comma operator shall not be used."
+	- Fixed "MISRA-C:2004 13.1 Assignment operators shall not be used in expressions that yield a Boolean value."
+	- Fixed "MISRA-C:2004 13.5 The three expressions of a for statement shall be concerned only with loop control."
+	- Fixed "MISRA-C:2004 14.3 Before preprocessing, a null statement shall only occur on a line by itself."
+	- Fixed "MISRA-C:2004 14.8 The statement forming the body of a switch, while, do… while or for statement shall be a compound statement."
+	- Fixed "MISRA-C:2004 14.10 All if ... else if constructs shall be terminated with an else clause."
+	- Fixed "MISRA-C:2004 15.3 The final clause of a switch statement shall be the default clause."
+	- Fixed "MISRA-C:2004 16.3 Identifiers shall be given for all of the parameters in a function prototype declaration."
+	- Fixed "MISRA-C:2004 16.4 The identifiers used in the declaration and definition of a function shall be identical."
+	- Fixed "MISRA-C:2004 16.5 Functions with no parameters shall be declared and defined with the parameter list void."
+	- Fixed "MISRA-C:2004 19.11 All macro identifiers in preprocessor directives shall be defined before use."
+	- Fixed "MISRA-C:2004 19.15 Precautions shall be taken in order to prevent the contents of a header file being included twice."
+	- Fixed "MISRA-C:2004 20.2 The Names of Standard Library macros, objects and functions shall not be reused."
+	- Fixed MPC Green Hills compiler warning, thanks to Patrice Cavin.
 
 - Version 2.7.5:
 	- Fixed compilation error for Classical CW.
@@ -1559,7 +1579,6 @@ FNET public releases:
 	- Fixed SRAM start address for K64, reported by Kiyoshi.
 	- Fixed possible flash write error for K60N.
 	- Fixed KDS 2.0 compilation issue of assembler code.
-
 
 - Version 2.7.2:
 	- New configuration parameter:
@@ -1601,7 +1620,6 @@ FNET public releases:
 	- Fixed defect in IPv4 TCP segment send function, reported by Dian Nugraha.
 	- Fixed MCF assembler code to be valid for GCC compiler, thanks to Thomas Buergel.
 
-
 - Version 2.6.2:
 	- Added IPv6 address support to DNS resolver.
 	- Added Recursive DNS Server Option (RFC6106) support via router advertisement. 
@@ -1626,7 +1644,6 @@ FNET public releases:
 		- @ref IPV6_LEAVE_GROUP leaves a multicast group on a specified interface.
 	- Other minor changes. 
 
-
 - Version 2.5.0:
 	- Added support of Kinetis K70FN1M0 (TWR-K70F120M board).
 	- Added support of Modelo MCF54418 (TWR-MCF5441x board).
@@ -1647,7 +1664,6 @@ FNET public releases:
 		- Others.
 	- Other internal changes. 
 
-
 - Version 2.4.0:
 	- Added multiple-session support to the HTTP server.	
 	- Added HW Checksum Calculation support by ENET module (for K60).
@@ -1659,7 +1675,6 @@ FNET public releases:
 		- @ref FNET_CFG_CPU_ETH_HW_RX_IP_CHECKSUM enables/disables discard of frames with wrong IPv4 header checksum by Ethernet-module.
 		- @ref FNET_CFG_CPU_ETH_HW_RX_MAC_ERR enables/disables discard of frames with MAC layer errors by Ethernet-module.
 	- Other minor changes.
-
 
 - Version 2.3.0:
 	- Passed the "IPv6 Ready Logo" Phase-2 IPv6 Core Protocols Conformance Tests, for host.
@@ -1674,7 +1689,6 @@ FNET public releases:
 		- @ref FNET_CFG_DHCP_BOOTP defines DHCP or BOOTP protocol to be used.
 		- @ref FNET_CFG_DHCP_PORT_CLIENT defines DHCP client port number.
 		- @ref FNET_CFG_DHCP_PORT_SERVER defines DHCP server port number.
-
 
 - Version 2.2.0:
 	- Added support of the Qorivva Power Architecture:
@@ -1701,7 +1715,6 @@ FNET public releases:
 		- @ref FNET_CFG_RAW enables/disables RAW socket support.
 		- @ref FNET_CFG_PING enables/disables PING service.
 		- @ref FNET_CFG_TELNET_SESSION_MAX defines maximum number of simultaneous user-session that can be handled by the Telnet server.
-
 
 - Version 2.0.0:
 	- Added IPv6 support:
@@ -1824,7 +1837,6 @@ FNET public releases:
 	- A lot of the @c FNET_CFG_MCF_xxxx parameters, which are common to all platforms, were renamed to @c FNET_CFG_CPU_xxxx.
 	- Many other changes and fixes.
 
-
 - Version 0.9.3:
 	- Fixed stuck issue that may occur during receiving of broadcast UDP datagrams.
 	- Fixed buffer corruption issue that may occur when the internal static heap buffer has relatively small size.
@@ -1861,8 +1873,6 @@ FNET public releases:
 	- Updated the FNET ROM file-system image structure and the "FNET File System Generation Tool", to make the file-system image file more portable between different compilers.
 	-  The "fnet.h" header file gives full access to the whole FNET user-API, including the services API.
 	- Other minor changes/fixes.
-	
-
 
 - Version 0.8.1:
 	- Fixed bug in the parsing of the HTTP URI.
@@ -1881,7 +1891,6 @@ FNET public releases:
 	- Eliminated using of the CodeWarrior @c \#pragma @c overload.
 	- Used http://www.installjammer.com tool for creation of the FNET Installer and Uninstaller.
 	- Other minor changes/fixes.
-
 
 - Version 0.7.6:
 	- Improved the @ref how_to_generate_rom_fs "FNET File System Generation tool":
@@ -1986,11 +1995,11 @@ FNET public releases:
 	- A lot of other fixes.
 
 - Version 0.3.0:
-       - Improved memory-drain function for the TCP layer.
-       - During the TCP send a really available/free memory in the network heap is checked, so less data is put to the socket buffer. In the previous version the TCP returned just the NOMEM error code.
-       - Default TCP timeouts were decreased. So the stack is able to restore itself in seconds (not minutes as it was before).
-       - Added the statistics information (TX/RX packets) into the network interface.
-       - A lot of other fixes.
+	- Improved memory-drain function for the TCP layer.
+	- During the TCP send a really available/free memory in the network heap is checked, so less data is put to the socket buffer. In the previous version the TCP returned just the NOMEM error code.
+	- Default TCP timeouts were decreased. So the stack is able to restore itself in seconds (not minutes as it was before).
+	- Added the statistics information (TX/RX packets) into the network interface.
+	- A lot of other fixes.
 */
 
 

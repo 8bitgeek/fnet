@@ -49,7 +49,7 @@
 #if FNET_CFG_DEBUG_LLMNR    
     #define FNET_DEBUG_LLMNR   FNET_DEBUG
 #else
-    #define FNET_DEBUG_LLMNR(...)
+    #define FNET_DEBUG_LLMNR(...)   do{}while(0)
 #endif
 
 
@@ -192,7 +192,7 @@ FNET_COMP_PACKED_END
 
 
 
-static void fnet_llmnr_state_machine(void *);
+static void fnet_llmnr_state_machine( void *fnet_llmnr_if_p );
 static int fnet_llmnr_hostname_cmp(const unsigned char *req_hostname, const unsigned char *hostname);
 
 /************************************************************************
@@ -332,7 +332,7 @@ fnet_llmnr_desc_t fnet_llmnr_init( struct fnet_llmnr_params *params )
 
     /* Join Multicast Group.*/
     #if FNET_CFG_IP4
-        if(local_addr.sa_family & AF_INET)
+        if((local_addr.sa_family & AF_INET) != 0)
         {
             struct ip_mreq mreq; /* Multicast group information.*/
             
@@ -354,7 +354,7 @@ fnet_llmnr_desc_t fnet_llmnr_init( struct fnet_llmnr_params *params )
     	}
     #endif
     #if FNET_CFG_IP6
-        if(local_addr.sa_family & AF_INET6)
+        if((local_addr.sa_family & AF_INET6) != 0)
         {
             struct ipv6_mreq mreq6; /* Multicast group information.*/
             
@@ -418,7 +418,7 @@ static void fnet_llmnr_state_machine( void *fnet_llmnr_if_p )
 
             if(received >= sizeof(fnet_llmnr_header_t) )
             {
-                llmnr_header = (fnet_llmnr_header_t *)llmnr_if->message;
+                llmnr_header = (fnet_llmnr_header_t *)(&llmnr_if->message[0]);
                
                 if( ((llmnr_header->flags & FNET_HTONS(FNET_LLMNR_HEADER_FLAGS_QR)) == 0) /* Request.*/
                     /* LLMNR senders and responders MUST
@@ -437,9 +437,9 @@ static void fnet_llmnr_state_machine( void *fnet_llmnr_if_p )
                     && (llmnr_header->nscount == 0)
                 )
                 {
-                    const char          *req_hostname = &llmnr_if->message[sizeof(fnet_llmnr_header_t)];
-                    fnet_dns_q_tail_t   *q_tail;
-                    unsigned long       req_hostname_len = fnet_strlen(req_hostname);
+                    char                  *req_hostname = &llmnr_if->message[sizeof(fnet_llmnr_header_t)];
+                    fnet_dns_q_tail_t     *q_tail;
+                    unsigned long               req_hostname_len = fnet_strlen(req_hostname);
 
                     /* Check size */
                     if(received >= (sizeof(fnet_llmnr_header_t) + sizeof(fnet_dns_q_tail_t) + req_hostname_len))
@@ -455,8 +455,8 @@ static void fnet_llmnr_state_machine( void *fnet_llmnr_if_p )
                             /* Check Question Class. */
                             if (q_tail->qclass == FNET_HTONS(FNET_DNS_HEADER_CLASS_IN) ) 
                             {
-                                fnet_dns_rr_header_t    *rr_header = (fnet_dns_rr_header_t*)(q_tail+1);
-                                int send_size = (char*)rr_header - (char *)llmnr_header;
+                                fnet_dns_rr_header_t      *rr_header = (fnet_dns_rr_header_t*)(q_tail+1);
+                                int                             send_size = (char*)rr_header - (char *)llmnr_header;
 
                                 /* Prepare query response.*/
                             #if FNET_CFG_IP4

@@ -123,7 +123,7 @@ extern struct fnet_prot_if fnet_tcp_prot_if;
 /************************************************************************
 *    Maximal value of the sequence number
 *************************************************************************/
-#define FNET_TCP_MAX_SEQ            (0xffffffff)
+#define FNET_TCP_MAX_SEQ            (0xffffffffu)
 
 /************************************************************************
 *    Maximal urgent pointer 

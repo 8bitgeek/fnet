@@ -48,7 +48,7 @@
 #if FAPP_CFG_TELNET_CMD  
 
 
-void fapp_telnet_cmd( fnet_shell_desc_t desc, int argc, char ** );
+void fapp_telnet_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 void fapp_telnet_info(fnet_shell_desc_t desc);
 void fapp_telnet_release(void);
 

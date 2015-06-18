@@ -282,44 +282,29 @@ static void fapp_tftp_tx_image_begin_end(unsigned char * FNET_COMP_PACKED_VAR *d
 *
 * DESCRIPTION: 
 ************************************************************************/
-int fapp_tftp_rx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
+int fapp_tftp_rx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
 {
     struct fapp_tftp_rx_handler_bin_context * bin = &tftp_handler->rx_bin;
     int result = FNET_OK;
     
-    while(n && (result == FNET_OK))
+    while(data_size && (result == FNET_OK))
     {
         switch(bin->state)
         {
-            default:
-            case FAPP_TFTP_HANDLER_BIN_STATE_INIT:
-                bin->state = FAPP_TFTP_HANDLER_BIN_STATE_GETHEADER;
-                bin->header_index = 0;
-            case FAPP_TFTP_HANDLER_BIN_STATE_GETHEADER: /* Get header. */
-                if(bin->header_index<FAPP_TFTP_BIN_HEADER_SIZE)
-                {
-                    bin->header_bytes[bin->header_index++] = *data++;
-                    n--;
-                }
-                else
-                {
-                    bin->state = FAPP_TFTP_HANDLER_BIN_STATE_GETDATA;   
-                }    
-                break;
             case FAPP_TFTP_HANDLER_BIN_STATE_GETDATA: /* Get data. */
                 {
                     unsigned long copy_size;
                    
                     copy_size = bin->header.size; 
-                    if(copy_size>n)
-                       copy_size = n;     
+                    if(copy_size>data_size)
+                       copy_size = data_size;     
                     
                     /* Copy to the destination. */
                     if( (result = fapp_mem_memcpy (desc, (void *) bin->header.address, data, copy_size )) == FNET_OK )
                     {
                         bin->header.address+=copy_size;
                         bin->header.size-=copy_size;
-                        n-=copy_size;
+                        data_size-=copy_size;
                         data+=copy_size;
                         
                         if(bin->header.size == 0)
@@ -329,6 +314,22 @@ int fapp_tftp_rx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, fnet_sh
                     }
                 }
                 break;    
+            case FAPP_TFTP_HANDLER_BIN_STATE_INIT:
+                bin->state = FAPP_TFTP_HANDLER_BIN_STATE_GETHEADER;
+                bin->header_index = 0;
+            case FAPP_TFTP_HANDLER_BIN_STATE_GETHEADER: /* Get header. */
+                if(bin->header_index<FAPP_TFTP_BIN_HEADER_SIZE)
+                {
+                    bin->header_bytes[bin->header_index++] = *data++;
+                    data_size--;
+                }
+                else
+                {
+                    bin->state = FAPP_TFTP_HANDLER_BIN_STATE_GETDATA;   
+                }    
+                break;
+            default:
+                break;
          }
     } 
     
@@ -425,7 +426,7 @@ int fapp_tftp_tx_handler_bin (fapp_tftp_handler_control_t *tftp_handler, fnet_sh
 * DESCRIPTION: 
 ************************************************************************/
 #if FAPP_CFG_TFTP_RX_RAW
-int fapp_tftp_rx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
+int fapp_tftp_rx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
 {
     struct fapp_tftp_rx_handler_raw_context *raw = &tftp_handler->rx_raw;
     int result;
@@ -434,9 +435,9 @@ int fapp_tftp_rx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, fnet_sh
         raw->dest = fapp_params_tftp_config.file_raw_address;    
     
     /* Copy to the destination. */
-    result = fapp_mem_memcpy (desc, (void *)raw->dest, data, n );
+    result = fapp_mem_memcpy (desc, (void *)raw->dest, data, data_size );
 
-    raw->dest+=n;
+    raw->dest+=data_size;
     
     return result;    
 }
@@ -523,7 +524,7 @@ int fapp_tftp_tx_handler_raw (fapp_tftp_handler_control_t *tftp_handler, fnet_sh
 *
 * DESCRIPTION: 
 ************************************************************************/
-int fapp_tftp_rx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long n)
+int fapp_tftp_rx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, unsigned char* data, unsigned long data_size)
 {
     struct fapp_tftp_rx_handler_srec_context    *srec = &tftp_handler->rx_srec;
     int                                         result = FNET_OK;
@@ -535,11 +536,10 @@ int fapp_tftp_rx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_s
     
     tmp[1]='\0';
     
-    while(n && (result == FNET_OK))
+    while(data_size && (result == FNET_OK))
     {
         switch(srec->state)
         {
-            default:
             case FAPP_TFTP_RX_HANDLER_SREC_STATE_INIT:
                 srec->state = FAPP_TFTP_RX_HANDLER_SREC_STATE_GETSTART;
                 break;
@@ -548,18 +548,18 @@ int fapp_tftp_rx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_s
                 {
                     srec->state = FAPP_TFTP_RX_HANDLER_SREC_STATE_GETTYPE;
                 }
-                n--;
+                data_size--;
                 break;
             case FAPP_TFTP_RX_HANDLER_SREC_STATE_GETTYPE:
                 srec->type = *data++;
-                n--;
+                data_size--;
                 srec->record_hex_index=0; /* Reset hex index. */
                 srec->record.count = 0xFF; /* Trick. */
                 srec->state = FAPP_TFTP_RX_HANDLER_SREC_STATE_GETDATA;
                 break;
             case FAPP_TFTP_RX_HANDLER_SREC_STATE_GETDATA:
                 tmp[0] = (char)*data++;
-                n--;
+                data_size--;
                 tmp_data = (char)fnet_strtoul(tmp,&p,16); /* Char to integer.*/
                 if ((tmp_data == 0) && (p == tmp))
                 {
@@ -570,7 +570,7 @@ int fapp_tftp_rx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_s
                 srec->record_bytes[srec->record_hex_index>>1] = (unsigned char)((srec->record_bytes[srec->record_hex_index>>1] & (0xF<<(4*(srec->record_hex_index%2))))
                                                           + (tmp_data<<(4*((srec->record_hex_index+1)%2))));
                  
-                if(srec->record_hex_index > ((srec->record.count<<1)))
+                if(srec->record_hex_index > (((int)srec->record.count<<1)))
                 {
                     char type;
                     char *addr = 0;
@@ -627,6 +627,8 @@ int fapp_tftp_rx_handler_srec (fapp_tftp_handler_control_t *tftp_handler, fnet_s
                 }
                 
                 srec->record_hex_index++;
+                break;
+            default: /*Wrong state*/
                 break;
         }
     }
@@ -704,7 +706,9 @@ static /*inline*/ void fapp_tftp_tx_srec_gen (struct fapp_tftp_tx_handler_srec_c
         /* EOF*/    
         case FAPP_TFTP_TX_HANDLER_SREC_STATE_END:
             tx_srec->srec_line.S = 0;
-            break;   
+            break;
+        default: 
+            break;
     
     }
     
@@ -1058,7 +1062,7 @@ static int fapp_tftps_data_handler(fnet_tftp_request_t request,
 *
 * DESCRIPTION: Releases TFTP server.
 *************************************************************************/
-void fapp_tftps_release()
+void fapp_tftps_release(void)
 {
     fnet_tftp_srv_release(fapp_tftp_srv_desc);
     fapp_tftp_srv_desc = 0;    

@@ -409,22 +409,22 @@ extern fnet_ip6_multicast_list_entry_t fnet_ip6_multicast_list[FNET_CFG_MULTICAS
 int fnet_ip6_init(void);
 void fnet_ip6_release(void);
 void fnet_ip6_input(fnet_netif_t *netif, fnet_netbuf_t *nb);
-void fnet_ip6_get_solicited_multicast_addr(fnet_ip6_addr_t *ip_addr, fnet_ip6_addr_t *solicited_multicast_addr);
-int fnet_ip6_addr_scope(fnet_ip6_addr_t *ip_addr);
-int fnet_ip6_addr_pefix_cmp(fnet_ip6_addr_t *addr_1, fnet_ip6_addr_t *addr_2, unsigned long prefix_length);
-int fnet_ip6_common_prefix_length(fnet_ip6_addr_t *ip_addr_1, fnet_ip6_addr_t *ip_addr_2);
-unsigned long fnet_ip6_policy_label(fnet_ip6_addr_t *addr);
-const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.*/, fnet_ip6_addr_t *dest_addr); 
-int fnet_ip6_output(fnet_netif_t *netif /*optional*/, fnet_ip6_addr_t *src_ip /*optional*/, fnet_ip6_addr_t *dest_ip,
+void fnet_ip6_get_solicited_multicast_addr(const fnet_ip6_addr_t *ip_addr, fnet_ip6_addr_t *solicited_multicast_addr);
+int fnet_ip6_addr_scope(const fnet_ip6_addr_t *ip_addr);
+int fnet_ip6_addr_pefix_cmp(const fnet_ip6_addr_t *addr_1, const fnet_ip6_addr_t *addr_2, unsigned long prefix_length);
+int fnet_ip6_common_prefix_length(const fnet_ip6_addr_t *ip_addr_1, const fnet_ip6_addr_t *ip_addr_2);
+unsigned long fnet_ip6_policy_label(const fnet_ip6_addr_t *addr);
+const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.*/, const fnet_ip6_addr_t *dest_addr); 
+int fnet_ip6_output(fnet_netif_t *netif /*optional*/, const fnet_ip6_addr_t *src_ip /*optional*/, const fnet_ip6_addr_t *dest_ip,
                     unsigned char protocol, unsigned char hop_limit /*optional*/, fnet_netbuf_t *nb, FNET_COMP_PACKED_VAR unsigned short *checksum); 
 void fnet_ip6_drain(void);
 unsigned long fnet_ip6_mtu(fnet_netif_t *netif);      
-fnet_netif_t *fnet_ip6_route(fnet_ip6_addr_t *src_ip /*optional*/, fnet_ip6_addr_t *dest_ip);    
+fnet_netif_t *fnet_ip6_route(const fnet_ip6_addr_t *src_ip /*optional*/, const fnet_ip6_addr_t *dest_ip);    
 int fnet_ip6_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_size);
 
 struct _socket; /* Forward declaration.*/
-int fnet_ip6_getsockopt(struct _socket *sock, int optname, char *optval, unsigned int *optlen); 
-int fnet_ip6_setsockopt(struct _socket *sock, int optname, char *optval, unsigned int optlen );      
+int fnet_ip6_getsockopt(struct _socket *sock, int optname, void *optval, unsigned int *optlen); 
+int fnet_ip6_setsockopt(struct _socket *sock, int optname, const void *optval, unsigned int optlen );      
 
 fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_join(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr);
 void fnet_ip6_multicast_leave_entry(fnet_ip6_multicast_list_entry_t *multicastentry); 

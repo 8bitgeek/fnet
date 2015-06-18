@@ -54,7 +54,7 @@ static
     __attribute__((section(".FNET_RAM")))
 #endif
     void fnet_ftfl_command_lunch_inram(void);
-static void fnet_ftfl_command(unsigned char command, unsigned long *address, unsigned char *data);
+static void fnet_ftfl_command(unsigned char command, unsigned long *address, const unsigned char *data);
 
 /************************************************************************
 * NAME: fnet_ftfl_command_lunch_inram
@@ -80,8 +80,8 @@ static
     void fnet_ftfl_command_lunch_inram(void)
 {
     FNET_MK_FTFL_FSTAT = FNET_MK_FTFL_FSTAT_CCIF_MASK;
-    while (!(FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK)) 
-    {};
+    while ((FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK) == 0) 
+    {}
 }
 
 /************************************************************************
@@ -89,7 +89,7 @@ static
 *
 * DESCRIPTION: FTFL command 
 ************************************************************************/
-static void fnet_ftfl_command( unsigned char command, unsigned long *address, unsigned char *data )
+static void fnet_ftfl_command( unsigned char command, unsigned long *address, const unsigned char *data )
 {
     fnet_cpu_irq_desc_t irq_desc;
     
@@ -154,8 +154,8 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, un
     * command write sequence cannot be started, and all writes to the FCCOB registers are
     * ignored.
     */
-    while (!(FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK))     
-    {};
+    while ((FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK) == 0)     
+    {}
     
     /* Ensure that the ACCERR and FPVIOL bits in the FSTAT register are cleared prior to
     *  starting the command write sequence.
@@ -212,7 +212,7 @@ void fnet_cpu_flash_erase( void *flash_page_addr)
 *
 * DESCRIPTION:
 ************************************************************************/
-void fnet_cpu_flash_write( unsigned char *dest, unsigned char *data)
+void fnet_cpu_flash_write( unsigned char *dest, const unsigned char *data)
 {
 #if FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 4 /* K60 */
     fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_LONGWORD, (unsigned long *)dest, data);

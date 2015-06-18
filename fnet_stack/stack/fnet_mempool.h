@@ -76,11 +76,11 @@ fnet_mempool_align_t;
 
 
 fnet_mempool_desc_t fnet_mempool_init( void *pool_ptr, unsigned long pool_size, fnet_mempool_align_t alignment );
-void fnet_mempool_release( fnet_mempool_desc_t mempool );
-void fnet_mempool_free( fnet_mempool_desc_t mempool, void *ap );
-void *fnet_mempool_malloc(fnet_mempool_desc_t mempool, unsigned nbytes );
-unsigned long fnet_mempool_free_mem_status( fnet_mempool_desc_t mempool);
-unsigned long fnet_mempool_malloc_max( fnet_mempool_desc_t mempool );
+void fnet_mempool_release( fnet_mempool_desc_t mpool );
+void fnet_mempool_free( fnet_mempool_desc_t mpool, void *ap );
+void *fnet_mempool_malloc(fnet_mempool_desc_t mpool, unsigned nbytes );
+unsigned long fnet_mempool_free_mem_status( fnet_mempool_desc_t mpool);
+unsigned long fnet_mempool_malloc_max( fnet_mempool_desc_t mpool );
 
 #if 0 /* For Debug needs.*/
 int fnet_mempool_check( fnet_mempool_desc_t mpool );

@@ -118,14 +118,19 @@ int fnet_http_auth_validate_credentials(struct fnet_http_if * http, char *creden
     const struct fnet_http_auth_scheme  *scheme = session->response.auth_scheme;
     int result = FNET_ERR;
 
-    while (*credentials == ' ') 
+    while (*credentials == ' ')
+    {
         credentials++; /* Strip leading spaces */
+    }
         
     if ( !fnet_strcmp_splitter(credentials, scheme->name, ' ' ) )
     {
         char * auth_param = &credentials[fnet_strlen(scheme->name)];
             
-        while (*auth_param == ' ') auth_param++; /* Strip leading spaces */
+        while (*auth_param == ' ')  
+        {
+            auth_param++; /* Strip leading spaces */
+        }
                 
         /* Call scheme handler.*/
         result = scheme->validate(auth_entry, auth_param);            

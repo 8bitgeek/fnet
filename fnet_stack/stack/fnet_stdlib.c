@@ -67,13 +67,13 @@ void fnet_memcpy (FNET_COMP_PACKED_VAR void *dest, FNET_COMP_PACKED_VAR const vo
 #else /* Fastest & Biggest. */
 void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const void *from_ptr, unsigned number_of_bytes)
 {
-    unsigned char                           *from8_ptr = (unsigned char *) from_ptr;
-    unsigned char                           *to8_ptr = (unsigned char *) to_ptr;
-    FNET_COMP_PACKED_VAR unsigned short     *from16_ptr = (unsigned short *) from_ptr;
-    FNET_COMP_PACKED_VAR unsigned short     *to16_ptr = (unsigned short *) to_ptr;
-    FNET_COMP_PACKED_VAR unsigned long      *from32_ptr = (unsigned long *) from_ptr;
-    FNET_COMP_PACKED_VAR unsigned long      *to32_ptr = (unsigned long *) to_ptr;
-    unsigned long loops;
+    const unsigned char                         *from8_ptr = (const unsigned char *) from_ptr;
+    unsigned char                               *to8_ptr = (unsigned char *) to_ptr;
+    FNET_COMP_PACKED_VAR const unsigned short   *from16_ptr = (const unsigned short *) from_ptr;
+    FNET_COMP_PACKED_VAR unsigned short         *to16_ptr = (unsigned short *) to_ptr;
+    FNET_COMP_PACKED_VAR const unsigned long    *from32_ptr = (const unsigned long *) from_ptr;
+    FNET_COMP_PACKED_VAR unsigned long          *to32_ptr = (unsigned long *) to_ptr;
+    unsigned long                               loops;
 
     /*
     * The copying is optimized to avoid alignment problems, and attempts
@@ -82,9 +82,9 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
     if (number_of_bytes > 3)
     {
         /* Try to align source on word */
-        if ((unsigned long)from_ptr & 1) 
+        if (((unsigned long)from_ptr & 1) != 0) 
         {
-            from8_ptr = (unsigned char *) from_ptr;
+            from8_ptr = (const unsigned char *) from_ptr;
             to8_ptr = (unsigned char *) to_ptr;
 
             *to8_ptr++ = *from8_ptr++;
@@ -95,9 +95,9 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
         }
 
         /* Try to align source on longword */
-        if ((unsigned long)from_ptr & 2)
+        if ((((unsigned long)from_ptr) & 2) != 0)
         {
-            from16_ptr = (unsigned short *) from_ptr;
+            from16_ptr = (const unsigned short *) from_ptr;
             to16_ptr = (unsigned short *) to_ptr;
 
             *to16_ptr++ = *from16_ptr++;
@@ -107,7 +107,7 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
             number_of_bytes -= 2;
         }
 
-        from32_ptr = (unsigned long *) from_ptr;
+        from32_ptr = (const unsigned long *) from_ptr;
         to32_ptr = (unsigned long *) to_ptr;
 
         /* 
@@ -153,6 +153,8 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
             case 3:  *to32_ptr++ = *from32_ptr++;
             case 2:  *to32_ptr++ = *from32_ptr++;
             case 1:  *to32_ptr++ = *from32_ptr++;
+            default:
+                break;
         } 
 
         from_ptr = from32_ptr;
@@ -160,9 +162,9 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
     } 
 
     /* Copy all remaining bytes */
-    if (number_of_bytes & 2)
+    if ((number_of_bytes & 2) != 0)
     {
-        from16_ptr = (unsigned short *) from_ptr;
+        from16_ptr = (const unsigned short *) from_ptr;
         to16_ptr = (unsigned short *) to_ptr;
 
         *to16_ptr++ = *from16_ptr++;
@@ -171,9 +173,9 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
         to_ptr = to16_ptr;
     } 
 
-    if (number_of_bytes & 1) 
+    if ((number_of_bytes & 1) != 0) 
     {
-        * (unsigned char *) to_ptr = * (unsigned char *) from_ptr;
+        * (unsigned char *) to_ptr = * (const unsigned char *) from_ptr;
     }
 }
 #endif
@@ -186,14 +188,15 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
 * DESCRIPTION: 
 *
 *************************************************************************/
-void fnet_memset( void *s, int c, unsigned n )
+void fnet_memset( void *dest, int value, unsigned int n )
 {
     /* Not optimized */
-    unsigned char *sp = (unsigned char *)s;
+    unsigned char *sp = (unsigned char *)dest;
     
-    for(n++;--n;)
+    while(n)
     {
-        *sp++ = (unsigned char)c;
+        *sp++ = (unsigned char)value;
+        n--;
     }
 }
 
@@ -203,14 +206,15 @@ void fnet_memset( void *s, int c, unsigned n )
 * DESCRIPTION: Same as "fnet_memset( void *s, 0, unsigned n )"
 *
 *************************************************************************/
-void fnet_memset_zero( void *s, unsigned int n )
+void fnet_memset_zero( void *dest, unsigned int n )
 {
     /* Not optimized */
-    unsigned char *sp = (unsigned char *)s;
+    unsigned char *sp = (unsigned char *)dest;
     
-    for(n++;--n;)
+    while(n)
     {
         *sp++ = (unsigned char)0;
+        n--;
     }
 }
 
@@ -223,12 +227,15 @@ void fnet_memset_zero( void *s, unsigned int n )
 *************************************************************************/
 int fnet_memcmp(const void *src1, const void *src2, unsigned int count )
 {
-    const unsigned char *p1;
-    const unsigned char *p2;
+    const unsigned char *p1 = src1;
+    const unsigned char *p2 = src2;
 
-    for (p1 = (const unsigned char *)src1, p2 = (const unsigned char *)src2, count++; --count; )
-      if(*p1++ != *p2++)
-          return 1;
+    while(count)
+    {
+        if(*p1++ != *p2++)
+            return 1;
+        count--;
+    }
 
     return (0);
 }
@@ -239,11 +246,11 @@ int fnet_memcmp(const void *src1, const void *src2, unsigned int count )
 * DESCRIPTION: 
 *
 *************************************************************************/
-int fnet_strcmp( const char *s1, const char *s2 )
+int fnet_strcmp( const char *str1, const char *str2 )
 {
     /* No checks for 0 */
-    char *s1p = (char *)s1;
-    char *s2p = (char *)s2;
+    const char *s1p = str1;
+    const char *s2p = str2;
 
     while(*s2p != '\0')
     {
@@ -265,14 +272,16 @@ int fnet_strcmp( const char *s1, const char *s2 )
 *************************************************************************/
 unsigned long fnet_strlen (const char *str)
 {
-	char *s = (char *)str;
-	unsigned long len = 0U;
+	const char      *s = str;
+	unsigned long   len = 0U;
 
 	if (s == 0)
 		return 0U;
 
 	while (*s++ != '\0')
+    {
 		++len;
+    }
 
 	return len;
 }
@@ -285,8 +294,8 @@ unsigned long fnet_strlen (const char *str)
 *************************************************************************/
 void fnet_strcat (char *dest, const char *src)
 {
-	char *dp;
-	char *sp = (char *)src;
+	char        *dp;
+	const char  *sp = src;
 
 	if ((dest != 0) && (src != 0))
 	{
@@ -308,16 +317,17 @@ void fnet_strcat (char *dest, const char *src)
 *************************************************************************/
 void fnet_strncat (char *dest, const char *src, unsigned int n)
 {
-	char *dp;
-	char *sp = (char *)src;
+	char        *dp;
+	const char  *sp = src;
 
 	if ((dest != 0) && (src != 0) && (n > 0U))
 	{
 		dp = &dest[fnet_strlen(dest)];
 
-		for(n++;(*sp != '\0') && (--n > 0U);)
+		while((*sp != '\0') && (n > 0u))
 		{
 			*dp++ = *sp++;
+            n--;
 		}
 		*dp = '\0';
 	}
@@ -331,8 +341,8 @@ void fnet_strncat (char *dest, const char *src, unsigned int n)
 *************************************************************************/
 void fnet_strcpy (char *dest, const char *src)
 {
-	char *dp = (char *)dest;
-	char *sp = (char *)src;
+	char        *dp = dest;
+	const char  *sp = src;
 
 	if ((dest != 0) && (src != 0))
 	{
@@ -352,8 +362,8 @@ void fnet_strcpy (char *dest, const char *src)
 *************************************************************************/
 void fnet_strncpy( char *dest, const char *src, unsigned long n )
 {
-    char *dp = (char *)dest;
-    char *sp = (char *)src;
+    char        *dp = dest;
+    const char  *sp = src;
 
     if((dest != 0) && (src != 0) && (n > 0))
     {
@@ -373,12 +383,12 @@ void fnet_strncpy( char *dest, const char *src, unsigned long n )
 * occurrence of chr in str, or NULL if no match is found.
 *
 *************************************************************************/
-char *fnet_strrchr( const char *str, int chr )
+char *fnet_strrchr(const char *str, int chr )
 {
-    const char *p = str;
-    const char *q = 0;
-    char c = (char)chr;
-    char ch = *p++;
+    char        *p = (char*)str;
+    char        *q = 0;
+    char        c = (char)chr;
+    char        ch = *p++;
 
     while(ch)
     {
@@ -389,11 +399,10 @@ char *fnet_strrchr( const char *str, int chr )
     }
 
     if(q)
-        return ((char *)q);
+        return (q);
 
-    return (c ? FNET_NULL : (char *)(p - 1));
+    return (c ? FNET_NULL : (p - 1));
 }
-
 /************************************************************************
 * NAME: fnet_strchr
 *
@@ -410,30 +419,30 @@ char *fnet_strchr( const char *str, int chr )
     while(ch)
     {
         if(ch == c)
-            return ((char *)(p - 1));
+            return (char*)(p - 1);
 
         ch = *p++;
     }
 
-    return (c ? FNET_NULL : (char *)(p - 1));
+    return (char*)(c ? FNET_NULL : (p - 1));
 }
 
 /************************************************************************
 * NAME: fnet_strstr
 *
 * DESCRIPTION: The function fnet_strstr() returns a pointer to the first 
-* occurrence of pat in str, or 0 if no match is found. 
+* occurrence of substr in str, or 0 if no match is found. 
 * If the length of pat is zero, then fnet_strstr() will 
 * simply return str.
 *
 *************************************************************************/
-char *fnet_strstr( const char *str, const char *pat )
+char *fnet_strstr( const char *str, const char *substr )
 {
-    unsigned char *s1 = (unsigned char *)str;
-    unsigned char *p1 = (unsigned char *)pat;
+    const char *s1 = str;
+    const char *p1 = substr;
     unsigned char firstc, c1, c2;
 
-    if((pat == 0) || (!((firstc = *p1++)!= 0)) )
+    if((substr == 0) || (!((firstc = *p1++)!= 0)) )
         return ((char *)str);
 
     c1 = *s1++;
@@ -442,14 +451,14 @@ char *fnet_strstr( const char *str, const char *pat )
     {
         if(c1 == firstc)
         {
-            const unsigned char *s2 = s1;
-            const unsigned char *p2 = p1;
+            const char *s2 = s1;
+            const char *p2 = p1;
 
             while((c1 = *s2++) == (c2 = *p2++) && c1)
-            { };
+            {}
 
             if(!c2)
-                return ((char *)s1 - 1);
+                return ((char *)(s1 - 1));
         }
 
         c1 = *s1++;
@@ -467,18 +476,25 @@ char *fnet_strstr( const char *str, const char *pat )
 *************************************************************************/
 int fnet_strncmp( const char *str1, const char *str2, unsigned int n )
 {
-    const unsigned char *p1 = (unsigned char *)str1;
-    const unsigned char *p2 = (unsigned char *)str2;
+    const char *p1 = str1;
+    const char *p2 = str2;
     unsigned char c1, c2;
 
     n++;
 
     while(--n)
-      if((c1 = *p1++) != (c2 = *p2++))
-          return (c1 - c2);
-
-      else if(!c1)
-          break;
+    {
+        if((c1 = *p1++) != (c2 = *p2++))
+        {
+            return (c1 - c2);
+        }
+        else if(!c1)
+        {
+            break;
+        }
+        else
+        {}
+    }
 
     return (0);
 }
@@ -489,28 +505,30 @@ int fnet_strncmp( const char *str1, const char *str2, unsigned int n )
 * DESCRIPTION: 
 *
 *************************************************************************/
-unsigned long fnet_strtoul (char *str, char **ptr, int base)
+unsigned long fnet_strtoul (const char *str, char **ptr, int base)
 {
-	unsigned long rvalue;
-	int c, err, neg;
-	char *endp;
-	char *startp;
+	unsigned long   rvalue;
+	int             c, err, neg;
+	char            *endp;
+	char            *startp;
 
-	rvalue = 0;  err = 0;  neg = 0;
+	rvalue = 0;  
+    err = 0;
+    neg = 0;
 
 	/* Check for invalid arguments */
 	if ((str == 0) || (base < 0) || (base == 1) || (base > 36))
 	{
 		if (ptr != 0)
 		{
-			*ptr = str;
+			*ptr = (char *)str;
 		}
 		return 0;
 	}
 
 	/* Skip leading white spaces */
-	for (startp = str; ((*startp == ' ') || (*startp == '\t')) ; ++startp)
-		;
+    for (startp = (char*)str; ((*startp == ' ') || (*startp == '\t')) ; ++startp)
+    {}
 
 	/* Check for notations */
 	switch (startp[0])
@@ -591,7 +609,7 @@ unsigned long fnet_strtoul (char *str, char **ptr, int base)
 	if (err)
 	{
 		if (ptr != 0)
-			*ptr = str;
+			*ptr = (char*)str;
 		
 		return 0;
 	}
@@ -625,14 +643,14 @@ char fnet_tolower( const char to_lower )
 * respectively, to be less than, to match, or be greater than s2.
 *
 *************************************************************************/
-int fnet_strcasecmp( const char *s1, const char *s2 )
+int fnet_strcasecmp( const char *str1, const char *str2 )
 {
     char c1, c2;
 
     while(1)
     {
-        c1 = fnet_tolower(*s1++);
-        c2 = fnet_tolower(*s2++);
+        c1 = fnet_tolower(*str1++);
+        c2 = fnet_tolower(*str2++);
 
         if(c1 < c2)
             return -1;
@@ -656,11 +674,17 @@ int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter)
     int result;
     
     /* No checks for 0 */
-    char *s1p = (char *)in_str;
-    char *s2p = (char *)name;
+    const char *s1p = in_str;
+    const char *s2p = name;
 
-    while (*s1p == ' ') s1p++;	    /* Strip leading spaces */
-	while (*s1p == splitter) s1p++;	/* Strip heading slash */
+    while (*s1p == ' ') 
+    {
+        s1p++;	    /* Strip leading spaces */
+    }
+	while (*s1p == splitter)
+    {
+        s1p++;	/* Strip heading slash */
+    }
 
     while(*s2p != '\0')
     {
@@ -694,9 +718,9 @@ int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter)
 *************************************************************************/
 char * fnet_strtok_r(char *str, const char *delimiter, char **last)
 {
-	char *spanp;
-	int c, sc;
-	char *tok;
+	const char *spanp;
+	int         c, sc;
+	char        *tok;
 
 	if (str == FNET_NULL && (str = *last) == FNET_NULL)
 		return (FNET_NULL);
@@ -706,7 +730,8 @@ char * fnet_strtok_r(char *str, const char *delimiter, char **last)
 	 */
 cont:
 	c = *str++;
-	for (spanp = (char *)delimiter; (sc = *spanp++) != 0;)\
+    spanp = delimiter;
+	while( (sc = *spanp++) != 0)
 	{
 		if (c == sc)
 			goto cont;
@@ -725,7 +750,7 @@ cont:
 	for (;;) 
 	{
 		c = *str++;
-		spanp = (char *)delimiter;
+		spanp = delimiter;
 		do 
 		{
 			if ((sc = *spanp++) == c)

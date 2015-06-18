@@ -1,3 +1,5 @@
+#ifndef _MK64F12_H_
+#define _MK64F12_H_
 /*
 ** ###################################################################
 **     Processors:          MK64FN1M0VDC12
@@ -14430,3 +14432,4 @@ typedef struct {
 #endif  /* #if !defined(MK64F12_H_) */
 
 /* MK64F12.h, eof. */
+#endif /* _MK64F12_H_ */

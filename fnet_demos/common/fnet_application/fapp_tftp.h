@@ -231,7 +231,7 @@ struct image_type *fapp_tftp_image_type_by_name (char *name);
 #endif
 
 #if FAPP_CFG_TFTP_CMD || FAPP_CFG_TFTPUP_CMD
-void fapp_tftp_cmd( fnet_shell_desc_t desc, int argc, char ** );
+void fapp_tftp_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 #endif 
 
 #if FAPP_CFG_TFTPS_CMD

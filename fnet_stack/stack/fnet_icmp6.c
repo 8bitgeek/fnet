@@ -55,7 +55,6 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-void fnet_icmp6_output( fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, unsigned char hop_limit, fnet_netbuf_t *nb );
 static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
 
 /************************************************************************
@@ -284,7 +283,7 @@ DISCARD:
 *
 * DESCRIPTION: ICMPv6 output function.
 *************************************************************************/
-void fnet_icmp6_output( fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, unsigned char hop_limit, fnet_netbuf_t *nb )
+void fnet_icmp6_output( fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip, const fnet_ip6_addr_t *dest_ip, unsigned char hop_limit, fnet_netbuf_t *nb )
 {
     fnet_icmp6_header_t                     *hdr = nb->data_ptr;
     FNET_COMP_PACKED_VAR unsigned short     *checksum_p;
@@ -308,7 +307,7 @@ void fnet_icmp6_error( fnet_netif_t *netif, unsigned char type, unsigned char co
     fnet_ip6_header_t       *ip6_header;
     fnet_icmp6_err_header_t *icmp6_err_header;
     fnet_ip6_addr_t         *src_ip; 
-    fnet_ip6_addr_t         *dest_ip; 
+    const fnet_ip6_addr_t   *dest_ip; 
     fnet_netbuf_t           *nb_header;   
     
     if(origin_nb)
@@ -364,9 +363,10 @@ void fnet_icmp6_error( fnet_netif_t *netif, unsigned char type, unsigned char co
          else
          {
             if(FNET_IP6_ADDR_IS_MULTICAST(dest_ip))
+            {
                 /* We may not use multicast address as source. Get real source address. */
-                dest_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(netif, src_ip /*dest*/); 
-         
+                dest_ip = fnet_ip6_select_src_addr(netif, src_ip /*dest*/); 
+            }
          }    
              
         /*

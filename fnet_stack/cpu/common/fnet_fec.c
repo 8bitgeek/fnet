@@ -174,8 +174,8 @@ int fnet_fec_init(fnet_netif_t *netif)
         
     /* Reset FEC.*/
     ethif->reg->ECR = FNET_FEC_ECR_RESET;            /* Reset the Ethernet controller.*/
-    while (ethif->reg->ECR & FNET_FEC_ECR_RESET)
-    {};  /* Wait for the reset sequence to complete.*/
+    while ((ethif->reg->ECR & FNET_FEC_ECR_RESET) != 0)
+    {}  /* Wait for the reset sequence to complete.*/
         
     /* Disable FEC interrupts.*/
     ethif->reg->EIMR = 0U;
@@ -374,13 +374,13 @@ int fnet_fec_init(fnet_netif_t *netif)
             if (fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_SR, &status) == FNET_ERR) 
                 status = 0U;
                     
-            if (status & FNET_FEC_MII_REG_SR_AN_ABILITY)
+            if ((status & FNET_FEC_MII_REG_SR_AN_ABILITY) != 0)
             { /* Has auto-negotiate ability. */
                 last_time =  fnet_timer_ticks();
                         
                 do 
                 {
-                    if ((status & FNET_FEC_MII_REG_SR_AN_COMPLETE))
+                    if ((status & FNET_FEC_MII_REG_SR_AN_COMPLETE)!=0)
                     {
                         /* Autonegotiation is complete.*/    
                         break;
@@ -467,7 +467,7 @@ void fnet_fec_input(fnet_netif_t *netif)
     fnet_cpu_cache_invalidate();
 	
 	/* While buffer !(empty or rx in progress)*/
-    while(!(ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_E)) )
+    while((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_E)) == 0)
     {
 
 #if !FNET_CFG_CPU_ETH_MIB       
@@ -475,25 +475,25 @@ void fnet_fec_input(fnet_netif_t *netif)
 #endif 
 
 		/* If !(buffer is last in the frame) */
-        if (!(ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_L)))
+        if ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_L)) == 0)
         {
             /* Skip the splitted frame. */
             do /* Keep going until we find the last one. */
             {
                 fnet_fec_rx_buf_next(ethif);
             }
-            while (!(ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_L)));
+            while ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_L)) == 0);
         }
         else
         {
             /* Error handling */
-            if (ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_LG /* Frame too long.*/
+            if ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_LG /* Frame too long.*/
                                                  |FNET_FEC_RX_BD_SH /* Frame too short.*/
                                                  |FNET_FEC_RX_BD_NO /* Frame alignment.*/
                                                  |FNET_FEC_RX_BD_CR /* CRC Error.*/
                                                  |FNET_FEC_RX_BD_OV /* FIFO overrun.*/
                                                  |FNET_FEC_RX_BD_TR /* Frame is truncated.*/
-                                                 ) )
+                                                 )) != 0 )
             {
                  goto NEXT_FRAME;
             }
@@ -515,12 +515,12 @@ void fnet_fec_input(fnet_netif_t *netif)
                                         (int)(fnet_ntohs(ethif->rx_buf_desc_cur->length) - sizeof(fnet_eth_header_t)), FNET_TRUE );
             if(nb)
             {
-                if(ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_BC))    /* Broadcast */
+                if((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_BC)) != 0)    /* Broadcast */
                 {
                     nb->flags|=FNET_NETBUF_FLAG_BROADCAST;
                 }
                
-                if ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_MC))) /* Multicast */
+                if ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_MC)) != 0) /* Multicast */
                 {
                     nb->flags|=FNET_NETBUF_FLAG_MULTICAST;
                 }
@@ -532,7 +532,7 @@ void fnet_fec_input(fnet_netif_t *netif)
          }
 NEXT_FRAME: 
         fnet_fec_rx_buf_next(ethif);
-   }; /* while */
+   } /* while */
 }
 
 /************************************************************************
@@ -552,32 +552,32 @@ int fnet_fec_input_frame(fnet_netif_t *netif, char* buf, unsigned int buf_size)
     fnet_cpu_cache_invalidate();
 	
 	/* While buffer ! (empty or rx in progress)*/
-    if(!(ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_E)) )
+    if((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_E)) == 0 )
     {
 
 #if !FNET_CFG_CPU_ETH_MIB       
         ((fnet_eth_if_t *)(netif->if_ptr))->statistics.rx_packet++;
 #endif 
 		/* If !(buffer last in frame) */
-        if (!(ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_L)))
+        if ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_L)) == 0)
         {
             /* Skip the splitted frame. */
             do /* Keep going until we find the last one. */
             {
                 fnet_fec_rx_buf_next(ethif);
             }
-            while (!(ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_L)));
+            while ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_L)) == 0);
         }
         else
         {
             /* Error handling */
-            if (ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_LG /* Frame too long.*/
+            if ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_LG /* Frame too long.*/
                                                  |FNET_FEC_RX_BD_SH /* Frame too short.*/
                                                  |FNET_FEC_RX_BD_NO /* Frame alignment.*/
                                                  |FNET_FEC_RX_BD_CR /* CRC Error.*/
                                                  |FNET_FEC_RX_BD_OV /* FIFO overrun.*/
                                                  |FNET_FEC_RX_BD_TR /* Frame is truncated.*/
-                                                 ))
+                                                 )) != 0 )
             {
                  goto NEXT_FRAME;
             }
@@ -602,7 +602,7 @@ int fnet_fec_input_frame(fnet_netif_t *netif, char* buf, unsigned int buf_size)
         }
 NEXT_FRAME: 
         fnet_fec_rx_buf_next(ethif);
-   }; 
+   } 
    
    return result;
 }
@@ -619,7 +619,7 @@ static void fnet_fec_rx_buf_next( fnet_fec_if_t * ethif)
    ethif->rx_buf_desc_cur->status |= FNET_HTONS(FNET_FEC_RX_BD_E);
     
    /* Update pointer to next entry.*/
-   if (ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_W))
+   if ((ethif->rx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_W)) != 0)
       ethif->rx_buf_desc_cur = ethif->rx_buf_desc;
    else
       ethif->rx_buf_desc_cur++;
@@ -704,8 +704,8 @@ void fnet_fec_output(fnet_netif_t *netif, unsigned short type, const fnet_mac_ad
  
     if((nb!=0) && (nb->total_length<=netif->mtu)) 
     {
-        while(ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_TX_BD_R))
-        {};
+        while((ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_TX_BD_R)) != 0)
+        {}
      
         ethheader = (fnet_eth_header_t *)fnet_ntohl((unsigned long)ethif->tx_buf_desc_cur->buf_ptr);
       
@@ -745,13 +745,13 @@ void fnet_fec_output(fnet_netif_t *netif, unsigned short type, const fnet_mac_ad
 
       
         /* Update pointer to next entry.*/
-        if (ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_W))
+        if ((ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_W)) != 0)
             ethif->tx_buf_desc_cur = ethif->tx_buf_desc;
         else
             ethif->tx_buf_desc_cur++;
        
         while(ethif->reg->TDAR) /* Workaround.*/
-        {};
+        {}
 
 #ifdef FNET_FEC_TEST_RACE_CONDITION
     {
@@ -787,8 +787,8 @@ void fnet_fec_output_frame(fnet_netif_t *netif, char* frame, unsigned int frame_
  
     if((frame!=0U) && (frame_size<=netif->mtu)) 
     {
-        while(ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_TX_BD_R))
-        {};
+        while((ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_TX_BD_R)) != 0)
+        {}
       
         ethheader = (fnet_eth_header_t *)fnet_ntohl((unsigned long)ethif->tx_buf_desc_cur->buf_ptr);
      
@@ -801,13 +801,13 @@ void fnet_fec_output_frame(fnet_netif_t *netif, char* frame, unsigned int frame_
         ethif->tx_buf_desc_cur->status |= FNET_HTONS(FNET_FEC_TX_BD_R); /* Set Frame ready for transmit.*/
       
         /* Update pointer to next entry.*/
-        if (ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_W))
+        if ((ethif->tx_buf_desc_cur->status & FNET_HTONS(FNET_FEC_RX_BD_W)) != 0)
             ethif->tx_buf_desc_cur = ethif->tx_buf_desc;
         else
             ethif->tx_buf_desc_cur++;
        
         while(ethif->reg->TDAR) /* Workaround for ENET module.*/
-        {};
+        {}
 
         ethif->reg->TDAR=FNET_FEC_TDAR_X_DES_ACTIVE; /* Indicate that there has been a transmit buffer produced.*/
 
@@ -1022,7 +1022,7 @@ int fnet_fec_mii_read(fnet_fec_if_t *ethif, unsigned int reg_addr, fnet_uint16 *
     /* Poll for the MII interrupt */
     for (timeout = 0U; timeout < FNET_FEC_MII_TIMEOUT; timeout++)
     {
-        if(ethif->reg_phy->EIR & FNET_FEC_EIR_MII)
+        if((ethif->reg_phy->EIR & FNET_FEC_EIR_MII) != 0)
             break;
     }
 
@@ -1078,7 +1078,7 @@ int fnet_fec_mii_write(fnet_fec_if_t *ethif, unsigned int reg_addr, fnet_uint16 
     /* Poll for the MII interrupt */
     for (timeout = 0U; timeout < FNET_FEC_MII_TIMEOUT; timeout++)
     {
-        if(ethif->reg_phy->EIR & FNET_FEC_EIR_MII)
+        if((ethif->reg_phy->EIR & FNET_FEC_EIR_MII) != 0)
             break;
     }
 
@@ -1122,7 +1122,7 @@ int fnet_fec_is_connected(fnet_netif_t *netif)
     
     if (fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_SR, &data) == FNET_OK)
     {
-        res = (int)((data & FNET_FEC_MII_REG_SR_LINK_STATUS) ? 1 : 0);
+        res = (int)(((data & FNET_FEC_MII_REG_SR_LINK_STATUS) != 0) ? 1 : 0);
     }
     
     return res;
@@ -1136,7 +1136,7 @@ int fnet_fec_is_connected(fnet_netif_t *netif)
 #if FNET_CFG_MULTICAST
 static fnet_uint32 fnet_fec_crc_hash(fnet_mac_addr_t multicast_addr )
 { 
-   fnet_uint32  crc = 0xFFFFFFFFL;
+   fnet_uint32  crc = 0xFFFFFFFFu;
    int i;
    int j;
 
@@ -1145,11 +1145,11 @@ static fnet_uint32 fnet_fec_crc_hash(fnet_mac_addr_t multicast_addr )
       fnet_uint8 c = multicast_addr[i];
       for (j=0; j<8; j++)
       {
-         if ((c ^ crc) & 1U)
+         if (((c ^ crc) & 1u) != 0)
          {
             crc >>= 1;
             c >>= 1;
-            crc ^= 0xEDB88320L;
+            crc ^= 0xEDB88320u;
          } 
          else
          {
@@ -1182,14 +1182,14 @@ void fnet_fec_multicast_join(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr
    
     if (crc < 32U) 
     {
-        if(ethif->reg->GALR & reg_value)
+        if((ethif->reg->GALR & reg_value) != 0)
             ethif->GALR_double |= reg_value;       /* Set double flag => never released.*/
         else
             ethif->reg->GALR |= reg_value; 
     } 
     else 
     {
-        if(ethif->reg->GAUR & reg_value)
+        if((ethif->reg->GAUR & reg_value) != 0)
             ethif->GAUR_double |= reg_value;       /* Set double flag => never released.*/
         else
             ethif->reg->GAUR |= reg_value; 

@@ -76,7 +76,9 @@ static int fnet_http_cgi_handle (struct fnet_http_if * http, struct fnet_http_ur
     {
         /* Skip first '/' and ' ' */
         while(*uri->path == '/' || *uri->path == ' ')
+        {
             uri->path++;
+        }
         
         session->send_param.data_ptr = 0; /* Clear. */    
         
@@ -87,7 +89,7 @@ static int fnet_http_cgi_handle (struct fnet_http_if * http, struct fnet_http_ur
     		                   cgi_ptr->name,
     		                   fnet_strlen(cgi_ptr->name))) 
     		{				 
-    		    session->send_param.data_ptr = (void*)cgi_ptr;
+    		    session->send_param.data_ptr = cgi_ptr;
     		    if(cgi_ptr->handle)
     		        result = cgi_ptr->handle(uri->query, &session->response.cookie);
     		    else

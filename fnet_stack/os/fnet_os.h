@@ -51,15 +51,15 @@
     void fnet_os_mutex_release(void);
 #else
     #define fnet_os_mutex_init()        FNET_OK
-    #define fnet_os_mutex_lock()        {}
-    #define fnet_os_mutex_unlock()      {}
-    #define fnet_os_mutex_release()     {}
+    #define fnet_os_mutex_lock()        do{}while(0)  
+    #define fnet_os_mutex_unlock()      do{}while(0)
+    #define fnet_os_mutex_release()     do{}while(0)
 #endif
 
 #if FNET_CFG_OS_ISR
     void fnet_os_isr(void);
 #else
-    #define fnet_os_isr(void)           {}
+    #define fnet_os_isr(void)           do{}while(0)
 #endif
 
 #if FNET_CFG_OS_EVENT
@@ -68,8 +68,8 @@
     void fnet_os_event_raise(void);
 #else
     #define fnet_os_event_init()        FNET_OK
-    #define fnet_os_event_wait()        {}
-    #define fnet_os_event_raise()       {}
+    #define fnet_os_event_wait()        do{}while(0)
+    #define fnet_os_event_raise()       do{}while(0)
 #endif
 
 

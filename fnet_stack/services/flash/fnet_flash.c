@@ -42,6 +42,8 @@
 
 #if FNET_CFG_FLASH
 
+#define FNET_CFG_FLASH_WRITE_CACHE 0
+
 #if FNET_CFG_FLASH_WRITE_CACHE /* Just prototype.*/
 /**************************************************************************/ /*!
  * Flash cache entry.
@@ -61,7 +63,7 @@ static void fnet_flash_cache_flush_entry(struct fnet_flash_cache_entry   *entry)
 
 #endif
 
-static void fnet_flash_write_low( unsigned char *dest, unsigned char *src, unsigned int n_blocks );
+static void fnet_flash_write_low( unsigned char *dest, const unsigned char *src, unsigned int n_blocks );
 
 
 
@@ -163,7 +165,7 @@ void fnet_flash_erase( void *flash_addr, unsigned bytes)
 *
 * DESCRIPTION:
 ************************************************************************/
-static void fnet_flash_write_low( unsigned char *dest, unsigned char *src, unsigned int n_blocks  )
+static void fnet_flash_write_low( unsigned char *dest, const unsigned char *src, unsigned int n_blocks  )
 {
     while (n_blocks)
     {
@@ -180,7 +182,7 @@ static void fnet_flash_write_low( unsigned char *dest, unsigned char *src, unsig
 * DESCRIPTION:
 ************************************************************************/
 
-void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_VAR const void *src, unsigned n  )
+void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_VAR const void *src, unsigned n )
 {
     unsigned long   i;
     unsigned char   data[FNET_CFG_CPU_FLASH_PROGRAM_SIZE];    
@@ -204,7 +206,7 @@ void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_
             fnet_memset(data, 0xFF, FNET_CFG_CPU_FLASH_PROGRAM_SIZE);
             for(i = count; i<count+bytes; i++)
             {
-                data[i] = *((unsigned char *)src); 
+                data[i] = *((const unsigned char *)src); 
                 src = (unsigned char *) ((unsigned long)src + 1U);
             }
             
@@ -220,7 +222,7 @@ void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_
             bytes = n & (FNET_CFG_CPU_FLASH_PROGRAM_SIZE-1U);
 		    blocks = (n - bytes) / FNET_CFG_CPU_FLASH_PROGRAM_SIZE;
 
-            fnet_flash_write_low((unsigned char *)flash_addr, (unsigned char *)src, blocks );
+            fnet_flash_write_low((unsigned char *)flash_addr, (const unsigned char *)src, blocks );
 			
 			flash_addr = (unsigned char *) ((unsigned long)flash_addr + (FNET_CFG_CPU_FLASH_PROGRAM_SIZE*blocks));
 			src = (unsigned char *) ((unsigned long)src + (FNET_CFG_CPU_FLASH_PROGRAM_SIZE*blocks));
@@ -231,7 +233,7 @@ void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_
                 
                 for(i=0U;i<bytes;i++)
                 {
-                    data[i] = *((unsigned char *)src); 
+                    data[i] = *((const unsigned char *)src); 
                     src = (unsigned char *) ((unsigned long)src + 1U);
                 }
 

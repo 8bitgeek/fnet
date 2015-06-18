@@ -47,7 +47,7 @@
 *
 * DESCRIPTION: Invalidate cache.
 *************************************************************************/
-void fnet_cpu_cache_invalidate()
+void fnet_cpu_cache_invalidate(void)
 {}   
 
 #endif /* FNET_MK */

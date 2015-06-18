@@ -94,7 +94,7 @@ static fnet_telnet_desc_t fapp_telnet_desc = 0; /* Telnet descriptor. */
 *
 * DESCRIPTION: Releases TELNET server.
 *************************************************************************/
-void fapp_telnet_release()
+void fapp_telnet_release(void)
 {
     fnet_telnet_release(fapp_telnet_desc);
     fapp_telnet_desc = 0;    

@@ -110,15 +110,15 @@ static fnet_socket_t *fnet_tcp_accept( fnet_socket_t *listensk );
 static int fnet_tcp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr);
 static int fnet_tcp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *foreign_addr);
 static int fnet_tcp_shutdown( fnet_socket_t *sk, int how );
-static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, char *optval, unsigned int optlen );
-static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, char *optval, unsigned int *optlen );
+static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, const void *optval, unsigned int optlen );
+static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, void *optval, unsigned int *optlen );
 static int fnet_tcp_listen( fnet_socket_t *sk, int backlog );
 static void fnet_tcp_drain( void );
 
 #if FNET_CFG_DEBUG_TRACE_TCP
     void fnet_tcp_trace(char *str, fnet_tcp_header_t *tcp_hdr);
 #else
-    #define fnet_tcp_trace(str, tcp_hdr)
+    #define fnet_tcp_trace(str, tcp_hdr)    do{}while(0)
 #endif
 
 
@@ -273,7 +273,7 @@ static void fnet_tcp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  stru
 #endif
     {
         checksum = fnet_checksum_pseudo_start( nb, FNET_HTONS((unsigned short)FNET_IP_PROTOCOL_TCP), (unsigned short)nb->total_length );
-        checksum = fnet_checksum_pseudo_end( checksum, (char *)src_addr->sa_data, (char *)dest_addr->sa_data, 
+        checksum = fnet_checksum_pseudo_end( checksum, &src_addr->sa_data[0], &dest_addr->sa_data[0], 
                                             (dest_addr->sa_family == AF_INET) ? sizeof(fnet_ip4_addr_t) : sizeof(fnet_ip6_addr_t) );
     }
    
@@ -315,7 +315,7 @@ static void fnet_tcp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  stru
     }
     else
     {
-        if(!(FNET_TCP_FLAGS(nb) & FNET_TCP_SGT_RST))
+        if((FNET_TCP_FLAGS(nb) & FNET_TCP_SGT_RST) == 0)
             fnet_tcp_sendrst(0, nb, dest_addr, src_addr);
 
         goto DROP;
@@ -475,7 +475,7 @@ static int fnet_tcp_close( fnet_socket_t *sk )
     }
 
     /* If SO_LINGER option is present.*/
-    if(sk->options.flags & SO_LINGER)
+    if((sk->options.flags & SO_LINGER) != 0)
     {
         
         if(sk->options.linger_ticks == 0)
@@ -527,7 +527,7 @@ static int fnet_tcp_close( fnet_socket_t *sk )
     {
         if(cb->tcpcb_connection_state != FNET_TCP_CS_TIME_WAIT)
         {
-            if((sk->options.flags & SO_LINGER) && sk->options.linger_ticks)
+            if(((sk->options.flags & SO_LINGER) != 0) && sk->options.linger_ticks)
                 cb->tcpcb_timers.connection = ((sk->options.linger_ticks * FNET_TIMER_PERIOD_MS)
                                                                  / FNET_TCP_SLOWTIMO);
             else
@@ -647,7 +647,9 @@ static fnet_socket_t *fnet_tcp_accept( fnet_socket_t *listensk )
         sk = listensk->incoming_con;
 
         while(sk->next)
-          sk = sk->next;
+        {
+            sk = sk->next;
+        }
 
         /* Delete the incoming socket from the list.*/
         sk->head_con->incoming_con_len--;
@@ -673,12 +675,12 @@ static fnet_socket_t *fnet_tcp_accept( fnet_socket_t *listensk )
 static int fnet_tcp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr)
 {
     fnet_tcp_control_t  *cb = (fnet_tcp_control_t *)sk->protocol_control;
-    int                 remove; /* Remove flag. 1 means that the data must be deleted
+    int                 flag_remove; /* Remove flag. 1 means that the data must be deleted
                                  * from the input buffer after the reading.*/
     int                 error_code;                 
     
     /* Receive the flags.*/
-    remove = !(flags & MSG_PEEK);
+    flag_remove = ((flags & MSG_PEEK) == 0);
 
 #if FNET_CFG_TCP_URGENT
     /* Reading of the OOB data.*/
@@ -696,7 +698,7 @@ static int fnet_tcp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struc
         {
             fnet_isr_lock();
 
-            if(remove)
+            if(flag_remove)
             {
                 cb->tcpcb_rcvurgmark = FNET_TCP_NOT_USED;
                 cb->tcpcb_flags &= ~FNET_TCP_CBF_RCVURGENT;
@@ -729,7 +731,7 @@ static int fnet_tcp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struc
     {
         len = cb->tcpcb_rcvurgmark;
 
-        if(remove)
+        if(flag_remove)
             cb->tcpcb_rcvurgmark = FNET_TCP_NOT_USED;
     }
     else 
@@ -740,16 +742,16 @@ static int fnet_tcp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struc
     }
 
     /* Copy the data to the buffer.*/
-    len = fnet_socket_buffer_read_record(&sk->receive_buffer, buf, len, remove); 
+    len = fnet_socket_buffer_read_record(&sk->receive_buffer, buf, len, flag_remove); 
 
     /* Remove the data from input buffer.*/
-    if(remove)
+    if(flag_remove)
     {
         /* Recalculate the new free size in the input buffer.*/
         cb->tcpcb_newfreercvsize += len;
 
         /* If the window is opened, send acknowledgment.*/
-        if((cb->tcpcb_newfreercvsize >= (cb->tcpcb_rcvmss << 1)
+        if((cb->tcpcb_newfreercvsize >= ((unsigned long)cb->tcpcb_rcvmss << 1)
                 || cb->tcpcb_newfreercvsize >= (cb->tcpcb_rcvcountmax >> 1) /* More than half of RX buffer.*/
                 || (!cb->tcpcb_rcvwnd && cb->tcpcb_newfreercvsize)) && (sk->state == SS_CONNECTED))
             fnet_tcp_sendack(sk);
@@ -768,7 +770,7 @@ static int fnet_tcp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struc
             *foreign_addr = sk->foreign_addr;
          
         /* If the socket is closed by peer and no data.*/
-        if((len == 0) && (cb->tcpcb_flags & FNET_TCP_CBF_FIN_RCVD))
+        if((len == 0) && ((cb->tcpcb_flags & FNET_TCP_CBF_FIN_RCVD) != 0))
         {
             error_code = FNET_ERR_CONNCLOSED;
             goto ERROR_UNLOCK;
@@ -844,6 +846,8 @@ static int fnet_tcp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
         {
            freespace = (long)malloc_max;
         }
+        else
+        {}
        
       
         /* If the function is nonblocking and the data length greater than the freespace, recalculate the size of the data*/
@@ -891,7 +895,7 @@ static int fnet_tcp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
     #endif /* FNET_CFG_TCP_URGENT */
 
         /* If the routing tables should be bypassed for this message only, set dontroute flag.*/
-        if((flags & MSG_DONTROUTE) && !(sk->options.flags & SO_DONTROUTE))
+        if(((flags & MSG_DONTROUTE) != 0) && ((sk->options.flags & SO_DONTROUTE) == 0))
         {
             dontroute = 1;
             sk->options.flags |= SO_DONTROUTE;
@@ -1012,7 +1016,7 @@ static int fnet_tcp_shutdown( fnet_socket_t *sk, int how )
         fnet_isr_lock();
 
         /* Shutdown the writing.*/
-        if(how & SD_WRITE && !sk->send_buffer.is_shutdown)
+        if(((how & SD_WRITE) !=0 ) && !sk->send_buffer.is_shutdown)
         {
             /* Set the flag of the buffer.*/
             sk->send_buffer.is_shutdown = 1;
@@ -1022,7 +1026,7 @@ static int fnet_tcp_shutdown( fnet_socket_t *sk, int how )
         }
 
         /* Shutdown the reading.*/
-        if(how & SD_READ && !sk->receive_buffer.is_shutdown)
+        if(((how & SD_READ) != 0) && !sk->receive_buffer.is_shutdown)
         {
             fnet_socket_buffer_release(&sk->receive_buffer);
 
@@ -1044,7 +1048,7 @@ static int fnet_tcp_shutdown( fnet_socket_t *sk, int how )
 * RETURNS: If no error occurs, this function returns FNET_OK. Otherwise
 *          it returns FNET_ERR.
 *************************************************************************/
-static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, char *optval, unsigned int optlen )
+static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, const void *optval, unsigned int optlen )
 {
     int error_code;
     
@@ -1085,43 +1089,43 @@ static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, char 
         {
             /* Maximal segment size option.*/
             case TCP_MSS:
-                if(!(*((unsigned short *)(optval))))
+                if(!(*((const unsigned short *)(optval))))
                 {
                     error_code = FNET_ERR_INVAL;
                     goto ERROR;
                 }
 
-                sk->options.tcp_opt.mss = *((unsigned short *)(optval));
+                sk->options.tcp_opt.mss = *((const unsigned short *)(optval));
                 break;
             /* Keepalive probe retransmit limit.*/
             case TCP_KEEPCNT:
-                if(!(*((unsigned int *)(optval))))
+                if(!(*((const unsigned int *)(optval))))
                 {
                     error_code = FNET_ERR_INVAL;
                     goto ERROR;                  
                 }
 
-                sk->options.tcp_opt.keep_cnt = *((int *)(optval));
+                sk->options.tcp_opt.keep_cnt = *((const int *)(optval));
                 break;
             /* Keepalive retransmit interval.*/
             case TCP_KEEPINTVL:
-                if(!(*((unsigned int *)(optval))))
+                if(!(*((const unsigned int *)(optval))))
                 {
                     error_code = FNET_ERR_INVAL;
                     goto ERROR;
                 }
 
-                sk->options.tcp_opt.keep_intvl = *((int *)(optval))*(1000/FNET_TCP_SLOWTIMO);
+                sk->options.tcp_opt.keep_intvl = *((const int *)(optval))*(1000/FNET_TCP_SLOWTIMO);
                 break;            
             /* Time between keepalive probes.*/
             case TCP_KEEPIDLE:
-                if(!(*((unsigned int *)(optval))))
+                if(!(*((const unsigned int *)(optval))))
                 {
                     error_code = FNET_ERR_INVAL;
                     goto ERROR;
                 }
 
-                sk->options.tcp_opt.keep_idle = *((int *)(optval))*(1000/FNET_TCP_SLOWTIMO);
+                sk->options.tcp_opt.keep_idle = *((const int *)(optval))*(1000/FNET_TCP_SLOWTIMO);
                 break;
         #if FNET_CFG_TCP_URGENT                            
             /* BSD interpretation of the urgent pointer.*/
@@ -1129,11 +1133,13 @@ static int fnet_tcp_setsockopt( fnet_socket_t *sk, int level, int optname, char 
         #endif            
             /* TCP_NO_DELAY option.*/
             case TCP_NODELAY:
-                if(*((int *)(optval)))
+                if(*((const int *)(optval)))
                     sk->options.tcp_opt.flags |= optname;
                 else
                     sk->options.tcp_opt.flags &= ~optname;
 
+                break;
+            default:
                 break;
         }
         
@@ -1158,7 +1164,7 @@ ERROR:
 * RETURNS: If no error occurs, this function returns FNET_OK. Otherwise
 *          it returns FNET_ERR.
 *************************************************************************/
-static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, char *optval, unsigned int *optlen )
+static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, void *optval, unsigned int *optlen )
 {
   
     fnet_tcp_control_t  *cb = (fnet_tcp_control_t *)sk->protocol_control;
@@ -1181,13 +1187,13 @@ static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, char 
             case TCP_BSD:
         #endif            
             case TCP_NODELAY:
-                if(sk->options.tcp_opt.flags & optname)
+                if((sk->options.tcp_opt.flags & optname) != 0)
                     *((int *)(optval)) = 1;
                 else
                     *((int *)(optval)) = 0;
                 break;
             case TCP_FINRCVD:
-                if(cb->tcpcb_flags & FNET_TCP_CBF_FIN_RCVD)
+                if((cb->tcpcb_flags & FNET_TCP_CBF_FIN_RCVD) != 0)
                     *((int *)(optval)) = 1;
                 else
                     *((int *)(optval)) = 0;
@@ -1241,10 +1247,14 @@ static int fnet_tcp_listen( fnet_socket_t *sk, int backlog )
         fnet_isr_lock();
 
         while(backlog < sk->partial_con_len + sk->incoming_con_len && sk->partial_con_len)
-          fnet_tcp_abortsk(sk->partial_con);
+        {
+            fnet_tcp_abortsk(sk->partial_con);
+        }
 
         while(backlog < sk->incoming_con_len)
-          fnet_tcp_abortsk(sk->incoming_con);
+        {
+            fnet_tcp_abortsk(sk->incoming_con);
+        }
 
         sk->con_limit = backlog;
         fnet_isr_unlock();
@@ -1293,7 +1303,7 @@ static void fnet_tcp_drain( void )
         sk = sk->next;
 
         /* if((cb->tcpcb_connection_state == FNET_TCP_CS_TIME_WAIT) && (cb->tcpcb_flags & FNET_TCP_CBF_CLOSE))*/
-        if((cb->tcpcb_flags & FNET_TCP_CBF_CLOSE))
+        if((cb->tcpcb_flags & FNET_TCP_CBF_CLOSE) != 0)
         {
             /* Remove the socket that to be closed.  */
             fnet_tcp_closesk(delsk);
@@ -1302,10 +1312,14 @@ static void fnet_tcp_drain( void )
         else if(delsk->state == SS_LISTENING)
         {
             while(delsk->partial_con)
+            {
                 fnet_tcp_abortsk(delsk->partial_con);
+            }
         #if 0
             while (delsk->incoming_con)
+            {
                 fnet_tcp_abortsk(delsk->incoming_con); 
+            }
         #endif
         }
 #if !FNET_CFG_TCP_DISCARD_OUT_OF_ORDER        
@@ -1352,7 +1366,9 @@ static void fnet_tcp_initconnection( fnet_socket_t *sk )
 
     /* Receive a scale of the input window.*/
     while(FNET_TCP_MAXWIN << cb->tcpcb_recvscale < cb->tcpcb_rcvcountmax)
-      cb->tcpcb_recvscale++;
+    {
+        cb->tcpcb_recvscale++;
+    }
 
     /* Stop all timers.*/
     cb->tcpcb_timers.retransmission = FNET_TCP_TIMER_OFF;
@@ -1415,7 +1431,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
             break;
 
         case FNET_TCP_CS_SYN_RCVD:
-            if(cb->tcpcb_prev_connection_state == FNET_TCP_CS_SYN_SENT && (sgmtype & FNET_TCP_SGT_SYN))
+            if(cb->tcpcb_prev_connection_state == FNET_TCP_CS_SYN_SENT && ((sgmtype & FNET_TCP_SGT_SYN) != 0))
             {
                 /* Check the sequence number for simultaneouos open.*/
                 if(tcp_seq == cb->tcpcb_sndack - 1)
@@ -1431,7 +1447,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
                     fnet_netbuf_cut_center(&insegment, (int)tcp_length, (int)repsize);
 
                     /* If urgent  flag is present, recalculate of the urgent pointer.*/
-                    if(sgmtype & FNET_TCP_SGT_URG)
+                    if((sgmtype & FNET_TCP_SGT_URG) != 0)
                     {
                         if((int)fnet_ntohs(FNET_TCP_URG(insegment)) - (int)repsize >= 0)               
                         {
@@ -1496,7 +1512,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
     }
 
     /* Process the reset segment without acknowledgment.*/
-    if(sgmtype & FNET_TCP_SGT_RST)
+    if((sgmtype & FNET_TCP_SGT_RST) != 0)
     {
         switch(cb->tcpcb_connection_state)
         {
@@ -1515,7 +1531,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
 
 
     /* Process the SYN segment.*/
-    if(sgmtype & FNET_TCP_SGT_SYN)
+    if((sgmtype & FNET_TCP_SGT_SYN) != 0)
     {
         switch(cb->tcpcb_connection_state)
         {
@@ -1540,14 +1556,14 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
         switch(cb->tcpcb_connection_state)
         {
             case FNET_TCP_CS_LISTENING:
-                if(sgmtype & FNET_TCP_SGT_ACK)
+                if((sgmtype & FNET_TCP_SGT_ACK) != 0)
                     /* Send the reset segment.*/
                     fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
 
                 return FNET_TRUE;
 
             case FNET_TCP_CS_SYN_SENT:
-                if(sgmtype & FNET_TCP_SGT_ACK)
+                if((sgmtype & FNET_TCP_SGT_ACK) != 0)
                   /* Send the reset segment.*/
                     fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
 
@@ -1559,7 +1575,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
 
 
     /* Process the segment with acknowledgment.*/
-    if(sgmtype & FNET_TCP_SGT_ACK)
+    if((sgmtype & FNET_TCP_SGT_ACK) != 0)
     {
         switch(cb->tcpcb_connection_state)
         {
@@ -1608,10 +1624,10 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
     }
 
     /* Set the window size (of another side).*/
-    if(sgmtype & FNET_TCP_SGT_SYN)
+    if((sgmtype & FNET_TCP_SGT_SYN) != 0)
         cb->tcpcb_sndwnd = fnet_ntohs(FNET_TCP_WND(insegment));
     else
-        cb->tcpcb_sndwnd = (unsigned long)(fnet_ntohs(FNET_TCP_WND(insegment)) << cb->tcpcb_sendscale);
+        cb->tcpcb_sndwnd = ((unsigned long)fnet_ntohs(FNET_TCP_WND(insegment)) << cb->tcpcb_sendscale);
 
     if(cb->tcpcb_maxwnd < cb->tcpcb_sndwnd)
         cb->tcpcb_maxwnd = cb->tcpcb_sndwnd;
@@ -1623,7 +1639,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
           cb->tcpcb_sndack = tcp_seq + 1; 
 
           /* Process the second segment of the open.*/
-          if(sgmtype & FNET_TCP_SGT_ACK)
+          if((sgmtype & FNET_TCP_SGT_ACK) != 0)
           {
               cb->tcpcb_rcvack = tcp_ack;
 
@@ -1656,7 +1672,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
               sk->state = SS_CONNECTED;
 
               /* Initialize the keepalive timer.*/
-              if(sk->options.flags & SO_KEEPALIVE)
+              if((sk->options.flags & SO_KEEPALIVE) != 0)
                 cb->tcpcb_timers.keepalive = sk->options.tcp_opt.keep_idle;
 
               break;
@@ -1813,7 +1829,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
           }
           else
           {
-              if(!(sgmtype & FNET_TCP_SGT_SYN))
+              if((sgmtype & FNET_TCP_SGT_SYN) == 0)
               {
                   /* Proseed the processing.*/
                   result = fnet_tcp_dataprocess(sk, insegment, &ackparam);
@@ -1821,7 +1837,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
               else
               {
                   /* Initialize the keepalive timer.*/
-                  if(sk->options.flags & SO_KEEPALIVE)
+                  if((sk->options.flags & SO_KEEPALIVE) != 0)
                       cb->tcpcb_timers.keepalive = sk->options.tcp_opt.keep_idle;
               }
 
@@ -1889,7 +1905,7 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
     unsigned long       tcp_ack = fnet_ntohl(FNET_TCP_ACK(insegment));
 
     /* Reinitialize the keepalive timer.*/
-    if(sk->options.flags & SO_KEEPALIVE)
+    if((sk->options.flags & SO_KEEPALIVE) != 0)
         cb->tcpcb_timers.keepalive = sk->options.tcp_opt.keep_idle;
     else
         cb->tcpcb_timers.keepalive = FNET_TCP_TIMER_OFF;
@@ -1919,8 +1935,8 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
                 else
                     cb->tcpcb_ssthresh = cb->tcpcb_cwnd >> 1;
 
-                if(cb->tcpcb_ssthresh < (cb->tcpcb_sndmss << 1))
-                    cb->tcpcb_ssthresh = (unsigned long)(cb->tcpcb_sndmss << 1);
+                if(cb->tcpcb_ssthresh < ((unsigned long)cb->tcpcb_sndmss << 1))
+                    cb->tcpcb_ssthresh = ((unsigned long)cb->tcpcb_sndmss << 1);
 
                 cb->tcpcb_cwnd = cb->tcpcb_ssthresh;
 
@@ -2021,18 +2037,21 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
     }
 
     /* If the final segment is not received, add the data to the input buffer.*/
-    if(!(cb->tcpcb_flags & FNET_TCP_CBF_FIN_RCVD))
+    if((cb->tcpcb_flags & FNET_TCP_CBF_FIN_RCVD) == 0)
     {
         delflag = !fnet_tcp_addinpbuf(sk, insegment, ackparam);
 
     }
-
     else if((insegment->total_length - FNET_TCP_LENGTH(insegment)) > 0)
-            *ackparam |= FNET_TCP_AP_SEND_IMMEDIATELLY;
+    {
+        *ackparam |= FNET_TCP_AP_SEND_IMMEDIATELLY;
+    }
+    else
+    {}
 
     /* Acknowledgment of the final segment must be send immediatelly.*/
-    if((*ackparam & FNET_TCP_AP_FIN_ACK)
-         ||(FNET_TCP_FLAGS(insegment) & FNET_TCP_SGT_PSH))
+    if(((*ackparam & FNET_TCP_AP_FIN_ACK) != 0)
+         ||((FNET_TCP_FLAGS(insegment) & FNET_TCP_SGT_PSH) != 0))
     {
            fnet_tcp_sendack(sk);
     }
@@ -2051,7 +2070,7 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
     }
     else
     {
-        if(!(cb->tcpcb_flags & FNET_TCP_CBF_SEND_TIMEOUT))
+        if((cb->tcpcb_flags & FNET_TCP_CBF_SEND_TIMEOUT) == 0)
             cb->tcpcb_timers.persist = FNET_TCP_TIMER_OFF;
     }
 
@@ -2064,16 +2083,16 @@ static int fnet_tcp_dataprocess( fnet_socket_t *sk, fnet_netbuf_t *insegment, in
     /* If the acknowledgment is sent, return
      * If the acnkowledgment must be sent immediatelly, send it
      * If the acnkowledgment must be sent after delay, turn on the acknowledgment timer.*/
-    if((*ackparam & FNET_TCP_AP_NO_SENDING) || (*ackparam & FNET_TCP_AP_FIN_ACK))
+    if(((*ackparam & FNET_TCP_AP_NO_SENDING) != 0) || ((*ackparam & FNET_TCP_AP_FIN_ACK) != 0))
         return delflag;
 
-    if(*ackparam & FNET_TCP_AP_SEND_IMMEDIATELLY)
+    if((*ackparam & FNET_TCP_AP_SEND_IMMEDIATELLY) != 0)
     {
         fnet_tcp_sendack(sk);
         return delflag;
     }
 
-    if(*ackparam & FNET_TCP_AP_SEND_WITH_DELAY)
+    if((*ackparam & FNET_TCP_AP_SEND_WITH_DELAY) != 0)
         cb->tcpcb_timers.delayed_ack = 1; /* Delay 200 ms*/
 
     return delflag;
@@ -2099,7 +2118,7 @@ static int fnet_tcp_addinpbuf( fnet_socket_t *sk, fnet_netbuf_t *insegment, int 
     /* If segment doesn't include the data and the FIN or URG flag,
      * return from the function.*/
     if(!(insegment->total_length - tcp_length)         
-            && !(tcp_flags & (FNET_TCP_SGT_URG | FNET_TCP_SGT_FIN))) 
+            && ((tcp_flags & (FNET_TCP_SGT_URG | FNET_TCP_SGT_FIN)) == 0)) 
         return 0; /* The data isn't added.*/
 
     
@@ -2125,7 +2144,7 @@ static int fnet_tcp_addinpbuf( fnet_socket_t *sk, fnet_netbuf_t *insegment, int 
     #endif /* FNET_CFG_TCP_URGENT */        
 
         /* Process the final segment. */
-        if(tcp_flags & FNET_TCP_SGT_FIN)
+        if((tcp_flags & FNET_TCP_SGT_FIN) != 0)
         {
             fnet_tcp_finprocessing(sk, fnet_ntohl(FNET_TCP_ACK(insegment)));
             cb->tcpcb_sndack++;
@@ -2251,7 +2270,7 @@ static int fnet_tcp_addinpbuf( fnet_socket_t *sk, fnet_netbuf_t *insegment, int 
 
 
                         /* Process the final segment.*/
-                        if(FNET_TCP_FLAGS(buf) & FNET_TCP_SGT_FIN)
+                        if((FNET_TCP_FLAGS(buf) & FNET_TCP_SGT_FIN) != 0)
                         {
                             fnet_tcp_finprocessing(sk, fnet_ntohl(FNET_TCP_ACK(buf)));
                             *ackparam |= FNET_TCP_AP_FIN_ACK;
@@ -2354,7 +2373,7 @@ static int fnet_tcp_sendanydata( fnet_socket_t *sk, int oneexec )
     if(sndwnd <= 0)
     {
         /* Send the final segment without data.*/
-        if(sk->send_buffer.is_shutdown && !datasize && !(cb->tcpcb_flags & FNET_TCP_CBF_FIN_SENT))
+        if(sk->send_buffer.is_shutdown && !datasize && ((cb->tcpcb_flags & FNET_TCP_CBF_FIN_SENT) == 0))
         {
             fnet_tcp_sendheadseg(sk, FNET_TCP_SGT_FIN | FNET_TCP_SGT_ACK, 0, 0);
 
@@ -2392,7 +2411,7 @@ static int fnet_tcp_sendanydata( fnet_socket_t *sk, int oneexec )
              * If the Nagle algorithm is blocked and all data can be sent in this segment
              * If all sent data is acknowledged and all data can be sent in this segment.*/
             if(sndwnd > (cb->tcpcb_maxwnd >> 1) 
-                || (cb->tcpcb_flags & FNET_TCP_CBF_FORCE_SEND)
+                || ((cb->tcpcb_flags & FNET_TCP_CBF_FORCE_SEND) != 0)
             #if FNET_CFG_TCP_URGENT                      
                 || FNET_TCP_COMP_GE(cb->tcpcb_sndurgseq, cb->tcpcb_sndseq)
             #endif /* FNET_CFG_TCP_URGENT */
@@ -2404,7 +2423,7 @@ static int fnet_tcp_sendanydata( fnet_socket_t *sk, int oneexec )
             }
             else
             {
-                if(cb->tcpcb_rcvack == cb->tcpcb_sndseq || (sk->options.tcp_opt.flags & TCP_NODELAY))
+                if(cb->tcpcb_rcvack == cb->tcpcb_sndseq || ((sk->options.tcp_opt.flags & TCP_NODELAY) != 0))
                 {
                     if(sntdata + sndwnd == datasize)
                     {
@@ -2754,7 +2773,7 @@ static void fnet_tcp_slowtimosk( fnet_socket_t *sk )
             {
                 cb->tcpcb_timers.connection = FNET_TCP_TIMER_OFF;
 
-                if(cb->tcpcb_flags & FNET_TCP_CBF_CLOSE)
+                if((cb->tcpcb_flags & FNET_TCP_CBF_CLOSE) != 0)
                 {
                     if(cb->tcpcb_connection_state == FNET_TCP_CS_TIME_WAIT)
                         fnet_tcp_closesk(sk);
@@ -2905,8 +2924,8 @@ static void fnet_tcp_rtimeo( fnet_socket_t *sk )
           else
               cb->tcpcb_ssthresh = cb->tcpcb_cwnd >> 1;
 
-          if(cb->tcpcb_ssthresh < (cb->tcpcb_sndmss << 1))
-              cb->tcpcb_ssthresh = (unsigned long)(cb->tcpcb_sndmss << 1);
+          if(cb->tcpcb_ssthresh < ((unsigned long)cb->tcpcb_sndmss << 1))
+              cb->tcpcb_ssthresh = ((unsigned long)cb->tcpcb_sndmss << 1);
 
           cb->tcpcb_cwnd = cb->tcpcb_sndmss;
 
@@ -3171,7 +3190,7 @@ static int fnet_tcp_sendseg(struct fnet_tcp_segment *segment)
     }
     else
 #endif    
-    {};
+    {}
                       
     return error;
 }
@@ -3204,7 +3223,7 @@ static int fnet_tcp_sendheadseg( fnet_socket_t *sk, unsigned char flags, void *o
     cb->tcpcb_rcvwnd = fnet_tcp_getrcvwnd(sk);
 
     /* Process the SYN flag.*/
-    if(flags & FNET_TCP_SGT_SYN)
+    if((flags & FNET_TCP_SGT_SYN) != 0)
     {
         seq++;
 
@@ -3219,15 +3238,21 @@ static int fnet_tcp_sendheadseg( fnet_socket_t *sk, unsigned char flags, void *o
     }
 
     /* Process the FIN flag.*/
-    if(flags & FNET_TCP_SGT_FIN)
+    if((flags & FNET_TCP_SGT_FIN) != 0)
     {
         seq++;
 
         /* Change the state after sending of the final segment*/
         if(cb->tcpcb_connection_state == FNET_TCP_CS_ESTABLISHED)
+        {
             cb->tcpcb_connection_state = FNET_TCP_CS_FIN_WAIT_1;
+        }
         else if(cb->tcpcb_connection_state == FNET_TCP_CS_CLOSE_WAIT)
+        {
             cb->tcpcb_connection_state = FNET_TCP_CS_LAST_ACK;
+        }
+        else
+        {}
 
         cb->tcpcb_flags |= FNET_TCP_CBF_FIN_SENT;
     }
@@ -3245,7 +3270,7 @@ static int fnet_tcp_sendheadseg( fnet_socket_t *sk, unsigned char flags, void *o
 #endif /* FNET_CFG_TCP_URGENT */
 
     /* Process the ACK flag.*/
-    if(flags & FNET_TCP_SGT_ACK)
+    if((flags & FNET_TCP_SGT_ACK) != 0)
         ack = cb->tcpcb_sndack;
 
     /* Send the segment.*/ 
@@ -3362,10 +3387,15 @@ static int fnet_tcp_senddataseg( fnet_socket_t *sk, void *options, char optlen, 
 
             /* Change the state after the sending of the final segment.*/
             if(cb->tcpcb_connection_state == FNET_TCP_CS_ESTABLISHED)
+            {
                 cb->tcpcb_connection_state = FNET_TCP_CS_FIN_WAIT_1;
-
+            }
             else if(cb->tcpcb_connection_state == FNET_TCP_CS_CLOSE_WAIT)
+            {
                 cb->tcpcb_connection_state = FNET_TCP_CS_LAST_ACK;
+            }
+            else
+            {}
 
             cb->tcpcb_flags |= FNET_TCP_CBF_FIN_SENT;
         }
@@ -3485,7 +3515,7 @@ static void fnet_tcp_sendrst( fnet_socket_option_t *sockoption, fnet_netbuf_t *i
 {
     struct fnet_tcp_segment segment;
     
-    if(FNET_TCP_FLAGS(insegment) & FNET_TCP_SGT_ACK)
+    if((FNET_TCP_FLAGS(insegment) & FNET_TCP_SGT_ACK) != 0)
     {
         /* Send the reset segment without acknowledgment*/
         segment.seq = fnet_ntohl(FNET_TCP_ACK(insegment));
@@ -3574,10 +3604,14 @@ static void fnet_tcp_abortsk( fnet_socket_t *sk )
     if(sk->state == SS_LISTENING)
     {
         while(sk->partial_con)
-          fnet_tcp_abortsk(sk->partial_con);
+        {
+            fnet_tcp_abortsk(sk->partial_con);
+        }
 
         while(sk->incoming_con)
-          fnet_tcp_abortsk(sk->incoming_con);
+        {
+            fnet_tcp_abortsk(sk->incoming_con);
+        }
     }
     else
         fnet_tcp_sendrstsk(sk);
@@ -3617,10 +3651,12 @@ static int fnet_tcp_addopt( fnet_netbuf_t *segment, unsigned char len, void *dat
 
     /* Copy the options.*/
     for (i = 0; i < len; ++i)
-      FNET_TCP_GETUCHAR(buf->data_ptr, i) = FNET_TCP_GETUCHAR(data, i);
+    {
+        FNET_TCP_GETUCHAR(buf->data_ptr, i) = FNET_TCP_GETUCHAR(data, i);
+    }
 
     /* Set the length  (this value is saved in 4-byte words format).*/
-    if(len & 0x3)
+    if((len & 0x3) != 0)
         size = (char)((len & 0xfffc) + 4);
     else
         size = (char)len;
@@ -3662,25 +3698,26 @@ static void fnet_tcp_getopt( fnet_socket_t *sk, fnet_netbuf_t *segment )
         }
         else
         {
-            if(i + 1 >= FNET_TCP_LENGTH(segment)
-                   || i + FNET_TCP_GETUCHAR(segment->data_ptr, i + 1) - 1 >= FNET_TCP_LENGTH(segment))
+            if((i + 1 >= FNET_TCP_LENGTH(segment)) || (i + FNET_TCP_GETUCHAR(segment->data_ptr, i + 1) - 1 >= FNET_TCP_LENGTH(segment)))
                 break;
 
             /* Process the options.*/
             switch(FNET_TCP_GETUCHAR(segment->data_ptr, i))
             {
                 case FNET_TCP_OTYPES_MSS:
-                  cb->tcpcb_sndmss = fnet_ntohs(FNET_TCP_GETUSHORT(segment->data_ptr, i + 2));
-                  break;
+                    cb->tcpcb_sndmss = fnet_ntohs(FNET_TCP_GETUSHORT(segment->data_ptr, i + 2));
+                    break;
 
                 case FNET_TCP_OTYPES_WINDOW:
-                  cb->tcpcb_sendscale = FNET_TCP_GETUCHAR(segment->data_ptr, i + 2);
+                    cb->tcpcb_sendscale = FNET_TCP_GETUCHAR(segment->data_ptr, i + 2);
 
-                  if(cb->tcpcb_sendscale > FNET_TCP_MAX_WINSHIFT)
+                    if(cb->tcpcb_sendscale > FNET_TCP_MAX_WINSHIFT)
                       cb->tcpcb_sendscale = FNET_TCP_MAX_WINSHIFT;
 
-                  cb->tcpcb_flags |= FNET_TCP_CBF_RCVD_SCALE;
-                  break;
+                    cb->tcpcb_flags |= FNET_TCP_CBF_RCVD_SCALE;
+                    break;
+                default:
+                    break;
             }
 
             i += FNET_TCP_GETUCHAR(segment->data_ptr, i + 1);
@@ -3741,7 +3778,7 @@ static void fnet_tcp_getsynopt( fnet_socket_t *sk )
     /* Pointer to the control block.*/
     fnet_tcp_control_t *cb = (fnet_tcp_control_t *)sk->protocol_control;
     
-    if(!(cb->tcpcb_flags & FNET_TCP_CBF_RCVD_SCALE))
+    if((cb->tcpcb_flags & FNET_TCP_CBF_RCVD_SCALE) == 0)
     {
         /* Reset the scale variable if the scale option is not received.*/
         cb->tcpcb_recvscale = 0;
@@ -3895,7 +3932,7 @@ static void fnet_tcp_closesk( fnet_socket_t *sk )
     {
         /* If the socket must be deleted, free the structures
          * Otherwise, change the state and free the unused data.*/
-        if(cb->tcpcb_flags & FNET_TCP_CBF_CLOSE)
+        if((cb->tcpcb_flags & FNET_TCP_CBF_CLOSE) != 0)
         {
             fnet_tcp_delsk(&fnet_tcp_prot_if.head, sk);
         }

@@ -45,11 +45,11 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static char *fnet_inet_ntop_ip4(fnet_ip4_addr_t *addr, char *str, unsigned long size);
+static char *fnet_inet_ntop_ip4 ( const fnet_ip4_addr_t *addr, char *str, unsigned long str_len);
 static int fnet_inet_pton_ip4(const char *str, fnet_ip4_addr_t *addr);
 
 #if FNET_CFG_IP6
-static char *fnet_inet_ntop_ip6(fnet_ip6_addr_t *addr, char *str, unsigned long size);
+static char *fnet_inet_ntop_ip6 (const fnet_ip6_addr_t *addr, char *str, unsigned long str_len);
 static int fnet_inet_pton_ip6(const char *str, fnet_ip6_addr_t *addr);
 #endif
 
@@ -88,11 +88,11 @@ char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, 
 	{
     #if FNET_CFG_IP4         
     	case AF_INET:
-    		return (fnet_inet_ntop_ip4((fnet_ip4_addr_t *)addr, str, str_len));
+    		return (fnet_inet_ntop_ip4(addr, str, str_len));
     #endif  
     #if FNET_CFG_IP6 
     	case AF_INET6:
-    		return (fnet_inet_ntop_ip6((fnet_ip6_addr_t *)addr, str, str_len));
+    		return (fnet_inet_ntop_ip6(addr, str, str_len));
     #endif 
     	default:
     		return (FNET_NULL);
@@ -136,7 +136,7 @@ int fnet_inet_pton(fnet_address_family_t family, const char *str, void *addr, un
 * DESCRIPTION:The function converts from presentation format (string)
 *	        to struct sockaddr.
 *************************************************************************/
-int fnet_inet_ptos (char *str, struct sockaddr *addr)
+int fnet_inet_ptos (const char *str, struct sockaddr *addr)
 {   
 #if FNET_CFG_IP4    
     if(fnet_inet_pton(AF_INET, str, addr->sa_data, sizeof(addr->sa_data)) == FNET_OK)
@@ -152,7 +152,7 @@ int fnet_inet_ptos (char *str, struct sockaddr *addr)
         /* Scope ID.*/
         {
             unsigned long   scope_id;
-            char            *p = fnet_strrchr(str, '%'); /* Find "%<scope id>".*/
+            const char      *p = fnet_strrchr(str, '%'); /* Find "%<scope id>".*/
             
             if(p != FNET_NULL)
             {
@@ -298,6 +298,8 @@ static int fnet_inet_pton_ip6( const char *str, fnet_ip6_addr_t *addr )
             {
                 goto ERROR;
 			}
+            else
+            {}
 			
             if (tp + 2 > endp)
                 goto ERROR;
@@ -354,11 +356,11 @@ ERROR:
 * DESCRIPTION:The function converts IPv4 address 
 *               to presentation format (string).
 *************************************************************************/  
-static char *fnet_inet_ntop_ip4 ( fnet_ip4_addr_t *addr, char *str, unsigned long str_len)
+static char *fnet_inet_ntop_ip4 ( const fnet_ip4_addr_t *addr, char *str, unsigned long str_len)
 {
-	char                tmp[FNET_IP4_ADDR_STR_SIZE];
-	int                 length;
-	unsigned char       *ptr = (unsigned char *) addr;
+	char                    tmp[FNET_IP4_ADDR_STR_SIZE];
+	int                     length;
+	const unsigned char     *ptr = (const unsigned char *) addr;
 
     length=fnet_snprintf(tmp, sizeof(tmp), "%d.%d.%d.%d", ptr[0], ptr[1], ptr[2], ptr[3]);
     
@@ -381,7 +383,7 @@ static char *fnet_inet_ntop_ip4 ( fnet_ip4_addr_t *addr, char *str, unsigned lon
 *               presentation (printable) format.
 *************************************************************************/  
 #if FNET_CFG_IP6 
-static char *fnet_inet_ntop_ip6 (fnet_ip6_addr_t *addr, char *str, unsigned long str_len)
+static char *fnet_inet_ntop_ip6 (const fnet_ip6_addr_t *addr, char *str, unsigned long str_len)
 {
     char    tmp[FNET_IP6_ADDR_STR_SIZE];
     char    *tp;
@@ -396,7 +398,9 @@ static char *fnet_inet_ntop_ip6 (fnet_ip6_addr_t *addr, char *str, unsigned long
      */
     fnet_memset_zero(words, sizeof(words));
     for (i = 0; i < 16; i++)
-        words[i / 2] |= (addr->addr[i] << ((1 - (i % 2)) << 3));
+    {
+        words[i / 2] |= ((unsigned long)addr->addr[i] << ((1 - (i % 2)) << 3));
+    }
         
     best.base = -1;
     best.len = 0;
@@ -407,7 +411,10 @@ static char *fnet_inet_ntop_ip6 (fnet_ip6_addr_t *addr, char *str, unsigned long
         if (words[i] == 0)
         {
             if (cur.base == -1)
-                cur.base = i, cur.len = 1;
+            {
+                cur.base = i;
+                cur.len = 1;
+            }
             else
                 cur.len++;
         } 

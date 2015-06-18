@@ -54,7 +54,7 @@
 #if FNET_CFG_DEBUG_DHCP    
     #define FNET_DEBUG_DHCP   FNET_DEBUG
 #else
-    #define FNET_DEBUG_DHCP(...)
+    #define FNET_DEBUG_DHCP(...)    do{}while(0)
 #endif
 
 /************************************************************************
@@ -329,7 +329,7 @@ static const char fnet_dhcp_parameter_request_list [] =
 };
 
 static int fnet_dhcp_add_option( fnet_dhcp_message_t *message, unsigned char option_code,
-                                 unsigned char option_length,  void *option_value );
+                                 unsigned char option_length,  const void *option_value );
 static unsigned char *fnet_dhcp_next_option( fnet_dhcp_message_t *message );
 static void fnet_dhcp_parse_options( fnet_dhcp_message_t *message, struct fnet_dhcp_options_in *options );
 static int fnet_dhcp_send_message( fnet_dhcp_if_t *dhcp );
@@ -483,7 +483,7 @@ static void fnet_dhcp_print_options( struct fnet_dhcp_options_in *options )
 ************************************************************************/
 
 static int fnet_dhcp_add_option( fnet_dhcp_message_t *message, unsigned char option_code,
-                                 unsigned char option_length,  void *option_value )
+                                 unsigned char option_length,  const void *option_value )
 {
     if((&message->header.options[FNET_DHCP_OPTIONS_LENGTH] - message->next_option_position)
            < (unsigned int)(option_length + 2U))
@@ -515,8 +515,10 @@ static unsigned char *fnet_dhcp_next_option( fnet_dhcp_message_t *message )
 
     /* Skip pad options.*/
     while(*current_position == FNET_DHCP_OPTION_PAD)
-      if(++current_position >= message->end_position)
-          goto EXIT;
+    {
+        if(++current_position >= message->end_position)
+            goto EXIT;
+    }
 
     /* Check End option.*/
     if(*current_position == FNET_DHCP_OPTION_END)
@@ -552,7 +554,6 @@ static void fnet_dhcp_parse_options( fnet_dhcp_message_t *message, struct fnet_d
 
         switch(*current_option)
         {
-
             case FNET_DHCP_OPTION_SERVER_ID:
               if(option_length == FNET_DHCP_OPTION_SERVER_ID_LENGTH)
                   options->public_options.dhcp_server.s_addr = *(unsigned long *)option_data;
@@ -621,7 +622,8 @@ static void fnet_dhcp_parse_options( fnet_dhcp_message_t *message, struct fnet_d
               break;
               
         #endif /* !FNET_CFG_DHCP_BOOTP */
-
+            default:
+                break;
         /* Todo Other Options. */
         }
     }
@@ -709,7 +711,7 @@ static int fnet_dhcp_send_message( fnet_dhcp_if_t *dhcp )
               
         default:  
           return FNET_ERR;
-    };
+    }
     
 #if FNET_CFG_DHCP_BOOTP
     
@@ -733,7 +735,7 @@ static int fnet_dhcp_send_message( fnet_dhcp_if_t *dhcp )
         fnet_dhcp_add_option(message,
                              FNET_DHCP_OPTION_PARAMETER_REQ_LIST,
                              sizeof(fnet_dhcp_parameter_request_list),
-                             (void *) &fnet_dhcp_parameter_request_list);
+                             &fnet_dhcp_parameter_request_list);
     }
 
     /* Add Maximum DHCP message size option. */
@@ -910,7 +912,7 @@ static void fnet_dhcp_change_state( fnet_dhcp_if_t *dhcp, fnet_dhcp_state_t stat
         default:
           break;  /* do nothing, avoid compiler warning "enumeration value not handled in switch" */          
     #endif /* !FNET_CFG_DHCP_BOOTP */
-    };
+    }
 }
 
 /************************************************************************
@@ -1048,6 +1050,8 @@ static void fnet_dhcp_state_machine( void *fnet_dhcp_if_p )
                 dhcp->offered_options = options;                          /* Save offered options */
                 fnet_dhcp_change_state(dhcp, FNET_DHCP_STATE_REQUESTING); /* => REQUESTING */
             }
+            else
+            {}
         #endif          
             break;
         /*---- BOUND ------------------------------------------------*/
@@ -1137,6 +1141,9 @@ static void fnet_dhcp_state_machine( void *fnet_dhcp_if_p )
                             {
                                 options.public_options.lease_time = FNET_HTONL(FNET_DHCP_LEASE_MAX);
                             }
+                            else
+                            {}
+                        
 
                             if(options.public_options.t1 == 0U || options.public_options.t2 == 0U || orig_lease_time != options.public_options.lease_time)
                             {
@@ -1154,7 +1161,11 @@ static void fnet_dhcp_state_machine( void *fnet_dhcp_if_p )
                     {
                         fnet_dhcp_change_state(dhcp, FNET_DHCP_STATE_INIT);    /* => INIT */
                     }
+                    else
+                    {}
                 }
+                else
+                {}
             }
             else
             {
@@ -1173,8 +1184,8 @@ static void fnet_dhcp_state_machine( void *fnet_dhcp_if_p )
 
             fnet_dhcp_change_state(dhcp, FNET_DHCP_STATE_DISABLED); /* => DISABLED */
             break;
-
         case FNET_DHCP_STATE_DISABLED:
+        default:
             break;
     #endif /* !FNET_CFG_DHCP_BOOTP */
     }
@@ -1310,9 +1321,9 @@ void fnet_dhcp_get_options( struct fnet_dhcp_options *options )
 *
 * DESCRIPTION:
 ************************************************************************/
-void fnet_dhcp_handler_updated_set (fnet_dhcp_handler_updated_t handler, void *param)
+void fnet_dhcp_handler_updated_set (fnet_dhcp_handler_updated_t handler_updated, void *param)
 {
-    fnet_dhcp_if.handler_updated = handler;
+    fnet_dhcp_if.handler_updated = handler_updated;
     fnet_dhcp_if.handler_updated_param = param;    
 }
 
@@ -1321,9 +1332,9 @@ void fnet_dhcp_handler_updated_set (fnet_dhcp_handler_updated_t handler, void *p
 *
 * DESCRIPTION:
 ************************************************************************/
-void fnet_dhcp_handler_discover_set (fnet_dhcp_handler_discover_t handler, void *param)
+void fnet_dhcp_handler_discover_set (fnet_dhcp_handler_discover_t handler_discover, void *param)
 {
-    fnet_dhcp_if.handler_discover = handler;
+    fnet_dhcp_if.handler_discover = handler_discover;
     fnet_dhcp_if.handler_discover_param = param;    
 }
 

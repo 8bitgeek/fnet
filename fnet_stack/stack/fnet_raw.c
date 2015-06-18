@@ -52,8 +52,8 @@
 static int fnet_raw_attach( fnet_socket_t *sk );
 static int fnet_raw_detach( fnet_socket_t *sk );
 static int fnet_raw_connect( fnet_socket_t *sk, struct sockaddr *foreign_addr);
-static int fnet_raw_snd( fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *foreign_addr);
-static int fnet_raw_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr);
+static int fnet_raw_snd( fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *addr);
+static int fnet_raw_rcv(fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *addr);
 static int fnet_raw_shutdown( fnet_socket_t *sk, int how );
 static void fnet_raw_release(void);
 static int fnet_raw_output(struct sockaddr *src_addr, const struct sockaddr *dest_addr, unsigned char protocol_number, fnet_socket_option_t *sockoption, fnet_netbuf_t *nb);
@@ -104,7 +104,9 @@ fnet_prot_if_t fnet_raw_prot_if =
 static void fnet_raw_release( void )
 {
     while(fnet_raw_prot_if.head)
-      fnet_socket_release(&fnet_raw_prot_if.head, fnet_raw_prot_if.head);
+    {
+        fnet_socket_release(&fnet_raw_prot_if.head, fnet_raw_prot_if.head);
+    }
 }
 
 /************************************************************************
@@ -124,11 +126,11 @@ static int fnet_raw_output(  struct sockaddr *src_addr, const struct sockaddr *d
     if(dest_addr->sa_family == AF_INET)
     {
         error = fnet_ip_output(netif, ((struct sockaddr_in *)(src_addr))->sin_addr.s_addr, 
-                                        ((struct sockaddr_in *)(dest_addr))->sin_addr.s_addr, 
+                                        ((const struct sockaddr_in *)(dest_addr))->sin_addr.s_addr, 
                                         protocol_number, 
                                         sockoption->ip_opt.tos,
                                 #if FNET_CFG_MULTICAST
-                                    (unsigned char)((FNET_IP4_ADDR_IS_MULTICAST(((struct sockaddr_in *)(dest_addr))->sin_addr.s_addr)?sockoption->ip_opt.ttl_multicast:sockoption->ip_opt.ttl)),                               
+                                    (unsigned char)((FNET_IP4_ADDR_IS_MULTICAST(((const struct sockaddr_in *)(dest_addr))->sin_addr.s_addr)?sockoption->ip_opt.ttl_multicast:sockoption->ip_opt.ttl)),                               
                                 #else
                                     sockoption->ip_opt.ttl, 
                                 #endif /* FNET_CFG_MULTICAST */                               
@@ -142,13 +144,13 @@ static int fnet_raw_output(  struct sockaddr *src_addr, const struct sockaddr *d
     if(dest_addr->sa_family == AF_INET6)
     {
         /* Check Scope ID.*/
-        netif = fnet_netif_get_by_scope_id( ((struct sockaddr_in6 *)dest_addr)->sin6_scope_id );
+        netif = fnet_netif_get_by_scope_id( ((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id );
         
         error = fnet_ip6_output( netif, 
                                 fnet_socket_addr_is_unspecified(src_addr)? FNET_NULL : &((struct sockaddr_in6 *)(src_addr))->sin6_addr.s6_addr, 
-                                &((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr, 
+                                &((const struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr, 
                                 protocol_number, 
-                                FNET_IP6_ADDR_IS_MULTICAST(&((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr)?sockoption->ip6_opt.hops_multicast:sockoption->ip6_opt.hops_unicast,
+                                FNET_IP6_ADDR_IS_MULTICAST(&((const struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr)?sockoption->ip6_opt.hops_multicast:sockoption->ip6_opt.hops_unicast,
                                 nb,0);
     }
 #endif                               
@@ -309,7 +311,8 @@ void fnet_raw_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct 
             }
         }
     }
-BAD:;
+BAD:
+    return;
 }
 
 /************************************************************************
@@ -355,13 +358,13 @@ static int fnet_raw_shutdown( fnet_socket_t *sk, int how )
 {
     fnet_isr_lock();
 
-    if(how & SD_READ)
+    if((how & SD_READ) != 0)
     {
         sk->receive_buffer.is_shutdown = 1;
         fnet_socket_buffer_release(&sk->receive_buffer);
     }
 
-    if(how & SD_WRITE)
+    if((how & SD_WRITE) != 0)
     {
         sk->send_buffer.is_shutdown = 1;
     }
@@ -422,7 +425,7 @@ static int fnet_raw_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
         goto ERROR;
     }
 
-    if(flags & MSG_DONTROUTE) /* Save */
+    if((flags & MSG_DONTROUTE) != 0) /* Save */
     {
         flags_save = sk->options.flags;
         sk->options.flags |= SO_DONTROUTE;
@@ -430,7 +433,7 @@ static int fnet_raw_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
 
     error = fnet_raw_output(&sk->local_addr, foreign_addr, (unsigned char)sk->protocol_number, &(sk->options), nb);
 
-    if(flags & MSG_DONTROUTE) /* Restore.*/
+    if((flags & MSG_DONTROUTE) != 0) /* Restore.*/
     {
         sk->options.flags = flags_save;
     }

@@ -53,9 +53,9 @@ int fnet_fs_rom_opendir( struct fnet_fs_desc *dir, const char *name);
 int fnet_fs_rom_readdir(struct fnet_fs_desc *dir, struct fnet_fs_dirent* dirent);
 int fnet_fs_rom_fopen( struct fnet_fs_desc *file, const char *name, char mode, struct fnet_fs_desc * re_dir);
 unsigned long fnet_fs_rom_fread (struct fnet_fs_desc *file, char * buf, unsigned long bytes);
-int fnet_fs_rom_mount( void *arg );
+int fnet_fs_rom_mount( const void *arg );
 int fnet_fs_rom_fseek (struct fnet_fs_desc *file, long offset, fnet_fs_seek_origin_t origin) ;
-int fnet_fs_rom_finfo (struct fnet_fs_desc *file, struct fnet_fs_dirent *info);
+static int fnet_fs_rom_finfo (struct fnet_fs_desc *file, struct fnet_fs_dirent *dirent);
 static const struct fnet_fs_rom_node * fnet_fs_rom_find(const struct fnet_fs_rom_node * file_table, const char *name);
 static void fnet_fs_rom_fill_dirent(struct fnet_fs_rom_node * node, struct fnet_fs_dirent* dirent);
 
@@ -128,15 +128,15 @@ void fnet_fs_rom_unregister( void )
 *
 * DESCRIPTION:
 *************************************************************************/
-int fnet_fs_rom_mount( void *arg )
+int fnet_fs_rom_mount( const void *arg )
 {
-    int result = FNET_ERR;
-    struct fnet_fs_rom_image * image;
+    int                             result = FNET_ERR;
+    const struct fnet_fs_rom_image  *image;
     
     if(arg)
     {
         /* Check if the image is ROM FS image and version number*/
-        image = ((struct fnet_fs_rom_image * )arg);
+        image = ((const struct fnet_fs_rom_image * )arg);
         if( (fnet_strcmp( FNET_FS_ROM_NAME, image->name )==0)
             && (image->version == FNET_FS_ROM_VERSION))
         {
@@ -164,7 +164,10 @@ static const struct fnet_fs_rom_node * fnet_fs_rom_find(const struct fnet_fs_rom
         
         if (current->name) 
 		{
-			while (*name == ' ') name++;	        /* Strip leading spaces */
+			while (*name == ' ') 
+            {
+                name++;	        /* Strip leading spaces */
+            }
 	        if (*name == FNET_FS_SPLITTER) name++;	/* Strip heading slash */
 
 			if (*name == '\0') /* Find root */
@@ -213,7 +216,7 @@ int fnet_fs_rom_opendir( struct fnet_fs_desc *dir, const char *name)
     if(dir && name)
     {
         /* Find dir */ 
-        file_table = ((struct fnet_fs_rom_image * )dir->mount->arg)->nodes;
+        file_table = ((const struct fnet_fs_rom_image * )dir->mount->arg)->nodes;
   
         node = fnet_fs_rom_find(file_table, name);
         
@@ -300,7 +303,7 @@ int fnet_fs_rom_fopen( struct fnet_fs_desc *file, const char *name, char mode, s
         if(re_dir && re_dir->id) 
             file_table = (struct fnet_fs_rom_node *) re_dir->id;
         else
-            file_table = ((struct fnet_fs_rom_image * )file->mount->arg)->nodes;
+            file_table = ((const struct fnet_fs_rom_image * )file->mount->arg)->nodes;
   
         node = fnet_fs_rom_find(file_table, name);
         
@@ -389,6 +392,7 @@ int fnet_fs_rom_fseek (struct fnet_fs_desc *file, long offset, fnet_fs_seek_orig
                     break;
                 default:
                     new_pos = -1;
+                    break;
             }
             
             if((new_pos > 0) && (new_pos < size))
@@ -407,7 +411,7 @@ int fnet_fs_rom_fseek (struct fnet_fs_desc *file, long offset, fnet_fs_seek_orig
 *
 * DESCRIPTION:
 *************************************************************************/
-int fnet_fs_rom_finfo (struct fnet_fs_desc *file, struct fnet_fs_dirent *dirent)
+static int fnet_fs_rom_finfo (struct fnet_fs_desc *file, struct fnet_fs_dirent *dirent)
 {
     int result = FNET_ERR;
     if(file && file->id && dirent)

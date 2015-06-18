@@ -55,8 +55,8 @@
 static int fnet_udp_attach( fnet_socket_t *sk );
 static int fnet_udp_detach( fnet_socket_t *sk );
 static int fnet_udp_connect( fnet_socket_t *sk, struct sockaddr *foreign_addr);
-static int fnet_udp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *foreign_addr);
-static int fnet_udp_rcv( fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *foreign_addr);
+static int fnet_udp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const struct sockaddr *addr);
+static int fnet_udp_rcv(fnet_socket_t *sk, char *buf, int len, int flags, struct sockaddr *addr);
 static void fnet_udp_control_input(fnet_prot_notify_t command, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb);
 static int fnet_udp_shutdown( fnet_socket_t *sk, int how );
 static void fnet_udp_input( fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
@@ -66,7 +66,7 @@ static int fnet_udp_output(struct sockaddr * src_addr, const struct sockaddr * d
 #if FNET_CFG_DEBUG_TRACE_UDP
     static void fnet_udp_trace(char *str, fnet_udp_header_t *udp_hdr);
 #else
-    #define fnet_udp_trace(str, udp_hdr)
+    #define fnet_udp_trace(str, udp_hdr)    do{}while(0)
 #endif
 
 /************************************************************************
@@ -114,7 +114,9 @@ fnet_prot_if_t fnet_udp_prot_if =
 static void fnet_udp_release( void )
 {
     while(fnet_udp_prot_if.head)
-      fnet_socket_release(&fnet_udp_prot_if.head, fnet_udp_prot_if.head);
+    {
+        fnet_socket_release(&fnet_udp_prot_if.head, fnet_udp_prot_if.head);
+    }
 }
 
 /************************************************************************
@@ -135,14 +137,16 @@ static int fnet_udp_output(  struct sockaddr *src_addr, const struct sockaddr *d
     if(dest_addr->sa_family == AF_INET6)
     {
         /* Check Scope ID.*/
-        if(((struct sockaddr_in6 *)dest_addr)->sin6_scope_id) /* Take scope id from destination address.*/
+        if(((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id) /* Take scope id from destination address.*/
         {
-            netif = fnet_netif_get_by_scope_id( ((struct sockaddr_in6 *)dest_addr)->sin6_scope_id );
+            netif = fnet_netif_get_by_scope_id( ((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id );
         }
         else if (((struct sockaddr_in6 *)src_addr)->sin6_scope_id) /* Take scope id from source address.*/
         {
             netif = fnet_netif_get_by_scope_id( ((struct sockaddr_in6 *)src_addr)->sin6_scope_id );
         }
+        else
+        {}
     }
 #endif
 
@@ -167,18 +171,18 @@ static int fnet_udp_output(  struct sockaddr *src_addr, const struct sockaddr *d
 
 #if FNET_CFG_CPU_ETH_HW_TX_IP_CHECKSUM
     if( 0 
-#if FNET_CFG_IP4
+    #if FNET_CFG_IP4
         ||( (dest_addr->sa_family == AF_INET) 
         && ((netif = fnet_ip_route(((struct sockaddr_in *)(dest_addr))->sin_addr.s_addr))!= FNET_NULL)
         && (netif->features & FNET_NETIF_FEATURE_HW_TX_PROTOCOL_CHECKSUM)
         && (fnet_ip_will_fragment(netif, nb->total_length) == FNET_FALSE) /* Fragmented packets are not inspected.*/  ) 
-#endif
-#if FNET_CFG_IP6
+    #endif
+    #if FNET_CFG_IP6
         ||( (dest_addr->sa_family == AF_INET6) 
         && (netif || (((netif = fnet_ip6_route(&((struct sockaddr_in6 *)(src_addr))->sin6_addr.s6_addr, &((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr)))!= FNET_NULL) )
         && (netif->features & FNET_NETIF_FEATURE_HW_TX_PROTOCOL_CHECKSUM)
         && (fnet_ip6_will_fragment(netif, nb->total_length) == FNET_FALSE) /* Fragmented packets are not inspected.*/  ) 
-#endif
+    #endif
     )
     {
         nb->flags |= FNET_NETBUF_FLAG_HW_PROTOCOL_CHECKSUM;
@@ -196,11 +200,11 @@ static int fnet_udp_output(  struct sockaddr *src_addr, const struct sockaddr *d
     if(dest_addr->sa_family == AF_INET)
     {
         error = fnet_ip_output(netif, 
-                                ((struct sockaddr_in *)(src_addr))->sin_addr.s_addr, 
-                                ((struct sockaddr_in *)(dest_addr))->sin_addr.s_addr, 
+                                ((const struct sockaddr_in *)(src_addr))->sin_addr.s_addr, 
+                                ((const struct sockaddr_in *)(dest_addr))->sin_addr.s_addr, 
                                 FNET_IP_PROTOCOL_UDP, sockoption->ip_opt.tos,
                             #if FNET_CFG_MULTICAST
-                                (unsigned char)((FNET_IP4_ADDR_IS_MULTICAST(((struct sockaddr_in *)(dest_addr))->sin_addr.s_addr)?sockoption->ip_opt.ttl_multicast:sockoption->ip_opt.ttl)),                               
+                                (unsigned char)((FNET_IP4_ADDR_IS_MULTICAST(((const struct sockaddr_in *)(dest_addr))->sin_addr.s_addr)?sockoption->ip_opt.ttl_multicast:sockoption->ip_opt.ttl)),                               
                             #else
                                 sockoption->ip_opt.ttl, 
                             #endif /* FNET_CFG_MULTICAST */                               
@@ -215,16 +219,16 @@ static int fnet_udp_output(  struct sockaddr *src_addr, const struct sockaddr *d
     {
         error = fnet_ip6_output( netif, 
                                 fnet_socket_addr_is_unspecified(src_addr)? FNET_NULL : &((struct sockaddr_in6 *)(src_addr))->sin6_addr.s6_addr, 
-                                &((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr, 
+                                &((const struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr, 
                                 FNET_IP_PROTOCOL_UDP, 
-                                FNET_IP6_ADDR_IS_MULTICAST(&((struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr)?sockoption->ip6_opt.hops_multicast:sockoption->ip6_opt.hops_unicast,
+                                FNET_IP6_ADDR_IS_MULTICAST(&((const struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr)?sockoption->ip6_opt.hops_multicast:sockoption->ip6_opt.hops_unicast,
                                 nb, 
                                 checksum_p
                                 );
     }
     else
 #endif                               
-    {};
+    {}
 
     return (error);
 }
@@ -272,7 +276,7 @@ static void fnet_udp_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  
                 unsigned short sum;
                 
                 sum = fnet_checksum_pseudo_start( nb, FNET_HTONS((unsigned short)FNET_IP_PROTOCOL_UDP), (unsigned short)udp_length );
-                sum = fnet_checksum_pseudo_end( sum, (char *)foreign_addr->sa_data, (char *)local_addr->sa_data, 
+                sum = fnet_checksum_pseudo_end( sum, &foreign_addr->sa_data[0], &local_addr->sa_data[0], 
                             (local_addr->sa_family == AF_INET) ? sizeof(fnet_ip4_addr_t) : sizeof(fnet_ip6_addr_t));
 
                 if(sum)
@@ -465,13 +469,13 @@ static int fnet_udp_shutdown( fnet_socket_t *sk, int how )
 {
     fnet_isr_lock();
 
-    if(how & SD_READ)
+    if((how & SD_READ) != 0)
     {
         sk->receive_buffer.is_shutdown = 1;
         fnet_socket_buffer_release(&sk->receive_buffer);
     }
 
-    if(how & SD_WRITE)
+    if((how & SD_WRITE) != 0)
     {
         sk->send_buffer.is_shutdown = 1;
     }
@@ -546,7 +550,7 @@ static int fnet_udp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
         sk->local_addr.sa_port = fnet_socket_get_uniqueport(sk->protocol_interface->head, &sk->local_addr); /* Get ephemeral port.*/
     }
 
-    if(flags & MSG_DONTROUTE) /* Save */
+    if((flags & MSG_DONTROUTE) != 0) /* Save */
     {
         flags_save = sk->options.flags;
         sk->options.flags |= SO_DONTROUTE;
@@ -554,7 +558,7 @@ static int fnet_udp_snd( fnet_socket_t *sk, char *buf, int len, int flags, const
 
     error = fnet_udp_output(&sk->local_addr, foreign_addr, &(sk->options), nb);
 
-    if(flags & MSG_DONTROUTE) /* Restore.*/
+    if((flags & MSG_DONTROUTE) != 0) /* Restore.*/
     {
         sk->options.flags = flags_save;
     }

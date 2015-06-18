@@ -45,8 +45,8 @@
 #define _FAPP_SETGET_H_
 
 #if FAPP_CFG_SETGET_CMD
-void fapp_set_cmd( fnet_shell_desc_t desc, int, char ** );
-void fapp_get_cmd( fnet_shell_desc_t desc, int, char ** );
+void fapp_set_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_get_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 #endif
 
 #endif

@@ -75,7 +75,7 @@ static fnet_event_desc_t ip_event;
 static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t* nb, int do_not_route);
 static void fnet_ip_input_low( void *cookie );
 static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, unsigned int *optlen );
-static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigned int optlen );
+static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *optval, unsigned int optlen );
 
 #if FNET_CFG_IP4_FRAGMENTATION
     fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr );
@@ -90,7 +90,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, 
 #if FNET_CFG_DEBUG_TRACE_IP
     void fnet_ip_trace(char *str, fnet_ip_header_t *ip_hdr);
 #else
-    #define fnet_ip_trace(str, ip_hdr)
+    #define fnet_ip_trace(str, ip_hdr)  do{}while(0)
 #endif
 
 
@@ -228,7 +228,7 @@ int fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_add
     if(src_ip == INADDR_ANY)
     {
         src_ip = netif->ip4_addr.address;
-    };
+    }
 
     if((nb->total_length + sizeof(fnet_ip_header_t)) > FNET_IP_MAX_PACKET)
     {
@@ -285,7 +285,7 @@ int fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_add
         frag_length = (int)(netif->mtu - header_length) & ~7; /* rounded down to an 8-byte boundary.*/
         first_frag_length = frag_length;
 
-        if((ipheader->flags_fragment_offset & FNET_HTONS(FNET_IP_DF)) ||   /* The fragmentation is prohibited. */
+        if(((ipheader->flags_fragment_offset & FNET_HTONS(FNET_IP_DF)) != 0) ||   /* The fragmentation is prohibited. */
         (frag_length < 8))                                    /* The MTU is too small.*/
         {
             error_code = FNET_ERR_MSGSIZE;   
@@ -548,7 +548,7 @@ static void fnet_ip_input_low( void *cookie )
             }
 
             /* Reassembly.*/
-            if(hdr->flags_fragment_offset & ~FNET_HTONS(FNET_IP_DF)) /* the MF bit or fragment offset is nonzero.*/
+            if((hdr->flags_fragment_offset & ~FNET_HTONS(FNET_IP_DF)) != 0) /* the MF bit or fragment offset is nonzero.*/
             {
     #if FNET_CFG_IP4_FRAGMENTATION
                 if((nb = fnet_ip_reassembly(&nb)) == 0)
@@ -680,7 +680,7 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
         frag_list_ptr->desination_addr = iphdr->desination_addr;
         frag_ptr = 0;
 
-        if(iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF)) 
+        if((iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF)) != 0) 
             cur_frag_ptr->mf |= 1;
 
         cur_frag_ptr->offset = (unsigned short)(fnet_ntohs(cur_frag_ptr->offset) << 3); /* Convert offset to bytes (Host endian).*/ 
@@ -690,7 +690,7 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
     }
     else
     {
-        if(iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF))
+        if((iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF)) != 0)
             cur_frag_ptr->mf |= 1;
 
         cur_frag_ptr->offset = (unsigned short)(fnet_ntohs(cur_frag_ptr->offset) << 3); /* Convert offset to bytes.*/
@@ -757,7 +757,7 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
         frag_ptr = frag_ptr->next;
     } while (frag_ptr != frag_list_ptr->frag_ptr);
 
-    if(frag_ptr->prev->mf & 1)
+    if((frag_ptr->prev->mf & 1) != 0)
         goto NEXT_FRAG;
 
     /* Reconstruct datagram.*/
@@ -1200,7 +1200,7 @@ static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, u
 *
 * DESCRIPTION: This function sets the value of IPv4 socket option. 
 *************************************************************************/
-static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, unsigned int optlen )
+static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *optval, unsigned int optlen )
 {
     int result = FNET_OK;
 
@@ -1215,7 +1215,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, 
                 break;
             }
 
-            sock->options.ip_opt.tos = (unsigned char) (*((int *)(optval)));
+            sock->options.ip_opt.tos = (unsigned char) (*((const int *)(optval)));
             break;
         /******************************/
         case IP_TTL: /* Set IP TTL for outgoing datagrams. */
@@ -1225,7 +1225,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, 
                 break;
             }
 
-            sock->options.ip_opt.ttl = (unsigned char) (*((int *)(optval)));
+            sock->options.ip_opt.ttl = (unsigned char) (*((const int *)(optval)));
             break;
     #if FNET_CFG_MULTICAST 
         /******************************/
@@ -1236,7 +1236,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, 
                 result = FNET_ERR_INVAL;
                 break;
             }
-            sock->options.ip_opt.ttl_multicast = (unsigned char) (*((int *)(optval)));
+            sock->options.ip_opt.ttl_multicast = (unsigned char) (*((const int *)(optval)));
             break;
         /******************************/
         case IP_ADD_MEMBERSHIP:     /* Join the socket to the supplied multicast group on 
@@ -1245,7 +1245,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, char *optval, 
         {                     
             int                             i;
             fnet_ip4_multicast_list_entry_t **multicast_entry = FNET_NULL;
-            struct ip_mreq                  *mreq = (struct ip_mreq *)optval;
+            const struct ip_mreq            *mreq = optval;
             fnet_netif_t                    *netif;
                         
                         
@@ -1392,14 +1392,14 @@ void fnet_ip_trace(char *str,fnet_ip_header_t *ip_hdr)
 *
 * DESCRIPTION: This function sets the value of IP socket option. 
 *************************************************************************/
-int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, char *optval, unsigned int optlen )
+int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, const void *optval, unsigned int optlen )
 {
     int error;
 
     if((optval) && (optlen))
     {
     #if FNET_CFG_IP4    
-        if((level == IPPROTO_IP) && (sock->protocol_interface->family & AF_INET))
+        if((level == IPPROTO_IP) && ((sock->protocol_interface->family & AF_INET) != 0))
         {
             error = fnet_ip4_setsockopt(sock, optname, optval, optlen);
             if(error != FNET_OK)
@@ -1408,7 +1408,7 @@ int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, char *optva
         else
     #endif
     #if FNET_CFG_IP6
-        if((level == IPPROTO_IPV6) && (sock->protocol_interface->family & AF_INET6))
+        if((level == IPPROTO_IPV6) && ((sock->protocol_interface->family & AF_INET6) != 0))
         {
             error = fnet_ip6_setsockopt(sock, optname, optval, optlen);
             if(error != FNET_OK)
@@ -1443,7 +1443,7 @@ ERROR_SOCK:
 * DESCRIPTION: This function retrieves the current value 
 *              of IP-layer socket option.
 *************************************************************************/
-int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optval, unsigned int *optlen )
+int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, void *optval, unsigned int *optlen )
 {
     int error;
 
@@ -1451,7 +1451,7 @@ int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optva
     {
     
     #if FNET_CFG_IP4 
-        if((level == IPPROTO_IP) && (sock->protocol_interface->family & AF_INET))
+        if((level == IPPROTO_IP) && ((sock->protocol_interface->family & AF_INET) != 0))
         {
             error = fnet_ip4_getsockopt(sock, optname, optval, optlen);
             if(error != FNET_OK)
@@ -1460,7 +1460,7 @@ int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, char *optva
         else
     #endif 
     #if FNET_CFG_IP6
-        if((level == IPPROTO_IPV6) && (sock->protocol_interface->family & AF_INET6))
+        if((level == IPPROTO_IPV6) && ((sock->protocol_interface->family & AF_INET6) != 0))
         {
             error = fnet_ip6_getsockopt(sock, optname, optval, optlen);
             if(error != FNET_OK)

@@ -73,7 +73,7 @@
 #if FNET_CFG_DEBUG_HTTP    
     #define FNET_DEBUG_HTTP   FNET_DEBUG
 #else
-    #define FNET_DEBUG_HTTP(...)
+    #define FNET_DEBUG_HTTP(...)    do{}while(0)
 #endif
 
 #if FNET_CFG_HTTP_VERSION_MAJOR /* HTTP/1.x*/
@@ -182,9 +182,9 @@ struct fnet_http_response
 *************************************************************************/
 struct fnet_http_uri
 {
-	char * path;            /* File path (with file extension). */
-	char * extension;       /* File extension. */
-	char * query;           /* Optional query string. */
+	char * path;                /* File path (with file extension). */
+	const char * extension;     /* File extension. */
+	char * query;               /* Optional query string. */
 };
 
 /************************************************************************
@@ -213,7 +213,7 @@ struct fnet_http_session_if
     union 
     {
         FNET_FS_FILE file_desc;
-        void * data_ptr;
+        const void * data_ptr;
     } send_param;
     struct fnet_http_response   response;                       /* Holds the accumulated data for the HTTP 1.0 response header */
     struct fnet_http_request    request; 

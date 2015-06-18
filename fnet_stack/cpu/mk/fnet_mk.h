@@ -987,7 +987,7 @@ typedef struct FNET_MK_PORT_MemMap {
    ---------------------------------------------------------------------------- */
 
 /* PORT - Register accessors */
-#define FNET_MK_PORT_PCR_REG(base,index)                 ((base)->PCR[index])
+#define FNET_MK_PORT_PCR_REG(base,index)                 ((base)->PCR[(index)])
 #define FNET_MK_PORT_GPCLR_REG(base)                     ((base)->GPCLR)
 #define FNET_MK_PORT_GPCHR_REG(base)                     ((base)->GPCHR)
 #define FNET_MK_PORT_ISFR_REG(base)                      ((base)->ISFR)
@@ -1306,12 +1306,12 @@ typedef struct FNET_MK_PORT_MemMap {
 #define FNET_MK_PORTF_DFCR                               FNET_MK_PORT_DFCR_REG(FNET_MK_PORTF_BASE_PTR)
 #define FNET_MK_PORTF_DFWR                               FNET_MK_PORT_DFWR_REG(FNET_MK_PORTF_BASE_PTR)
 /* PORT - Register array accessors */
-#define FNET_MK_PORTA_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTA_BASE_PTR,index)
-#define FNET_MK_PORTB_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTB_BASE_PTR,index)
-#define FNET_MK_PORTC_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTC_BASE_PTR,index)
-#define FNET_MK_PORTD_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTD_BASE_PTR,index)
-#define FNET_MK_PORTE_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTE_BASE_PTR,index)
-#define FNET_MK_PORTF_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,index)
+#define FNET_MK_PORTA_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTA_BASE_PTR,(index))
+#define FNET_MK_PORTB_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTB_BASE_PTR,(index))
+#define FNET_MK_PORTC_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTC_BASE_PTR,(index))
+#define FNET_MK_PORTD_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTD_BASE_PTR,(index))
+#define FNET_MK_PORTE_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTE_BASE_PTR,(index))
+#define FNET_MK_PORTF_PCR(index)                         FNET_MK_PORT_PCR_REG(FNET_MK_PORTF_BASE_PTR,(index))
 
 /* ----------------------------------------------------------------------------
    -- NVIC

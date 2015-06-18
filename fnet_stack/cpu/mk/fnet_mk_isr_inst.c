@@ -52,7 +52,7 @@ int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority)
 {
     int result;
     unsigned long *irq_vec;
-    int div;
+    int divider;
     int irq_number; /* The irq number NOT the vector number.*/
 
     irq_vec = (unsigned long *)(FNET_CFG_CPU_VECTOR_TABLE) + vector_number;
@@ -66,12 +66,12 @@ int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority)
     {        
         /* Make sure that the IRQ is an allowable number. */
         irq_number = vector_number - 16;
-        div = irq_number/32;
-        if((div >= 0) && (div < 3))
+        divider = irq_number/32;
+        if((divider >= 0) && (divider < 3))
         {
             /* Initialize the NVIC to enable the specified IRQ.*/
-            FNET_MK_NVIC_ICPR(div) |= 1 << (irq_number%32); /* Clear-pending. */
-            FNET_MK_NVIC_ISER(div) |= 1 << (irq_number%32); /* Set-enable.*/
+            FNET_MK_NVIC_ICPR(divider) |= 1 << (irq_number%32); /* Clear-pending. */
+            FNET_MK_NVIC_ISER(divider) |= 1 << (irq_number%32); /* Set-enable.*/
             /* Set priority.*/
             FNET_MK_NVIC_IP(irq_number) = (0x7-(priority&0x7))<<4;
         }

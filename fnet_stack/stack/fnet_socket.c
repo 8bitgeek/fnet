@@ -267,10 +267,15 @@ fnet_socket_t *fnet_socket_lookup( fnet_socket_t *head,  struct sockaddr *local_
         if(!fnet_socket_addr_is_unspecified(&sock->local_addr))
         {
             if(fnet_socket_addr_is_unspecified(local_addr))
+            {
                 wildcard++;
-
+            }
             else if(!fnet_socket_addr_are_equal(&sock->local_addr, local_addr))
+            {
                 continue;
+            }
+            else
+            {}
         }
         else
         {
@@ -282,10 +287,15 @@ fnet_socket_t *fnet_socket_lookup( fnet_socket_t *head,  struct sockaddr *local_
         if(!fnet_socket_addr_is_unspecified(&sock->foreign_addr))
         {
             if(fnet_socket_addr_is_unspecified(foreign_addr))
+            {
                 wildcard++;
-
+            }
             else if((!fnet_socket_addr_are_equal(&sock->foreign_addr, foreign_addr)) || (sock->foreign_addr.sa_port != foreign_addr->sa_port))
+            {
                 continue;
+            }
+            else
+            {}
         }
         else
         {
@@ -546,6 +556,8 @@ int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
                     }
                     break;
     #endif /* FNET_CFG_IP6 */
+                default:
+                    break;
             }            
         }
 
@@ -867,7 +879,7 @@ SOCKET accept( SOCKET s, struct sockaddr *addr, unsigned int *addrlen )
                     fnet_isr_unlock();
                     error = FNET_ERR_AGAIN;
                     goto ERROR_SOCK;
-                };
+                }
 
                 fnet_socket_desc_set(desc, sock_new);
                 fnet_socket_list_add(&sock->protocol_interface->head, sock_new);
@@ -1194,7 +1206,7 @@ ERROR:
 * DESCRIPTION: This function sets the current value for a socket option 
 *              associated with a socket
 *************************************************************************/
-int setsockopt( SOCKET s, int level, int optname, char *optval, unsigned int optlen )
+int setsockopt( SOCKET s, int level, int optname, const void *optval, unsigned int optlen )
 {
     fnet_socket_t   *sock;
     int             error;
@@ -1227,10 +1239,10 @@ int setsockopt( SOCKET s, int level, int optname, char *optval, unsigned int opt
                           goto ERROR_SOCK;
                       }
 
-                      sock->options.linger_ticks = ((struct linger *)optval)->l_linger
+                      sock->options.linger_ticks = ((const struct linger *)optval)->l_linger
                                                     * (1000 / FNET_TIMER_PERIOD_MS);
 
-                      if(((struct linger *)optval)->l_onoff)
+                      if(((const struct linger *)optval)->l_onoff)
                           sock->options.flags |= optname;
                       else
                           sock->options.flags &= ~optname;
@@ -1248,7 +1260,7 @@ int setsockopt( SOCKET s, int level, int optname, char *optval, unsigned int opt
                           goto ERROR_SOCK;
                       }
 
-                      if(*((int *)optval))
+                      if(*((const int *)optval))
                           sock->options.flags |= optname;
                       else
                           sock->options.flags &= ~optname;
@@ -1264,9 +1276,9 @@ int setsockopt( SOCKET s, int level, int optname, char *optval, unsigned int opt
                       }
 
                       if(optname == SO_SNDBUF)
-                          sock->send_buffer.count_max = *((unsigned long *)optval);
+                          sock->send_buffer.count_max = *((const unsigned long *)optval);
                       else
-                          sock->receive_buffer.count_max = *((unsigned long *)optval);
+                          sock->receive_buffer.count_max = *((const unsigned long *)optval);
 
                       break;
                     default:
@@ -1304,7 +1316,7 @@ ERROR:
 * DESCRIPTION: This function retrieves the current value for 
 *              a socket option associated with a socket 
 *************************************************************************/
-int getsockopt( SOCKET s, int level, int optname, char *optval, unsigned int *optlen )
+int getsockopt( SOCKET s, int level, int optname, void *optval, unsigned int *optlen )
 {
     fnet_socket_t   *sock;
     int             error;
@@ -1648,7 +1660,7 @@ static int fnet_socket_addr_check_len(const struct sockaddr *addr, unsigned int 
     if(addr && addr_len)
     {
 #if FNET_CFG_IP6
-        if(addr->sa_family & AF_INET6)
+        if((addr->sa_family & AF_INET6) != 0)
         {
             if(addr_len < sizeof(struct sockaddr_in6))
             {
@@ -1659,7 +1671,7 @@ static int fnet_socket_addr_check_len(const struct sockaddr *addr, unsigned int 
 #endif /* FNET_CFG_IP4 */
 
 #if FNET_CFG_IP4
-        if(addr->sa_family & AF_INET)
+        if((addr->sa_family & AF_INET) !=0 )
         {
             if(addr_len < sizeof(struct sockaddr_in))
             {
@@ -1692,21 +1704,21 @@ int fnet_socket_addr_is_multicast(const struct sockaddr *addr)
     if(addr)
     {
 #if FNET_CFG_IP6
-        if(addr->sa_family & AF_INET6)
+        if((addr->sa_family & AF_INET6) != 0)
         {
-            result = FNET_IP6_ADDR_IS_MULTICAST( &((struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
+            result = FNET_IP6_ADDR_IS_MULTICAST( &((const struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
         }
         else
 #endif /* FNET_CFG_IP4 */
 
 #if FNET_CFG_IP4
-        if(addr->sa_family & AF_INET)
+        if((addr->sa_family & AF_INET) != 0)
         {
-            result = FNET_IP4_ADDR_IS_MULTICAST( ((struct sockaddr_in *)addr)->sin_addr.s_addr);
+            result = FNET_IP4_ADDR_IS_MULTICAST( ((const struct sockaddr_in *)addr)->sin_addr.s_addr);
         }
         else
 #endif /* FNET_CFG_IP4 */
-        {};
+        {}
     }
 
     return result;
@@ -1724,9 +1736,9 @@ int fnet_socket_addr_is_broadcast(const struct sockaddr *addr, fnet_netif_t *net
 #if FNET_CFG_IP4
     if(addr)
     {
-        if(addr->sa_family & AF_INET)
+        if((addr->sa_family & AF_INET) != 0)
         {
-            result = fnet_ip_addr_is_broadcast( ((struct sockaddr_in *)addr)->sin_addr.s_addr, netif );
+            result = fnet_ip_addr_is_broadcast( ((const struct sockaddr_in *)addr)->sin_addr.s_addr, netif );
         }
     }        
 #else
@@ -1749,20 +1761,20 @@ int fnet_socket_addr_is_unspecified(const struct sockaddr *addr)
     if(addr)
     {
 #if FNET_CFG_IP6
-        if(addr->sa_family & AF_INET6)
+        if((addr->sa_family & AF_INET6) != 0)
         {
-            result = FNET_IP6_ADDR_IS_UNSPECIFIED( &((struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
+            result = FNET_IP6_ADDR_IS_UNSPECIFIED( &((const struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
         }
         else
 #endif 
 #if FNET_CFG_IP4
-        if(addr->sa_family & AF_INET)
+        if((addr->sa_family & AF_INET) != 0)
         {
-            result = FNET_IP4_ADDR_IS_UNSPECIFIED( ((struct sockaddr_in *)addr)->sin_addr.s_addr);
+            result = FNET_IP4_ADDR_IS_UNSPECIFIED( ((const struct sockaddr_in *)addr)->sin_addr.s_addr);
         }
         else
 #endif 
-        {};
+        {}
     }
 
     return result;
@@ -1780,20 +1792,20 @@ int fnet_socket_addr_are_equal(const struct sockaddr *addr1, const struct sockad
     if(addr1 && addr2 && (addr1->sa_family == addr2->sa_family))
     {
 #if FNET_CFG_IP6
-        if(addr1->sa_family & AF_INET6)
+        if((addr1->sa_family & AF_INET6) != 0)
         {
-            result =  FNET_IP6_ADDR_EQUAL( &((struct sockaddr_in6 *)addr1)->sin6_addr.s6_addr, &((struct sockaddr_in6 *)addr2)->sin6_addr.s6_addr);
+            result =  FNET_IP6_ADDR_EQUAL( &((const struct sockaddr_in6 *)addr1)->sin6_addr.s6_addr, &((const struct sockaddr_in6 *)addr2)->sin6_addr.s6_addr);
         }
         else
 #endif
 #if FNET_CFG_IP4
-        if(addr1->sa_family & AF_INET)
+        if((addr1->sa_family & AF_INET) != 0)
         {
-            result = (((struct sockaddr_in *)addr1)->sin_addr.s_addr == (((struct sockaddr_in *)addr2)->sin_addr.s_addr));
+            result = (((const struct sockaddr_in *)addr1)->sin_addr.s_addr == (((const struct sockaddr_in *)addr2)->sin_addr.s_addr));
         }
         else
 #endif
-        {};
+        {}
     }
 
     return result;
@@ -1810,20 +1822,20 @@ void fnet_socket_ip_addr_copy(const struct sockaddr *from_addr, struct sockaddr 
     if(from_addr && to_addr && (to_addr->sa_family == from_addr->sa_family))
     {
 #if FNET_CFG_IP6
-        if(from_addr->sa_family & AF_INET6)
+        if((from_addr->sa_family & AF_INET6) != 0)
         {
-            FNET_IP6_ADDR_COPY(&((struct sockaddr_in6 *)from_addr)->sin6_addr.s6_addr, &((struct sockaddr_in6 *)to_addr)->sin6_addr.s6_addr);
+            FNET_IP6_ADDR_COPY(&((const struct sockaddr_in6 *)from_addr)->sin6_addr.s6_addr, &((struct sockaddr_in6 *)to_addr)->sin6_addr.s6_addr);
         }
         else
 #endif 
 #if FNET_CFG_IP4
-        if(from_addr->sa_family & AF_INET)
+        if((from_addr->sa_family & AF_INET) != 0)
         {
-            ((struct sockaddr_in *)to_addr)->sin_addr.s_addr = ((struct sockaddr_in *)from_addr)->sin_addr.s_addr;
+            ((struct sockaddr_in *)to_addr)->sin_addr.s_addr = ((const struct sockaddr_in *)from_addr)->sin_addr.s_addr;
         }
         else
 #endif 
-        {};
+        {}
     }
 }
 
@@ -1837,20 +1849,20 @@ void fnet_socket_addr_copy(const struct sockaddr *from_addr, struct sockaddr *to
     if(from_addr && to_addr)
     {
 #if FNET_CFG_IP6
-        if(from_addr->sa_family & AF_INET6)
+        if((from_addr->sa_family & AF_INET6) != 0)
         {
             fnet_memcpy(to_addr, from_addr, sizeof(struct sockaddr_in6));
         }
         else
 #endif
 #if FNET_CFG_IP4
-        if(from_addr->sa_family & AF_INET)
+        if((from_addr->sa_family & AF_INET) != 0)
         {
             fnet_memcpy(to_addr, from_addr, sizeof(struct sockaddr_in));
         }
         else
 #endif
-        {};
+        {}
     }
 }
 
@@ -1867,19 +1879,20 @@ fnet_netif_t *fnet_socket_addr_route(const struct sockaddr *dest_addr)
     {
         switch(dest_addr->sa_family)
         {
-#if FNET_CFG_IP4
+        #if FNET_CFG_IP4
             case AF_INET:
-                result = fnet_ip_route(((struct sockaddr_in *)dest_addr)->sin_addr.s_addr);
+                result = fnet_ip_route(((const struct sockaddr_in *)dest_addr)->sin_addr.s_addr);
                 break;
-#endif 
-#if FNET_CFG_IP6                
+        #endif 
+        #if FNET_CFG_IP6                
             case AF_INET6:
 
                 /* Check Scope ID.*/
-                if((result = fnet_netif_get_by_scope_id( ((struct sockaddr_in6 *)dest_addr)->sin6_scope_id )) == FNET_NULL)
+                if((result = fnet_netif_get_by_scope_id( ((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id )) == FNET_NULL)
                 {
-                    fnet_ip6_addr_t *src_ip;
-                    src_ip = (fnet_ip6_addr_t *)fnet_ip6_select_src_addr(FNET_NULL, &((struct sockaddr_in6 *)dest_addr)->sin6_addr.s6_addr);
+                    const fnet_ip6_addr_t   *src_ip;
+
+                    src_ip = fnet_ip6_select_src_addr(FNET_NULL, &((const struct sockaddr_in6 *)dest_addr)->sin6_addr.s6_addr);
                 
                     if(src_ip)
                     {
@@ -1887,7 +1900,9 @@ fnet_netif_t *fnet_socket_addr_route(const struct sockaddr *dest_addr)
                     } 
                 }
                 break;
-#endif 
+        #endif
+            default:
+                break;
         }
     }
     

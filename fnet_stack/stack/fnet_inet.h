@@ -219,7 +219,7 @@ int fnet_inet_pton (fnet_address_family_t family, const char *str, void *addr, u
  * structure.
  *
  ******************************************************************************/
-int fnet_inet_ptos (char *str, struct sockaddr *addr);
+int fnet_inet_ptos (const char *str, struct sockaddr *addr);
 
 
 /*! @} */

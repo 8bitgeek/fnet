@@ -286,7 +286,7 @@ void fnet_fs_release(void);
  * mount point named by the @c mount_name and is ready to use. 
  *
  ******************************************************************************/
-int fnet_fs_mount( char *fs_name, const char *mount_name, void *arg );
+int fnet_fs_mount( char *fs_name, const char *mount_name, const void *arg );
 
 /***************************************************************************/ /*!
  *

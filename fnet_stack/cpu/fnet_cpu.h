@@ -262,9 +262,9 @@ fnet_cpu_irq_desc_t fnet_cpu_irq_disable(void);
  *
  * @brief    Enables interrupts.
  *
- * @param desc     IRQ status descriptor returned by the 
- *                 @ref fnet_cpu_irq_disable() function.@n
- *                 Pass @c 0 value to enable all interrupts.
+ * @param irq_desc     IRQ status descriptor returned by the 
+ *                      @ref fnet_cpu_irq_disable() function.@n
+ *                      Pass @c 0 value to enable all interrupts.
  *
  * @see fnet_cpu_irq_disable()
  *
@@ -275,7 +275,7 @@ fnet_cpu_irq_desc_t fnet_cpu_irq_disable(void);
  * The functions can enable all interrupts by passing into it the @c 0 value.
  *
  ******************************************************************************/
-void fnet_cpu_irq_enable(fnet_cpu_irq_desc_t desc);
+void fnet_cpu_irq_enable(fnet_cpu_irq_desc_t irq_desc);
 
 /***************************************************************************/ /*!
  *
@@ -379,7 +379,7 @@ void fnet_cpu_flash_erase(void *flash_page_addr);
  * to the Flash memory pointed by @c dest.
  *
  ******************************************************************************/
-void fnet_cpu_flash_write(unsigned char *dest, unsigned char *data);
+void fnet_cpu_flash_write(unsigned char *dest, const unsigned char *data);
 
 /***************************************************************************/ /*!
  *

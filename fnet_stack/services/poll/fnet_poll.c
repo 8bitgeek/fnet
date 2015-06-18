@@ -104,7 +104,7 @@ fnet_poll_desc_t fnet_poll_service_register( fnet_poll_service_t service, void *
         while(fnet_poll_if.list[i].service && i < FNET_CFG_POLL_MAX)
         {
             i++;
-        };
+        }
 
         if(i != FNET_CFG_POLL_MAX)
         {
@@ -125,13 +125,13 @@ fnet_poll_desc_t fnet_poll_service_register( fnet_poll_service_t service, void *
 *
 * DESCRIPTION: This function removes service routine from the polling list.
 *************************************************************************/
-int fnet_poll_service_unregister( fnet_poll_desc_t descriptor )
+int fnet_poll_service_unregister( fnet_poll_desc_t desc )
 {
     int result;
 
-    if(descriptor < FNET_CFG_POLL_MAX)
+    if(desc < FNET_CFG_POLL_MAX)
     {
-        fnet_poll_if.list[descriptor].service = 0;
+        fnet_poll_if.list[desc].service = 0;
         result = FNET_OK;
     }
     else

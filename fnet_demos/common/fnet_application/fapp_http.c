@@ -272,7 +272,7 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
 *************************************************************************/
 static int fapp_http_cgi_stdata_handle(char * query, long *cookie)
 {
-    unsigned long                   time;
+    unsigned long                   cur_time;
     unsigned long                   t_hour;
     unsigned long                   t_min;
     unsigned long                   t_sec;
@@ -281,10 +281,10 @@ static int fapp_http_cgi_stdata_handle(char * query, long *cookie)
     FNET_COMP_UNUSED_ARG(query);
     
 	/* Get Time. */    
-	time = fnet_timer_ticks();
-	t_hour = time/FNET_TIMER_TICK_IN_HOUR;
-	t_min  = (time%FNET_TIMER_TICK_IN_HOUR)/FNET_TIMER_TICK_IN_MIN;
-	t_sec  = (time%FNET_TIMER_TICK_IN_MIN)/FNET_TIMER_TICK_IN_SEC;
+	cur_time = fnet_timer_ticks();
+	t_hour = cur_time/FNET_TIMER_TICK_IN_HOUR;
+	t_min  = (cur_time%FNET_TIMER_TICK_IN_HOUR)/FNET_TIMER_TICK_IN_MIN;
+	t_sec  = (cur_time%FNET_TIMER_TICK_IN_MIN)/FNET_TIMER_TICK_IN_SEC;
 	
 	/* Get statistics. */
     fnet_memset_zero( &statistics, sizeof(struct fnet_netif_statistics) );
@@ -299,8 +299,8 @@ static int fapp_http_cgi_stdata_handle(char * query, long *cookie)
     return FNET_OK;
 }
 
-#define FAPP_HTTP_CGI_GRAPH_MIN     (30)
-static int fapp_http_cgi_rand_next;
+#define FAPP_HTTP_CGI_GRAPH_MIN     (30u)
+static unsigned int fapp_http_cgi_rand_next;
 /************************************************************************
 * NAME: fapp_http_cgi_rand
 *
@@ -309,7 +309,7 @@ static int fapp_http_cgi_rand_next;
 static unsigned int fapp_http_cgi_rand(void)
 {
   fapp_http_cgi_rand_next = fapp_http_cgi_rand_next * 11 + 12;
-  return (unsigned int)(((fapp_http_cgi_rand_next>>4) & 0xFF) + FAPP_HTTP_CGI_GRAPH_MIN);
+  return (((fapp_http_cgi_rand_next>>4) & 0xFFlu) + FAPP_HTTP_CGI_GRAPH_MIN);
 }
 
 /************************************************************************
@@ -390,7 +390,7 @@ static int fapp_http_post_receive (char *buffer, unsigned long buffer_size, long
 *
 * DESCRIPTION: Releases HTTP server.
 *************************************************************************/
-void fapp_http_release()
+void fapp_http_release(void)
 {
     fnet_http_release(fapp_http_desc);
     fapp_http_desc = 0;    

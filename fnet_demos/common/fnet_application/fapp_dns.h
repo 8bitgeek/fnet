@@ -46,7 +46,7 @@
 #include "fapp_config.h"
 
 #if FAPP_CFG_DNS_CMD
-void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** );
+void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 #endif
 
 

@@ -130,11 +130,11 @@ void fnet_serial_flush(fnet_serial_stream_t stream)
 #define FNET_SERIAL_FLAGS_ZERO          (0x08)
 #define FNET_SERIAL_FLAGS_POUND         (0x10)
 
-#define FNET_SERIAL_IS_FLAG_MINUS(a)    (a & FNET_SERIAL_FLAGS_MINUS)
-#define FNET_SERIAL_IS_FLAG_PLUS(a)     (a & FNET_SERIAL_FLAGS_PLUS)
-#define FNET_SERIAL_IS_FLAG_SPACE(a)    (a & FNET_SERIAL_FLAGS_SPACE)
-#define FNET_SERIAL_IS_FLAG_ZERO(a)     (a & FNET_SERIAL_FLAGS_ZERO)
-#define FNET_SERIAL_IS_FLAG_POUND(a)    (a & FNET_SERIAL_FLAGS_POUND)
+#define FNET_SERIAL_IS_FLAG_MINUS(a)    (((a) & FNET_SERIAL_FLAGS_MINUS)!=0)
+#define FNET_SERIAL_IS_FLAG_PLUS(a)     (((a) & FNET_SERIAL_FLAGS_PLUS)!=0)
+#define FNET_SERIAL_IS_FLAG_SPACE(a)    (((a) & FNET_SERIAL_FLAGS_SPACE)!=0)
+#define FNET_SERIAL_IS_FLAG_ZERO(a)     (((a) & FNET_SERIAL_FLAGS_ZERO)!=0)
+#define FNET_SERIAL_IS_FLAG_POUND(a)    (((a) & FNET_SERIAL_FLAGS_POUND)!=0)
 
 /********************************************************************/
 static int fnet_serial_printk_mknumstr( char *numstr, void *nump, int neg, int radix )
@@ -228,27 +228,22 @@ static void fnet_serial_printk_pad(char c, fnet_serial_stream_t stream, int curl
 }
 
 /********************************************************************/
-int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va_list ap )
+int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va_list arg )
 {
-    char *p;
+    const char *p;
     int c;
-
     char vstr[33];
     char *vstrp;
     int vlen;
-
     int done;
     int count = 0;
-
     int flags_used;
     int field_width;
 
 #if 0
-
     int precision_used;
     int precision_width;
     int length_modifier;
-
 #endif
 
     int ival;
@@ -262,7 +257,7 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
      * Start parsing apart the format string and display appropriate
      * formats and data.
      */
-    for (p = (char *)format; (c = *p) != 0; p++)
+    for (p = format; (c = *p) != 0; p++)
     {
         /*
          * All formats begin with a '%' marker.  Special chars like
@@ -482,7 +477,7 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
         {
             case 'd':
             case 'i':
-                ival = (int)fnet_va_arg(ap, int);
+                ival = (int)fnet_va_arg(arg, int);
                 vlen = fnet_serial_printk_mknumstr(vstr, &ival, 1, 10);
                 vstrp = &vstr[vlen];
 
@@ -559,7 +554,7 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
 
             case 'x':
             case 'X':
-                uval = (unsigned int)fnet_va_arg(ap, unsigned int);
+                uval = (unsigned int)fnet_va_arg(arg, unsigned int);
                 vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 16);
                 vstrp = &vstr[vlen];
 
@@ -612,22 +607,22 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                 goto cont_xd;
 
             case 'o':
-              uval = (unsigned int)fnet_va_arg(ap, unsigned int);
+              uval = (unsigned int)fnet_va_arg(arg, unsigned int);
               vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 8);
               goto cont_u;
 
             case 'b':
-              uval = (unsigned int)fnet_va_arg(ap, unsigned int);
+              uval = (unsigned int)fnet_va_arg(arg, unsigned int);
               vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 2);
               goto cont_u;
 
             case 'p':
-              uval = (unsigned int)fnet_va_arg(ap, void *);
+              uval = (unsigned int)fnet_va_arg(arg, void *);
               vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 16);
               goto cont_u;
 
             case 'u':
-                uval = (unsigned int)fnet_va_arg(ap, unsigned int);
+                uval = (unsigned int)fnet_va_arg(arg, unsigned int);
                 vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 10);
 
                 cont_u:
@@ -660,13 +655,13 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                 break;
 
             case 'c':
-                cval = (char)fnet_va_arg(ap, unsigned int);
+                cval = (char)fnet_va_arg(arg, unsigned int);
                 count++;
                 fnet_serial_putchar(stream, cval);
                 break;
 
             case 's':
-                sval = (char *)fnet_va_arg(ap, char *);
+                sval = (char *)fnet_va_arg(arg, char *);
 
                 if(sval)
                 {
@@ -692,7 +687,7 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                 break;
 
             case 'n':
-                ivalp = (int *)fnet_va_arg(ap, int *);
+                ivalp = (int *)fnet_va_arg(arg, int *);
                 *ivalp = count;
                 break;
 

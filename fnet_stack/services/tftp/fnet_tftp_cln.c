@@ -47,9 +47,9 @@
 
 
 #if FNET_CFG_DEBUG_TFTP_CLN    
-    #define FNET_DEBUG_TFTP   FNET_DEBUG
+    #define FNET_DEBUG_TFTP         FNET_DEBUG
 #else
-    #define FNET_DEBUG_TFTP(...)
+    #define FNET_DEBUG_TFTP(...)    do {}while(0)
 #endif
 
 /************************************************************************
@@ -421,8 +421,8 @@ static void fnet_tftp_cln_state_machine( void *fnet_tftp_cln_if_p )
             }
             break;            
         /*---- RELEASE -------------------------------------------------*/
-        default:
         case FNET_TFTP_CLN_STATE_RELEASE:
+        default:
             fnet_tftp_cln_release();            
             break;            
     }
@@ -458,7 +458,7 @@ void fnet_tftp_cln_release(void)
 *
 * DESCRIPTION: This function returns a current state of the TFTP client.
 ************************************************************************/
-fnet_tftp_cln_state_t fnet_tftp_cln_state()
+fnet_tftp_cln_state_t fnet_tftp_cln_state(void)
 {
     return fnet_tftp_if.state;
 }

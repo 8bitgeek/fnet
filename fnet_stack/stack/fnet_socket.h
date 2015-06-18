@@ -195,6 +195,8 @@ typedef unsigned short fnet_address_family_t;
     #define FNET_IP_ADDR_STR_SIZE       FNET_IP4_ADDR_STR_SIZE
 #endif
 
+#define FNET_IP_ADDR_STR_SIZE_MAX       FNET_IP6_ADDR_STR_SIZE
+
 /**************************************************************************/ /*!
  * @brief Socket address structure.
  *
@@ -1346,7 +1348,7 @@ int closesocket( SOCKET s );
  * @ref fnet_ip_options_t, and @ref fnet_tcp_options_t.
  *
  ******************************************************************************/
-int setsockopt( SOCKET s, int level, int optname, char *optval, unsigned int optlen );
+int setsockopt( SOCKET s, int level, int optname, const void *optval, unsigned int optlen );
 
 /***************************************************************************/ /*!
  *
@@ -1390,7 +1392,7 @@ int setsockopt( SOCKET s, int level, int optname, char *optval, unsigned int opt
  * @ref fnet_ip_options_t, and @ref fnet_tcp_options_t.
  *
  ******************************************************************************/
-int getsockopt( SOCKET s, int level, int optname, char *optval, unsigned int *optlen );
+int getsockopt( SOCKET s, int level, int optname, void *optval, unsigned int *optlen );
 
 /***************************************************************************/ /*!
  *

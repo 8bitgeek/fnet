@@ -234,7 +234,8 @@ void fnet_mld_query_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_i
          * from which the Query is received. */
         fnet_mld_report_all(netif);
     }
-
+    else
+    {}
 
 DROP:    
     fnet_netbuf_free_chain(ip6_nb);

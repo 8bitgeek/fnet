@@ -82,7 +82,7 @@ fnet_mempool_desc_t fnet_mempool_init( void *pool_ptr, unsigned long pool_size, 
         fnet_mempool_unit_header_t *p;
         
         unsigned char *heap_ptr = (unsigned char *)(((unsigned long)(pool_ptr)+sizeof(struct fnet_mempool)+(alignment+1))
-                                                            & (0xffffffff-alignment));
+                                                            & (0xffffffffu-alignment));
         unsigned long heap_size = pool_size - ((unsigned long)heap_ptr - (unsigned long)pool_ptr);
         
         mempool = (struct fnet_mempool *) pool_ptr;
@@ -231,7 +231,8 @@ void *fnet_mempool_malloc(fnet_mempool_desc_t mpool, unsigned nbytes )
     best_p_prev = prevp;
     
     /* Find the best one. */
-    for(p = prevp->ptr; ; prevp = p, p = p->ptr)
+    p = prevp->ptr;
+    for(;;)
     {
         if( (p->size >= nunits) && ( (best_p==0) || ((best_p)&&(best_p->size > p->size)) ) )
         {
@@ -241,6 +242,9 @@ void *fnet_mempool_malloc(fnet_mempool_desc_t mpool, unsigned nbytes )
         
         if(p == mempool->free_ptr)
             break; /* End of list is reached. */
+    
+        prevp = p;
+        p = p->ptr;
     }
 
     if(best_p)

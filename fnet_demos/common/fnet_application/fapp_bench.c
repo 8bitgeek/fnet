@@ -490,7 +490,7 @@ void fapp_benchrx_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
         {
             if((fnet_inet_ptos(argv[2], &multicast_address) == FNET_ERR)    /* Convert from string to address.*/
                 || !fnet_socket_addr_is_multicast(&multicast_address)       /* Check if address is multicast.*/
-                || !(family & multicast_address.sa_family) )                /* Check supported family.*/
+                || ((family & multicast_address.sa_family)==0) )                /* Check supported family.*/
             {
                 fnet_shell_println(desc, FAPP_PARAM_ERR, argv[2]);
                 return;
@@ -507,7 +507,7 @@ void fapp_benchrx_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     }
 }
 
-////////////////////////////////////////////// TX //////////////////////////////////////
+/*============================ TX ===========================================*/
 /************************************************************************
 * NAME: fapp_bench_tcp_tx
 *
@@ -659,6 +659,8 @@ static void fapp_bench_tcp_tx (struct fapp_bench_tx_params *params)
                     break;
                 }
             }
+            else
+            {}
         }
 
 ERROR_2:
@@ -810,6 +812,8 @@ static void fapp_bench_udp_tx (struct fapp_bench_tx_params *params)
             {
                 break;            
             }
+            else
+            {}
         }
         
         /* Print benchmark results.*/

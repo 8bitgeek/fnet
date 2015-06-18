@@ -552,10 +552,14 @@ static void fapp_init(void)
             fapp_boot(fapp_shell_desc);
         }
         else
+        {
             fnet_printf(FAPP_INIT_ERR, "Shell");
+        }
     }
     else
+    {
         fnet_printf(FAPP_INIT_ERR, "FNET");
+    }
 
 }
 
@@ -602,7 +606,7 @@ static void fapp_release(fnet_shell_desc_t desc)
 *
 * DESCRIPTION: main() of the shell demo.
 ************************************************************************/
-void fapp_main()
+void fapp_main(void)
 {
     fapp_init();
     
@@ -660,27 +664,32 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
 	char    ip_str[FNET_IP_ADDR_STR_SIZE]={0};
     
 #if FNET_CFG_IP4
-    if(family & AF_INET)
+    if((family & AF_INET)==AF_INET)
     {
         fnet_ip4_addr_t local_ip;
         
         local_ip = fnet_netif_get_ip4_addr(netif);
         fnet_shell_printf(desc, FAPP_SHELL_INFO_FORMAT_S, "IPv4 Address", fnet_inet_ntoa(*(struct in_addr *)(&local_ip), ip_str) ); 
         if(print_type)
+        {
             fnet_shell_println(desc," <%s>", fnet_netif_get_ip4_addr_automatic(netif) ? "automatic" : "manual");
+        }
         else
+        {
             fnet_shell_println(desc, "");  
+        }
     }
 #endif /* FNET_CFG_IP4 */
 #if FNET_CFG_IP6
-    if(family & AF_INET6)
+    if((family & AF_INET6)==AF_INET6)
     {
         int                         result;
         unsigned int                n;
         fnet_netif_ip6_addr_info_t  addr_info;
         
         /* Print all assigned IPv6 addreses.*/
-        for(n=0U;;n++) 
+        n=0u;
+        for(;;) 
         {
             result = fnet_netif_get_ip6_addr (netif, n, &addr_info);
             
@@ -696,7 +705,9 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
             }
             else
                break;
-        };
+
+            n++;
+        }
     }
 #endif /* FNET_CFG_IP6 */
 }
@@ -875,7 +886,7 @@ void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 #if FAPP_CFG_GO_CMD || FAPP_CFG_BOOTLOADER || FAPP_CFG_SETGET_CMD_BOOT
 static void fapp_go ( fnet_shell_desc_t desc, unsigned long address )
 {
-    if((fapp_params_boot_config.go_address == 0) || (*(fnet_uint32*)address == 0xffffffff))
+    if((fapp_params_boot_config.go_address == 0) || (*(fnet_uint32*)address == 0xffffffffu))
     {
         fnet_printf("\nThere is no code on user application startup vector.\n");
     }
@@ -886,7 +897,7 @@ static void fapp_go ( fnet_shell_desc_t desc, unsigned long address )
    
       fnet_release(); /* Release the FNET stack.*/
      
-      (( void(*)() )FNET_CPU_INSTRUCTION_ADDR(address))(); /* Jump. */
+      (( void(*)(void) )FNET_CPU_INSTRUCTION_ADDR(address))(); /* Jump. */
     }
 }
 #endif

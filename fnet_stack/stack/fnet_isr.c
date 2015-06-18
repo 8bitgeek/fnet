@@ -167,7 +167,7 @@ fnet_event_desc_t fnet_event_init( void (*event_handler)(void *cookie), void *co
 *
 * DESCRIPTION: Register 'handler' at the isr table.
 *************************************************************************/
-static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(void *cookie), void (*handler_bottom)(void *cookie), void *cookie )
+static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(void *handler_top_cookie), void (*handler_bottom)(void *handler_bottom_cookie), void *cookie )
 {
     int                 result;
     fnet_isr_entry_t    *isr_temp;
@@ -177,8 +177,8 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
     if(isr_temp)
     {
         isr_temp->vector_number = vector_number;
-        isr_temp->handler_top = (void (*)(void *))handler_top;
-        isr_temp->handler_bottom = (void (*)(void *))handler_bottom;
+        isr_temp->handler_top = (void (*)(void *handler_top_cookie))handler_top;
+        isr_temp->handler_bottom = (void (*)(void *handler_bottom_cookie))handler_bottom;
         isr_temp->next = fnet_isr_table;
         isr_temp->cookie = cookie;
         fnet_isr_table = isr_temp;
@@ -373,7 +373,7 @@ void fnet_event_raise( fnet_event_desc_t event_number )
 * DESCRIPTION: This function inits ISR module
 *
 *************************************************************************/
-void fnet_isr_init()
+void fnet_isr_init(void)
 {
     fnet_locked = 0;
     fnet_isr_table = 0;

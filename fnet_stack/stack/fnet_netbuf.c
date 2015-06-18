@@ -180,7 +180,9 @@ fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, int offset, int len, int dra
     else /* Find corresponding net_buf and calculate the offset in it.*/
     {
         while((tot_offset += tmp_nb->length) <= offset)
+        {
             tmp_nb = tmp_nb->next;
+        }
 
         tot_offset = (long)(tmp_nb->length + offset - tot_offset);
     }
@@ -321,7 +323,9 @@ void fnet_netbuf_to_buf( fnet_netbuf_t *nb, int offset, int len, void *data_ptr 
     else
     {
         while((tot_offset += tmp_nb->length) <= offset)
-          tmp_nb = tmp_nb->next;
+        {
+            tmp_nb = tmp_nb->next;
+        }
 
         tot_offset = (long)(tmp_nb->length + offset - tot_offset);
     }
@@ -563,7 +567,9 @@ void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, int len )
             nb->length += (len + total_rem - tot_len);
 
             while(nb->next != 0) /* Cut the redundant net_bufs. */
-              nb->next = fnet_netbuf_free(nb->next);
+            {
+                nb->next = fnet_netbuf_free(nb->next);
+            }
 
             if(nb->length == 0)  /* if |len| == total_length */
                 head_nb = fnet_netbuf_free(nb);
@@ -710,7 +716,9 @@ fnet_netbuf_t *fnet_netbuf_concat( fnet_netbuf_t *nb1, fnet_netbuf_t *nb2 )
     head_nb = nb1;
 
     while(nb1->next != 0)
-      nb1 = nb1->next;
+    {        
+        nb1 = nb1->next;
+    }
 
     nb1->next = nb2;
     
@@ -740,7 +748,9 @@ void fnet_netbuf_add_chain( fnet_netbuf_t ** nb_ptr, fnet_netbuf_t *nb_chain )
     else
     {
         while(nb->next_chain)
-          nb = nb->next_chain;
+        {
+            nb = nb->next_chain;
+        }
 
         nb->next_chain = nb_chain;
     }

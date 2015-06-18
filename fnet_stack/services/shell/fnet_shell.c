@@ -55,21 +55,21 @@
 #if FNET_CFG_DEBUG_SHELL  
     #define FNET_DEBUG_SHELL   FNET_DEBUG
 #else
-    #define FNET_DEBUG_SHELL(...)
+    #define FNET_DEBUG_SHELL(...)   do{}while(0)
 #endif
 
 #if FNET_CFG_DEBUG_MEMPOOL  
     #include "fnet_netbuf.h"  
     #define FNET_DEBUG_MEMPOOL   FNET_DEBUG
 #else
-    #define FNET_DEBUG_MEMPOOL(...)
+    #define FNET_DEBUG_MEMPOOL(...) do{}while(0)
 #endif
 
 #if FNET_CFG_DEBUG_STACK  
     #define FNET_DEBUG_STACK   FNET_DEBUG
     extern unsigned long fnet_dbg_stack_max;
 #else
-    #define FNET_DEBUG_STACK(...)
+    #define FNET_DEBUG_STACK(...)   do{}while(0)
 #endif
 
 int fnet_shell_ctrlc (fnet_shell_desc_t desc);
@@ -249,8 +249,9 @@ static void fnet_shell_state_machine( void *shell_if_p )
                             else /* Command. */
                             {
                                 if(cur_command->cmd_ptr)
-                                            ((void(*)(fnet_shell_desc_t desc, int, char **))(cur_command->cmd_ptr))((fnet_shell_desc_t)shell_if, argc, argv);
-                                
+                                {
+                                    ((void(*)(fnet_shell_desc_t desc, int cmd_ptr_argc, char ** cmd_ptr_argv))(cur_command->cmd_ptr))((fnet_shell_desc_t)shell_if, argc, argv);
+                                }
                                 /* Check if the shell was released during command execution.*/
                                 if(shell_if->state == FNET_SHELL_STATE_DISABLED)
                                     return;
@@ -281,9 +282,15 @@ static void fnet_shell_state_machine( void *shell_if_p )
             }
              
             if(shell_if->_blocked)
+            {
                 shell_if->state = FNET_SHELL_STATE_BLOCKED;    
+            }
             else if(shell_if->cmd_line_end == 0)
+            {
                 shell_if->state = FNET_SHELL_STATE_END_CMD;
+            }
+            else
+            {}
 
             break;
         /*----------------------------------*/    

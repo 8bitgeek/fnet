@@ -161,7 +161,9 @@ void fapp_fs_dir_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     {
         /* Print the dir content. */
         while ((fnet_fs_readdir (dir, &ep))==FNET_OK)
+        {
             fnet_shell_println(desc, FAPP_FS_DIR_STR, (ep.d_type == DT_DIR)?"<DIR>":"<FILE>", ep.d_size, ep.d_name);
+        }
             
         /* Close dir */
         fnet_fs_closedir(dir);    
@@ -199,8 +201,10 @@ void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     else /* Full path. */
     {
         /* Strip possible repetitive leading slashes. */
-        while ((path[0] == FNET_FS_SPLITTER) && (path[1] == FNET_FS_SPLITTER)) 
+        while ((path[0] == FNET_FS_SPLITTER) && (path[1] == FNET_FS_SPLITTER))
+        {
             path++;	        
+        }
     }
     
     /* Strip possible ending slashes. */
@@ -274,7 +278,9 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     {
         /* Strip possible repetitive leading slashes. */
         while ((path[0] == FNET_FS_SPLITTER) && (path[1] == FNET_FS_SPLITTER)) 
+        {
             path++;	        
+        }
     }
     
     /* Strip possible ending slashes. */
@@ -299,7 +305,9 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
         fnet_shell_println(desc, FAPP_FS_DIR_STR, "Content of:", dirent.d_size, dirent.d_name);
         
         while(fnet_fs_fread(&data, sizeof(data), file))
+        {
             fnet_shell_putchar(desc, (int)data);
+        }
                   
         /* Close file. */    
         fnet_fs_fclose(file);                  
@@ -323,7 +331,7 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 *
 * DESCRIPTION: Mount FS image.
 ************************************************************************/
-void fapp_fs_mount()
+void fapp_fs_mount(void)
 {
     if( fnet_fs_init( ) == FNET_OK)
     {
@@ -331,7 +339,7 @@ void fapp_fs_mount()
         fnet_fs_rom_register( );
  
         /* Mount the FNET ROM FS image. */
-        if( fnet_fs_mount( FNET_FS_ROM_NAME, FAPP_FS_MOUNT_NAME, (void *)&fnet_fs_image ) == FNET_ERR )
+        if( fnet_fs_mount( FNET_FS_ROM_NAME, FAPP_FS_MOUNT_NAME, &fnet_fs_image ) == FNET_ERR )
             fnet_printf(FAPP_FS_FSMOUNT_ERR);
     }
     else
@@ -344,7 +352,7 @@ void fapp_fs_mount()
 *
 * DESCRIPTION: Unmount FS image.
 ************************************************************************/
-void fapp_fs_unmount()
+void fapp_fs_unmount(void)
 {
     fnet_fs_rom_unregister();   /* Unregister ROM FS. */
     fnet_fs_release();          /* Release FS. */ 

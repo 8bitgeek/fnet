@@ -62,8 +62,8 @@ void fnet_cpu_serial_putchar (long port_number, int character)
     FNET_MK_UART_MemMapPtr port_ptr = fnet_mk_get_uart_port_ptr[port_number];
       
     /* Wait until space is available in the FIFO */
-    while(!(FNET_MK_UART_S1_REG(port_ptr) & FNET_MK_UART_S1_TDRE_MASK))
-    {};
+    while((FNET_MK_UART_S1_REG(port_ptr) & FNET_MK_UART_S1_TDRE_MASK) == 0)
+    {}
     
     /* Send the character */
     FNET_MK_UART_D_REG(port_ptr) = (fnet_uint8)character;
@@ -74,7 +74,7 @@ int fnet_cpu_serial_getchar (long port_number)
     FNET_MK_UART_MemMapPtr port_ptr = fnet_mk_get_uart_port_ptr[port_number];
    
        /* Wait until character has been received */
-    if(FNET_MK_UART_S1_REG(port_ptr) & FNET_MK_UART_S1_RDRF_MASK)
+    if((FNET_MK_UART_S1_REG(port_ptr) & FNET_MK_UART_S1_RDRF_MASK) != 0)
         /* Return the 8-bit data from the receiver */
         return FNET_MK_UART_D_REG(port_ptr);
     

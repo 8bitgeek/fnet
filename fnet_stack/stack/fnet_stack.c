@@ -81,7 +81,7 @@ int fnet_init( struct fnet_init_params *init_params )
 *
 * DESCRIPTION: 
 *************************************************************************/
-int fnet_init_static()
+int fnet_init_static(void)
 {
     static unsigned char heap[FNET_CFG_HEAP_SIZE];
     struct fnet_init_params init_params;
@@ -97,7 +97,7 @@ int fnet_init_static()
 *
 * DESCRIPTION: 
 *************************************************************************/
-void fnet_release()
+void fnet_release(void)
 {
     fnet_os_mutex_lock();
 

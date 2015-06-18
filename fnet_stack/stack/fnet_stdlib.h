@@ -98,11 +98,11 @@
  *
  * @brief    Copies bytes in memory.
  *
- * @param dest      Pointer to the memory location to copy to.
+ * @param to_ptr      Pointer to the memory location to copy to.
  *
- * @param src       Pointer to the memory location to copy from. 
+ * @param from_ptr       Pointer to the memory location to copy from. 
  *
- * @param n         Number of bytes to copy.
+ * @param number_of_bytes         Number of bytes to copy.
  *
  ******************************************************************************
  *
@@ -110,7 +110,7 @@
  * memory area pointed by @c from_ptr to memory area pointed by @c to_ptr.
  *
  ******************************************************************************/
-void fnet_memcpy(FNET_COMP_PACKED_VAR void *dest, FNET_COMP_PACKED_VAR const void *src, unsigned n);
+void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const void *from_ptr, unsigned number_of_bytes);
 
 /***************************************************************************/ /*!
  *
@@ -160,7 +160,7 @@ void fnet_memset_zero(void *dest, unsigned int n );
  *
  * @param src2      Pointer to the memory buffer to compare.
  *
- * @param n         Number of bytes to compare.
+ * @param count     Number of bytes to compare.
  *
  * @return          This function returns zero if two buffers are identical,
  *                  otherwise returns @c 1.
@@ -168,11 +168,11 @@ void fnet_memset_zero(void *dest, unsigned int n );
  ******************************************************************************
  *
  * This function compares the first @c n bytes of the memory buffer pointed 
- * by @c src1 to the first @c n bytes pointed by @c src2, returning zero if 
+ * by @c src1 to the first @c count bytes pointed by @c src2, returning zero if 
  * they all match, otherwise returns @c 1.
  *
  ******************************************************************************/
-int fnet_memcmp(const void *src1, const void *src2, unsigned int n );
+int fnet_memcmp(const void *src1, const void *src2, unsigned int count );
 
 /***************************************************************************/ /*!
  *
@@ -303,7 +303,7 @@ char *fnet_strrchr( const char *str, int chr );
  * in the string pointed to by @c str.
  *
  ******************************************************************************/
-char *fnet_strchr( const char *str, int chr );
+char *fnet_strchr(const char *str, int chr );
 
 /***************************************************************************/ /*!
  *
@@ -397,9 +397,9 @@ int fnet_strcasecmp( const char *str1, const char *str2 );
  *
  * @brief           Compares two strings, with additional terminator.
  *
- * @param str1      Pointer to the null or @c splitter terminated string to be compared.
+ * @param in_str      Pointer to the null or @c splitter terminated string to be compared.
  *
- * @param str2      Pointer to the null-terminated string to be compared.
+ * @param name      Pointer to the null-terminated string to be compared.
  *
  * @param splitter  Additional terminator that can be used in @c str. 
  *
@@ -409,12 +409,12 @@ int fnet_strcasecmp( const char *str1, const char *str2 );
  *
  ******************************************************************************
  *
- * This function compares the two strings @c str1 and @c str2, returning zero if 
+ * This function compares the two strings @c in_str and @c name, returning zero if 
  * they all match or the difference between the first two differing characters.@n
- * The @c str1 string can be terminated by null or @c splitter character.
+ * The @c name string can be terminated by null or @c splitter character.
  *
  ******************************************************************************/
-int fnet_strcmp_splitter( const char *str1, const char *str2, char splitter);
+int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter);
 
 /***************************************************************************/ /*!
  *
@@ -442,7 +442,7 @@ int fnet_strcmp_splitter( const char *str1, const char *str2, char splitter);
  * digits greater than 9. 
  *
  ******************************************************************************/
-unsigned long fnet_strtoul (char *str, char **ptr, int base);
+unsigned long fnet_strtoul (const char *str, char **ptr, int base);
 
 /***************************************************************************/ /*!
  *

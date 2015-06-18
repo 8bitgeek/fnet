@@ -107,7 +107,7 @@ void fnet_flash_erase( void *flash_addr, unsigned bytes);
  * @param src             Pointer to the buffer containing the 
  *                        data to write to the Flash memory.
  *
- * @param bytes           Number of bytes contained in the data buffer
+ * @param n               Number of bytes contained in the data buffer
  *                        pointed by @c src.
  *
  * @see fnet_flash_erase()
@@ -118,7 +118,7 @@ void fnet_flash_erase( void *flash_addr, unsigned bytes);
  * pointed by @c src directly to the Flash memory pointed by @c flash_addr.
  *
  ******************************************************************************/
-void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_VAR const void *src, unsigned bytes );
+void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_VAR const void *src, unsigned n );
 
 /*! @} */
 

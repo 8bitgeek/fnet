@@ -49,7 +49,7 @@
 #if FNET_CFG_DEBUG_DNS    
     #define FNET_DEBUG_DNS   FNET_DEBUG
 #else
-    #define FNET_DEBUG_DNS(...)
+    #define FNET_DEBUG_DNS(...) do{}while(0)
 #endif
 
 /************************************************************************
@@ -63,8 +63,32 @@
 #define FNET_DNS_ERR_IS_INITIALIZED    "ERROR: DNS is already initialized."
 
 
-static void fnet_dns_state_machine(void *);
+static void fnet_dns_state_machine( void *fnet_dns_if_p );
 static unsigned int fnet_dns_add_question( char *message, unsigned short type, char *host_name);
+
+/************************************************************************
+*    DNS-client resolved IPv4 address structure.
+*************************************************************************/
+typedef struct
+{
+    unsigned long       ttl;
+    fnet_ip4_addr_t     ip4_addr; /* Resolved IPv4 address.*/
+} 
+fnet_dns_if_resolved_ip4_t;
+
+/************************************************************************
+*    DNS-client resolved IPv6 address structure.
+*************************************************************************/
+typedef struct
+{
+    unsigned long       ttl;
+    fnet_ip6_addr_t     ip6_addr; /* Resolved IPv6 address.*/
+} 
+fnet_dns_if_resolved_ip6_t;
+
+
+#define FNET_DNS_RESOLVED_IP4_MAX       (FNET_DNS_MESSAGE_SIZE/(sizeof(fnet_dns_if_resolved_ip4_t)+ sizeof(struct fnet_dns_resolved_addr)))
+#define FNET_DNS_RESOLVED_IP6_MAX       (FNET_DNS_MESSAGE_SIZE/(sizeof(fnet_dns_if_resolved_ip6_t)+ sizeof(struct fnet_dns_resolved_addr)))
 
 /************************************************************************
 *    DNS-client interface structure.
@@ -79,10 +103,19 @@ typedef struct
     unsigned long               last_time;                      /* Last receive time, used for timeout detection. */
     unsigned int                iteration;                      /* Current iteration number.*/
     /* Internal buffer used for Message buffer and Resolved addresses.*/
-    union{
-    char                        message[FNET_DNS_MESSAGE_SIZE]; /* Message buffer and Resolved addresses.*/
-    fnet_ip4_addr_t        	    resolved_ip4_addr[FNET_DNS_MESSAGE_SIZE/sizeof(fnet_ip4_addr_t)]; /* Resolved IPv4 addresses.*/
-    fnet_ip6_addr_t        	    resolved_ip6_addr[FNET_DNS_MESSAGE_SIZE/sizeof(fnet_ip6_addr_t)]; /* Resolved IPv6 addresses.*/
+    union
+    {
+        char                        message[FNET_DNS_MESSAGE_SIZE]; /* Message buffer and Resolved addresses.*/
+        struct
+        {
+            fnet_dns_if_resolved_ip4_t      resolved_ip4_addr[FNET_DNS_RESOLVED_IP4_MAX]; /* Resolved IPv4 addresses.*/
+            struct fnet_dns_resolved_addr   resolved_ip4_addr_sock[FNET_DNS_RESOLVED_IP4_MAX]; /* Used as return buffer for application.*/
+        };
+        struct
+        {
+            fnet_dns_if_resolved_ip6_t      resolved_ip6_addr[FNET_DNS_RESOLVED_IP6_MAX]; /* Resolved IPv6 addresses.*/
+            struct fnet_dns_resolved_addr   resolved_ip6_addr_sock[FNET_DNS_RESOLVED_IP6_MAX]; /* Used as return buffer for application.*/
+        };
     };
     int                         addr_number;
     unsigned long               message_size;                   /* Size of the message.*/
@@ -226,8 +259,8 @@ int fnet_dns_init( struct fnet_dns_params *params )
     }
     
     /* Set socket options */
-    setsockopt(fnet_dns_if.socket_cln, SOL_SOCKET, SO_RCVBUF, (char *) &bufsize_option, sizeof(bufsize_option));
-    setsockopt(fnet_dns_if.socket_cln, SOL_SOCKET, SO_SNDBUF, (char *) &bufsize_option, sizeof(bufsize_option));
+    setsockopt(fnet_dns_if.socket_cln, SOL_SOCKET, SO_RCVBUF, (const char *)&bufsize_option, sizeof(bufsize_option));
+    setsockopt(fnet_dns_if.socket_cln, SOL_SOCKET, SO_SNDBUF, (const char *)&bufsize_option, sizeof(bufsize_option));
     
     /* Bind/connect to the server.*/
     FNET_DEBUG_DNS("Connecting to DNS Server.");
@@ -340,7 +373,7 @@ static void fnet_dns_state_machine( void *fnet_dns_if_p )
                 header = (fnet_dns_header_t *)fnet_dns_if.message;
                 
                 if((header->id == dns_if->id) && /* Check the ID.*/
-                   (header->flags & FNET_DNS_HEADER_FLAGS_QR)) /* Is response.*/
+                   ((header->flags & FNET_DNS_HEADER_FLAGS_QR)==FNET_DNS_HEADER_FLAGS_QR)) /* Is response.*/
                 {
                     for (i=(sizeof(fnet_dns_header_t)-1U); i < (unsigned int)received; i++)
                     {
@@ -367,14 +400,15 @@ static void fnet_dns_state_machine( void *fnet_dns_if_p )
                                 /* Resolved.*/
                                 if(rr_header->type == FNET_HTONS(FNET_DNS_TYPE_A))
                                 {
-                                	dns_if->resolved_ip4_addr[dns_if->addr_number] = *((fnet_ip4_addr_t*)(&rr_header->rdata));
+                                	dns_if->resolved_ip4_addr[dns_if->addr_number].ip4_addr = *((fnet_ip4_addr_t*)(&rr_header->rdata));
+                                    dns_if->resolved_ip4_addr[dns_if->addr_number].ttl = rr_header->ttl;
                                 }
                                 else /* AF_INET6 */
                                 {
-                                    FNET_IP6_ADDR_COPY( (fnet_ip6_addr_t*)(&rr_header->rdata), &dns_if->resolved_ip6_addr[dns_if->addr_number] );
+                                    FNET_IP6_ADDR_COPY( (fnet_ip6_addr_t*)(&rr_header->rdata), &dns_if->resolved_ip6_addr[dns_if->addr_number].ip6_addr );
+                                    dns_if->resolved_ip6_addr[dns_if->addr_number].ttl = rr_header->ttl;
                                 }
                                 dns_if->addr_number++;
-                                  
                             }
                             i+=(unsigned int)(sizeof(fnet_dns_rr_header_t)+fnet_ntohs(rr_header->rdlength)-4U-1U);
                         }
@@ -402,11 +436,49 @@ static void fnet_dns_state_machine( void *fnet_dns_if_p )
                     dns_if->state = FNET_DNS_STATE_TX;
                 }
             }
+            else
+            {}
             break;
          /*---- RELEASE -------------------------------------------------*/    
         case FNET_DNS_STATE_RELEASE:
-            fnet_dns_release(); 
-            dns_if->handler( dns_if->addr_family, dns_if->addr_number ? dns_if->message : FNET_NULL, dns_if->addr_number, dns_if->handler_cookie); /* User Callback.*/
+            {
+                struct fnet_dns_resolved_addr   *addr_list = FNET_NULL;
+
+                fnet_dns_release(); 
+
+                /* Fill fnet_dns_resolved_addr */
+                if(dns_if->addr_number > 0)
+                {
+                    if(dns_if->addr_family  == AF_INET)
+                    {
+                        for(i=0; i<dns_if->addr_number; i++)
+                        {
+                            fnet_memset_zero(&dns_if->resolved_ip4_addr_sock[i].resolved_addr, sizeof(dns_if->resolved_ip4_addr_sock[i].resolved_addr));
+
+                            dns_if->resolved_ip4_addr_sock[i].resolved_addr.sa_family = AF_INET;
+                            ((struct sockaddr_in*)(&dns_if->resolved_ip4_addr_sock[i].resolved_addr))->sin_addr.s_addr = dns_if->resolved_ip4_addr[i].ip4_addr;
+                            dns_if->resolved_ip4_addr_sock[i].resolved_addr_ttl = dns_if->resolved_ip4_addr[i].ttl;
+                        }
+                        addr_list = dns_if->resolved_ip4_addr_sock;
+                    }
+                    else if(dns_if->addr_family == AF_INET6)
+                    {
+                        for(i=0; i<dns_if->addr_number; i++)
+                        {
+                            fnet_memset_zero(&dns_if->resolved_ip6_addr_sock[i].resolved_addr, sizeof(dns_if->resolved_ip4_addr_sock[i].resolved_addr));
+
+                            dns_if->resolved_ip6_addr_sock[i].resolved_addr.sa_family = AF_INET6;
+                            FNET_IP6_ADDR_COPY(&dns_if->resolved_ip6_addr[i].ip6_addr, &((struct sockaddr_in6*)(&dns_if->resolved_ip6_addr_sock[i].resolved_addr))->sin6_addr.s6_addr);
+                            dns_if->resolved_ip6_addr_sock[i].resolved_addr_ttl = dns_if->resolved_ip6_addr[i].ttl;
+                        }
+                        addr_list = dns_if->resolved_ip6_addr_sock;
+                    }
+                    else
+                    {}
+                }
+
+                dns_if->handler(addr_list, dns_if->addr_number, dns_if->handler_cookie); /* User Callback.*/
+            }
             break;
         default:
             break;            

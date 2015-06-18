@@ -67,7 +67,7 @@ struct fnet_fs_mount_point
 {
     char name[FNET_CFG_FS_MOUNT_NAME_MAX+1U];
     struct fnet_fs * fs;
-    void * arg; /* Argument passed by mount(). */
+    const void * arg; /* Argument passed by mount(). */
 };
 
 /* Descriptor structure. */
@@ -97,8 +97,8 @@ struct fnet_fs_dir_operations
 /* FS operations. */
 struct fnet_fs_operations
 {
-    int (*mount)( void *arg );
-    void (*unmount)( void *arg );
+    int (*mount)( const void *arg );
+    void (*unmount)( const void *arg );
 };
 
 /* FS control structure (for every fs).*/

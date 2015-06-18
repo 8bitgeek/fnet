@@ -64,7 +64,7 @@ static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
 #if FNET_CFG_DEBUG_TRACE_IGMP
     static void fnet_igmp_trace(char *str, fnet_igmp_header_t *icmpp_hdr);
 #else
-    #define fnet_igmp_trace(str, icmp_hdr)
+    #define fnet_igmp_trace(str, icmp_hdr)  do {}while(0)
 #endif
 
 
@@ -166,7 +166,8 @@ static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                 }
             }
         #endif /* FNET_CFG_IGMP_VERSION */                
-            /* esle wrong */
+            else
+            {} /* wrong */
         }
         /************************
          * Ignore others

@@ -138,7 +138,7 @@ struct fapp_params_tftp fapp_params_tftp_config =
 * DESCRIPTION: Save current configuration parameters to the flash.
 ************************************************************************/
 #if FAPP_CFG_SAVE_CMD 
-int fapp_params_to_flash()
+int fapp_params_to_flash(void)
 {
     struct fapp_params_fnet     fnet_params;
     struct fapp_params_flash    *fapp_params = (struct fapp_params_flash *)FAPP_FLASH_PARAMS_ADDRESS;
@@ -204,7 +204,7 @@ int fapp_params_to_flash()
 * DESCRIPTION: Load configuration parameters from flash.
 ************************************************************************/
 #if FAPP_CFG_PARAMS_READ_FLASH
-int fapp_params_from_flash()
+int fapp_params_from_flash(void)
 {
     struct fapp_params_flash *fnet_params = (struct fapp_params_flash *)FAPP_FLASH_PARAMS_ADDRESS;
     int result;

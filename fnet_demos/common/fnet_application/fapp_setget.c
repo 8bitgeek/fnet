@@ -209,7 +209,7 @@ static void fapp_set_ip(fnet_shell_desc_t desc, char *value, void (*set_ip)( fne
     else
     {
         fnet_shell_println(desc, FAPP_PARAM_ERR, value);
-    };
+    }
 }
 #endif
 

@@ -176,7 +176,7 @@ fnet_prot_if_t *fnet_prot_find( fnet_address_family_t family, fnet_socket_type_t
     
     for(i=0; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
     {
-        if( (fnet_prot_if_list[i]->family & family) && 
+        if( ((fnet_prot_if_list[i]->family & family) != 0) && 
             ( ((fnet_prot_if_list[i]->type == type) && (((protocol == 0)||(fnet_prot_if_list[i]->protocol == 0)) ? 1: (fnet_prot_if_list[i]->protocol == protocol)))
             || ((type == 0) && (fnet_prot_if_list[i]->protocol == protocol)) ) )
         {

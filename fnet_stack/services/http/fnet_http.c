@@ -271,7 +271,7 @@ static void fnet_http_state_machine( void *http_if_p )
                                         fnet_http_version_parse(++req_buf, &session->response.version);
                                         
                                         /* Check the highest supported HTTP version.*/
-                                        if(((session->response.version.major<<8)|session->response.version.minor) > ((FNET_HTTP_VERSION_MAJOR<<8)|FNET_HTTP_VERSION_MINOR))
+                                        if((((unsigned long)session->response.version.major<<8)|(unsigned long)session->response.version.minor) > ((FNET_HTTP_VERSION_MAJOR<<8)|FNET_HTTP_VERSION_MINOR))
                                         {
                                             session->response.version.major = FNET_HTTP_VERSION_MAJOR;
                                             session->response.version.minor = FNET_HTTP_VERSION_MINOR;
@@ -437,6 +437,8 @@ static void fnet_http_state_machine( void *http_if_p )
             			        session->state = FNET_HTTP_STATE_CLOSING;
     #endif            			                
                             }
+                            else
+                            {}
                         }
                         /* No data.*/
                         else if(fnet_timer_get_interval(session->state_time, fnet_timer_ticks()) /* Time out? */
@@ -445,6 +447,8 @@ static void fnet_http_state_machine( void *http_if_p )
                                 session->state = FNET_HTTP_STATE_CLOSING; /*=> CLOSING */
                         }
                         /* else => WAITING REQUEST. */
+                        else
+                        {}
                     }
                     /* recv() error.*/
                     else  
@@ -646,7 +650,7 @@ fnet_http_desc_t fnet_http_init( struct fnet_http_params *params )
     
     /* Set socket options.*/
     setsockopt (http_if->socket_listen, SOL_SOCKET, SO_LINGER, 
-                                    (char *)  &linger_option, sizeof(linger_option));   
+                                      &linger_option, sizeof(linger_option));   
     /* Get size of the socket send buffer */
     opt_len = sizeof(http_if->send_max);
     if(getsockopt(http_if->socket_listen, SOL_SOCKET, SO_SNDBUF, 
@@ -858,6 +862,8 @@ static int fnet_http_tx_status_line (struct fnet_http_if * http)
                 
                 session->response.tx_data = session->request.method->send;
                 break;
+            default:
+                break;
         }
         
         if((result+result_state) == (FNET_HTTP_BUF_SIZE-1)) /* Buffer overload.*/
@@ -1031,7 +1037,8 @@ void fnet_http_query_unencode(char * dest, char * src)
 {
     if(dest && src)
     {
-        for(; *src != 0; src++, dest++)
+        while(*src != 0)
+        {
             if(*src == '+')
                 *dest = ' ';
             else if(*src == '%')
@@ -1052,6 +1059,8 @@ void fnet_http_query_unencode(char * dest, char * src)
                         val = (char)((val << 4) + (*src + 10 - (((*src >= 'a') && (*src <= 'f')) ? 'a' : 'A')));
                         continue;
                     }
+                    else
+                    {}
                     break;
                 }
                 if(i==2)
@@ -1062,8 +1071,12 @@ void fnet_http_query_unencode(char * dest, char * src)
             else
                 *dest = *src;
 
-         *dest = '\0';
-     }
+            src++;
+            dest++;
+        }
+
+        *dest = '\0';
+    }
 }
 
 
@@ -1084,8 +1097,10 @@ char *fnet_http_uri_parse(char * in_str, struct fnet_http_uri * uri)
         /*Extract file name. */
         
         /* Ignore any initial spaces */
-        while (*cur == ' ') 
+        while (*cur == ' ')
+        {
             cur++;
+        }
         
         uri->path = cur;
         uri->query = 0;
@@ -1102,8 +1117,9 @@ char *fnet_http_uri_parse(char * in_str, struct fnet_http_uri * uri)
             }
             else if(*cur == '?')                 /* Query is found */
             {
-                    char *end_query;
-                     *cur = '\0';               /* Mark path end */
+                    char  *end_query;
+
+                    *cur = '\0';               /* Mark path end */
                     
                     uri->query = cur + 1;       /* Point to the next symbol after '?' */ 
                     
@@ -1116,6 +1132,8 @@ char *fnet_http_uri_parse(char * in_str, struct fnet_http_uri * uri)
                         break;
                     }
             }
+            else
+            {}
             cur ++;
         }
         
@@ -1142,16 +1160,18 @@ char *fnet_http_uri_parse(char * in_str, struct fnet_http_uri * uri)
 ************************************************************************/
 static void fnet_http_version_parse(char * in_str, struct fnet_http_version * version)
 {
-    char *cur = in_str;
-    char *ptr;
-    char *point_ptr;
+    char  *cur = in_str;
+    char  *ptr;
+    char  *point_ptr;
     
     /* rel_uri       = [ path ] [ "?" query ]*/
     if(cur && version) 
     {
         /* Ignore any initial spaces */
         while (*cur == ' ') 
+        {
             cur++;
+        }
         
         /* Find "HTTP/"*/
         if((cur = fnet_strstr( cur, FNET_HTTP_VERSION_HEADER )) !=0)

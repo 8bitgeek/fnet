@@ -52,7 +52,7 @@ static fnet_llmnr_desc_t fapp_llmnr_desc = 0; /* LLMNR service descriptor. */
 *
 * DESCRIPTION: Releases HTTP server.
 *************************************************************************/
-void fapp_llmnr_release()
+void fapp_llmnr_release(void)
 {
     fnet_llmnr_release(fapp_llmnr_desc);
     fapp_llmnr_desc = 0;    

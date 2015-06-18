@@ -51,7 +51,7 @@ struct fnet_net_timer
     struct fnet_net_timer *next; /* Next timer in list.*/
     unsigned long timer_cnt;     /* Timer counter. */
     unsigned long timer_rv;      /* Timer reference value. */
-    void (*handler)( void * );   /* Timer handler. */
+    void (*handler)(void *cookie);   /* Timer handler. */
     void *cookie;                /* Handler Cookie. */
 };
 
@@ -180,7 +180,7 @@ void fnet_timer_handler_bottom(void *cookie)
 * DESCRIPTION: Creates new software timer with the period 
 *              
 *************************************************************************/
-fnet_timer_desc_t fnet_timer_new( unsigned long period_ticks, void (*handler)( void * ), void *cookie )
+fnet_timer_desc_t fnet_timer_new( unsigned long period_ticks, void (*handler)(void *cookie), void *cookie )
 {
     struct fnet_net_timer *timer = FNET_NULL;
 
@@ -223,7 +223,9 @@ void fnet_timer_free( fnet_timer_desc_t timer )
             tl_temp = fnet_tl_head;
 
             while(tl_temp->next != tl)
-              tl_temp = tl_temp->next;
+            {
+                tl_temp = tl_temp->next;
+            }
 
             tl_temp->next = tl->next;
         }
@@ -262,7 +264,7 @@ unsigned long fnet_timer_get_interval( unsigned long start, unsigned long end )
     if(start <= end)
         return (end - start);
     else
-        return (0xffffffff - start + end + 1);
+        return (0xffffffffu - start + end + 1);
 }
 
 /************************************************************************
@@ -273,10 +275,10 @@ unsigned long fnet_timer_get_interval( unsigned long start, unsigned long end )
 *************************************************************************/
 void fnet_timer_delay( unsigned long delay_ticks )
 {
-    unsigned long start = fnet_current_time;
+    unsigned long start_ticks = fnet_current_time;
 
-    while(fnet_timer_get_interval(start, fnet_timer_ticks()) < delay_ticks)
-    { };
+    while(fnet_timer_get_interval(start_ticks, fnet_timer_ticks()) < delay_ticks)
+    {}
 }
 
 /************************************************************************

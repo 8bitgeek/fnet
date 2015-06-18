@@ -106,6 +106,8 @@ int fnet_str_to_mac( char *str_mac, fnet_mac_addr_t addr )
                 str_mac++;
                 continue;
             }
+            else
+            {}
 
             break;
         }
@@ -132,7 +134,9 @@ int fnet_str_to_mac( char *str_mac, fnet_mac_addr_t addr )
     if((octetptr - octet) == 6)
     {
         for (i = 0; i < 6; i++)
+        {
           addr[i] = (unsigned char)octet[i];
+        }
     }
     else
         goto ERROR;
@@ -187,21 +191,25 @@ static const fnet_eth_prot_if_t fnet_eth_prot_if_list[] =
  * 23 bits of the Ethernet multicast address 01-00-5E-00-00-00 (hex).
  */
 #define FNET_ETH_MULTICAST_IP4_TO_MAC(ip4_addr, mac_addr)  \
-            (mac_addr)[0] = 0x01U, \
-            (mac_addr)[1] = 0x00U, \
-            (mac_addr)[2] = 0x5EU, \
-            (mac_addr)[3] = (unsigned char)(((unsigned char *)(&ip4_addr))[1] & 0x7FU), \
-            (mac_addr)[4] = ((unsigned char *)(&ip4_addr))[2], \
-            (mac_addr)[5] = ((unsigned char *)(&ip4_addr))[3]
+            do{   \
+                (mac_addr)[0] = 0x01U; \
+                (mac_addr)[1] = 0x00U; \
+                (mac_addr)[2] = 0x5EU; \
+                (mac_addr)[3] = (unsigned char)(((unsigned char *)(&ip4_addr))[1] & 0x7FU); \
+                (mac_addr)[4] = ((unsigned char *)(&ip4_addr))[2];  \
+                (mac_addr)[5] = ((unsigned char *)(&ip4_addr))[3];  \
+            }while(0)
 
 /* For IPv6 */
 #define FNET_ETH_MULTICAST_IP6_TO_MAC(ip6_addr, mac_addr)        \
-            (mac_addr)[0] = 0x33U,               \
-            (mac_addr)[1] = 0x33U,               \
-            (mac_addr)[2] = ip6_addr->addr[12], \
-            (mac_addr)[3] = ip6_addr->addr[13], \
-            (mac_addr)[4] = ip6_addr->addr[14], \
-            (mac_addr)[5] = ip6_addr->addr[15]
+            do{   \
+                (mac_addr)[0] = 0x33U;               \
+                (mac_addr)[1] = 0x33U;               \
+                (mac_addr)[2] = ip6_addr->addr[12]; \
+                (mac_addr)[3] = ip6_addr->addr[13]; \
+                (mac_addr)[4] = ip6_addr->addr[14]; \
+                (mac_addr)[5] = ip6_addr->addr[15];  \
+            }while(0)
 
 
 
@@ -293,7 +301,7 @@ int fnet_eth_init( fnet_netif_t *netif)
              * and a 64 bit interface identifier.
              * For all autoconfiguration types, a link-local address is always configured. 
              */
-            fnet_netif_bind_ip6_addr_prv( netif, (fnet_ip6_addr_t *)&fnet_ip6_addr_any, FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE, 
+            fnet_netif_bind_ip6_addr_prv( netif, &fnet_ip6_addr_any, FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE, 
                                                   FNET_NETIF_IP6_ADDR_LIFETIME_INFINITE /*in seconds*/, FNET_ND6_PREFIX_LENGTH_DEFAULT /* bits */ );
 
             /* RFC4862: The next phase of autoconfiguration involves obtaining a Router
@@ -458,7 +466,7 @@ EXIT:
 *
 * DESCRIPTION: Ethernet IPv6 output function.
 *************************************************************************/
-void fnet_eth_output_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip_addr,  fnet_ip6_addr_t *dest_ip_addr, fnet_netbuf_t* nb)
+void fnet_eth_output_ip6(fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip_addr,  const fnet_ip6_addr_t *dest_ip_addr, fnet_netbuf_t* nb)
 {
     fnet_mac_addr_t dest_mac_addr; /* 48-bit destination address */
     unsigned char *dest_mac_addr_ptr;
@@ -563,7 +571,7 @@ void fnet_eth_output_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip_addr,  fne
         }    
         
         /* Get destination MAC/HW address.*/
-        dest_mac_addr_ptr = (unsigned char *)neighbor->ll_addr;
+        dest_mac_addr_ptr = (unsigned char *)(&neighbor->ll_addr[0]);
     }
         
     /* Send Ethernet frame. */

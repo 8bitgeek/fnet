@@ -55,7 +55,7 @@
 
 #else
 
-#define FNET_DEBUG(...)
+#define FNET_DEBUG(...) do{}while(0)
 
 #endif
 

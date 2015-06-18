@@ -1,3 +1,5 @@
+#ifndef _FNET_ICMP6_H_
+#define _FNET_ICMP6_H_
 /**************************************************************************
 * 
 * Copyright 2011-2015 by Andrey Butok. FNET Community.
@@ -40,10 +42,6 @@
 ***************************************************************************/
 
 #include "fnet.h"
-
-#ifndef _FNET_ICMP6_H_
-
-#define _FNET_ICMP6_H_
 #include "fnet_netbuf.h"
 
 
@@ -168,6 +166,6 @@ extern struct fnet_prot_if fnet_icmp6_prot_if;
 *************************************************************************/
 struct fnet_netif; /* Forward declaration.*/
 void fnet_icmp6_error(struct fnet_netif *netif, unsigned char type, unsigned char code, unsigned long param, fnet_netbuf_t *origin_nb);
-void fnet_icmp6_output(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, unsigned char hop_limit, fnet_netbuf_t *nb );
+void fnet_icmp6_output(struct fnet_netif *netif, const fnet_ip6_addr_t *src_ip, const fnet_ip6_addr_t *dest_ip, unsigned char hop_limit, fnet_netbuf_t *nb );
 
 #endif

@@ -370,7 +370,6 @@ int fnet_serial_printf(fnet_serial_stream_t stream, const char *format, ... );
  ******************************************************************************/
 int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va_list arg );
 
-
 /***************************************************************************/ /*!
  * @fn int fnet_printf( const char *format, ... )
  *

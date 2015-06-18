@@ -48,9 +48,9 @@
 #include "stack/fnet_netif_prv.h"
 
 #if FNET_CFG_DEBUG_TFTP_SRV    
-    #define FNET_DEBUG_TFTP_SRV   FNET_DEBUG
+    #define FNET_DEBUG_TFTP_SRV         FNET_DEBUG
 #else
-    #define FNET_DEBUG_TFTP_SRV(...)
+    #define FNET_DEBUG_TFTP_SRV(...)    do {}while(0)
 #endif
 
 /************************************************************************
@@ -172,7 +172,7 @@ static struct fnet_tftp_srv_if tftp_srv_if_list[FNET_CFG_TFTP_SRV_MAX];
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fnet_tftp_srv_state_machine(void *tftp_srv_if_p);
+static void fnet_tftp_srv_state_machine( void *fnet_tftp_srv_if_p );
 static void fnet_tftp_srv_send_error(struct fnet_tftp_srv_if *tftp_srv_if, SOCKET s, unsigned short error_code, const char *error_message, struct sockaddr *dest_addr);
 static void fnet_tftp_srv_send_data(struct fnet_tftp_srv_if *tftp_srv_if);
 static void fnet_tftp_srv_send_ack(struct fnet_tftp_srv_if *tftp_srv_if);
@@ -612,11 +612,12 @@ static void fnet_tftp_srv_state_machine( void *fnet_tftp_srv_if_p )
                 else
                     tftp_srv_if->state = FNET_TFTP_SRV_STATE_CLOSE;
             }
-            
+            else
+            {}
             break;
             /*---- CLOSING --------------------------------------------*/
-        default:
         case FNET_TFTP_SRV_STATE_CLOSE:
+        default:
             FNET_DEBUG_TFTP_SRV("TFTP_SRV: STATE_CLOSING");
 
             if(tftp_srv_if->socket_transaction != SOCKET_INVALID)

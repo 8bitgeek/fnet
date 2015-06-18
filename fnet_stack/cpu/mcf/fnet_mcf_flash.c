@@ -136,7 +136,7 @@ void fnet_cpu_flash_erase( void *flash_page_addr)
 *
 * DESCRIPTION:
 ************************************************************************/
-void fnet_cpu_flash_write(unsigned char *dest, unsigned char *data)
+void fnet_cpu_flash_write(unsigned char *dest, const unsigned char *data)
 {
     cfm_command(FNET_MCF_CFM_CFMCMD_WORD_PROGRAM, (unsigned long *)dest, *((unsigned long *)data));
 }

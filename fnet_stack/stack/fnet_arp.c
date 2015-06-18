@@ -52,7 +52,7 @@
 #if FNET_CFG_DEBUG_ARP    
     #define FNET_DEBUG_ARP   FNET_DEBUG
 #else
-    #define FNET_DEBUG_ARP(...)
+    #define FNET_DEBUG_ARP(...)     do{}while(0)
 #endif 
 
 /************************************************************************
@@ -71,7 +71,7 @@ static void fnet_arp_ip_duplicated(void *cookie);
 #if FNET_CFG_DEBUG_TRACE_ARP
     static void fnet_arp_trace(char *str, fnet_arp_header_t *arp_hdr);
 #else
-    #define fnet_arp_trace(str, arp_hdr)
+    #define fnet_arp_trace(str, arp_hdr)    do{}while(0)
 #endif
 
 
@@ -87,7 +87,9 @@ int fnet_arp_init( fnet_netif_t *netif )
     int            result= FNET_ERR;
 
     for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; i++)
-      fnet_memset_zero(&(arpif->arp_table[i]), sizeof(fnet_arp_entry_t));
+    {
+        fnet_memset_zero(&(arpif->arp_table[i]), sizeof(fnet_arp_entry_t));
+    }
 
 #if FNET_CFG_ARP_EXPIRE_TIMEOUT
     arpif->arp_tmr = fnet_timer_new((FNET_ARP_TIMER_PERIOD / FNET_TIMER_PERIOD_MS), 
@@ -341,7 +343,7 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
         if(nb->total_length > sizeof(fnet_arp_header_t)) 
         {
             /* Logical size and the physical size of the packet should be the same.*/
-            fnet_netbuf_trim(&nb, (int)(sizeof(fnet_arp_header_t) - nb->total_length)); 
+            fnet_netbuf_trim(&nb, (int)sizeof(fnet_arp_header_t) - (int)nb->total_length); 
         }
         
         fnet_arp_trace("RX", arp_hdr); /* Print ARP header. */

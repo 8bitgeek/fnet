@@ -240,13 +240,15 @@ fnet_netif_desc_t fnet_netif_get_by_number( unsigned long n )
     fnet_netif_desc_t result = FNET_NULL;
     fnet_netif_t *current;
    
-    for (current = fnet_netif_list; current; current = current->next, n--)
+    for (current = fnet_netif_list; current; n--)
     {
         if(n == 0)
         {
             result = current;
             break;     
         }
+
+        current = current->next;
     }
     
     return result;
@@ -296,15 +298,16 @@ fnet_netif_desc_t fnet_netif_get_by_sockaddr( const struct sockaddr *addr )
         {
 #if FNET_CFG_IP4
             case AF_INET:
-                result = fnet_netif_get_by_ip4_addr( ((struct sockaddr_in *)addr)->sin_addr.s_addr);
+                result = fnet_netif_get_by_ip4_addr( ((const struct sockaddr_in *)addr)->sin_addr.s_addr);
                 break;
 #endif /* FNET_CFG_IP4 */
 #if FNET_CFG_IP6                
             case AF_INET6:
-                result = fnet_netif_get_by_ip6_addr( &((struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
+                result = fnet_netif_get_by_ip6_addr( &((const struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
                 break;
 #endif /* FNET_CFG_IP6 */
-   
+            default:
+                break;
         }
     }
 
@@ -1201,7 +1204,7 @@ void fnet_netif_leave_ip6_multicast ( fnet_netif_desc_t netif_desc, fnet_ip6_add
 *
 * DESCRIPTION: Gets address information structure that corresponds to the ip_addr.
 *************************************************************************/
-fnet_netif_ip6_addr_t *fnet_netif_get_ip6_addr_info(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr)
+fnet_netif_ip6_addr_t *fnet_netif_get_ip6_addr_info(fnet_netif_t *netif, const fnet_ip6_addr_t *ip_addr)
 {
     int i;
     fnet_netif_ip6_addr_t *result = FNET_NULL;
@@ -1259,7 +1262,7 @@ fnet_ip6_addr_t *fnet_netif_get_ip6_addr_valid_link_local (fnet_netif_t *netif)
 * DESCRIPTION: Checks if an unicast address is attached/bound to the interface.
 *              Returns FNET_TRUE if the address is attached/bound, otherwise FNET_FALSE.
 *************************************************************************/
-int fnet_netif_is_my_ip6_addr(fnet_netif_t *netif, fnet_ip6_addr_t *ip_addr)
+int fnet_netif_is_my_ip6_addr(fnet_netif_t *netif, const fnet_ip6_addr_t *ip_addr)
 {
     int             result;
     
@@ -1306,7 +1309,7 @@ int fnet_netif_is_my_ip6_solicited_multicast_addr(fnet_netif_t *netif, fnet_ip6_
 *
 * DESCRIPTION: Returns a network interface given its IPv6 address.
 *************************************************************************/
-fnet_netif_desc_t fnet_netif_get_by_ip6_addr( fnet_ip6_addr_t *ip_addr )
+fnet_netif_desc_t fnet_netif_get_by_ip6_addr(const fnet_ip6_addr_t *ip_addr )
 {
     fnet_netif_t        *netif;
     fnet_netif_desc_t   result = (fnet_netif_desc_t)FNET_NULL;
@@ -1390,7 +1393,7 @@ int fnet_netif_bind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr
 *
 * DESCRIPTION: This function binds the IPv6 address to a hardware interface.
 *************************************************************************/
-int fnet_netif_bind_ip6_addr_prv(fnet_netif_t *netif, fnet_ip6_addr_t *addr, fnet_netif_ip6_addr_type_t addr_type, 
+int fnet_netif_bind_ip6_addr_prv(fnet_netif_t *netif, const fnet_ip6_addr_t *addr, fnet_netif_ip6_addr_type_t addr_type, 
                                      unsigned long lifetime /*in seconds*/, unsigned long prefix_length /* bits */ )
 {
     int                     result = FNET_ERR;

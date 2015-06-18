@@ -126,7 +126,7 @@ static void fapp_dhcp_handler_discover( fnet_netif_desc_t netif,void *shl_desc )
 *
 * DESCRIPTION: Releases DHCP client.
 *************************************************************************/
-void fapp_dhcp_release()
+void fapp_dhcp_release(void)
 {
     fnet_dhcp_release();
 }

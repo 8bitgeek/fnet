@@ -117,7 +117,7 @@ static unsigned long fnet_http_ssi_send (struct fnet_http_if * http)
                         
                         if(result >= sizeof(fnet_http_ssi_head)) 
                         { /* Found in the middle */
-                            fnet_fs_fseek (session->send_param.file_desc, -sizeof(fnet_http_ssi_head), FNET_FS_SEEK_CUR);
+                            fnet_fs_fseek (session->send_param.file_desc, -((long)sizeof(fnet_http_ssi_head)), FNET_FS_SEEK_CUR);
                             next = 1; /* break */
                             result -= sizeof(fnet_http_ssi_head); /* Correct result */
                         }
@@ -197,7 +197,8 @@ static unsigned long fnet_http_ssi_send (struct fnet_http_if * http)
                     next = 1; /* break */
                 }
                 break;
-        
+            default:
+                break;
         }
         buffer+=read_result;
         result+=read_result;

@@ -50,7 +50,7 @@
 #if FNET_CFG_DEBUG_TELNET    
     #define FNET_DEBUG_TELNET   FNET_DEBUG
 #else
-    #define FNET_DEBUG_TELNET(...)
+    #define FNET_DEBUG_TELNET(...)  do{}while(0)
 #endif
 
 #define FNET_TELNET_WAIT_SEND_MS        (2000)  /* ms*/
@@ -307,6 +307,8 @@ static void fnet_telnet_send(struct fnet_telnet_session_if *session)
                 FNET_DEBUG_TELNET("TELNET:Send timeout.");
                 break; /* Time-out. */
             }
+            else
+            {}
         }
         else /* Error.*/
         {
@@ -415,6 +417,8 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                         {              
                             session->state = FNET_TELNET_STATE_CLOSING; /*=> CLOSING */
                         }
+                        else
+                        {}
                     }                
                     break;
                 /*---- IAC -----------------------------------------------*/    
@@ -484,6 +488,8 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                             {              
                                 session->state = FNET_TELNET_STATE_CLOSING; /*=> CLOSING */
                             }
+                            else
+                            {}
                         }
                     }
                     break;
@@ -500,6 +506,8 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                     {              
                         session->state = FNET_TELNET_STATE_CLOSING; /*=> CLOSING */
                     }
+                    else
+                    {}
 
                     break;
                 /*---- CLOSING --------------------------------------------*/
@@ -606,18 +614,18 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
     
     /* Set socket options. */    
     if( /* Setup linger option. */
-        (setsockopt (telnet_if->socket_listen, SOL_SOCKET, SO_LINGER, (char *)&linger_option, sizeof(linger_option)) == SOCKET_ERROR) ||
+        (setsockopt (telnet_if->socket_listen, SOL_SOCKET, SO_LINGER, &linger_option, sizeof(linger_option)) == SOCKET_ERROR) ||
          /* Set socket buffer size. */
-        (setsockopt(telnet_if->socket_listen, SOL_SOCKET, SO_RCVBUF, (char *) &bufsize_option, sizeof(bufsize_option))== SOCKET_ERROR) ||
-        (setsockopt(telnet_if->socket_listen, SOL_SOCKET, SO_SNDBUF, (char *) &bufsize_option, sizeof(bufsize_option))== SOCKET_ERROR) ||
+        (setsockopt(telnet_if->socket_listen, SOL_SOCKET, SO_RCVBUF, &bufsize_option, sizeof(bufsize_option))== SOCKET_ERROR) ||
+        (setsockopt(telnet_if->socket_listen, SOL_SOCKET, SO_SNDBUF, &bufsize_option, sizeof(bufsize_option))== SOCKET_ERROR) ||
         /* Enable keepalive_option option. */
-        (setsockopt (telnet_if->socket_listen, SOL_SOCKET, SO_KEEPALIVE, (char *)&keepalive_option, sizeof(keepalive_option)) == SOCKET_ERROR) ||
+        (setsockopt (telnet_if->socket_listen, SOL_SOCKET, SO_KEEPALIVE, &keepalive_option, sizeof(keepalive_option)) == SOCKET_ERROR) ||
         /* Keepalive probe retransmit limit. */
-        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPCNT, (char *)&keepcnt_option, sizeof(keepcnt_option)) == SOCKET_ERROR) ||
+        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt_option, sizeof(keepcnt_option)) == SOCKET_ERROR) ||
         /* Keepalive retransmit interval.*/
-        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPINTVL, (char *)&keepintvl_option, sizeof(keepintvl_option)) == SOCKET_ERROR) ||
+        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl_option, sizeof(keepintvl_option)) == SOCKET_ERROR) ||
         /* Time between keepalive probes.*/
-        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPIDLE, (char *)&keepidle_option, sizeof(keepidle_option)) == SOCKET_ERROR)
+        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle_option, sizeof(keepidle_option)) == SOCKET_ERROR)
     )
     {
         FNET_DEBUG_TELNET("TELNET: Socket setsockopt() error.");

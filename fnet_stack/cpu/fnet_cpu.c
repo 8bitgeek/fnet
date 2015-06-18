@@ -42,15 +42,15 @@
 
 #if FNET_CFG_CPU_LITTLE_ENDIAN
 /* Convert short from host- to network byte order.*/
-unsigned short fnet_htons(unsigned short n)                                
+unsigned short fnet_htons(unsigned short short_var)                                
 {
-    unsigned short result = FNET_HTONS(n);
+    unsigned short result = FNET_HTONS(short_var);
     return result;
 }
 /* Convert long from host- to network byte order.*/
-unsigned long fnet_htonl(unsigned long n)                                  
+unsigned long fnet_htonl(unsigned long long_var)                                 
 {
-    unsigned long result = FNET_HTONL(n);
+    unsigned long result = FNET_HTONL(long_var);
     return result;    
 }
 #endif /* FNET_CFG_CPU_LITTLE_ENDIAN */

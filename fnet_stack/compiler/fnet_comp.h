@@ -96,6 +96,8 @@
 #if FNET_CFG_COMP_GHS
     #define FNET_COMP_PACKED_BEGIN  _Pragma("pack(1)")
     #define FNET_COMP_PACKED_END    _Pragma("pack()")
+
+    #define FNET_COMP_PACKED_VAR    __packed
 #endif
 
 /* Changes the current alignment mode for one member in a structure

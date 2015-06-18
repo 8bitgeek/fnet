@@ -1,3 +1,5 @@
+#ifndef _FNET_FEC_H_
+#define _FNET_FEC_H_
 /**************************************************************************
 *
 * Copyright 2011-2015 by Andrey Butok. FNET Community.
@@ -631,5 +633,5 @@ void fnet_fec_resume(fnet_netif_t *netif);
 
 #endif /* (FNET_MCF || FNET_MK || FNET_MPC) && FNET_CFG_ETH */
 
-
+#endif /*_FNET_FEC_H_*/
 

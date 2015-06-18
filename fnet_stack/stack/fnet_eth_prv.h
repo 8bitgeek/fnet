@@ -159,13 +159,13 @@ void fnet_eth_prot_input( fnet_netif_t *netif, fnet_netbuf_t *nb, unsigned short
 #endif /* FNET_CFG_MULTICAST */
 
 #if FNET_CFG_IP6
-    void fnet_eth_output_ip6(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip_addr,  fnet_ip6_addr_t *dest_ip_addr, fnet_netbuf_t* nb);
+    void fnet_eth_output_ip6(fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip_addr,  const fnet_ip6_addr_t *dest_ip_addr, fnet_netbuf_t* nb);
 #endif
 
 #if FNET_CFG_DEBUG_TRACE_ETH
     void fnet_eth_trace(char *str, fnet_eth_header_t *eth_hdr);
 #else
-    #define fnet_eth_trace(str, eth_hdr)
+    #define fnet_eth_trace(str, eth_hdr)    do{}while(0)
 #endif                          
 
 #endif /* FNET_CFG_ETH */
