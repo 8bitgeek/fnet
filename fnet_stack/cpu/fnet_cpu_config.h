@@ -117,6 +117,12 @@
     #define FNET_CFG_CPU_MPC5744P   (0)
 #endif 
 
+/* LPC1788 */
+#ifndef FNET_CFG_CPU_LPC1788
+    #define FNET_CFG_CPU_LPC1788  	(0)
+#endif
+
+
 /*********** MFC ********************/
 #if FNET_CFG_CPU_MCF52235 /* Kirin2 */
     #ifdef FNET_CPU_STR
@@ -241,6 +247,18 @@
     #define FNET_CPU_STR    "MPC5744P"
 #endif
 
+
+/*********** NXP's LPC ********************/
+#if FNET_CFG_CPU_LPC1788 /* NXP's LPC1788 MCU */
+    #ifdef FNET_CPU_STR
+        #error "More than one CPU selected FNET_CPU_XXXX"
+    #endif
+
+    #include "cpu/lpc/fnet_lpc_1788_config.h"
+    #define FNET_CPU_STR    "LPC1788"
+#endif
+
+
 /*-----------*/
 #ifndef FNET_CPU_STR
     #error "Select/Define proper CPU FNET_CPU_XXXX !"
@@ -259,6 +277,10 @@
   #define FNET_MPC  (0)
 #endif
 
+#ifndef FNET_LPC
+  #define FNET_LPC  (0)
+#endif
+
 /*-----------*/
 #if FNET_MCF
     #include "cpu/mcf/fnet_mcf_config.h"
@@ -270,6 +292,10 @@
 
 #if FNET_MPC
     #include "cpu/mpc/fnet_mpc_config.h"
+#endif
+
+#if FNET_LPC
+    #include "cpu/lpc/fnet_lpc_config.h"
 #endif
 
 /**************************************************************************/ /*!
@@ -351,7 +377,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_TIMER_NUMBER_MAX
-    #define FNET_CFG_CPU_TIMER_NUMBER_MAX		(3U)
+    #define FNET_CFG_CPU_TIMER_NUMBER_MAX		(3)
 #endif
 
 /**************************************************************************/ /*!

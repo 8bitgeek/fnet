@@ -1209,7 +1209,8 @@ static int fnet_tcp_getsockopt( fnet_socket_t *sk, int level, int optname, void 
             case TCP_MSS:
                 *((unsigned short *)(optval)) = sk->options.tcp_opt.mss;
                 *optlen = sizeof(unsigned short);
-                return FNET_OK;                
+                return FNET_OK; 
+                break;
             default:
                 fnet_socket_set_error(sk, FNET_ERR_NOPROTOOPT);
                 return FNET_ERR;
@@ -1429,15 +1430,17 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
         case FNET_TCP_CS_SYN_SENT:
         case FNET_TCP_CS_LISTENING:
             break;
-
-        case FNET_TCP_CS_SYN_RCVD:
-            if(cb->tcpcb_prev_connection_state == FNET_TCP_CS_SYN_SENT && ((sgmtype & FNET_TCP_SGT_SYN) != 0))
-            {
-                /* Check the sequence number for simultaneouos open.*/
-                if(tcp_seq == cb->tcpcb_sndack - 1)
-                    break;
-            }
         default:
+            if((cb->tcpcb_connection_state) == FNET_TCP_CS_SYN_RCVD)
+            {
+                if(cb->tcpcb_prev_connection_state == FNET_TCP_CS_SYN_SENT && ((sgmtype & FNET_TCP_SGT_SYN) != 0))
+                {
+                    /* Check the sequence number for simultaneouos open.*/
+                    if(tcp_seq == cb->tcpcb_sndack - 1)
+                        break;
+                }
+            }
+        
             if(FNET_TCP_COMP_G(cb->tcpcb_sndack, tcp_seq)) 
             {
                 if(FNET_TCP_COMP_G(tcp_seq + insegment->total_length - tcp_length, cb->tcpcb_sndack))
@@ -1494,6 +1497,7 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
                     ackparam |= FNET_TCP_AP_SEND_IMMEDIATELLY;
                 }
             }
+            break;
     }
 
     /* Process the reset segment with acknowledgment.*/
@@ -1518,12 +1522,13 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
         {
             case FNET_TCP_CS_LISTENING:
             case FNET_TCP_CS_SYN_SENT:
-              return FNET_TRUE;
-
+                return FNET_TRUE;
+                break;
             default:
-              /* Close the socket.*/
-              sk->options.local_error = FNET_ERR_CONNRESET;
-              fnet_tcp_closesk(sk);
+                /* Close socket.*/
+                sk->options.local_error = FNET_ERR_CONNRESET;
+                fnet_tcp_closesk(sk);
+                break;
         }
 
         return FNET_TRUE;
@@ -1561,13 +1566,14 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
                     fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
 
                 return FNET_TRUE;
-
+                break;
             case FNET_TCP_CS_SYN_SENT:
                 if((sgmtype & FNET_TCP_SGT_ACK) != 0)
                   /* Send the reset segment.*/
                     fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
 
                 return FNET_TRUE;
+                break;
             default:
                 break;  /* do nothing, avoid compiler warning "enumeration value not handled in switch" */
         }
@@ -1587,23 +1593,22 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
                   fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
                   return FNET_TRUE;
               }
-
               break;
-
             case FNET_TCP_CS_LISTENING:
-              /* Send the reset segment.*/
-              fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
-              return FNET_TRUE;
-              
+                /* Send the reset segment.*/
+                fnet_tcp_sendrst(&sk->options, insegment, dest_addr, src_addr);
+                return FNET_TRUE;
+                break;
             default:
-              if(!fnet_tcp_hit(cb->tcpcb_rcvack, cb->tcpcb_maxrcvack, tcp_ack))
-              {
-                  if(FNET_TCP_COMP_G(tcp_ack, cb->tcpcb_maxrcvack))
-                      /* Send the acknowledgment.*/
-                      fnet_tcp_sendack(sk);
+                if(!fnet_tcp_hit(cb->tcpcb_rcvack, cb->tcpcb_maxrcvack, tcp_ack))
+                {
+                    if(FNET_TCP_COMP_G(tcp_ack, cb->tcpcb_maxrcvack))
+                        /* Send the acknowledgment.*/
+                        fnet_tcp_sendack(sk);
 
-                  return FNET_TRUE;
-              }
+                    return FNET_TRUE;
+                }
+                break;
         }
     }
     else
@@ -1613,13 +1618,13 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
         {
             case FNET_TCP_CS_SYN_SENT:
             case FNET_TCP_CS_LISTENING:
-              break;
-
+                break;
             case FNET_TCP_CS_SYN_RCVD:
-              fnet_tcp_sendack(sk);
-
+                fnet_tcp_sendack(sk);
+                return FNET_TRUE;
+                break;
             default:
-              return FNET_TRUE;
+                return FNET_TRUE;
         }
     }
 
@@ -1859,10 +1864,13 @@ static int fnet_tcp_inputsk( fnet_socket_t *sk, fnet_netbuf_t *insegment, struct
                 cb->tcpcb_connection_state = FNET_TCP_CS_FIN_WAIT_2;
             break;
         case FNET_TCP_CS_LAST_ACK:
-          if(tcp_ack == cb->tcpcb_sndseq) 
-              /* Close the socket.*/
-              fnet_tcp_closesk(sk);
-          return FNET_TRUE;
+            if(tcp_ack == cb->tcpcb_sndseq)
+            {
+                /* Close the socket.*/
+                fnet_tcp_closesk(sk);
+            }
+            return FNET_TRUE;
+            break;
         case FNET_TCP_CS_CLOSING:
             if(tcp_ack == cb->tcpcb_sndseq) 
             {
@@ -2903,39 +2911,37 @@ static void fnet_tcp_rtimeo( fnet_socket_t *sk )
 
           /* Send the SYN segment.*/
           fnet_tcp_sendheadseg(sk, FNET_TCP_SGT_SYN, options, optionlen);
-
           break;
-
         default:
+            /* If FIN segment is sent, it must be retransmited.*/
+            cb->tcpcb_flags &= ~FNET_TCP_CBF_FIN_SENT;
 
-          /* If FIN segment is sent, it must be retransmited.*/
-          cb->tcpcb_flags &= ~FNET_TCP_CBF_FIN_SENT;
+            /* Initialize of the abort timer.*/
+            if(cb->tcpcb_timers.abort == FNET_TCP_TIMER_OFF)
+                cb->tcpcb_timers.abort = FNET_TCP_ABORT_INTERVAL;
 
-          /* Initialize of the abort timer.*/
-          if(cb->tcpcb_timers.abort == FNET_TCP_TIMER_OFF)
-              cb->tcpcb_timers.abort = FNET_TCP_ABORT_INTERVAL;
+            /* Recalculate the sequence number.*/
+            cb->tcpcb_sndseq = cb->tcpcb_rcvack;
 
-          /* Recalculate the sequence number.*/
-          cb->tcpcb_sndseq = cb->tcpcb_rcvack;
+            /* Recalculate the congestion window and slow start threshold values (for case of  retransmission).*/
+            if(cb->tcpcb_cwnd > cb->tcpcb_sndwnd)
+                cb->tcpcb_ssthresh = cb->tcpcb_sndwnd >> 1;
+            else
+                cb->tcpcb_ssthresh = cb->tcpcb_cwnd >> 1;
 
-          /* Recalculate the congestion window and slow start threshold values (for case of  retransmission).*/
-          if(cb->tcpcb_cwnd > cb->tcpcb_sndwnd)
-              cb->tcpcb_ssthresh = cb->tcpcb_sndwnd >> 1;
-          else
-              cb->tcpcb_ssthresh = cb->tcpcb_cwnd >> 1;
+            if(cb->tcpcb_ssthresh < ((unsigned long)cb->tcpcb_sndmss << 1))
+                cb->tcpcb_ssthresh = ((unsigned long)cb->tcpcb_sndmss << 1);
 
-          if(cb->tcpcb_ssthresh < ((unsigned long)cb->tcpcb_sndmss << 1))
-              cb->tcpcb_ssthresh = ((unsigned long)cb->tcpcb_sndmss << 1);
+            cb->tcpcb_cwnd = cb->tcpcb_sndmss;
 
-          cb->tcpcb_cwnd = cb->tcpcb_sndmss;
+            /* Round trip time can't be measured in this case.*/
+            cb->tcpcb_timers.round_trip = FNET_TCP_TIMER_OFF;
+            cb->tcpcb_timing_state = TCP_TS_SEGMENT_LOST;
 
-          /* Round trip time can't be measured in this case.*/
-          cb->tcpcb_timers.round_trip = FNET_TCP_TIMER_OFF;
-          cb->tcpcb_timing_state = TCP_TS_SEGMENT_LOST;
-
-          cb->tcpcb_flags |= FNET_TCP_CBF_FORCE_SEND;
-          fnet_tcp_sendanydata(sk, 0);
-          cb->tcpcb_flags &= ~FNET_TCP_CBF_FORCE_SEND;
+            cb->tcpcb_flags |= FNET_TCP_CBF_FORCE_SEND;
+            fnet_tcp_sendanydata(sk, 0);
+            cb->tcpcb_flags &= ~FNET_TCP_CBF_FORCE_SEND;
+            break;
     }
 
     /* If the first timeout is occured, initialize the retransmission timer.*/

@@ -447,8 +447,11 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                                     the other 255 codes may be passed transparently.
                                     */
                                     rx_buffer_write (session, rx_data[0]);
+                                    session->state = FNET_TELNET_STATE_RECEIVING;
+                                    break;
                                 default:
                                     session->state = FNET_TELNET_STATE_RECEIVING; /*=> Ignore commands */ 
+                                    break;
                             }
                         }
                     }

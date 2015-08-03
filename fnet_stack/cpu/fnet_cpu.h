@@ -57,6 +57,10 @@
     #include "mpc/fnet_mpc.h"
 #endif  
 
+#if FNET_LPC     /* NXP's LPC.*/
+    #include "lpc/fnet_lpc.h"
+#endif
+
 /*! @addtogroup fnet_socket */
 /*! @{ */
 
@@ -395,7 +399,7 @@ void fnet_cpu_flash_write(unsigned char *dest, const unsigned char *data);
 void fnet_cpu_isr(void);
 
 /***************************************************************************/ /*!
- * @def FNET_CPU_INSTRUCTION_ADDR
+ * @def FNET_CPU_ADDR_TO_INSTRUCTION
  *
  * @brief           Adjust value of the instruction address.
  *
@@ -409,8 +413,12 @@ void fnet_cpu_isr(void);
  * If the current platform is ColdFire or MPC, it does nothing.
  *
  ******************************************************************************/
-#ifndef FNET_CPU_INSTRUCTION_ADDR
-    #define FNET_CPU_INSTRUCTION_ADDR(addr)    (addr)
+#ifndef FNET_CPU_ADDR_TO_INSTRUCTION
+    #define FNET_CPU_ADDR_TO_INSTRUCTION(addr)    (addr)
+#endif
+
+#ifndef FNET_CPU_INSTRUCTION_TO_ADDR
+    #define FNET_CPU_INSTRUCTION_TO_ADDR(addr)    (addr)
 #endif
 
 /*! @} */

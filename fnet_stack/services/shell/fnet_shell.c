@@ -150,6 +150,7 @@ static void fnet_shell_state_machine( void *shell_if_p )
             FNET_DEBUG_STACK("Max Stack usage = %d", fnet_dbg_stack_max);
 
             shell_if->state = FNET_SHELL_STATE_GET_USER_INPUT;
+            break;
         /*-------------------------------------*/    
         case FNET_SHELL_STATE_GET_USER_INPUT:
             if( (ch = fnet_serial_getchar(shell_if->stream)) != FNET_ERR) 

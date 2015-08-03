@@ -83,7 +83,7 @@ __isr_vector:
     .long   FTFE_IRQHandler                                 /* FTFE Command complete interrupt*/
     .long   Read_Collision_IRQHandler                       /* Read Collision Interrupt*/
     .long   LVD_LVW_IRQHandler                              /* Low Voltage Detect, Low Voltage Warning*/
-    .long   LLW_IRQHandler                                  /* Low Leakage Wakeup*/
+    .long   LLWU_IRQHandler                                 /* Low Leakage Wakeup Unit*/
     .long   WDOG_EWM_IRQHandler                             /* WDOG Interrupt*/
     .long   RNG_IRQHandler                                  /* RNG Interrupt*/
     .long   I2C0_IRQHandler                                 /* I2C0 interrupt*/
@@ -401,7 +401,7 @@ DefaultISR:
     def_irq_handler    FTFE_IRQHandler
     def_irq_handler    Read_Collision_IRQHandler
     def_irq_handler    LVD_LVW_IRQHandler
-    def_irq_handler    LLW_IRQHandler
+    def_irq_handler    LLWU_IRQHandler
     def_irq_handler    WDOG_EWM_IRQHandler
     def_irq_handler    RNG_IRQHandler
     def_irq_handler    I2C0_IRQHandler

@@ -2,12 +2,12 @@
 /*  @file:    startup_MK64F12.s                                                           */
 /*  @purpose: CMSIS Cortex-M4 Core Device Startup File                                    */
 /*            MK64F12                                                                     */
-/*  @version: 2.7                                                                         */
-/*  @date:    2014-10-14                                                                  */
-/*  @build:   b141016                                                                     */
+/*  @version: 2.8                                                                         */
+/*  @date:    2015-2-19                                                                   */
+/*  @build:   b150225                                                                     */
 /* ---------------------------------------------------------------------------------------*/
 /*                                                                                        */
-/* Copyright (c) 1997 - 2014 , Freescale Semiconductor, Inc.                              */
+/* Copyright (c) 1997 - 2015 , Freescale Semiconductor, Inc.                              */
 /* All rights reserved.                                                                   */
 /*                                                                                        */
 /* Redistribution and use in source and binary forms, with or without modification,       */
@@ -85,7 +85,7 @@ __cs3_interrupt_vector_cortex_m:
     .long   FTFE_IRQHandler                                 /* FTFE Command complete interrupt*/
     .long   Read_Collision_IRQHandler                       /* Read Collision Interrupt*/
     .long   LVD_LVW_IRQHandler                              /* Low Voltage Detect, Low Voltage Warning*/
-    .long   LLW_IRQHandler                                  /* Low Leakage Wakeup*/
+    .long   LLWU_IRQHandler                                 /* Low Leakage Wakeup Unit*/
     .long   WDOG_EWM_IRQHandler                             /* WDOG Interrupt*/
     .long   RNG_IRQHandler                                  /* RNG Interrupt*/
     .long   I2C0_IRQHandler                                 /* I2C0 interrupt*/
@@ -382,7 +382,7 @@ DefaultISR:
     def_irq_handler    FTFE_IRQHandler
     def_irq_handler    Read_Collision_IRQHandler
     def_irq_handler    LVD_LVW_IRQHandler
-    def_irq_handler    LLW_IRQHandler
+    def_irq_handler    LLWU_IRQHandler
     def_irq_handler    WDOG_EWM_IRQHandler
     def_irq_handler    RNG_IRQHandler
     def_irq_handler    I2C0_IRQHandler

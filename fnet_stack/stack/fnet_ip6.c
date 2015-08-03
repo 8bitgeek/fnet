@@ -272,6 +272,7 @@ static int fnet_ip6_ext_header_process(fnet_netif_t *netif, unsigned char **next
             {
                 case FNET_IP6_EXT_HEADER_HANDLER_RESULT_EXIT:
                     return FNET_ERR;
+                    break;
                 case FNET_IP6_EXT_HEADER_HANDLER_RESULT_NEXT:
                     break;
                 case FNET_IP6_EXT_HEADER_HANDLER_RESULT_TRANSPORT:
@@ -363,6 +364,7 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_options 
                         fnet_netbuf_free_chain(nb);  
                         fnet_netbuf_free_chain(ip6_nb);   
                         return FNET_IP6_EXT_HEADER_HANDLER_RESULT_EXIT;
+                        break;
                     /* 10 - discard the packet and, regardless of whether or not the
                      *      packet’s Destination Address was a multicast address, send an
                      *      ICMP Parameter Problem, Code 2, message to the packet’s
@@ -371,7 +373,8 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_options 
                         fnet_netbuf_free_chain(nb);
                         fnet_icmp6_error( netif, FNET_ICMP6_TYPE_PARAM_PROB, FNET_ICMP6_CODE_PP_OPTION, 
                                     (unsigned long)(&option->type) - (unsigned long)(ip6_nb->data_ptr), ip6_nb ); /* TBD not tested.*/
-                        return FNET_IP6_EXT_HEADER_HANDLER_RESULT_EXIT; 
+                        return FNET_IP6_EXT_HEADER_HANDLER_RESULT_EXIT;
+                        break;
                     /* 11 - discard the packet and, only if the packet’s Destination
                      *      Address was not a multicast address, send an ICMP Parameter
                      *      Problem, Code 2, message to the packet’s Source Address,
@@ -385,6 +388,7 @@ static fnet_ip6_ext_header_handler_result_t fnet_ip6_ext_header_handler_options 
                             fnet_netbuf_free_chain(ip6_nb); 
                                                                   
                         return FNET_IP6_EXT_HEADER_HANDLER_RESULT_EXIT;
+                        break;
                     default:
                         break;
                 }

@@ -110,7 +110,7 @@ __vector_table_0x1c
         DCD     FTFE_IRQHandler                               ;FTFE Command complete interrupt
         DCD     Read_Collision_IRQHandler                     ;Read Collision Interrupt
         DCD     LVD_LVW_IRQHandler                            ;Low Voltage Detect, Low Voltage Warning
-        DCD     LLW_IRQHandler                                ;Low Leakage Wakeup
+        DCD     LLWU_IRQHandler                               ;Low Leakage Wakeup Unit
         DCD     WDOG_EWM_IRQHandler                           ;WDOG Interrupt
         DCD     RNG_IRQHandler                                ;RNG Interrupt
         DCD     I2C0_IRQHandler                               ;I2C0 interrupt
@@ -440,7 +440,7 @@ SysTick_Handler
         PUBWEAK FTFE_IRQHandler
         PUBWEAK Read_Collision_IRQHandler
         PUBWEAK LVD_LVW_IRQHandler
-        PUBWEAK LLW_IRQHandler
+        PUBWEAK LLWU_IRQHandler
         PUBWEAK WDOG_EWM_IRQHandler
         PUBWEAK RNG_IRQHandler
         PUBWEAK I2C0_IRQHandler
@@ -528,7 +528,7 @@ MCM_IRQHandler
 FTFE_IRQHandler
 Read_Collision_IRQHandler
 LVD_LVW_IRQHandler
-LLW_IRQHandler
+LLWU_IRQHandler
 WDOG_EWM_IRQHandler
 RNG_IRQHandler
 I2C0_IRQHandler

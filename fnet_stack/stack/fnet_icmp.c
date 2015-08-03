@@ -233,7 +233,7 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                         goto DISCARD;
                 }
                 goto NOTIFY_PROT;
-
+                break;
             case FNET_ICMP_TIMXCEED:
                 switch(hdr->code)
                 {
@@ -250,14 +250,14 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                 }
 
                 goto NOTIFY_PROT;
-
+                break;
             case FNET_ICMP_PARAMPROB:                       /* Parameter Problem Message.*/
                 if(hdr->code > 1)
                     goto DISCARD;
 
                 prot_cmd = FNET_PROT_NOTIFY_PARAMPROB;
                 goto NOTIFY_PROT;
-
+                break;
             case FNET_ICMP_SOURCEQUENCH:                    /* Source Quench Message; packet lost, slow down.*/
                 if(hdr->code)
                     goto DISCARD;
@@ -307,7 +307,7 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                     }
                 }
                 goto DISCARD;
-
+                break;
             /************************
              * Ignore others
              ************************/

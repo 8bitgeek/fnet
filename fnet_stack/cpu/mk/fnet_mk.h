@@ -72,7 +72,8 @@ fnet_uint32 fnet_mk_irq_disable(void);
 
 
 /* Ensure that the Thumb bit is set.*/
-#define FNET_CPU_INSTRUCTION_ADDR(addr)    ((addr)|0x1)
+#define FNET_CPU_ADDR_TO_INSTRUCTION(addr)    ((unsigned)(addr)|0x1u)
+#define FNET_CPU_INSTRUCTION_TO_ADDR(addr)    ((unsigned)(addr)&(~0x1u))
 
 /************************************************************************
 * Kinetis peripheral clock in KHZ.
@@ -1339,13 +1340,13 @@ typedef struct FNET_MK_NVIC_MemMap {
    ---------------------------------------------------------------------------- */
 
 /* NVIC - Register accessors */
-#define FNET_MK_NVIC_ISER_REG(base,index)                ((base)->ISER[index])
-#define FNET_MK_NVIC_ICER_REG(base,index)                ((base)->ICER[index])
-#define FNET_MK_NVIC_ISPR_REG(base,index)                ((base)->ISPR[index])
-#define FNET_MK_NVIC_ICPR_REG(base,index)                ((base)->ICPR[index])
-#define FNET_MK_NVIC_IABR_REG(base,index)                ((base)->IABR[index])
-#define FNET_MK_NVIC_IP_REG(base,index)                  ((base)->IP[index])
-#define FNET_MK_NVIC_STIR_REG(base,index)                ((base)->STIR[index])
+#define FNET_MK_NVIC_ISER_REG(base,index)                ((base)->ISER[(index)])
+#define FNET_MK_NVIC_ICER_REG(base,index)                ((base)->ICER[(index)])
+#define FNET_MK_NVIC_ISPR_REG(base,index)                ((base)->ISPR[(index)])
+#define FNET_MK_NVIC_ICPR_REG(base,index)                ((base)->ICPR[(index)])
+#define FNET_MK_NVIC_IABR_REG(base,index)                ((base)->IABR[(index)])
+#define FNET_MK_NVIC_IP_REG(base,index)                  ((base)->IP[(index)])
+#define FNET_MK_NVIC_STIR_REG(base,index)                ((base)->STIR[(index)])
 
 /* ----------------------------------------------------------------------------
    -- NVIC Register Masks
@@ -1827,13 +1828,13 @@ typedef struct FNET_MK_NVIC_MemMap {
 #define FNET_MK_NVICSTIR                                 FNET_MK_NVIC_STIR_REG(FNET_MK_NVIC_BASE_PTR,0)
 
 /* NVIC - Register array accessors */
-#define FNET_MK_NVIC_ISER(index)                         FNET_MK_NVIC_ISER_REG(FNET_MK_NVIC_BASE_PTR,index)
-#define FNET_MK_NVIC_ICER(index)                         FNET_MK_NVIC_ICER_REG(FNET_MK_NVIC_BASE_PTR,index)
-#define FNET_MK_NVIC_ISPR(index)                         FNET_MK_NVIC_ISPR_REG(FNET_MK_NVIC_BASE_PTR,index)
-#define FNET_MK_NVIC_ICPR(index)                         FNET_MK_NVIC_ICPR_REG(FNET_MK_NVIC_BASE_PTR,index)
-#define FNET_MK_NVIC_IABR(index)                         FNET_MK_NVIC_IABR_REG(FNET_MK_NVIC_BASE_PTR,index)
-#define FNET_MK_NVIC_IP(index)                           FNET_MK_NVIC_IP_REG(FNET_MK_NVIC_BASE_PTR,index)
-#define FNET_MK_NVIC_STIR(index)                         FNET_MK_NVIC_STIR_REG(FNET_MK_NVIC_BASE_PTR,index)
+#define FNET_MK_NVIC_ISER(index)                         FNET_MK_NVIC_ISER_REG(FNET_MK_NVIC_BASE_PTR,(index))
+#define FNET_MK_NVIC_ICER(index)                         FNET_MK_NVIC_ICER_REG(FNET_MK_NVIC_BASE_PTR,(index))
+#define FNET_MK_NVIC_ISPR(index)                         FNET_MK_NVIC_ISPR_REG(FNET_MK_NVIC_BASE_PTR,(index))
+#define FNET_MK_NVIC_ICPR(index)                         FNET_MK_NVIC_ICPR_REG(FNET_MK_NVIC_BASE_PTR,(index))
+#define FNET_MK_NVIC_IABR(index)                         FNET_MK_NVIC_IABR_REG(FNET_MK_NVIC_BASE_PTR,(index))
+#define FNET_MK_NVIC_IP(index)                           FNET_MK_NVIC_IP_REG(FNET_MK_NVIC_BASE_PTR,(index))
+#define FNET_MK_NVIC_STIR(index)                         FNET_MK_NVIC_STIR_REG(FNET_MK_NVIC_BASE_PTR,(index))
 
 
 /* ----------------------------------------------------------------------------
@@ -1858,10 +1859,10 @@ typedef struct FNET_MK_PIT_MemMap {
 
 /* PIT - Register accessors */
 #define FNET_MK_PIT_MCR_REG(base)                        ((base)->MCR)
-#define FNET_MK_PIT_LDVAL_REG(base,index)                ((base)->CHANNEL[index].LDVAL)
-#define FNET_MK_PIT_CVAL_REG(base,index)                 ((base)->CHANNEL[index].CVAL)
-#define FNET_MK_PIT_TCTRL_REG(base,index)                ((base)->CHANNEL[index].TCTRL)
-#define FNET_MK_PIT_TFLG_REG(base,index)                 ((base)->CHANNEL[index].TFLG)
+#define FNET_MK_PIT_LDVAL_REG(base,index)                ((base)->CHANNEL[(index)].LDVAL)
+#define FNET_MK_PIT_CVAL_REG(base,index)                 ((base)->CHANNEL[(index)].CVAL)
+#define FNET_MK_PIT_TCTRL_REG(base,index)                ((base)->CHANNEL[(index)].TCTRL)
+#define FNET_MK_PIT_TFLG_REG(base,index)                 ((base)->CHANNEL[(index)].TFLG)
 
 /* ----------------------------------------------------------------------------
    -- PIT Register Masks
@@ -1918,10 +1919,10 @@ typedef struct FNET_MK_PIT_MemMap {
 #define FNET_MK_PIT_TFLG3                                FNET_MK_PIT_TFLG_REG(FNET_MK_PIT_BASE_PTR,3)
 
 /* PIT - Register array accessors */
-#define FNET_MK_PIT_LDVAL(index)                         FNET_MK_PIT_LDVAL_REG(FNET_MK_PIT_BASE_PTR,index)
-#define FNET_MK_PIT_CVAL(index)                          FNET_MK_PIT_CVAL_REG(FNET_MK_PIT_BASE_PTR,index)
-#define FNET_MK_PIT_TCTRL(index)                         FNET_MK_PIT_TCTRL_REG(FNET_MK_PIT_BASE_PTR,index)
-#define FNET_MK_PIT_TFLG(index)                          FNET_MK_PIT_TFLG_REG(FNET_MK_PIT_BASE_PTR,index)
+#define FNET_MK_PIT_LDVAL(index)                         FNET_MK_PIT_LDVAL_REG(FNET_MK_PIT_BASE_PTR,(index))
+#define FNET_MK_PIT_CVAL(index)                          FNET_MK_PIT_CVAL_REG(FNET_MK_PIT_BASE_PTR,(index))
+#define FNET_MK_PIT_TCTRL(index)                         FNET_MK_PIT_TCTRL_REG(FNET_MK_PIT_BASE_PTR,(index))
+#define FNET_MK_PIT_TFLG(index)                          FNET_MK_PIT_TFLG_REG(FNET_MK_PIT_BASE_PTR,(index))
 
 /* ----------------------------------------------------------------------------
    -- MPU
@@ -1947,10 +1948,10 @@ typedef struct FNET_MK_MPU_MemMap {
 
 /* MPU - Register accessors */
 #define FNET_MK_MPU_CESR_REG(base)                       ((base)->CESR)
-#define FNET_MK_MPU_EAR_REG(base,index)                  ((base)->SP[index].EAR)
-#define FNET_MK_MPU_EDR_REG(base,index)                  ((base)->SP[index].EDR)
-#define FNET_MK_MPU_WORD_REG(base,index,index2)          ((base)->WORD[index][index2])
-#define FNET_MK_MPU_RGDAAC_REG(base,index)               ((base)->RGDAAC[index])
+#define FNET_MK_MPU_EAR_REG(base,index)                  ((base)->SP[(index)].EAR)
+#define FNET_MK_MPU_EDR_REG(base,index)                  ((base)->SP[(index)].EDR)
+#define FNET_MK_MPU_WORD_REG(base,index,index2)          ((base)->WORD[(index)][(index2)])
+#define FNET_MK_MPU_RGDAAC_REG(base,index)               ((base)->RGDAAC[(index)])
 
 /* ----------------------------------------------------------------------------
    -- MPU Register Masks
@@ -2161,10 +2162,10 @@ typedef struct FNET_MK_MPU_MemMap {
 #define FNET_MK_MPU_RGDAAC11                             FNET_MK_MPU_RGDAAC_REG(FNET_MK_MPU_BASE_PTR,11)
 
 /* MPU - Register array accessors */
-#define FNET_MK_MPU_EAR(index)                           FNET_MK_MPU_EAR_REG(FNET_MK_MPU_BASE_PTR,index)
-#define FNET_MK_MPU_EDR(index)                           FNET_MK_MPU_EDR_REG(FNET_MK_MPU_BASE_PTR,index)
-#define FNET_MK_MPU_WORD(index,index2)                   FNET_MK_MPU_WORD_REG(FNET_MK_MPU_BASE_PTR,index,index2)
-#define FNET_MK_MPU_RGDAAC(index)                        FNET_MK_MPU_RGDAAC_REG(FNET_MK_MPU_BASE_PTR,index)
+#define FNET_MK_MPU_EAR(index)                           FNET_MK_MPU_EAR_REG(FNET_MK_MPU_BASE_PTR,(index))
+#define FNET_MK_MPU_EDR(index)                           FNET_MK_MPU_EDR_REG(FNET_MK_MPU_BASE_PTR,(index))
+#define FNET_MK_MPU_WORD(index,index2)                   FNET_MK_MPU_WORD_REG(FNET_MK_MPU_BASE_PTR,(index),(index2))
+#define FNET_MK_MPU_RGDAAC(index)                        FNET_MK_MPU_RGDAAC_REG(FNET_MK_MPU_BASE_PTR,(index))
 
 
 /* ----------------------------------------------------------------------------
@@ -2193,9 +2194,9 @@ typedef struct FNET_MK_FMC_MemMap {
 #define FNET_MK_FMC_PFAPR_REG(base)                      ((base)->PFAPR)
 #define FNET_MK_FMC_PFB0CR_REG(base)                     ((base)->PFB0CR)
 #define FNET_MK_FMC_PFB1CR_REG(base)                     ((base)->PFB1CR)
-#define FNET_MK_FMC_TAGVD_REG(base,index,index2)         ((base)->TAGVD[index][index2])
-#define FNET_MK_FMC_DATA_U_REG(base,index,index2)        ((base)->SET[index][index2].DATA_U)
-#define FNET_MK_FMC_DATA_L_REG(base,index,index2)        ((base)->SET[index][index2].DATA_L)
+#define FNET_MK_FMC_TAGVD_REG(base,index,index2)         ((base)->TAGVD[(index)][(index2)])
+#define FNET_MK_FMC_DATA_U_REG(base,index,index2)        ((base)->SET[(index)][(index2)].DATA_U)
+#define FNET_MK_FMC_DATA_L_REG(base,index,index2)        ((base)->SET[(index)][(index2)].DATA_L)
 
 /* ----------------------------------------------------------------------------
    -- FMC Register Masks
@@ -2414,9 +2415,9 @@ typedef struct FNET_MK_FMC_MemMap {
 #define FNET_MK_FMC_DATAW3S7L                            FNET_MK_FMC_DATA_L_REG(FNET_MK_FMC_BASE_PTR,3,7)
 
 /* FMC - Register array accessors */
-#define FNET_MK_FMC_TAGVD(index,index2)                  FNET_MK_FMC_TAGVD_REG(FNET_MK_FMC_BASE_PTR,index,index2)
-#define FNET_MK_FMC_DATA_U(index,index2)                 FNET_MK_FMC_DATA_U_REG(FNET_MK_FMC_BASE_PTR,index,index2)
-#define FNET_MK_FMC_DATA_L(index,index2)                 FNET_MK_FMC_DATA_L_REG(FNET_MK_FMC_BASE_PTR,index,index2)
+#define FNET_MK_FMC_TAGVD(index,index2)                  FNET_MK_FMC_TAGVD_REG(FNET_MK_FMC_BASE_PTR,(index),(index2))
+#define FNET_MK_FMC_DATA_U(index,index2)                 FNET_MK_FMC_DATA_U_REG(FNET_MK_FMC_BASE_PTR,(index),(index2))
+#define FNET_MK_FMC_DATA_L(index,index2)                 FNET_MK_FMC_DATA_L_REG(FNET_MK_FMC_BASE_PTR,(index),(index2))
 
 /* ----------------------------------------------------------------------------
    -- FTFL

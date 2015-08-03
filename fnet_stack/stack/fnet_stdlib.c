@@ -136,26 +136,10 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
         }
 
         /* Now, write the rest of bytes */
-        switch ((number_of_bytes >> 2) & 0xF)
+        for (loops = ((number_of_bytes >> 2) & 0xF); loops > 0; loops--)
         {
-            case 15: *to32_ptr++ = *from32_ptr++;
-            case 14: *to32_ptr++ = *from32_ptr++;
-            case 13: *to32_ptr++ = *from32_ptr++;
-            case 12: *to32_ptr++ = *from32_ptr++;
-            case 11: *to32_ptr++ = *from32_ptr++;
-            case 10: *to32_ptr++ = *from32_ptr++;
-            case 9:  *to32_ptr++ = *from32_ptr++;
-            case 8:  *to32_ptr++ = *from32_ptr++;
-            case 7:  *to32_ptr++ = *from32_ptr++;
-            case 6:  *to32_ptr++ = *from32_ptr++;
-            case 5:  *to32_ptr++ = *from32_ptr++;
-            case 4:  *to32_ptr++ = *from32_ptr++;
-            case 3:  *to32_ptr++ = *from32_ptr++;
-            case 2:  *to32_ptr++ = *from32_ptr++;
-            case 1:  *to32_ptr++ = *from32_ptr++;
-            default:
-                break;
-        } 
+            *to32_ptr++ = *from32_ptr++;
+        }
 
         from_ptr = from32_ptr;
         to_ptr = to32_ptr;
@@ -181,6 +165,34 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
 #endif
 
 #endif
+
+/************************************************************************
+* NAME: fnet_memcpy_func
+*
+* DESCRIPTION: Copy function to other location.
+*              Used for relocate function from Flash to RAM
+*
+*************************************************************************/
+void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, unsigned to_buf_size)
+{
+#if 1
+    fnet_memcpy(to_buf_ptr, (void*)FNET_CPU_INSTRUCTION_TO_ADDR(from_func_ptr), to_buf_size);
+#endif
+#if 0
+    const short *p = (short *)from_func_ptr;
+    short *q = (short *)to_buf_ptr;
+    int n = to_buf_size;
+
+    while( n )
+    {
+        *q++ = *p++;
+
+        n-=2;
+    }
+#endif
+    
+    return (void*)FNET_CPU_ADDR_TO_INSTRUCTION(to_buf_ptr);
+}
 
 /************************************************************************
 * NAME: fnet_memset

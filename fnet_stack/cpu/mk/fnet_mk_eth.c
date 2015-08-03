@@ -53,10 +53,9 @@ fnet_eth_if_t fnet_mk_eth0_if =
     ,0
     ,fnet_fec_output
 #if FNET_CFG_MULTICAST
-    ,      
-    fnet_fec_multicast_join,
-    fnet_fec_multicast_leave,
-#endif /* FNET_CFG_MULTICAST */     
+    ,fnet_fec_multicast_join
+    ,fnet_fec_multicast_leave
+#endif /* FNET_CFG_MULTICAST */  
 };
 
 fnet_netif_t fnet_eth0_if =

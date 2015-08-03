@@ -203,6 +203,7 @@ static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  st
                     }                
                 }
                 goto DISCARD;
+                break;
         #endif   
            /**************************
             * Destination Unreachable. 
@@ -265,7 +266,8 @@ static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  st
                         }
                     }
                 }
-                goto DISCARD;                                                
+                goto DISCARD; 
+                break;
             default:
                 goto DISCARD;
         }                

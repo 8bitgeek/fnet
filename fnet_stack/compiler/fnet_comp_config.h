@@ -118,14 +118,16 @@
         #undef FNET_CFG_COMP_GHS 
         #define FNET_CFG_COMP_GHS   (1)
         #define FNET_COMP_STR       "GHS"
-    #elif (defined(__GNUC__))
+    #elif (defined(__CC_ARM))
+        #undef FNET_CFG_COMP_UV
+        #define FNET_CFG_COMP_UV  (1)
+		#define FNET_COMP_STR       "UV"
+	#elif (defined(__GNUC__))
         #undef FNET_CFG_COMP_GNUC
         #define FNET_CFG_COMP_GNUC  (1)
 		#define FNET_COMP_STR       "GCC"
     #elif (defined(__DCC__))
         #error "DIAB compiler is not supported."
-    #elif (defined(__ghs__))
-        #error "GREEN-HILLS compiler is not supported."
     #else
         #error "It is not possible to define the compiler. Please set a FNET_CFG_COMP_XXXX parameter."
     #endif

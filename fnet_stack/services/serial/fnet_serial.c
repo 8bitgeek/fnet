@@ -542,16 +542,16 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                     }
                 }
 
-              /* the string was built in reverse order, now display in */
-              /* correct order */
-              if(!dschar && schar)
-              {
-                  count++;
-                  fnet_serial_putchar(stream, schar);
-              }
+                /* the string was built in reverse order, now display in */
+                /* correct order */
+                if(!dschar && schar)
+                {
+                    count++;
+                    fnet_serial_putchar(stream, schar);
+                }
 
-              goto cont_xd;
-
+                goto cont_xd;
+                break;
             case 'x':
             case 'X':
                 uval = (unsigned int)fnet_va_arg(arg, unsigned int);
@@ -605,22 +605,22 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
                 }
 
                 goto cont_xd;
-
+                break;
             case 'o':
-              uval = (unsigned int)fnet_va_arg(arg, unsigned int);
-              vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 8);
-              goto cont_u;
-
+                uval = (unsigned int)fnet_va_arg(arg, unsigned int);
+                vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 8);
+                goto cont_u;
+                break;
             case 'b':
-              uval = (unsigned int)fnet_va_arg(arg, unsigned int);
-              vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 2);
-              goto cont_u;
-
+                uval = (unsigned int)fnet_va_arg(arg, unsigned int);
+                vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 2);
+                goto cont_u;
+                break;
             case 'p':
-              uval = (unsigned int)fnet_va_arg(arg, void *);
-              vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 16);
-              goto cont_u;
-
+                uval = (unsigned int)fnet_va_arg(arg, void *);
+                vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 16);
+                goto cont_u;
+                break;
             case 'u':
                 uval = (unsigned int)fnet_va_arg(arg, unsigned int);
                 vlen = fnet_serial_printk_mknumstr(vstr, &uval, 0, 10);

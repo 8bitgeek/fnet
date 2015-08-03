@@ -89,10 +89,12 @@ char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, 
     #if FNET_CFG_IP4         
     	case AF_INET:
     		return (fnet_inet_ntop_ip4(addr, str, str_len));
+            break;
     #endif  
     #if FNET_CFG_IP6 
     	case AF_INET6:
     		return (fnet_inet_ntop_ip6(addr, str, str_len));
+            break;
     #endif 
     	default:
     		return (FNET_NULL);
@@ -116,6 +118,7 @@ int fnet_inet_pton(fnet_address_family_t family, const char *str, void *addr, un
                 return FNET_ERR;
             }
             return fnet_inet_pton_ip4(str, addr);
+            break;
 #endif /* FNET_CFG_IP4 */ 
 #if FNET_CFG_IP6            
         case AF_INET6:
@@ -124,6 +127,7 @@ int fnet_inet_pton(fnet_address_family_t family, const char *str, void *addr, un
                 return FNET_ERR;   	
             }
             return fnet_inet_pton_ip6(str, addr);
+            break;
 #endif /* FNET_CFG_IP6 */             
         default:
             return FNET_ERR;

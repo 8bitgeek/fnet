@@ -46,43 +46,73 @@
     #error "MK Flash driver supports only 4 and 8 size of program-block"
 #endif 
 
+#ifndef FNET_MK_FLASH_RAM_SECTION
+    #define FNET_MK_FLASH_RAM_SECTION   1
+#endif /* if 0 -> copy function to RAM buffer.*/
+
 static  
-#if FNET_CFG_COMP_UV
-    __attribute__((section("FNET_RAM"))) __attribute__((used))
-#endif
-#if FNET_CFG_COMP_GNUC
-    __attribute__((section(".FNET_RAM")))
+#if FNET_MK_FLASH_RAM_SECTION
+    #if FNET_CFG_COMP_UV
+        __attribute__((section("FNET_RAM"))) __attribute__((used))
+    #endif
+    #if FNET_CFG_COMP_GNUC
+        __attribute__((section(".FNET_RAM")))
+    #endif
 #endif
     void fnet_ftfl_command_lunch_inram(void);
+
 static void fnet_ftfl_command(unsigned char command, unsigned long *address, const unsigned char *data);
+#if !FNET_MK_FLASH_RAM_SECTION 
+static void fnet_ftfl_command_lunch_inram_end(void);
+#endif
 
 /************************************************************************
 * NAME: fnet_ftfl_command_lunch_inram
 *
 * DESCRIPTION: Launch the command. It must be in RAM.
 ************************************************************************/
-/* == Should be in the RAM ==*/
-#if FNET_CFG_COMP_CW
-    #pragma define_section FNET_RAM ".FNET_RAM" ".FNET_RAM" ".FNET_RAM" far_abs RX
-	__declspec(FNET_RAM)
-#endif
-#if FNET_CFG_COMP_IAR 
-    __ramfunc
+#if FNET_MK_FLASH_RAM_SECTION 
+    /* == Must be in the RAM ==*/
+    #if FNET_CFG_COMP_CW
+        #pragma define_section FNET_RAM ".FNET_RAM" ".FNET_RAM" ".FNET_RAM" far_abs RX
+        __declspec(FNET_RAM)
+    #endif
+    #if FNET_CFG_COMP_IAR 
+        __ramfunc
+    #endif
 #endif
   
-static  
-#if FNET_CFG_COMP_UV
-    __attribute__((section("FNET_RAM"))) __attribute__((used))
+static
+
+#if FNET_MK_FLASH_RAM_SECTION  
+    #if FNET_CFG_COMP_UV
+        __attribute__((section("FNET_RAM"))) __attribute__((used))
+    #endif
+    #if FNET_CFG_COMP_GNUC
+        __attribute__((section(".FNET_RAM")))
+    #endif
 #endif
-#if FNET_CFG_COMP_GNUC
-    __attribute__((section(".FNET_RAM")))
-#endif
+
     void fnet_ftfl_command_lunch_inram(void)
 {
     FNET_MK_FTFL_FSTAT = FNET_MK_FTFL_FSTAT_CCIF_MASK;
     while ((FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK) == 0) 
     {}
 }
+
+#if !FNET_MK_FLASH_RAM_SECTION 
+
+/* It must be placed after fnet_ftfl_command_lunch_inram() */
+static void fnet_ftfl_command_lunch_inram_end(void) 
+{}
+
+/* Pointer to the fnet_ftfl_command_lunch_inram() that must be in RAM.*/
+static void(*fnet_ftfl_command_lunch_inram_ptr)(void) = FNET_NULL;
+
+/* Buffer to copy the fnet_ftfl_command_lunch_inram().*/
+/* Length depends on fnet_ftfl_command_lunch_inram() size to be copied to RAM.*/
+static fnet_uint8 fnet_ftfl_command_lunch_inram_buf[160];  /* 160 is OK. If lower -> hard fault - very strange */
+#endif
 
 /************************************************************************
 * NAME: fnet_ftfl_command
@@ -147,6 +177,7 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, co
           #endif
     #endif
 
+
     irq_desc = fnet_cpu_irq_disable();
     
     /* The CCIF flag must read 1 to verify that any previous command has
@@ -187,7 +218,19 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, co
 	}
 #endif
 
+#if FNET_MK_FLASH_RAM_SECTION 
     fnet_ftfl_command_lunch_inram();
+#else
+    /* To be sure that the function is alreday in ram.*/
+    if(fnet_ftfl_command_lunch_inram_ptr == FNET_NULL)
+    {
+        fnet_ftfl_command_lunch_inram_ptr = (void(*)(void))fnet_memcpy_func(fnet_ftfl_command_lunch_inram_buf, 
+                                                                            (const fnet_uint8 *)(fnet_ftfl_command_lunch_inram), 
+                                                                            /* sizeof(fnet_ftfl_command_lunch_inram_buf)*/
+                                                                            (unsigned int)fnet_ftfl_command_lunch_inram_end - (unsigned int)fnet_ftfl_command_lunch_inram    );
+    }
+    fnet_ftfl_command_lunch_inram_ptr();
+#endif
 
 #if 0 /* FNET_CFG_CPU_MK60N512*/ /* Restore FMC registers.*/
     FNET_MK_FMC_PFB0CR = fmc_pfb0cr_reg;

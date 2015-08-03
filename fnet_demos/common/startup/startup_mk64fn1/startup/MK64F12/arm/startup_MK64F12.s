@@ -91,7 +91,7 @@ __Vectors       DCD     |Image$$ARM_LIB_STACK$$ZI$$Limit| ; Top of Stack
                 DCD     FTFE_IRQHandler                     ;FTFE Command complete interrupt
                 DCD     Read_Collision_IRQHandler           ;Read Collision Interrupt
                 DCD     LVD_LVW_IRQHandler                  ;Low Voltage Detect, Low Voltage Warning
-                DCD     LLW_IRQHandler                      ;Low Leakage Wakeup
+                DCD     LLWU_IRQHandler                     ;Low Leakage Wakeup Unit
                 DCD     WDOG_EWM_IRQHandler                 ;WDOG Interrupt
                 DCD     RNG_IRQHandler                      ;RNG Interrupt
                 DCD     I2C0_IRQHandler                     ;I2C0 interrupt
@@ -429,6 +429,8 @@ FEPROT          EQU     nFEPROT:EOR:0xFF
 ;       <0=> Low-power boot
 ;       <1=> Normal boot
 ;     <o.1> EZPORT_DIS
+;       <0=> EzPort operation is disabled
+;       <1=> EzPort operation is enabled
 FOPT          EQU     0xFF
 ;   </h>
 ;   <h> Flash security byte (FSEC)
@@ -569,7 +571,7 @@ Default_Handler\
                 EXPORT  FTFE_IRQHandler         [WEAK]
                 EXPORT  Read_Collision_IRQHandler         [WEAK]
                 EXPORT  LVD_LVW_IRQHandler         [WEAK]
-                EXPORT  LLW_IRQHandler         [WEAK]
+                EXPORT  LLWU_IRQHandler         [WEAK]
                 EXPORT  WDOG_EWM_IRQHandler         [WEAK]
                 EXPORT  RNG_IRQHandler         [WEAK]
                 EXPORT  I2C0_IRQHandler         [WEAK]
@@ -656,7 +658,7 @@ MCM_IRQHandler
 FTFE_IRQHandler
 Read_Collision_IRQHandler
 LVD_LVW_IRQHandler
-LLW_IRQHandler
+LLWU_IRQHandler
 WDOG_EWM_IRQHandler
 RNG_IRQHandler
 I2C0_IRQHandler

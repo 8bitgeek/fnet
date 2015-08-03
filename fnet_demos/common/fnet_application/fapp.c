@@ -897,7 +897,7 @@ static void fapp_go ( fnet_shell_desc_t desc, unsigned long address )
    
       fnet_release(); /* Release the FNET stack.*/
      
-      (( void(*)(void) )FNET_CPU_INSTRUCTION_ADDR(address))(); /* Jump. */
+      (( void(*)(void) )FNET_CPU_ADDR_TO_INSTRUCTION(address))(); /* Jump. */
     }
 }
 #endif

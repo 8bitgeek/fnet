@@ -114,6 +114,26 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
 
 /***************************************************************************/ /*!
  *
+ * @brief    Relocates function in memory.
+ *
+ * @param to_buf_ptr      Pointer to the memory location to copy to. 
+ *
+ * @param from_func_ptr       Pointer to the function to be relocated 
+ *
+ * @param to_buf_size         Number of bytes to copy.  
+ *
+ * @return          This function returns new pointer to the relocated function.
+ ******************************************************************************
+ *
+ * This function copies @c to_buf_size bytes from 
+ * memory area pointed by @c from_func_ptr to memory area pointed by @c to_buf_ptr.@n
+ * It is used for a function relocation from Flash to RAM.
+ *
+ ******************************************************************************/
+void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, unsigned to_buf_size);
+
+/***************************************************************************/ /*!
+ *
  * @brief           Sets bytes in memory.
  *
  * @param dest      Pointer to the buffer to be set.
