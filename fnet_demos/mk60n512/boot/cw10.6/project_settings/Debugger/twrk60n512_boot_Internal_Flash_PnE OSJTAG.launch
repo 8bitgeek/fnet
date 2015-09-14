@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="com.freescale.cdt.launch.cw.download">
-<stringAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.ARM Debugger.processor" value="K60DN512Z"/>
+<stringAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.ARM Debugger.processor" value="K70FN1M0"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.ARM Exceptions.busFaultErr" value="true"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.ARM Exceptions.checkUsageFaultErr" value="true"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.ARM Exceptions.hardFaultErr" value="true"/>
@@ -32,15 +32,15 @@
 <intAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.coreIndex" value="0"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.homogeneousMulticore" value="false"/>
 <stringAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.initPath" value="${ProjDirPath}/../project_settings/Debugger/init_kinetis.tcl"/>
-<stringAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.memConfigPath" value="${ProjDirPath}/../project_settings/Debugger/PK60N512.mem"/>
+<stringAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.memConfigPath" value="${ProjDirPath}/../project_settings/Debugger/MK70FN1M0.mem"/>
 <stringAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.simulator" value=""/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.smp" value="false"/>
-<stringAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.systemType" value="com.freescale.cw.system.kinetis.K60D.K60DN512Z"/>
+<stringAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.systemType" value="com.freescale.cw.system.kinetis.K70F.K70FN1M0"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.useDefaultConfigFile" value="false"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.useInitFile" value="true"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.Embedded Initialization.useMemoryConfigFile" value="true"/>
 <listAttribute key="com.freescale.cdt.debug.cw.CoreNameList">
-<listEntry value="K60DN512Z#0"/>
+<listEntry value="K70FN1M0#0"/>
 </listAttribute>
 <listAttribute key="com.freescale.cdt.debug.cw.Debug"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.DebuggerTab.StopAtProgramEntryPoint" value="false"/>
@@ -89,7 +89,7 @@
 </listAttribute>
 <stringAttribute key="com.freescale.cdt.debug.cw.macAddress" value="**-**-**-**-**-**"/>
 <listAttribute key="com.freescale.cdt.debug.cw.memConfigPathList">
-<listEntry value="${ProjDirPath}/../project_settings/Debugger/PK60N512.mem"/>
+<listEntry value="${ProjDirPath}/../project_settings/Debugger/MK70FN1M0.mem"/>
 </listAttribute>
 <stringAttribute key="com.freescale.cdt.debug.cw.netMask" value="255.255.255.255"/>
 <stringAttribute key="com.freescale.cdt.debug.cw.osawareness.osContributorID" value="None"/>

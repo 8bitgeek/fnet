@@ -41,10 +41,7 @@
 ***************************************************************************/
 
 #include "fnet.h"
-
 #include "fnet_ip_prv.h"
-
-
 #include "fnet_icmp.h"
 #include "fnet_checksum.h"
 #include "fnet_timer_prv.h"
@@ -54,6 +51,16 @@
 #include "fnet_loop.h"
 #include "fnet_igmp.h"
 #include "fnet_raw.h"
+
+/* Check max/min. values.*/
+#if (FNET_IP_MAX_PACKET > 65535U)
+    #error  "FNET_IP_MAX_PACKET may not be more than 65553."
+#endif
+
+#if (FNET_IP_MAX_PACKET < 200U)
+    #error  "FNET_IP_MAX_PACKET must be more than 200."
+#endif
+
 
 #if FNET_CFG_IP4 
 
@@ -72,23 +79,23 @@ static fnet_event_desc_t ip_event;
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t* nb, int do_not_route);
-static void fnet_ip_input_low( void *cookie );
-static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, unsigned int *optlen );
-static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *optval, unsigned int optlen );
+static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t* nb, fnet_bool_t do_not_route);
+static void fnet_ip_input_low(fnet_uint32_t cookie );
+static fnet_error_t fnet_ip4_getsockopt(fnet_socket_if_t *sock, fnet_socket_options_t optname, void *optval, fnet_size_t *optlen );
+static fnet_error_t fnet_ip4_setsockopt( fnet_socket_if_t *sock, fnet_socket_options_t optname, const void *optval, fnet_size_t optlen ); 
 
 #if FNET_CFG_IP4_FRAGMENTATION
-    fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr );
+    static fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr );
     static void fnet_ip_frag_list_add( fnet_ip_frag_list_t ** head, fnet_ip_frag_list_t *fl );
     static void fnet_ip_frag_list_del( fnet_ip_frag_list_t ** head, fnet_ip_frag_list_t *fl );
     static void fnet_ip_frag_add( fnet_ip_frag_header_t ** head, fnet_ip_frag_header_t *frag, fnet_ip_frag_header_t *frag_prev );
     static void fnet_ip_frag_del( fnet_ip_frag_header_t ** head, fnet_ip_frag_header_t *frag );
     static void fnet_ip_frag_list_free( fnet_ip_frag_list_t *list );
-    static void fnet_ip_timer( void *cookie );
+    static void fnet_ip_timer(fnet_uint32_t cookie );
 #endif
 
-#if FNET_CFG_DEBUG_TRACE_IP
-    void fnet_ip_trace(char *str, fnet_ip_header_t *ip_hdr);
+#if FNET_CFG_DEBUG_TRACE_IP && FNET_CFG_DEBUG_TRACE
+    static void fnet_ip_trace(fnet_uint8_t *str, fnet_ip_header_t *ip_hdr);
 #else
     #define fnet_ip_trace(str, ip_hdr)  do{}while(0)
 #endif
@@ -99,14 +106,14 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *op
 *
 * DESCRIPTION: This function makes initialization of the IP layer. 
 *************************************************************************/
-int fnet_ip_init( void )
+fnet_return_t fnet_ip_init( void )
 {
-    int result = FNET_ERR;
+    fnet_return_t result = FNET_ERR;
 
 #if FNET_CFG_IP4_FRAGMENTATION
 
     ip_frag_list_head = 0;
-    ip_timer_ptr = fnet_timer_new((FNET_IP_TIMER_PERIOD / FNET_TIMER_PERIOD_MS), fnet_ip_timer, 0);
+    ip_timer_ptr = fnet_timer_new((FNET_IP_TIMER_PERIOD / FNET_TIMER_PERIOD_MS), fnet_ip_timer, 0u);
 
     if(ip_timer_ptr)
     {
@@ -118,9 +125,11 @@ int fnet_ip_init( void )
     #endif /* FNET_CFG_MULTICAST */
         
         /* Install SW Interrupt handler. */
-    	ip_event = fnet_event_init(fnet_ip_input_low, 0);
+    	ip_event = fnet_event_init(fnet_ip_input_low, 0u);
     	if(ip_event != FNET_ERR)
+        {
     		result = FNET_OK;
+        }
         
 #if FNET_CFG_IP4_FRAGMENTATION
     }
@@ -155,7 +164,7 @@ void fnet_ip_release( void )
 fnet_netif_t *fnet_ip_route( fnet_ip4_addr_t dest_ip )
 {
     fnet_netif_t    *netif;
-    fnet_netif_t    *res_netif = fnet_netif_get_default() ;
+    fnet_netif_t    *res_netif = (fnet_netif_t *)fnet_netif_get_default() ;
 
     for (netif = fnet_netif_list; netif != 0; netif = netif->next)
     {
@@ -184,14 +193,18 @@ fnet_netif_t *fnet_ip_route( fnet_ip4_addr_t dest_ip )
 * DESCRIPTION: This function returns FNET_TRUE if the protocol message 
 *              will be fragmented by IPv4, and FNET_FALSE otherwise.
 *************************************************************************/
-int fnet_ip_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_size)
+fnet_bool_t fnet_ip_will_fragment( fnet_netif_t *netif, fnet_size_t protocol_message_size)
 {
-    int res;
+    fnet_bool_t res;
 
     if((protocol_message_size + sizeof(fnet_ip_header_t)) > netif->mtu)
+    {
         res = FNET_TRUE;
+    }
     else
+    {
         res = FNET_FALSE;
+    }
 
     return res;
 }
@@ -206,23 +219,25 @@ int fnet_ip_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_s
 *          FNET_ERR_MSGSIZE=Size error
 *          FNET_ERR_NOMEM=No memory
 *************************************************************************/
-int fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip,
-                    unsigned char protocol, unsigned char tos,     unsigned char ttl,
-                    fnet_netbuf_t *nb,      int DF, int do_not_route,
-                    FNET_COMP_PACKED_VAR unsigned short *checksum )
+fnet_error_t fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip,
+                    fnet_uint8_t protocol, fnet_uint8_t tos,     fnet_uint8_t ttl,
+                    fnet_netbuf_t *nb, fnet_bool_t DF, fnet_bool_t do_not_route,
+                    FNET_COMP_PACKED_VAR fnet_uint16_t *checksum )
 {
-    static unsigned short   ip_id = 0;
+    static fnet_uint16_t    ip_id = 0u;
     fnet_netbuf_t           *nb_header;
     fnet_ip_header_t        *ipheader;
-    unsigned long           total_length;
-    int                     error_code;
+    fnet_size_t             total_length;
+    fnet_error_t            error_code;
 
     if(netif == 0)
+    {
         if((netif = fnet_ip_route(dest_ip)) == 0) /* No route */
         {
             error_code = FNET_ERR_NETUNREACH;
             goto DROP;
         }
+    }
 
     /* If source address not specified, use address of outgoing interface */
     if(src_ip == INADDR_ANY)
@@ -245,27 +260,31 @@ int fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_add
     
     /* Pseudo checksum. */
     if(checksum)
-        *checksum = fnet_checksum_pseudo_end( *checksum, (char *)&src_ip, (char *)&dest_ip, sizeof(fnet_ip4_addr_t) );
+    {
+        *checksum = fnet_checksum_pseudo_end( *checksum, (fnet_uint8_t *)&src_ip, (fnet_uint8_t *)&dest_ip, sizeof(fnet_ip4_addr_t) );
+    }
     
-    ipheader = nb_header->data_ptr;
+    ipheader = (fnet_ip_header_t *)nb_header->data_ptr;
 
-    FNET_IP_HEADER_SET_VERSION(ipheader, (unsigned char)FNET_IP_VERSION); /* version =4 */
+    FNET_IP_HEADER_SET_VERSION(ipheader, (fnet_uint8_t)FNET_IP_VERSION); /* version =4 */
     ipheader->id = fnet_htons(ip_id++);              /* Id */
 
     ipheader->tos = tos;                 /* Type of service */
-    total_length = (unsigned short)(nb->total_length + sizeof(fnet_ip_header_t)); /* total length*/
+    total_length = (fnet_uint16_t)(nb->total_length + sizeof(fnet_ip_header_t)); /* total length*/
     FNET_IP_HEADER_SET_HEADER_LENGTH(ipheader, sizeof(fnet_ip_header_t) >> 2);
-    ipheader->flags_fragment_offset = 0x0000; /* flags & fragment offset field */
+    ipheader->flags_fragment_offset = 0x0000u; /* flags & fragment offset field */
 
     if(DF)
+    {
         ipheader->flags_fragment_offset |= FNET_HTONS(FNET_IP_DF);
+    }
 
     ipheader->ttl = ttl;                 /* time to live */
     ipheader->protocol = protocol;       /* protocol */
     ipheader->source_addr = src_ip;      /* source address */
     ipheader->desination_addr = dest_ip; /* destination address */
 
-    ipheader->total_length = fnet_htons((unsigned short)total_length);
+    ipheader->total_length = fnet_htons((fnet_uint16_t)total_length);
     
     nb = fnet_netbuf_concat(nb_header, nb);
 
@@ -273,35 +292,34 @@ int fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_add
     {
 #if FNET_CFG_IP4_FRAGMENTATION
 
-        int first_frag_length, frag_length; /* The number of data in each fragment. */
-        int offset;
-        int error = 0;
-        fnet_netbuf_t *tmp_nb;
-        fnet_netbuf_t *nb_prev;
-        fnet_netbuf_t ** nb_next_ptr = &nb->next_chain;
-        int new_header_length, header_length = FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2;
-        fnet_ip_header_t *new_ipheader;
+        fnet_size_t         first_frag_length;
+        fnet_size_t         frag_length;            /* The number of data in each fragment. */
+        fnet_size_t         offset;
+        fnet_index_t        error = 0u;
+        fnet_netbuf_t       *nb_prev;
+        fnet_netbuf_t       **nb_next_ptr = &nb->next_chain;
+        fnet_size_t         new_header_length;
+        fnet_size_t         header_length = (fnet_size_t)(FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2);
+        fnet_ip_header_t    *new_ipheader;
 
-        frag_length = (int)(netif->mtu - header_length) & ~7; /* rounded down to an 8-byte boundary.*/
+        frag_length = (netif->mtu - header_length) & ~7u; /* rounded down to an 8-byte boundary.*/
         first_frag_length = frag_length;
 
-        if(((ipheader->flags_fragment_offset & FNET_HTONS(FNET_IP_DF)) != 0) ||   /* The fragmentation is prohibited. */
-        (frag_length < 8))                                    /* The MTU is too small.*/
+        if(((ipheader->flags_fragment_offset & FNET_HTONS(FNET_IP_DF)) != 0u) ||   /* The fragmentation is prohibited. */
+        (frag_length < 8u))                                    /* The MTU is too small.*/
         {
             error_code = FNET_ERR_MSGSIZE;   
             goto DROP; 
         }
 
         /* The header (and options) must reside in contiguous area of memory.*/
-        if((tmp_nb = fnet_netbuf_pullup(nb, header_length)) == 0)
+        if(fnet_netbuf_pullup(&nb, header_length) == FNET_ERR)
         {
             error_code = FNET_ERR_NOMEM;   
             goto DROP;
         }
 
-        nb = tmp_nb;
-
-        ipheader = nb->data_ptr;
+        ipheader = (fnet_ip_header_t *)nb->data_ptr;
 
         nb_prev = nb;
         
@@ -320,20 +338,24 @@ int fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_add
                 goto FRAG_END;
             }
 
-            fnet_memcpy(nb->data_ptr, ipheader, (unsigned int)header_length); /* Copy IP header.*/
-            new_ipheader = nb->data_ptr;
+            fnet_memcpy(nb->data_ptr, ipheader, header_length); /* Copy IP header.*/
+            new_ipheader = (fnet_ip_header_t *)nb->data_ptr;
             new_header_length = sizeof(fnet_ip_header_t);
 
-            FNET_IP_HEADER_SET_HEADER_LENGTH(new_ipheader, new_header_length >> 2); 
-            new_ipheader->flags_fragment_offset = fnet_htons((unsigned short)((offset - header_length) >> 3));
+            FNET_IP_HEADER_SET_HEADER_LENGTH(new_ipheader, (fnet_uint8_t)(new_header_length >> 2)); 
+            new_ipheader->flags_fragment_offset = fnet_htons((fnet_uint16_t)((offset - header_length) >> 3));
 
             if(offset + frag_length >= total_length)  
-                frag_length = (int)(total_length - offset); 
+            {
+                frag_length = (total_length - offset); 
+            }
             else
+            {
                 new_ipheader->flags_fragment_offset |= FNET_HTONS(FNET_IP_MF);
+            }
 
             /* Copy the data from the original packet into the fragment.*/
-            if((nb_tmp = fnet_netbuf_copy(nb_prev, offset, frag_length, 0)) == 0)
+            if((nb_tmp = fnet_netbuf_copy(nb_prev, offset, frag_length, FNET_FALSE)) == 0)
             {
                 error++;
                 fnet_netbuf_free_chain(nb);
@@ -342,7 +364,7 @@ int fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_add
 
             nb = fnet_netbuf_concat(nb, nb_tmp);
 
-            new_ipheader->total_length = fnet_htons((unsigned short)nb->total_length); 
+            new_ipheader->total_length = fnet_htons((fnet_uint16_t)nb->total_length); 
 
             *nb_next_ptr = nb;
             nb_next_ptr = &nb->next_chain;
@@ -350,8 +372,8 @@ int fnet_ip_output( fnet_netif_t *netif,    fnet_ip4_addr_t src_ip, fnet_ip4_add
 
         /* Update the first fragment.*/
         nb = nb_prev;
-        fnet_netbuf_trim(&nb, header_length + first_frag_length - fnet_ntohs(ipheader->total_length));
-        ipheader->total_length = fnet_htons((unsigned short)nb->total_length);
+        fnet_netbuf_trim(&nb, (fnet_int32_t)(header_length + first_frag_length - fnet_ntohs(ipheader->total_length)));
+        ipheader->total_length = fnet_htons((fnet_uint16_t)nb->total_length);
         ipheader->flags_fragment_offset |= FNET_HTONS(FNET_IP_MF);
 
 FRAG_END:
@@ -360,13 +382,15 @@ FRAG_END:
             nb_prev = nb->next_chain;
             nb->next_chain = 0;
 
-            if(error == 0)
+            if(error == 0u)
             {
                 fnet_ip_trace("TX", nb->data_ptr); /* Print IP header. */
                 fnet_ip_netif_output(netif, dest_ip, nb, do_not_route);
             }
             else
+            {
                 fnet_netbuf_free_chain(nb);
+            }
         }
 
 #else
@@ -382,7 +406,7 @@ FRAG_END:
         fnet_ip_netif_output(netif, dest_ip, nb, do_not_route);
     }
 
-    return (FNET_OK);
+    return (FNET_ERR_OK);
 
 DROP:
     fnet_netbuf_free_chain(nb);           /* Discard datagram */ 
@@ -396,25 +420,25 @@ DROP:
 *
 * DESCRIPTION:
 *************************************************************************/
-static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t* nb, int do_not_route)
+static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t* nb, fnet_bool_t do_not_route)
 {
     fnet_ip_header_t        *ipheader = (fnet_ip_header_t *)nb->data_ptr;
     
     /* IPv4 Header Checksum*/
-    ipheader->checksum = 0;
+    ipheader->checksum = 0u;
 
 #if FNET_CFG_CPU_ETH_HW_TX_IP_CHECKSUM 
     if(netif->features & FNET_NETIF_FEATURE_HW_TX_IP_CHECKSUM)
         nb->flags |= FNET_NETBUF_FLAG_HW_IP_CHECKSUM;
     else
 #endif    
-        ipheader->checksum = fnet_checksum(nb, FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2); /* IP checksum*/
+        ipheader->checksum = fnet_checksum(nb, (fnet_size_t)FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2); /* IP checksum*/
 
      
     if( /* Datagrams sent to a broadcast address */
-        (fnet_ip_addr_is_broadcast (dest_ip_addr, netif)
+        (fnet_ip_addr_is_broadcast (dest_ip_addr, netif))
         /* Datagrams sent to a multicast address. */
-        ||FNET_IP4_ADDR_IS_MULTICAST(dest_ip_addr)) )
+        ||FNET_IP4_ADDR_IS_MULTICAST(dest_ip_addr) )
     {
 #if  FNET_CFG_LOOPBACK && (FNET_CFG_LOOPBACK_MULTICAST || FNET_CFG_LOOPBACK_BROADCAST)
         fnet_netbuf_t* nb_loop; 
@@ -484,17 +508,16 @@ void fnet_ip_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
 *
 * DESCRIPTION: This function performs handling of incoming datagrams.
 *************************************************************************/
-static void fnet_ip_input_low( void *cookie )
+static void fnet_ip_input_low(fnet_uint32_t cookie )
 {
     fnet_ip_header_t    *hdr;
     fnet_netbuf_t       *ip4_nb;
-    fnet_netbuf_t       *tmp_nb;
     fnet_prot_if_t      *protocol;
     fnet_netif_t        *netif;
     fnet_netbuf_t       *nb;
     fnet_ip4_addr_t     destination_addr;
-    unsigned long       total_length;
-    unsigned long       header_length;
+    fnet_size_t         total_length;
+    fnet_size_t         header_length;
     struct sockaddr     src_addr;
     struct sockaddr     dest_addr;
 
@@ -507,34 +530,32 @@ static void fnet_ip_input_low( void *cookie )
         nb->next_chain = 0;
 
         /* The header must reside in contiguous area of memory. */
-        if((tmp_nb = fnet_netbuf_pullup(nb, sizeof(fnet_ip_header_t)))  == 0 )
+        if(fnet_netbuf_pullup(&nb, sizeof(fnet_ip_header_t))  == FNET_ERR )
         {
             fnet_netbuf_free_chain(nb);
             continue;
         }
 
-        nb = tmp_nb;
-
-        hdr = nb->data_ptr;
+        hdr = (fnet_ip_header_t *)nb->data_ptr;
         destination_addr = hdr->desination_addr;
         total_length = fnet_ntohs(hdr->total_length);
-        header_length = (unsigned long)FNET_IP_HEADER_GET_HEADER_LENGTH(hdr) << 2;
+        header_length = (fnet_size_t)FNET_IP_HEADER_GET_HEADER_LENGTH(hdr) << 2;
         
         fnet_ip_trace("RX", hdr); /* Print IP header. */
         
         if((nb->total_length >= total_length)                           /* Check the amount of data*/
             && (nb->total_length >= sizeof(fnet_ip_header_t)) 
-            && (FNET_IP_HEADER_GET_VERSION(hdr) == 4)                   /* Check the IP Version*/
+            && (FNET_IP_HEADER_GET_VERSION(hdr) == 4u)                   /* Check the IP Version*/
             && (header_length >= sizeof(fnet_ip_header_t))              /* Check the IP header length*/
     #if FNET_CFG_CPU_ETH_HW_TX_IP_CHECKSUM || FNET_CFG_CPU_ETH_HW_RX_IP_CHECKSUM
             && ((netif->features | FNET_NETIF_FEATURE_HW_RX_IP_CHECKSUM) 
                 || (nb->flags | FNET_NETBUF_FLAG_HW_IP_CHECKSUM)
-                || (fnet_checksum(nb, (int)header_length) == 0) )       /* Checksum*/
+                || (fnet_checksum(nb, header_length) == 0u) )       /* Checksum*/
     #else
-            && (fnet_checksum(nb, (int)header_length) == 0)             /* Checksum*/
+            && (fnet_checksum(nb, header_length) == 0u)             /* Checksum*/
     #endif
             && ((destination_addr == netif->ip4_addr.address)           /* It is final destination*/                            
-                || fnet_ip_addr_is_broadcast(destination_addr, netif) 
+                || (fnet_ip_addr_is_broadcast(destination_addr, netif))
     #if FNET_CFG_MULTICAST                
                 || (FNET_IP4_ADDR_IS_MULTICAST(destination_addr))
     #endif                
@@ -544,18 +565,20 @@ static void fnet_ip_input_low( void *cookie )
             if(nb->total_length > total_length) 
             {
                 /* Logical size and the physical size of the packet should be the same.*/
-                fnet_netbuf_trim(&nb, (int)(total_length - nb->total_length)); 
+                fnet_netbuf_trim(&nb, (fnet_int32_t)(total_length - nb->total_length)); 
             }
 
             /* Reassembly.*/
-            if((hdr->flags_fragment_offset & ~FNET_HTONS(FNET_IP_DF)) != 0) /* the MF bit or fragment offset is nonzero.*/
+            if((hdr->flags_fragment_offset & ~FNET_HTONS(FNET_IP_DF)) != 0u) /* the MF bit or fragment offset is nonzero.*/
             {
     #if FNET_CFG_IP4_FRAGMENTATION
                 if((nb = fnet_ip_reassembly(&nb)) == 0)
+                {
                     continue;
+                }
 
-                hdr = nb->data_ptr;
-                header_length = (unsigned long)FNET_IP_HEADER_GET_HEADER_LENGTH(hdr) << 2;
+                hdr = (fnet_ip_header_t *)nb->data_ptr;
+                header_length = (fnet_size_t)FNET_IP_HEADER_GET_HEADER_LENGTH(hdr) << 2;
     #else
                 fnet_netbuf_free_chain(nb);
                 continue;
@@ -579,9 +602,9 @@ static void fnet_ip_input_low( void *cookie )
                 continue;
             }
 
-            ip4_nb = fnet_netbuf_copy(nb, 0, (int)(header_length + 8), 0);
+            ip4_nb = fnet_netbuf_copy(nb, 0u, (header_length + 8u), FNET_FALSE);
 
-            fnet_netbuf_trim(&nb, (int)header_length);
+            fnet_netbuf_trim(&nb, (fnet_int32_t)header_length);
                                        
             /**************************************
              *  Send to upper layers. 
@@ -596,7 +619,7 @@ static void fnet_ip_input_low( void *cookie )
     #endif            
 
             /* Find transport protocol.*/
-            if((protocol = fnet_prot_find(AF_INET, SOCK_UNSPEC, hdr->protocol)) != FNET_NULL)
+            if((protocol = fnet_prot_find(AF_INET, SOCK_UNSPEC, (fnet_uint32_t)hdr->protocol)) != FNET_NULL)
             {
                 protocol->prot_input(netif, &src_addr,  &dest_addr, nb, ip4_nb);
                 /* After that nb may point to wrong place. Do not use it.*/
@@ -625,28 +648,25 @@ static void fnet_ip_input_low( void *cookie )
 *************************************************************************/
 #if FNET_CFG_IP4_FRAGMENTATION
 
-fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
+static fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
 {
     fnet_ip_frag_list_t     *frag_list_ptr;
-    fnet_ip_frag_header_t   *frag_ptr, *cur_frag_ptr;
+    fnet_ip_frag_header_t   *frag_ptr;
+    fnet_ip_frag_header_t   *cur_frag_ptr;
     fnet_netbuf_t           *nb = *nb_ptr;
-    fnet_netbuf_t           *tmp_nb;
     fnet_ip_header_t        *iphdr;
-    int                     i;
-    int                     offset;
-    unsigned long           hdr_length;
+    fnet_size_t             i;
+    fnet_uint16_t           offset;
+    fnet_size_t             hdr_length;
     
     /* For this algorithm the all datagram must reside in contiguous area of memory.*/
-    if((tmp_nb = fnet_netbuf_pullup(nb, (int)nb->total_length)) == 0) 
+    if(fnet_netbuf_pullup(nb_ptr, (*nb_ptr)->total_length) == FNET_ERR) 
     {
         goto DROP_FRAG;
     }
-
-
-    *nb_ptr = tmp_nb;
-    nb = tmp_nb;
+    nb = *nb_ptr;
     
-    iphdr = nb->data_ptr;
+    iphdr = (fnet_ip_header_t *)nb->data_ptr;
 
     /* Liner search of the list to locate the appropriate datagram for the current fragment.*/
     for (frag_list_ptr = ip_frag_list_head; frag_list_ptr != 0; frag_list_ptr = frag_list_ptr->next)
@@ -654,47 +674,51 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
         if((frag_list_ptr->id == iphdr->id) && (frag_list_ptr->protocol == iphdr->protocol)
                && (frag_list_ptr->source_addr == iphdr->source_addr)
                && (frag_list_ptr->desination_addr == iphdr->desination_addr))
+        {
             break;
+        }
     }
-
     
     cur_frag_ptr = (fnet_ip_frag_header_t *)iphdr;
 
     /* Exclude the standard IP header and options.*/
-    hdr_length = (unsigned long)FNET_IP_HEADER_GET_HEADER_LENGTH(iphdr) << 2;
-    fnet_netbuf_trim(&nb, (int)hdr_length);
-    cur_frag_ptr->total_length = (unsigned short)(fnet_ntohs(cur_frag_ptr->total_length) - hdr_length); /* Host endian.*/
+    hdr_length = (fnet_size_t)FNET_IP_HEADER_GET_HEADER_LENGTH(iphdr) << 2;
+    fnet_netbuf_trim(&nb, (fnet_int32_t)hdr_length);
+    cur_frag_ptr->total_length = (fnet_uint16_t)(fnet_ntohs(cur_frag_ptr->total_length) - hdr_length); /* Host endian.*/
 
 
     if(frag_list_ptr == 0)                                                  /* The first fragment of the new datagram.*/
     {
-        if((frag_list_ptr = fnet_malloc_zero(sizeof(fnet_ip_frag_list_t))) == 0) /* Create list.*/
+        if((frag_list_ptr = (fnet_ip_frag_list_t *)fnet_malloc_zero(sizeof(fnet_ip_frag_list_t))) == 0) /* Create list.*/
+        {
             goto DROP_FRAG;
+        }
 
         fnet_ip_frag_list_add(&ip_frag_list_head, frag_list_ptr);
 
-        frag_list_ptr->ttl = FNET_IP_FRAG_TTL;
+        frag_list_ptr->ttl = (fnet_uint8_t)FNET_IP_FRAG_TTL;
         frag_list_ptr->id = iphdr->id;
         frag_list_ptr->protocol = iphdr->protocol;
         frag_list_ptr->source_addr = iphdr->source_addr;
         frag_list_ptr->desination_addr = iphdr->desination_addr;
         frag_ptr = 0;
 
-        if((iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF)) != 0) 
-            cur_frag_ptr->mf |= 1;
+        if((iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF)) != 0u) 
+        {
+            cur_frag_ptr->mf |= 1u;
+        }
 
-        cur_frag_ptr->offset = (unsigned short)(fnet_ntohs(cur_frag_ptr->offset) << 3); /* Convert offset to bytes (Host endian).*/ 
-        
-       
+        cur_frag_ptr->offset = (fnet_uint16_t)(fnet_ntohs(cur_frag_ptr->offset) << 3); /* Convert offset to bytes (Host endian).*/ 
         cur_frag_ptr->nb = nb;
     }
     else
     {
-        if((iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF)) != 0)
-            cur_frag_ptr->mf |= 1;
+        if((iphdr->flags_fragment_offset & FNET_HTONS(FNET_IP_MF)) != 0u)
+        {
+            cur_frag_ptr->mf |= 1u;
+        }
 
-        cur_frag_ptr->offset = (unsigned short)(fnet_ntohs(cur_frag_ptr->offset) << 3); /* Convert offset to bytes.*/
-
+        cur_frag_ptr->offset = (fnet_uint16_t)(fnet_ntohs(cur_frag_ptr->offset) << 3); /* Convert offset to bytes.*/
         cur_frag_ptr->nb = nb;
 
         /* Find position in reassembly list.*/
@@ -702,7 +726,9 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
         do
         {
             if(frag_ptr->offset > cur_frag_ptr->offset)
+            {
                 break;
+            }
 
             frag_ptr = frag_ptr->next;
         } 
@@ -711,14 +737,16 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
         /* Trims or discards icoming fragments.*/
         if(frag_ptr != frag_list_ptr->frag_ptr)
         {
-            if((i = frag_ptr->prev->offset + frag_ptr->prev->total_length - cur_frag_ptr->prev->offset) != 0)
+            if((i = (fnet_size_t)(frag_ptr->prev->offset + frag_ptr->prev->total_length - cur_frag_ptr->prev->offset)) != 0u)
             {
                 if(i > cur_frag_ptr->total_length)
+                {
                     goto DROP_FRAG;
+                }
 
-                fnet_netbuf_trim(&nb, i);
-                cur_frag_ptr->total_length -= i;
-                cur_frag_ptr->offset += i;
+                fnet_netbuf_trim(&nb, (fnet_int32_t)i);
+                cur_frag_ptr->total_length -= (fnet_uint16_t)i;
+                cur_frag_ptr->offset += (fnet_uint16_t)i;
             }
         }
         
@@ -726,13 +754,13 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
         while((frag_ptr != frag_list_ptr->frag_ptr)
                   && ((cur_frag_ptr->offset + cur_frag_ptr->total_length) > frag_ptr->offset))
         {
-            i = (cur_frag_ptr->offset + cur_frag_ptr->total_length) - frag_ptr->offset;
+            i = (fnet_size_t)((cur_frag_ptr->offset + cur_frag_ptr->total_length) - frag_ptr->offset);
 
             if(i < frag_ptr->total_length)
             {
-                frag_ptr->total_length -= i;
-                frag_ptr->offset += i;
-                fnet_netbuf_trim((fnet_netbuf_t **)&frag_ptr->nb, i);
+                frag_ptr->total_length -= (fnet_uint16_t)i;
+                frag_ptr->offset += (fnet_uint16_t)i;
+                fnet_netbuf_trim((fnet_netbuf_t **)&frag_ptr->nb, (fnet_int32_t)i);
                 break;
             }
 
@@ -745,20 +773,24 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
     /* Insert fragment to the list.*/
     fnet_ip_frag_add((fnet_ip_frag_header_t **)(&frag_list_ptr->frag_ptr), cur_frag_ptr, frag_ptr->prev);
 
-    offset = 0;
+    offset = 0u;
     frag_ptr = frag_list_ptr->frag_ptr;
 
     do
     {
         if(frag_ptr->offset != offset)
+        {
             goto NEXT_FRAG;
+        }
 
         offset += frag_ptr->total_length;
         frag_ptr = frag_ptr->next;
     } while (frag_ptr != frag_list_ptr->frag_ptr);
 
-    if((frag_ptr->prev->mf & 1) != 0)
+    if((frag_ptr->prev->mf & 1u) != 0u)
+    {        
         goto NEXT_FRAG;
+    }
 
     /* Reconstruct datagram.*/
     frag_ptr = frag_list_ptr->frag_ptr;
@@ -774,16 +806,16 @@ fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr )
 
     /* Reconstruct datagram header.*/
     iphdr = (fnet_ip_header_t *)frag_list_ptr->frag_ptr;
-    nb->total_length += FNET_IP_HEADER_GET_HEADER_LENGTH(iphdr) << 2;
-    nb->length += FNET_IP_HEADER_GET_HEADER_LENGTH(iphdr) << 2;
-    nb->data_ptr = (unsigned char *)nb->data_ptr - (FNET_IP_HEADER_GET_HEADER_LENGTH(iphdr) << 2);
+    nb->total_length += (fnet_size_t)FNET_IP_HEADER_GET_HEADER_LENGTH(iphdr) << 2;
+    nb->length += (fnet_size_t)FNET_IP_HEADER_GET_HEADER_LENGTH(iphdr) << 2;
+    nb->data_ptr = (fnet_uint8_t *)nb->data_ptr - (FNET_IP_HEADER_GET_HEADER_LENGTH(iphdr) << 2);
 
-    iphdr->total_length = fnet_htons((unsigned short)nb->total_length);
+    iphdr->total_length = fnet_htons((fnet_uint16_t)nb->total_length);
 
     iphdr->source_addr = frag_list_ptr->source_addr;
     iphdr->desination_addr = frag_list_ptr->desination_addr;
     iphdr->protocol = frag_list_ptr->protocol;
-    iphdr->tos &= ~1;
+    iphdr->tos &= ~1u;
 
     fnet_ip_frag_list_del(&ip_frag_list_head, frag_list_ptr);
     fnet_free(frag_list_ptr);
@@ -804,7 +836,7 @@ NEXT_FRAG:
 *************************************************************************/
 #if FNET_CFG_IP4_FRAGMENTATION
 
-static void fnet_ip_timer(void *cookie)
+static void fnet_ip_timer(fnet_uint32_t cookie)
 {
     fnet_ip_frag_list_t *frag_list_ptr;
     fnet_ip_frag_list_t *tmp_frag_list_ptr;
@@ -818,14 +850,16 @@ static void fnet_ip_timer(void *cookie)
     {
         frag_list_ptr->ttl--;
 
-        if(frag_list_ptr->ttl == 0)
+        if(frag_list_ptr->ttl == 0u)
         {
             tmp_frag_list_ptr = frag_list_ptr->next;
             fnet_ip_frag_list_free(frag_list_ptr);
             frag_list_ptr = tmp_frag_list_ptr;
         }
         else
+        {
             frag_list_ptr = frag_list_ptr->next;
+        }
     }
 
     fnet_isr_unlock();
@@ -857,7 +891,7 @@ void fnet_ip_drain( void )
         fnet_netbuf_del_chain(&ip_queue.head, ip_queue.head);
     }
 
-    ip_queue.count = 0;
+    ip_queue.count = 0u;
 
     fnet_isr_unlock();
 }
@@ -902,7 +936,9 @@ static void fnet_ip_frag_list_add( fnet_ip_frag_list_t ** head, fnet_ip_frag_lis
     fl->next = *head;
 
     if(fl->next != 0)
+    {
         fl->next->prev = fl;
+    }
 
     fl->prev = 0;
     *head = fl;
@@ -919,12 +955,18 @@ static void fnet_ip_frag_list_add( fnet_ip_frag_list_t ** head, fnet_ip_frag_lis
 static void fnet_ip_frag_list_del( fnet_ip_frag_list_t ** head, fnet_ip_frag_list_t *fl )
 {
     if(fl->prev == 0)
+    {
         *head=fl->next;
+    }
     else
+    {
         fl->prev->next = fl->next;
+    }
 
     if(fl->next != 0)
+    {
         fl->next->prev = fl->prev;
+    }
 }
 
 #endif /* FNET_CFG_IP4_FRAGMENTATION */
@@ -968,14 +1010,18 @@ static void fnet_ip_frag_add( fnet_ip_frag_header_t ** head, fnet_ip_frag_header
 static void fnet_ip_frag_del( fnet_ip_frag_header_t ** head, fnet_ip_frag_header_t *frag )
 {
     if(frag->prev == frag)
+    {
         *head=0;
+    }
     else
     {
         frag->prev->next = frag->next;
         frag->next->prev = frag->prev;
 
         if(*head == frag)
+        {
             *head=frag->next;
+        }
     }
 }
 #endif /* FNET_CFG_IP4_FRAGMENTATION */
@@ -991,13 +1037,13 @@ static void fnet_ip_frag_del( fnet_ip_frag_header_t ** head, fnet_ip_frag_header
 *************************************************************************/
 fnet_ip4_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fnet_ip4_addr_t group_addr )
 {
-    int i;
+    fnet_index_t                    i;
     fnet_ip4_multicast_list_entry_t *result = FNET_NULL; 
     
     /* Find existing entry or free one.*/
-    for(i=0; i < FNET_CFG_MULTICAST_MAX; i++)
+    for(i=0u; i < FNET_CFG_MULTICAST_MAX; i++)
     {
-        if(fnet_ip_multicast_list[i].user_counter > 0)
+        if(fnet_ip_multicast_list[i].user_counter > 0u)
         {
             if((fnet_ip_multicast_list[i].netif == netif) && (fnet_ip_multicast_list[i].group_addr == group_addr))
             {
@@ -1015,7 +1061,7 @@ fnet_ip4_multicast_list_entry_t *fnet_ip_multicast_join( fnet_netif_t *netif, fn
     { 
         result->user_counter++; /* Increment user counter.*/
         
-        if(result->user_counter == 1) /* New entry.*/
+        if(result->user_counter == 1u) /* New entry.*/
         {
             result->group_addr = group_addr;
             result->netif = netif;
@@ -1049,7 +1095,7 @@ void fnet_ip_multicast_leave_entry( fnet_ip4_multicast_list_entry_t *multicasten
     { 
         multicastentry->user_counter--; /* Decrement user counter.*/
         
-        if(multicastentry->user_counter == 0) 
+        if(multicastentry->user_counter == 0u) 
         {
 
     #if FNET_CFG_IGMP  /* Send IGMP leave.*/
@@ -1070,13 +1116,12 @@ void fnet_ip_multicast_leave_entry( fnet_ip4_multicast_list_entry_t *multicasten
 *
 * DESCRIPTION: Is the address is broadcast?
 *************************************************************************/
-int fnet_ip_addr_is_broadcast( fnet_ip4_addr_t addr, fnet_netif_t *netif )
+fnet_bool_t fnet_ip_addr_is_broadcast( fnet_ip4_addr_t addr, fnet_netif_t *netif )
 {
     fnet_netif_ip4_addr_t   *netif_addr;
-    int                     result = FNET_FALSE;
+    fnet_bool_t             result = FNET_FALSE;
     
-    
-    if(addr == INADDR_BROADCAST || addr == INADDR_ANY) /* Limited broadcast */
+    if((addr == INADDR_BROADCAST) || (addr == INADDR_ANY)) /* Limited broadcast */
     {
         result = FNET_TRUE;
     }
@@ -1087,9 +1132,9 @@ int fnet_ip_addr_is_broadcast( fnet_ip4_addr_t addr, fnet_netif_t *netif )
         {
             netif_addr = &(netif->ip4_addr);
             
-            if(addr == netif_addr->netbroadcast ||          /* Net-directed broadcast */
-                addr == netif_addr->subnetbroadcast ||      /* Subnet-directed broadcast */
-                addr == netif_addr->subnet)
+            if( (addr == netif_addr->netbroadcast) ||          /* Net-directed broadcast */
+                (addr == netif_addr->subnetbroadcast) ||      /* Subnet-directed broadcast */
+                (addr == netif_addr->subnet))
             {
                 result = FNET_TRUE;
                 break;
@@ -1101,9 +1146,9 @@ int fnet_ip_addr_is_broadcast( fnet_ip4_addr_t addr, fnet_netif_t *netif )
     {
         netif_addr = &(netif->ip4_addr);
         
-        if(addr == netif_addr->netbroadcast ||              /* Net-directed broadcast */
-            addr == netif_addr->subnetbroadcast ||          /* Subnet-directed broadcast */
-            addr == netif_addr->subnet)
+        if( (addr == netif_addr->netbroadcast) ||              /* Net-directed broadcast */
+            (addr == netif_addr->subnetbroadcast) ||          /* Subnet-directed broadcast */
+            (addr == netif_addr->subnet))
         {    
            result = FNET_TRUE;
         }
@@ -1115,9 +1160,9 @@ int fnet_ip_addr_is_broadcast( fnet_ip4_addr_t addr, fnet_netif_t *netif )
 /* TBD ??? */
 /*Todo path MTU discovery feature
  *Todo get MTU from a routing table, depending on destination MTU*/
-unsigned long fnet_ip_maximum_packet( fnet_ip4_addr_t dest_ip ) 
+fnet_size_t fnet_ip_maximum_packet( fnet_ip4_addr_t dest_ip ) 
 {
-    unsigned int result;
+    fnet_size_t result;
 
 #if FNET_CFG_IP4_FRAGMENTATION == 0
 
@@ -1125,9 +1170,13 @@ unsigned long fnet_ip_maximum_packet( fnet_ip4_addr_t dest_ip )
         fnet_netif_t *netif;
 
         if((netif = fnet_ip_route(dest_ip)) == 0) /* No route*/
+        {
             result = FNET_IP_MAX_PACKET;
+        }
         else
+        {
             result = netif->mtu;
+        }
     }
 
 #else
@@ -1138,7 +1187,7 @@ unsigned long fnet_ip_maximum_packet( fnet_ip4_addr_t dest_ip )
 
 #endif
 
-    result = (result - (FNET_IP_MAX_OPTIONS + sizeof(fnet_ip_header_t))) & (~0x3L);
+    result = (result - (FNET_IP_MAX_OPTIONS + sizeof(fnet_ip_header_t))) & (~0x3LU);
 
     return result;
 }
@@ -1149,42 +1198,42 @@ unsigned long fnet_ip_maximum_packet( fnet_ip4_addr_t dest_ip )
 * DESCRIPTION: This function retrieves the current value 
 *              of IPv4 socket option.
 *************************************************************************/
-static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, unsigned int *optlen )
+static fnet_error_t fnet_ip4_getsockopt(fnet_socket_if_t *sock, fnet_socket_options_t optname, void *optval, fnet_size_t *optlen )
 {
-    int result = FNET_OK;
+    fnet_error_t result = FNET_ERR_OK;
     
     switch(optname)      /* Socket options processing. */
     {
         case IP_TOS: /* Get IP TOS for outgoing datagrams.*/
-            if(*optlen < sizeof(int))
+            if(*optlen < sizeof(fnet_uint32_t))
             {
                 result = FNET_ERR_INVAL;
                 break;
             }
 
-            *((int*)optval) = sock->options.ip_opt.tos;
-            *optlen = sizeof(int);
+            *((fnet_uint32_t*)optval) = (fnet_uint32_t)sock->options.ip_opt.tos;
+            *optlen = sizeof(fnet_uint32_t);
             break;
         case IP_TTL: /* Get IP TTL for outgoing datagrams.*/
-            if(*optlen < sizeof(int))
+            if(*optlen < sizeof(fnet_uint32_t))
             {
                 result = FNET_ERR_INVAL;
                 break;
             }
 
-            *((int*)optval) = (char)sock->options.ip_opt.ttl;
-            *optlen = sizeof(int);
+            *((fnet_uint32_t*)optval) = (fnet_uint32_t)sock->options.ip_opt.ttl;
+            *optlen = sizeof(fnet_uint32_t);
             break;
     #if FNET_CFG_MULTICAST
         case IP_MULTICAST_TTL: /* Get IP TTL for outgoing datagrams.*/
-            if(*optlen < sizeof(int))
+            if(*optlen < sizeof(fnet_uint32_t))
             {
                 result = FNET_ERR_INVAL;
                 break;
             }
 
-            *((int*)optval) = (char)sock->options.ip_opt.ttl_multicast;
-            *optlen = sizeof(int);
+            *((fnet_uint32_t*)optval) = (fnet_uint32_t)sock->options.ip_opt.ttl_multicast;
+            *optlen = sizeof(fnet_uint32_t);
             break;
     #endif /* FNET_CFG_MULTICAST */
         default:
@@ -1200,52 +1249,51 @@ static int fnet_ip4_getsockopt(fnet_socket_t *sock, int optname, char *optval, u
 *
 * DESCRIPTION: This function sets the value of IPv4 socket option. 
 *************************************************************************/
-static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *optval, unsigned int optlen )
+static fnet_error_t fnet_ip4_setsockopt( fnet_socket_if_t *sock, fnet_socket_options_t optname, const void *optval, fnet_size_t optlen )
 {
-    int result = FNET_OK;
-
+    fnet_error_t result = FNET_ERR_OK;
 
     switch(optname)      /* Socket options processing. */
     {
         /******************************/
         case IP_TOS: /* Set IP TOS for outgoing datagrams. */
-            if(optlen != sizeof(int))
+            if(optlen < sizeof(fnet_uint32_t))
             {
                 result = FNET_ERR_INVAL;
                 break;
             }
 
-            sock->options.ip_opt.tos = (unsigned char) (*((const int *)(optval)));
+            sock->options.ip_opt.tos = (fnet_uint8_t) (*((const fnet_uint32_t *)(optval)));
             break;
         /******************************/
         case IP_TTL: /* Set IP TTL for outgoing datagrams. */
-            if(optlen != sizeof(int))
+            if(optlen < sizeof(fnet_uint32_t))
             {
                 result = FNET_ERR_INVAL;
                 break;
             }
 
-            sock->options.ip_opt.ttl = (unsigned char) (*((const int *)(optval)));
+            sock->options.ip_opt.ttl = (fnet_uint8_t) (*((const fnet_uint32_t *)(optval)));
             break;
     #if FNET_CFG_MULTICAST 
         /******************************/
         case IP_MULTICAST_TTL: /* Set IP TTL for outgoing Multicast datagrams. */
             /* Validation.*/
-            if( (optlen != sizeof(int)) || !(sock->protocol_interface) || (sock->protocol_interface->type != SOCK_DGRAM )  )
+            if( (optlen < sizeof(fnet_uint32_t)) || (!(sock->protocol_interface)) || (sock->protocol_interface->type != SOCK_DGRAM )  )
             {
                 result = FNET_ERR_INVAL;
                 break;
             }
-            sock->options.ip_opt.ttl_multicast = (unsigned char) (*((const int *)(optval)));
+            sock->options.ip_opt.ttl_multicast = (fnet_uint8_t) (*((const fnet_uint32_t *)(optval)));
             break;
         /******************************/
         case IP_ADD_MEMBERSHIP:     /* Join the socket to the supplied multicast group on 
                                      * the specified interface. */
         case IP_DROP_MEMBERSHIP:    /* Drops membership to the given multicast group and interface.*/                                     
         {                     
-            int                             i;
+            fnet_index_t                    i;
             fnet_ip4_multicast_list_entry_t **multicast_entry = FNET_NULL;
-            const struct ip_mreq            *mreq = optval;
+            const struct ip_mreq            *mreq = (const struct ip_mreq *)optval;
             fnet_netif_t                    *netif;
                         
                         
@@ -1261,7 +1309,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *op
             if((optlen != sizeof(struct ip_mreq)) /* Check size.*/
                 || (netif == FNET_NULL) /* Found IF.*/
                 || (!FNET_IP4_ADDR_IS_MULTICAST(mreq->imr_multiaddr.s_addr)) /* Check if the address is multicast.*/
-                || !(sock->protocol_interface) || (sock->protocol_interface->type != SOCK_DGRAM )
+                || (!(sock->protocol_interface)) || (sock->protocol_interface->type != SOCK_DGRAM )
                 )
             {
                 result = FNET_ERR_INVAL;
@@ -1269,7 +1317,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *op
             }
                         
             /* Find the existing entry with same parameters.*/
-            for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+            for(i = 0u; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
             {
                 if( (sock->ip4_multicast_entry[i] != FNET_NULL) 
                     && (sock->ip4_multicast_entry[i]->netif == netif) 
@@ -1291,7 +1339,7 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *op
                 }
                             
                 /* Find free entry.*/
-                for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+                for(i = 0u; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
                 {
                     if(sock->ip4_multicast_entry[i] == FNET_NULL)
                     {
@@ -1351,10 +1399,10 @@ static int fnet_ip4_setsockopt( fnet_socket_t *sock, int optname, const void *op
 *
 * DESCRIPTION: Prints an IP header. For debug needs only.
 *************************************************************************/
-#if FNET_CFG_DEBUG_TRACE_IP
-void fnet_ip_trace(char *str,fnet_ip_header_t *ip_hdr)
+#if FNET_CFG_DEBUG_TRACE_IP && FNET_CFG_DEBUG_TRACE
+static void fnet_ip_trace(fnet_uint8_t *str,fnet_ip_header_t *ip_hdr)
 {
-    char ip_str[FNET_IP4_ADDR_STR_SIZE];
+    fnet_uint8_t ip_str[FNET_IP4_ADDR_STR_SIZE];
 
     fnet_printf(FNET_SERIAL_ESC_FG_GREEN"%s", str); /* Print app-specific header.*/
     fnet_println("[IP header]"FNET_SERIAL_ESC_FG_BLACK);
@@ -1392,27 +1440,31 @@ void fnet_ip_trace(char *str,fnet_ip_header_t *ip_hdr)
 *
 * DESCRIPTION: This function sets the value of IP socket option. 
 *************************************************************************/
-int fnet_ip_setsockopt( fnet_socket_t *sock, int level, int optname, const void *optval, unsigned int optlen )
+fnet_return_t fnet_ip_setsockopt( fnet_socket_if_t *sock, fnet_protocol_t level, fnet_socket_options_t optname, const void *optval, fnet_size_t optlen )
 {
-    int error;
+    fnet_error_t error;
 
     if((optval) && (optlen))
     {
     #if FNET_CFG_IP4    
-        if((level == IPPROTO_IP) && ((sock->protocol_interface->family & AF_INET) != 0))
+        if((level == IPPROTO_IP) && ((sock->protocol_interface->family & AF_INET) != 0u))
         {
             error = fnet_ip4_setsockopt(sock, optname, optval, optlen);
-            if(error != FNET_OK)
+            if(error != FNET_ERR_OK)
+            {
                 goto ERROR_SOCK;
+            }
         }
         else
     #endif
     #if FNET_CFG_IP6
-        if((level == IPPROTO_IPV6) && ((sock->protocol_interface->family & AF_INET6) != 0))
+        if((level == IPPROTO_IPV6) && ((sock->protocol_interface->family & AF_INET6) != 0u))
         {
             error = fnet_ip6_setsockopt(sock, optname, optval, optlen);
-            if(error != FNET_OK)
+            if(error != FNET_ERR_OK)
+            {
                 goto ERROR_SOCK;
+            }
         }
         else
 
@@ -1434,7 +1486,7 @@ ERROR_SOCK:
     sock->options.error = error;
 
     fnet_error_set(error);
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -1443,28 +1495,32 @@ ERROR_SOCK:
 * DESCRIPTION: This function retrieves the current value 
 *              of IP-layer socket option.
 *************************************************************************/
-int fnet_ip_getsockopt( fnet_socket_t *sock, int level, int optname, void *optval, unsigned int *optlen )
+fnet_return_t fnet_ip_getsockopt( fnet_socket_if_t *sock, fnet_protocol_t level, fnet_socket_options_t optname, void *optval, fnet_size_t *optlen )
 {
-    int error;
+    fnet_error_t error;
 
     if((optval) && (optlen) && (*optlen))
     {
     
     #if FNET_CFG_IP4 
-        if((level == IPPROTO_IP) && ((sock->protocol_interface->family & AF_INET) != 0))
+        if((level == IPPROTO_IP) && ((sock->protocol_interface->family & AF_INET) != 0u))
         {
             error = fnet_ip4_getsockopt(sock, optname, optval, optlen);
-            if(error != FNET_OK)
+            if(error != FNET_ERR_OK)
+            {
                 goto ERROR_SOCK;
+            }
         }
         else
     #endif 
     #if FNET_CFG_IP6
-        if((level == IPPROTO_IPV6) && ((sock->protocol_interface->family & AF_INET6) != 0))
+        if((level == IPPROTO_IPV6) && ((sock->protocol_interface->family & AF_INET6) != 0u))
         {
             error = fnet_ip6_getsockopt(sock, optname, optval, optlen);
-            if(error != FNET_OK)
+            if(error != FNET_ERR_OK)
+            {
                 goto ERROR_SOCK;                              
+            }
         }
         else
     #endif
@@ -1485,17 +1541,15 @@ ERROR_SOCK:
     sock->options.error = error;
 
     fnet_error_set(error);
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
-
-
 
 /************************************************************************
 * NAME: ip_append_queue
 *
 * DESCRIPTION: Appends IP input queue.
 *************************************************************************/
-int fnet_ip_queue_append( fnet_ip_queue_t *queue, fnet_netif_t *netif, fnet_netbuf_t *nb )
+fnet_return_t fnet_ip_queue_append( fnet_ip_queue_t *queue, fnet_netif_t *netif, fnet_netbuf_t *nb )
 {
     fnet_netbuf_t *nb_netif;
 
@@ -1545,7 +1599,9 @@ fnet_netbuf_t *fnet_ip_queue_read( fnet_ip_queue_t *queue, fnet_netif_t ** netif
         fnet_isr_lock();
 
         if(nb)
+        {
             queue->count -= nb->total_length;
+        }
 
         nb_netif->next = 0;
         fnet_netbuf_del_chain(&queue->head, nb_netif);
@@ -1553,7 +1609,9 @@ fnet_netbuf_t *fnet_ip_queue_read( fnet_ip_queue_t *queue, fnet_netif_t ** netif
         fnet_isr_unlock();
     }
     else
+    {
         nb = 0;
+    }
 
     return nb;
 }

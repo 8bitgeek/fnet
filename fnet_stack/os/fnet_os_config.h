@@ -117,22 +117,15 @@
         #include "fnet_freertos_config.h"
         #define FNET_OS_STR    "FreeRTOS"
     #endif	
-
+#else
+    #define FNET_CFG_OS_UCOSIII  (0)
+    #define FNET_CFG_OS_BRTOS    (0)
+    #define FNET_CFG_OS_FREERTOS (0)
 #endif /* FNET_CFG_OS*/
 
 /*-----------*/
 #ifndef FNET_OS_STR
     #define FNET_OS_STR    "NONE"
-    
-    #undef  FNET_CFG_OS_UCOSIII
-    #define FNET_CFG_OS_UCOSIII     (0)
-
-    #undef  FNET_CFG_OS_BRTOS
-    #define FNET_CFG_OS_BRTOS       (0)  
-
-    #undef  FNET_CFG_OS_FREERTOS
-    #define FNET_CFG_OS_FREERTOS    (0)
-
 #endif
 
 /**************************************************************************/ /*!

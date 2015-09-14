@@ -226,13 +226,13 @@ void fnet_eth_io_init()
 *************************************************************************/
 void fnet_eth_phy_init(fnet_fec_if_t *ethif) 
 {
-    fnet_uint16 reg_value;
-    fnet_uint16 status_value = 0;
+    fnet_uint16_t reg_value;
+    fnet_uint16_t status_value = 0;
 
     fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_CR, &reg_value);
    
     /* ANE ENABLED:*/
-    fnet_fec_mii_write(ethif, FNET_FEC_MII_REG_CR, (fnet_uint16)(reg_value | FNET_FEC_MII_REG_CR_ANE | FNET_FEC_MII_REG_CR_ANE_RESTART));
+    fnet_fec_mii_write(ethif, FNET_FEC_MII_REG_CR, (fnet_uint16_t)(reg_value | FNET_FEC_MII_REG_CR_ANE | FNET_FEC_MII_REG_CR_ANE_RESTART));
 
 	while (status_value != 0x0040) 
 	{

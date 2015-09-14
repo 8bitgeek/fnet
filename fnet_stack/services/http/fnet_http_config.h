@@ -59,12 +59,6 @@
     #define FNET_CFG_HTTP       (0)
 #endif
 
-#if FNET_CFG_HTTP
-    /* Force FS if HTTP is defined. */
-    #undef FNET_CFG_FS
-    #define FNET_CFG_FS         (1)
-#endif
-
 /**************************************************************************/ /*!
  * @def     FNET_CFG_HTTP_MAX
  * @brief   Maximum number of the HTTP Servers that can be run simultaneously.@n
@@ -83,7 +77,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_HTTP_SESSION_MAX
-    #define FNET_CFG_HTTP_SESSION_MAX       (3)
+    #define FNET_CFG_HTTP_SESSION_MAX       (3u)
 #endif
 
 /**************************************************************************/ /*!
@@ -117,7 +111,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_HTTP_PORT
-    #define FNET_CFG_HTTP_PORT              (FNET_HTONS(80))
+    #define FNET_CFG_HTTP_PORT              (FNET_HTONS(80u))
 #endif
 
 /**************************************************************************/ /*!
@@ -129,7 +123,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_HTTP_REQUEST_SIZE_MAX
-    #define FNET_CFG_HTTP_REQUEST_SIZE_MAX  (300) 
+    #define FNET_CFG_HTTP_REQUEST_SIZE_MAX  (300u) 
 #endif
 
 /**************************************************************************/ /*!
@@ -139,7 +133,7 @@
  *               - @b @c 0 = is disabled. It means HTTP/0.9 (Default value).
  ******************************************************************************/  
 #ifndef FNET_CFG_HTTP_VERSION_MAJOR
-    #define FNET_CFG_HTTP_VERSION_MAJOR     (0) 
+    #define FNET_CFG_HTTP_VERSION_MAJOR     (1u) 
 #endif
 
 /**************************************************************************/ /*!
@@ -161,12 +155,6 @@
  ******************************************************************************/  
 #ifndef FNET_CFG_HTTP_POST
     #define FNET_CFG_HTTP_POST                  (0) 
-#endif
-
-#if FNET_CFG_HTTP_AUTHENTICATION_BASIC || FNET_CFG_HTTP_POST 
-    /* Push HTTP/1.0*/
-    #undef FNET_CFG_HTTP_VERSION_MAJOR
-    #define FNET_CFG_HTTP_VERSION_MAJOR     (1)
 #endif
 
 /*! @} */

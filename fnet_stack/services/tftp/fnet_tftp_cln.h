@@ -132,7 +132,7 @@
  *
  * @see fnet_tftp_cln_params
  ******************************************************************************/ 
-typedef int(*fnet_tftp_cln_handler_t)(fnet_tftp_request_t request_type, unsigned char* data, unsigned short data_size, int tftp_result, void *handler_param);
+typedef fnet_int32_t(*fnet_tftp_cln_handler_t)(fnet_tftp_request_t request_type, fnet_uint8_t* data, fnet_size_t data_size, fnet_return_t tftp_result, void *handler_param);
 
 
 /**************************************************************************/ /*!
@@ -140,31 +140,31 @@ typedef int(*fnet_tftp_cln_handler_t)(fnet_tftp_request_t request_type, unsigned
  ******************************************************************************/
 struct fnet_tftp_cln_params
 {
-    fnet_tftp_request_t request_type; /**< @brief Request type (read or write) defined by @ref fnet_tftp_request_t.
-                                       */ 
-    struct sockaddr server_addr;     /**< @brief Socket address of the remote TFTP server to 
-                                     * connect to.
-                                     */
-    char *file_name;                /**< @brief Name of the file to retrieve or create on 
-                                     * the remote TFTP server.
-                                     */
-    fnet_tftp_cln_handler_t handler;/**< @brief Pointer to the callback function 
-                                     * defined by @ref fnet_tftp_cln_handler_t().
-                                     */
-    void *handler_param;            /**< @brief Optional application-specific 
-                                     * parameter. @n 
-                                     * It is passed to the @c handler callback 
-                                     * function as an input parameter.
-                                     */
-   unsigned char timeout;           /**< @brief Timeout for the TFTP server response 
-                                     * in seconds. @n
-                                     * If no response from a TFTP server is 
-                                     * received during this timeout, the TFTP 
-                                     * client is released automatically.@n
-                                     * If it is set to @c 0 the default timeout will be 
-                                     * used that is defined by the 
-                                     * @ref FNET_CFG_TFTP_CLN_TIMEOUT parameter.
-                                     */
+    fnet_tftp_request_t     request_type;   /**< @brief Request type (read or write) defined by @ref fnet_tftp_request_t.
+                                            */ 
+    struct sockaddr         server_addr;    /**< @brief Socket address of the remote TFTP server to 
+                                            * connect to.
+                                            */
+    fnet_char_t             *file_name;     /**< @brief Name of the file to retrieve or create on 
+                                            * the remote TFTP server.
+                                            */
+    fnet_tftp_cln_handler_t handler;        /**< @brief Pointer to the callback function 
+                                            * defined by @ref fnet_tftp_cln_handler_t().
+                                            */
+    void                    *handler_param; /**< @brief Optional application-specific 
+                                            * parameter. @n 
+                                            * It is passed to the @c handler callback 
+                                            * function as an input parameter.
+                                            */
+   fnet_time_t              timeout;        /**< @brief Timeout for the TFTP server response 
+                                            * in seconds. @n
+                                            * If no response from a TFTP server is 
+                                            * received during this timeout, the TFTP 
+                                            * client is released automatically.@n
+                                            * If it is set to @c 0 the default timeout will be 
+                                            * used that is defined by the 
+                                            * @ref FNET_CFG_TFTP_CLN_TIMEOUT parameter.
+                                            */
 };
 
 /**************************************************************************/ /*!
@@ -187,7 +187,9 @@ typedef enum
                                          */
 } fnet_tftp_cln_state_t;
 
-
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -210,7 +212,7 @@ typedef enum
  * in the background.
  *
  ******************************************************************************/
-int fnet_tftp_cln_init( struct fnet_tftp_cln_params *params );
+fnet_return_t fnet_tftp_cln_init( struct fnet_tftp_cln_params *params );
 
 /***************************************************************************/ /*!
  *
@@ -244,6 +246,10 @@ void fnet_tftp_cln_release(void);
  *
  ******************************************************************************/
 fnet_tftp_cln_state_t fnet_tftp_cln_state( void );
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

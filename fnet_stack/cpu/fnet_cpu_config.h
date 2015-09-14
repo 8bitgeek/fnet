@@ -350,21 +350,12 @@
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_VECTOR_TABLE
- * @brief    Vector table address.
+ * @brief    Vector table address.@n
+ *           The symbol should be defined in the linker file
  * @showinitializer
  ******************************************************************************/
-#ifndef __FNET_ASM_CODE
 #ifndef FNET_CFG_CPU_VECTOR_TABLE
-/* The following symbol should be defined in the linker file */
-#if FNET_MPC
-    extern unsigned long __VECTOR_RAM [];
-#else
-    extern unsigned long __VECTOR_RAM [1];
-#endif
-
     #define FNET_CFG_CPU_VECTOR_TABLE           __VECTOR_RAM
-
-#endif
 #endif
 
 /**************************************************************************/ /*!
@@ -391,10 +382,6 @@
     #define FNET_CFG_CPU_TIMER_NUMBER           (FNET_CFG_CPU_TIMER_NUMBER_MAX)
 #endif
 
-#if (FNET_CFG_CPU_TIMER_NUMBER<0)||(FNET_CFG_CPU_TIMER_NUMBER>FNET_CFG_CPU_TIMER_NUMBER_MAX)
-    #error "FNET_CFG_CPU_TIMER_NUMBER must be from 0 to FNET_CFG_CPU_TIMER_NUMBER_MAX."
-#endif
-
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_TIMER_VECTOR_NUMBER
  * @brief    Vector number of the timer interrupt.
@@ -413,11 +400,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_TIMER_VECTOR_PRIORITY
-    #define FNET_CFG_CPU_TIMER_VECTOR_PRIORITY        (3)
-#endif
-
-#if (FNET_CFG_CPU_TIMER_VECTOR_PRIORITY<1)||(FNET_CFG_CPU_TIMER_VECTOR_PRIORITY>7)
-    #error "FNET_CFG_CPU_TIMER_VECTOR_PRIORITY must be from 1 to 7."
+    #define FNET_CFG_CPU_TIMER_VECTOR_PRIORITY        (3u)
 #endif
 
 /**************************************************************************/ /*!
@@ -596,19 +579,8 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH0_MTU
-    #define FNET_CFG_CPU_ETH0_MTU            (1500)
+    #define FNET_CFG_CPU_ETH0_MTU            (1500u)
 #endif
-#if !defined(__DOXYGEN__)  
-#if (FNET_CFG_CPU_ETH0_MTU > 1500) /* Limit maximum size.*/
-    #undef FNET_CFG_CPU_ETH0_MTU
-    #define FNET_CFG_CPU_ETH0_MTU            (1500)
-#endif    
-
-#if !FNET_CFG_CPU_ETH0
-    #undef FNET_CFG_CPU_ETH0_MTU
-    #define FNET_CFG_CPU_ETH0_MTU            (0)
-#endif 
-#endif    
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_ETH1_MTU
@@ -617,19 +589,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH1_MTU
-    #define FNET_CFG_CPU_ETH1_MTU            (1500)
-#endif    
-
-#if !defined(__DOXYGEN__)  
-#if (FNET_CFG_CPU_ETH1_MTU > 1500) /* Limit maximum size.*/
-    #undef FNET_CFG_CPU_ETH1_MTU
-    #define FNET_CFG_CPU_ETH1_MTU            (1500)
-#endif      
-
-#if !FNET_CFG_CPU_ETH1
-    #undef FNET_CFG_CPU_ETH1_MTU
-    #define FNET_CFG_CPU_ETH1_MTU            (0)
-#endif 
+    #define FNET_CFG_CPU_ETH1_MTU            (1500u)
 #endif    
     
 /**************************************************************************/ /*!
@@ -669,13 +629,9 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH_VECTOR_PRIORITY
-    #define FNET_CFG_CPU_ETH_VECTOR_PRIORITY          (2)
+    #define FNET_CFG_CPU_ETH_VECTOR_PRIORITY          (2u)
 #endif
 
-#if (FNET_CFG_CPU_ETH_VECTOR_PRIORITY<1)||(FNET_CFG_CPU_ETH_VECTOR_PRIORITY>7)
-    #error "FNET_CFG_CPU_ETH_VECTOR_PRIORITY must be from 1 to 7."
-#endif
-    
     
 /**************************************************************************/ /*!
  * @def      FNET_CFG_CPU_ETH_TX_BUFS_MAX
@@ -687,11 +643,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH_TX_BUFS_MAX
-    #define FNET_CFG_CPU_ETH_TX_BUFS_MAX        (2)
-#endif
-
-#if (FNET_CFG_CPU_ETH_TX_BUFS_MAX < 2)
-    #error "FNET_CFG_CPU_ETH_TX_BUFS_MAX is less than 2, minimal required value is 2 - see errata MCF5235"
+    #define FNET_CFG_CPU_ETH_TX_BUFS_MAX        (2u)
 #endif
 
 /**************************************************************************/ /*!
@@ -703,11 +655,7 @@
  *           bytes will be allocated.
  ******************************************************************************/
 #ifndef FNET_CFG_CPU_ETH_RX_BUFS_MAX
-    #define FNET_CFG_CPU_ETH_RX_BUFS_MAX        (2)
-#endif
-
-#if (FNET_CFG_CPU_ETH_RX_BUFS_MAX < 2)
-    #error "FNET_CFG_CPU_ETH_RX_BUFS_MAX is less than 2, minimal required value is 2 - see errata MCF5235"
+    #define FNET_CFG_CPU_ETH_RX_BUFS_MAX        (2u)
 #endif
 
 /**************************************************************************/ /*!

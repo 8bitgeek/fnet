@@ -50,8 +50,16 @@
 /* Root FS name string */
 #define FNET_FS_ROOT_NAME   "root"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 void fnet_fs_root_register( void );
 void fnet_fs_root_unregister( void );
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 #endif /* FNET_CFG_FS */

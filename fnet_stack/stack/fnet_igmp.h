@@ -77,11 +77,11 @@
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    fnet_uint8      type FNET_COMP_PACKED;           /* Type.*/
-    fnet_uint8      max_resp_time FNET_COMP_PACKED;  /* IGMPv1 Unused field, zeroed when sent, ignored when received.*/
+    fnet_uint8_t      type FNET_COMP_PACKED;           /* Type.*/
+    fnet_uint8_t      max_resp_time FNET_COMP_PACKED;  /* IGMPv1 Unused field, zeroed when sent, ignored when received.*/
                                                      /* IGMPv2 Max Response Time (is meaningful only in Membership Query).*/
                                                      /* NOTE: Current version of FNET ignores this parameter.*/
-    fnet_uint16     checksum FNET_COMP_PACKED;       /* The checksum is the 16-bit one’s complement of the one’s
+    fnet_uint16_t     checksum FNET_COMP_PACKED;       /* The checksum is the 16-bit one’s complement of the one’s
                                                       * complement sum of the 8-octet IGMP message.*/
     fnet_ip4_addr_t group_addr FNET_COMP_PACKED;     /* Group address field.*/                             
 } fnet_igmp_header_t;
@@ -98,8 +98,16 @@ extern fnet_prot_if_t fnet_igmp_prot_if;
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 void fnet_igmp_join( fnet_netif_t *netif, fnet_ip4_addr_t  group_addr );
 void fnet_igmp_leave( fnet_netif_t *netif, fnet_ip4_addr_t  group_addr );
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* FNET_CFG_IGMP */
 

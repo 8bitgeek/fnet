@@ -48,9 +48,17 @@
 
 #if FAPP_CFG_LLMNR_CMD && FNET_CFG_LLMNR
 
-void fapp_llmnr_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+void fapp_llmnr_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 void fapp_llmnr_info(fnet_shell_desc_t desc);
 void fapp_llmnr_release(void);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* FAPP_CFG_LLMNR_CMD */
 

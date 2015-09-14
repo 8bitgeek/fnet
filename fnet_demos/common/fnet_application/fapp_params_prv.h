@@ -48,7 +48,7 @@
 /************************************************************************
 *    Definitions.
 *************************************************************************/
-extern char fapp_params_host_name[FAPP_PARAMS_HOST_NAME_SIZE];
+extern fnet_char_t fapp_params_host_name[FAPP_PARAMS_HOST_NAME_SIZE];
 
 #if FAPP_CFG_PARAMS_BOOT 
 extern struct fapp_params_boot fapp_params_boot_config;
@@ -57,7 +57,16 @@ extern struct fapp_params_boot fapp_params_boot_config;
 extern struct fapp_params_tftp fapp_params_tftp_config;
 #endif
 
-int fapp_params_to_flash(void);
-int fapp_params_from_flash(void);
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+fnet_return_t fapp_params_to_flash(void);
+fnet_return_t fapp_params_from_flash(void);
+
+#if defined(__cplusplus)
+}
+#endif
+
 
 #endif /* _FAPP_PARAMS_PRV_H_ */

@@ -63,30 +63,35 @@
 
 struct fapp_mem_region
 {
-    char *description;
-    unsigned long address;
-    unsigned long size;
-    void (*memcpy)( FNET_COMP_PACKED_VAR void *dest, const FNET_COMP_PACKED_VAR void *src, unsigned n );
-    void (*erase)( void *erase_addr, unsigned n );
-    unsigned long erase_size; /* Logical page size, that can be erased separately. */
+    fnet_char_t     *description;
+    fnet_uint32_t   address;
+    fnet_size_t     size;
+    void            (*memcpy)( FNET_COMP_PACKED_VAR void *dest, const FNET_COMP_PACKED_VAR void *src, fnet_size_t n );
+    void            (*erase)( void *erase_addr, fnet_size_t n );
+    fnet_size_t     erase_size; /* Logical page size, that can be erased separately. */
 };
+
 
 extern const struct fapp_mem_region fapp_mem_regions[];
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #if FAPP_CFG_MEM_CMD
-void fapp_mem_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_mem_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 
 #if FAPP_CFG_ERASE_CMD
-void fapp_mem_erase_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_mem_erase_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 
-
-
-
-int fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, unsigned n );
-int fapp_mem_region_is_protected( unsigned long start, unsigned long n);
+fnet_return_t fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, fnet_size_t n );
+fnet_bool_t fapp_mem_region_is_protected( fnet_uint32_t start, fnet_size_t n);
 void fapp_mem_erase_all(fnet_shell_desc_t desc);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

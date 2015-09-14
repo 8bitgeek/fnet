@@ -61,7 +61,7 @@
 /**************************************************************************/ /*!
  * @brief Descriptor of a registered service.
  ******************************************************************************/
-typedef unsigned int fnet_poll_desc_t;
+typedef fnet_uint32_t fnet_poll_desc_t;
 
 /**************************************************************************/ /*!
  * @brief Service callback function prototype.
@@ -72,6 +72,10 @@ typedef unsigned int fnet_poll_desc_t;
  *                        
  ******************************************************************************/
 typedef void (* fnet_poll_service_t)(void* service_param);
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -146,7 +150,11 @@ fnet_poll_desc_t fnet_poll_service_register( fnet_poll_service_t service, void *
  * User application should not call this function directly.
  *
  ******************************************************************************/
-int fnet_poll_service_unregister( fnet_poll_desc_t desc );
+fnet_return_t fnet_poll_service_unregister( fnet_poll_desc_t desc );
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

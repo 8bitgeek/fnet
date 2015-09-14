@@ -49,16 +49,19 @@
 #include "fnet_netbuf.h"
 #include "fnet_mcf.h"
 
+/* Vector table address. Defined in linker file.*/
+extern fnet_uint32_t FNET_CFG_CPU_VECTOR_TABLE [1];
+
 
 /************************************************************************
 * NAME: fnet_cpu_isr_install
 *
 * DESCRIPTION: 
 *************************************************************************/
-int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority)
+fnet_return_t fnet_cpu_isr_install(fnet_uint32_t vector_number, fnet_uint32_t priority)
 {
-    int result;
-    unsigned long *irq_vec;
+	fnet_return_t result;
+	fnet_uint32_t *irq_vec;
 
 
     irq_vec = (unsigned long *)(FNET_CFG_CPU_VECTOR_TABLE)+vector_number;
@@ -82,7 +85,7 @@ int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority)
             if((div >= 0) && (div < 2)) /* So far only upto 64 irq_number (INTC0). TBD*/
             {
                 /* Set interrupt level.*/
-                FNET_MCF_INTC0_ICR(irq_number) = (fnet_uint8)FNET_MCF_INTC0_ICRn_IL(priority) | FNET_MCF_INTC0_ICRn_IP(7);
+                FNET_MCF_INTC0_ICR(irq_number) = (fnet_uint8_t)FNET_MCF_INTC0_ICRn_IL(priority) | FNET_MCF_INTC0_ICRn_IP(7);
                 /* Clear mask all interrupts.*/
                 FNET_MCF_INTC0_IMRL &= ~FNET_MCF_INTC0_IMRL_MASKALL;
                 /* Unmask proper interrupt.*/

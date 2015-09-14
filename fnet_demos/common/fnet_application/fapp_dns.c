@@ -48,13 +48,13 @@
 /************************************************************************
 *     Definitions.
 *************************************************************************/
-const char FNET_DNS_RESOLUTION_FAILED[]="Resolution is FAILED";
-const char FNET_DNS_UNKNOWN[]="DNS server is unknown";
+#define FNET_DNS_RESOLUTION_FAILED  "Resolution is FAILED"
+#define FNET_DNS_UNKNOWN            "DNS server is unknown"
 
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fapp_dns_handler_resolved (const struct fnet_dns_resolved_addr *addr_list, int addr_list_size, long shl_desc);
+static void fapp_dns_handler_resolved (const struct fnet_dns_resolved_addr *addr_list, fnet_size_t addr_list_size, fnet_uint32_t cookie);
 static void fapp_dns_on_ctrlc(fnet_shell_desc_t desc);
 
 /************************************************************************
@@ -62,17 +62,17 @@ static void fapp_dns_on_ctrlc(fnet_shell_desc_t desc);
 *
 * DESCRIPTION: Event handler on new IP from DHCP client. 
 ************************************************************************/
-static void fapp_dns_handler_resolved (const struct fnet_dns_resolved_addr *addr_list, int addr_list_size, long shl_desc)
+static void fapp_dns_handler_resolved (const struct fnet_dns_resolved_addr *addr_list, fnet_size_t addr_list_size, fnet_uint32_t cookie)
 {
-    char                ip_str[FNET_IP_ADDR_STR_SIZE_MAX];
-    fnet_shell_desc_t   desc = (fnet_shell_desc_t) shl_desc;
-    int                 i;
+    fnet_char_t                ip_str[FNET_IP_ADDR_STR_SIZE_MAX];
+    fnet_shell_desc_t   desc = (fnet_shell_desc_t) cookie;
+    fnet_index_t        i;
     
-    fnet_shell_unblock((fnet_shell_desc_t)shl_desc); /* Unblock the shell. */
+    fnet_shell_unblock((fnet_shell_desc_t)cookie); /* Unblock the shell. */
     
     if(addr_list && addr_list_size)
     {
-        for(i=0; i < addr_list_size; i++)
+        for(i=0u; i < addr_list_size; i++)
         {
             fnet_shell_printf(desc, FAPP_SHELL_INFO_FORMAT_S, "Resolved address", 
                                 fnet_inet_ntop(addr_list->resolved_addr.sa_family, addr_list->resolved_addr.sa_data, ip_str, sizeof(ip_str)));
@@ -104,13 +104,13 @@ static void fapp_dns_on_ctrlc(fnet_shell_desc_t desc)
 *
 * DESCRIPTION: Start DNS client/resolver. 
 ************************************************************************/
-void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_dns_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     
     struct fnet_dns_params      dns_params;
     fnet_netif_desc_t           netif = fapp_default_netif;
-    char                        ip_str[FNET_IP_ADDR_STR_SIZE];
-    int                         error_param;
+    fnet_char_t                 ip_str[FNET_IP_ADDR_STR_SIZE];
+    fnet_index_t                error_param;
     
     FNET_COMP_UNUSED_ARG(argc);
     
@@ -128,17 +128,17 @@ void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     }
     else
     {
-        error_param = 2;
+        error_param = 2u;
         goto ERROR_PARAMETER;
     }
 
 
     /**** Define DNS server address.****/
-    if(argc == 4)
+    if(argc == 4u)
     {
         if(fnet_inet_ptos(argv[3], &dns_params.dns_server_addr) == FNET_ERR)
         {
-            error_param = 3;
+            error_param = 3u;
             goto ERROR_PARAMETER;
         }
     }
@@ -167,7 +167,7 @@ void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 
     dns_params.host_name = argv[1];                 /* Host name to resolve.*/
     dns_params.handler = fapp_dns_handler_resolved; /* Callback function.*/
-    dns_params.cookie = (long)desc;                 /* Application-specific parameter 
+    dns_params.cookie = (fnet_uint32_t)desc;                 /* Application-specific parameter 
                                                        which will be passed to fapp_dns_handler_resolved().*/
 
     /* Run DNS cliebt/resolver. */

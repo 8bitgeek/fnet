@@ -58,9 +58,9 @@
 #ifndef FNET_CFG_SHELL_MAX
 
     #if FNET_CFG_TELNET
-        #define FNET_CFG_SHELL_MAX          (1+(FNET_CFG_TELNET_MAX*FNET_CFG_TELNET_SESSION_MAX))
+        #define FNET_CFG_SHELL_MAX          (1u+(FNET_CFG_TELNET_MAX*FNET_CFG_TELNET_SESSION_MAX))
     #else
-        #define FNET_CFG_SHELL_MAX          (1)
+        #define FNET_CFG_SHELL_MAX          (1u)
     #endif
 #endif
 
@@ -75,7 +75,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_SHELL_ARGS_MAX
-    #define FNET_CFG_SHELL_ARGS_MAX         (16)
+    #define FNET_CFG_SHELL_ARGS_MAX         (16u)
 #endif
 
 /**************************************************************************/ /*!

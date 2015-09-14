@@ -44,7 +44,19 @@
 #include "fnet.h"
 #include "stack/fnet_timer_prv.h"
 
-static void fnet_cpu_timer_handler_top(void *cookie);
+/******************************************************************************
+ *  Vector number of the timer interrupt.
+ *  NOTE: User application should not change this parameter. 
+ ******************************************************************************/
+#ifndef FNET_CFG_CPU_TIMER_VECTOR_NUMBER
+    #if FNET_CFG_CPU_MK64FN1
+        #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER        (64U  + FNET_CFG_CPU_TIMER_NUMBER)
+    #else
+        #define FNET_CFG_CPU_TIMER_VECTOR_NUMBER        (84U  + FNET_CFG_CPU_TIMER_NUMBER)
+    #endif
+#endif
+
+static void fnet_cpu_timer_handler_top(fnet_uint32_t cookie);
 
 /************************************************************************
 * NAME: fnet_timer_handler_top
@@ -52,13 +64,13 @@ static void fnet_cpu_timer_handler_top(void *cookie);
 * DESCRIPTION: Top interrupt handler. Increment fnet_current_time 
 *              and interrupt flag. 
 *************************************************************************/
-static void fnet_cpu_timer_handler_top( void *cookie )
+static void fnet_cpu_timer_handler_top(fnet_uint32_t cookie )
 {
     /* Clear the PIT timer flag. */
     FNET_MK_PIT_TFLG(FNET_CFG_CPU_TIMER_NUMBER) |= FNET_MK_PIT_TFLG_TIF_MASK;
 
     /* Read the load value to restart the timer. */
-    FNET_MK_PIT_LDVAL(FNET_CFG_CPU_TIMER_NUMBER);  
+    (void)FNET_MK_PIT_LDVAL(FNET_CFG_CPU_TIMER_NUMBER);  
     
     /* Update RTC counter. 
      */
@@ -71,15 +83,15 @@ static void fnet_cpu_timer_handler_top( void *cookie )
 * DESCRIPTION: Starts TCP/IP hardware timer. delay_ms - period of timer (ms)
 *         e.g. Time-out period = (1/FNET_CFG_SYSTEM_CLOCK_KHZ)x(1)x(124+1)x528x100 = 100 ms
 *************************************************************************/
-int fnet_cpu_timer_init( unsigned int period_ms )
+fnet_return_t fnet_cpu_timer_init( fnet_time_t period_ms )
 {
-    int result;
-    fnet_uint32 timeout;
+    fnet_return_t result;
+    fnet_uint32_t timeout;
     
     /* Imstall interrupt handler and enable interrupt in NVIC.
     */
     result = fnet_isr_vector_init(FNET_CFG_CPU_TIMER_VECTOR_NUMBER, fnet_cpu_timer_handler_top,
-                                              fnet_timer_handler_bottom, FNET_CFG_CPU_TIMER_VECTOR_PRIORITY, 0);
+                                              fnet_timer_handler_bottom, FNET_CFG_CPU_TIMER_VECTOR_PRIORITY, 0u);
     if(result == FNET_OK)
     {  
         /* Initialize the PIT timer to generate an interrupt every period_ms */

@@ -143,7 +143,6 @@
             <RestoreToolbox>1</RestoreToolbox>
             <RestoreTracepoints>0</RestoreTracepoints>
             <RestoreSysVw>1</RestoreSysVw>
-            <UsePdscDebugDescription>1</UsePdscDebugDescription>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
           <TargetSelection>7</TargetSelection>
@@ -1622,7 +1621,6 @@
             <RestoreToolbox>1</RestoreToolbox>
             <RestoreTracepoints>0</RestoreTracepoints>
             <RestoreSysVw>1</RestoreSysVw>
-            <UsePdscDebugDescription>1</UsePdscDebugDescription>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
           <TargetSelection>7</TargetSelection>

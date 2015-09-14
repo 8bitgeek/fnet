@@ -43,7 +43,7 @@
 #include "fapp_prv.h"
 #include "fapp_dhcp.h"
 
-#if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP && FNET_CFG_IP4
+#if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP && FNET_CFG_IP4 
 /************************************************************************
 *     Definitions.
 *************************************************************************/
@@ -51,7 +51,7 @@
 #define FAPP_DHCP_NEWIP_STR         " DHCP has updated/renewed parameters:"
 #define FAPP_DHCP_COMMAND_REBOOT    "reboot"
 
-static long fapp_dhcp_discover_counter;
+static fnet_int32_t fapp_dhcp_discover_counter;
 static fnet_ip4_addr_t fapp_dhcp_ip_old;
 
 /************************************************************************
@@ -112,13 +112,15 @@ static void fapp_dhcp_handler_discover( fnet_netif_desc_t netif,void *shl_desc )
     fnet_shell_desc_t desc = (fnet_shell_desc_t) shl_desc;
     FNET_COMP_UNUSED_ARG(netif);
     
-    if(fapp_dhcp_discover_counter-- == 0)
+    if((fapp_dhcp_discover_counter--) == 0)
     {
         fnet_shell_unblock((fnet_shell_desc_t)shl_desc);
         fapp_dhcp_on_ctrlc((fnet_shell_desc_t)shl_desc); /* Cancel DHCP.*/
     }
     else
+    {
         fnet_shell_println(desc, FAPP_DHCP_DISCOVER_STR);
+    }
 }
 
 /************************************************************************
@@ -136,12 +138,12 @@ void fapp_dhcp_release(void)
 *
 * DESCRIPTION: Enable DHCP client. 
 ************************************************************************/
-void fapp_dhcp_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_dhcp_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     struct fnet_dhcp_params dhcp_params;
     fnet_netif_desc_t netif = fapp_default_netif;
 
-    if(argc == 1    /* By default is "init".*/
+    if(argc == 1u    /* By default is "init".*/
 #if 0 /* DHCP reboot feature not used too much. */
     || fnet_strcasecmp(&FAPP_DHCP_COMMAND_REBOOT[0], argv[1]) == 0
 #endif    
@@ -174,7 +176,7 @@ void fapp_dhcp_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
             fnet_shell_println(desc, FAPP_INIT_ERR, "DHCP");
         }
     }
-    else if(argc == 2 && fnet_strcasecmp(&FAPP_COMMAND_RELEASE[0], argv[1]) == 0) /* [release] */
+    else if((argc == 2u) && (fnet_strcasecmp(&FAPP_COMMAND_RELEASE[0], argv[1]) == 0)) /* [release] */
     {
         fapp_dhcp_release();
     }
@@ -191,9 +193,9 @@ void fapp_dhcp_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 *************************************************************************/
 void fapp_dhcp_info(fnet_shell_desc_t desc)
 {
-    char ip_str[FNET_IP4_ADDR_STR_SIZE];
-    int dhcp_enabled = (fnet_dhcp_state() != FNET_DHCP_STATE_DISABLED);
-    int address_automatic = fnet_netif_get_ip4_addr_automatic(fapp_default_netif);
+    fnet_char_t            ip_str[FNET_IP4_ADDR_STR_SIZE];
+    fnet_bool_t     dhcp_enabled = ((fnet_dhcp_state() != FNET_DHCP_STATE_DISABLED))?FNET_TRUE:FNET_FALSE;
+    fnet_bool_t     address_automatic = fnet_netif_get_ip4_addr_automatic(fapp_default_netif);
     
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "DHCP Client", dhcp_enabled ? FAPP_SHELL_INFO_ENABLED : FAPP_SHELL_INFO_DISABLED);
 

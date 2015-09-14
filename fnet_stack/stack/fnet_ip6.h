@@ -48,8 +48,6 @@
 /*! @addtogroup fnet_socket */
 /*! @{ */
 
-
-
 /**************************************************************************/ /*!
  * @brief 128-bit IPv6 address type.
  ******************************************************************************/
@@ -58,9 +56,9 @@ typedef struct
 {
     union 
     {
-        unsigned char  addr[16];
-        unsigned short addr16[8];
-        unsigned long  addr32[4];
+        fnet_uint8_t   addr[16];
+        fnet_uint16_t  addr16[8];
+        fnet_uint32_t  addr32[4];
     };  /* 128-bit IP6 address */
 } fnet_ip6_addr_t;
 FNET_COMP_PACKED_END
@@ -97,11 +95,11 @@ FNET_COMP_PACKED_END
  * Definition of some useful macros to handle IP6 addresses (BSD-like)
  */
 #define FNET_IP6_ADDR_ANY_INIT                                  \
-        {{{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     \
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }}}
+        {{{ 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,     \
+            0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u }}}
 #define FNET_IP6_ADDR_LOOPBACK_INIT                             \
-        {{{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     \
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }}}
+        {{{ 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,     \
+            0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u }}}
 #define FNET_IP6_ADDR_NODELOCAL_ALLNODES_INIT                   \
         {{{ 0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     \
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }}}
@@ -132,7 +130,7 @@ extern const fnet_ip6_addr_t fnet_ip6_addr_linklocal_prefix;
 
 /* Equality. */
 #define FNET_IP6_ADDR_EQUAL(a, b)			\
-        (fnet_memcmp(&(a)->addr[0], &(b)->addr[0], sizeof(fnet_ip6_addr_t)) == 0U)
+        ((fnet_memcmp(&(a)->addr[0], &(b)->addr[0], sizeof(fnet_ip6_addr_t)) == 0)?FNET_TRUE:FNET_FALSE)
 
 /* Copying address. */
 #define FNET_IP6_ADDR_COPY(from_addr, to_addr)  \
@@ -141,10 +139,10 @@ extern const fnet_ip6_addr_t fnet_ip6_addr_linklocal_prefix;
 
 /* Unspecified.*/
 #define FNET_IP6_ADDR_IS_UNSPECIFIED(a) \
-    	((((a)->addr32[0]) == 0U) &&	\
+    	(((((a)->addr32[0]) == 0U) &&	\
     	 (((a)->addr32[1]) == 0U) &&	\
     	 (((a)->addr32[2]) == 0U) &&	\
-    	 (((a)->addr32[3]) == 0U))
+    	 (((a)->addr32[3]) == 0U))?FNET_TRUE:FNET_FALSE)
 
 /* Loopback.*/
 #define FNET_IP6_ADDR_IS_LOOPBACK(a)    \
@@ -154,14 +152,12 @@ extern const fnet_ip6_addr_t fnet_ip6_addr_linklocal_prefix;
     	 (((a)->addr32[3]) == FNET_NTOHL(1U)))
 
 /* Multicast. */
-#define FNET_IP6_ADDR_IS_MULTICAST(a)	((a)->addr[0] == 0xffU)
+#define FNET_IP6_ADDR_IS_MULTICAST(a)	((((a)->addr[0]) == 0xffU)?FNET_TRUE:FNET_FALSE)
 
 /* Unicast Scope.*/
 #define FNET_IP6_ADDR_IS_LINKLOCAL(a)	\
-    	(((a)->addr[0] == 0xfeU) && (((a)->addr[1] & 0xc0U) == 0x80U))
+    	((((a)->addr[0]) == 0xfeU) && ((((a)->addr[1]) & 0xc0U) == 0x80U))
 #define FNET_IP6_ADDR_IS_SITELOCAL(a)	\
-    	(((a)->addr[0] == 0xfeU) && (((a)->addr[1] & 0xc0U) == 0xc0U))
-
-
+    	((((a)->addr[0]) == 0xfeU) && ((((a)->addr[1]) & 0xc0U) == 0xc0U))
 
 #endif  /* _FNET_IP6_H_ */

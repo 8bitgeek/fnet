@@ -201,164 +201,164 @@ typedef struct
 {                    /* Detailed Memory Map (Control/Status Registers)*/
 #if FNET_MPC
     #if FNET_CFG_CPU_MPC5744P
-        volatile fnet_uint32 reserved0;
+        volatile fnet_uint32_t reserved0;
     #else
-        volatile fnet_uint8  reserved0[4100];    /*Reserved 4100 bytes (Base+0x0000-0x0103)*/
+        volatile fnet_uint8_t  reserved0[4100];    /*Reserved 4100 bytes (Base+0x0000-0x0103)*/
     #endif
 #endif
-    volatile fnet_uint32 EIR;                /* Interrupt even reg. */
-    volatile fnet_uint32 EIMR;               /* Interrupt mask reg. */
-    volatile fnet_uint32 reserved1[1]; 
-    volatile fnet_uint32 RDAR;               /* Receive descriptor active reg.*/
-    volatile fnet_uint32 TDAR;               /* Transmit descriptor active reg.*/
-    volatile fnet_uint32 reserved2[3];
-    volatile fnet_uint32 ECR;                /* Ethernet control reg.*/
-    volatile fnet_uint32 reserved3[6];
-    volatile fnet_uint32 MMFR;               /* MII management frame reg.*/
-    volatile fnet_uint32 MSCR;               /* MII speed control reg.*/
-    volatile fnet_uint32 reserved4[7];
+    volatile fnet_uint32_t EIR;                /* Interrupt even reg. */
+    volatile fnet_uint32_t EIMR;               /* Interrupt mask reg. */
+    volatile fnet_uint32_t reserved1[1]; 
+    volatile fnet_uint32_t RDAR;               /* Receive descriptor active reg.*/
+    volatile fnet_uint32_t TDAR;               /* Transmit descriptor active reg.*/
+    volatile fnet_uint32_t reserved2[3];
+    volatile fnet_uint32_t ECR;                /* Ethernet control reg.*/
+    volatile fnet_uint32_t reserved3[6];
+    volatile fnet_uint32_t MMFR;               /* MII management frame reg.*/
+    volatile fnet_uint32_t MSCR;               /* MII speed control reg.*/
+    volatile fnet_uint32_t reserved4[7];
 #if FNET_CFG_CPU_ETH_MIB    
-    volatile fnet_uint32 MIBC;               /* MIB Control/Status Register.*/
+    volatile fnet_uint32_t MIBC;               /* MIB Control/Status Register.*/
 #else
-    volatile fnet_uint32 reserved4_1;
+    volatile fnet_uint32_t reserved4_1;
 #endif        
-    volatile fnet_uint32 reserved5[7];
-    volatile fnet_uint32 RCR;                /* Receive control reg.*/
-    volatile fnet_uint32 reserved6[15];
-    volatile fnet_uint32 TCR;                /* Transmit Control reg.*/
-    volatile fnet_uint32 reserved7[7];
-    volatile fnet_uint32 PALR;               /* Lower 32-bits of MAC address.*/
-    volatile fnet_uint32 PAUR;               /* Upper 16-bits of MAC address.*/
-    volatile fnet_uint32 OPD;                /* Opcode + Pause Duration.*/
-    volatile fnet_uint32 reserved8[10];
-    volatile fnet_uint32 IAUR;               /* Upper 32-bits of individual hash table.*/
-    volatile fnet_uint32 IALR;               /* Lower 32-bits of individual hash table.*/
-    volatile fnet_uint32 GAUR;               /* Upper 32-bits of group hash table.*/
-    volatile fnet_uint32 GALR;               /* Lower 32-bits of group hash table.*/
-    volatile fnet_uint32 reserved9[7];
-    volatile fnet_uint32 TFWR;               /* FIFO transmit water mark.*/
+    volatile fnet_uint32_t reserved5[7];
+    volatile fnet_uint32_t RCR;                /* Receive control reg.*/
+    volatile fnet_uint32_t reserved6[15];
+    volatile fnet_uint32_t TCR;                /* Transmit Control reg.*/
+    volatile fnet_uint32_t reserved7[7];
+    volatile fnet_uint32_t PALR;               /* Lower 32-bits of MAC address.*/
+    volatile fnet_uint32_t PAUR;               /* Upper 16-bits of MAC address.*/
+    volatile fnet_uint32_t OPD;                /* Opcode + Pause Duration.*/
+    volatile fnet_uint32_t reserved8[10];
+    volatile fnet_uint32_t IAUR;               /* Upper 32-bits of individual hash table.*/
+    volatile fnet_uint32_t IALR;               /* Lower 32-bits of individual hash table.*/
+    volatile fnet_uint32_t GAUR;               /* Upper 32-bits of group hash table.*/
+    volatile fnet_uint32_t GALR;               /* Lower 32-bits of group hash table.*/
+    volatile fnet_uint32_t reserved9[7];
+    volatile fnet_uint32_t TFWR;               /* FIFO transmit water mark.*/
 #if FNET_MK
-    volatile fnet_uint32 reserved10[14];
+    volatile fnet_uint32_t reserved10[14];
 #else /* MCF || MPC */  
     #if FNET_CFG_CPU_MPC5744P
-        volatile fnet_uint32 reserved10[14];
+        volatile fnet_uint32_t reserved10[14];
     #else
-        volatile fnet_uint32 reserved10[1];
-        volatile fnet_uint32 FRBR;               /* FIFO receive bound reg.*/
-        volatile fnet_uint32 FRSR;               /* FIFO receive start reg.*/
-        volatile fnet_uint32 reserved11[11];
+        volatile fnet_uint32_t reserved10[1];
+        volatile fnet_uint32_t FRBR;               /* FIFO receive bound reg.*/
+        volatile fnet_uint32_t FRSR;               /* FIFO receive start reg.*/
+        volatile fnet_uint32_t reserved11[11];
     #endif
 #endif    
-    volatile fnet_uint32 ERDSR;              /* Pointer to receive descriptor ring.*/
-    volatile fnet_uint32 ETDSR;              /* Pointer to transmit descriptor ring.*/
-    volatile fnet_uint32 EMRBR;              /* Maximum receive buffer size.*/
+    volatile fnet_uint32_t ERDSR;              /* Pointer to receive descriptor ring.*/
+    volatile fnet_uint32_t ETDSR;              /* Pointer to transmit descriptor ring.*/
+    volatile fnet_uint32_t EMRBR;              /* Maximum receive buffer size.*/
 
 #if FNET_MK || FNET_CFG_CPU_MCF54418 || FNET_CFG_CPU_MPC5744P
-    volatile fnet_uint32 reserved12[1];
-    volatile fnet_uint32 RSFL;               /* Receive FIFO Section Full Threshold, offset: 0x190 */
-    volatile fnet_uint32 RSEM;               /* Receive FIFO Section Empty Threshold, offset: 0x194 */
-    volatile fnet_uint32 RAEM;               /* Receive FIFO Almost Empty Threshold, offset: 0x198 */
-    volatile fnet_uint32 RAFL;               /* Receive FIFO Almost Full Threshold, offset: 0x19C */
-    volatile fnet_uint32 TSEM;               /* Transmit FIFO Section Empty Threshold, offset: 0x1A0 */
-    volatile fnet_uint32 TAEM;               /* Transmit FIFO Almost Empty Threshold, offset: 0x1A4 */
-    volatile fnet_uint32 TAFL;               /* Transmit FIFO Almost Full Threshold, offset: 0x1A8 */
-    volatile fnet_uint32 TIPG;               /* Transmit Inter-Packet Gap, offset: 0x1AC */
-    volatile fnet_uint32 FTRL;               /* Frame Truncation Length, offset: 0x1B0 */
-    volatile fnet_uint32 reserved13[3];
-    volatile fnet_uint32 TACC;               /* Transmit Accelerator Function Configuration, offset: 0x1C0 */
-    volatile fnet_uint32 RACC;               /* Receive Accelerator Function Configuration, offset: 0x1C4 */
+    volatile fnet_uint32_t reserved12[1];
+    volatile fnet_uint32_t RSFL;               /* Receive FIFO Section Full Threshold, offset: 0x190 */
+    volatile fnet_uint32_t RSEM;               /* Receive FIFO Section Empty Threshold, offset: 0x194 */
+    volatile fnet_uint32_t RAEM;               /* Receive FIFO Almost Empty Threshold, offset: 0x198 */
+    volatile fnet_uint32_t RAFL;               /* Receive FIFO Almost Full Threshold, offset: 0x19C */
+    volatile fnet_uint32_t TSEM;               /* Transmit FIFO Section Empty Threshold, offset: 0x1A0 */
+    volatile fnet_uint32_t TAEM;               /* Transmit FIFO Almost Empty Threshold, offset: 0x1A4 */
+    volatile fnet_uint32_t TAFL;               /* Transmit FIFO Almost Full Threshold, offset: 0x1A8 */
+    volatile fnet_uint32_t TIPG;               /* Transmit Inter-Packet Gap, offset: 0x1AC */
+    volatile fnet_uint32_t FTRL;               /* Frame Truncation Length, offset: 0x1B0 */
+    volatile fnet_uint32_t reserved13[3];
+    volatile fnet_uint32_t TACC;               /* Transmit Accelerator Function Configuration, offset: 0x1C0 */
+    volatile fnet_uint32_t RACC;               /* Receive Accelerator Function Configuration, offset: 0x1C4 */
     #if FNET_CFG_CPU_MPC5744P
-        volatile fnet_uint32 reserved14[15];
+        volatile fnet_uint32_t reserved14[15];
     #else
-        volatile fnet_uint32 reserved14[14];
+        volatile fnet_uint32_t reserved14[14];
     #endif
 #else /* MCF || MPC */
-    volatile fnet_uint32 reserved14[29];
+    volatile fnet_uint32_t reserved14[29];
 #endif    
     
 #if FNET_CFG_CPU_ETH_MIB 
     /* Ethernet Management Information Base (MIB) Block Counters:*/
 #if !FNET_CFG_CPU_MPC5744P
-    volatile fnet_uint32 RMON_T_DROP;
+    volatile fnet_uint32_t RMON_T_DROP;
 #endif        
-    volatile fnet_uint32 RMON_T_PACKETS;
-    volatile fnet_uint32 RMON_T_BC_PKT;
-    volatile fnet_uint32 RMON_T_MC_PKT;
-    volatile fnet_uint32 RMON_T_CRC_ALIGN;
-    volatile fnet_uint32 RMON_T_UNDERSIZE;
-    volatile fnet_uint32 RMON_T_OVERSIZE;
-    volatile fnet_uint32 RMON_T_FRAG;
-    volatile fnet_uint32 RMON_T_JAB;
-    volatile fnet_uint32 RMON_T_COL;
-    volatile fnet_uint32 RMON_T_P64;
-    volatile fnet_uint32 RMON_T_P65TO127;
-    volatile fnet_uint32 RMON_T_P128TO255;
-    volatile fnet_uint32 RMON_T_P256TO511;
-    volatile fnet_uint32 RMON_T_P512TO1023;
-    volatile fnet_uint32 RMON_T_P1024TO2047;
-    volatile fnet_uint32 RMON_T_P_GTE2048;
-    volatile fnet_uint32 RMON_T_OCTETS;
+    volatile fnet_uint32_t RMON_T_PACKETS;
+    volatile fnet_uint32_t RMON_T_BC_PKT;
+    volatile fnet_uint32_t RMON_T_MC_PKT;
+    volatile fnet_uint32_t RMON_T_CRC_ALIGN;
+    volatile fnet_uint32_t RMON_T_UNDERSIZE;
+    volatile fnet_uint32_t RMON_T_OVERSIZE;
+    volatile fnet_uint32_t RMON_T_FRAG;
+    volatile fnet_uint32_t RMON_T_JAB;
+    volatile fnet_uint32_t RMON_T_COL;
+    volatile fnet_uint32_t RMON_T_P64;
+    volatile fnet_uint32_t RMON_T_P65TO127;
+    volatile fnet_uint32_t RMON_T_P128TO255;
+    volatile fnet_uint32_t RMON_T_P256TO511;
+    volatile fnet_uint32_t RMON_T_P512TO1023;
+    volatile fnet_uint32_t RMON_T_P1024TO2047;
+    volatile fnet_uint32_t RMON_T_P_GTE2048;
+    volatile fnet_uint32_t RMON_T_OCTETS;
 #if FNET_CFG_CPU_MPC5744P
-    volatile fnet_uint32 reserved15[1];
+    volatile fnet_uint32_t reserved15[1];
 #else     
-    volatile fnet_uint32 IEEE_T_DROP;
+    volatile fnet_uint32_t IEEE_T_DROP;
 #endif    
-    volatile fnet_uint32 IEEE_T_FRAME_OK;
-    volatile fnet_uint32 IEEE_T_1COL;
-    volatile fnet_uint32 IEEE_T_MCOL;
-    volatile fnet_uint32 IEEE_T_DEF;
-    volatile fnet_uint32 IEEE_T_LCOL;
-    volatile fnet_uint32 IEEE_T_EXCOL;
-    volatile fnet_uint32 IEEE_T_MACERR;
-    volatile fnet_uint32 IEEE_T_CSERR;
+    volatile fnet_uint32_t IEEE_T_FRAME_OK;
+    volatile fnet_uint32_t IEEE_T_1COL;
+    volatile fnet_uint32_t IEEE_T_MCOL;
+    volatile fnet_uint32_t IEEE_T_DEF;
+    volatile fnet_uint32_t IEEE_T_LCOL;
+    volatile fnet_uint32_t IEEE_T_EXCOL;
+    volatile fnet_uint32_t IEEE_T_MACERR;
+    volatile fnet_uint32_t IEEE_T_CSERR;
 #if FNET_CFG_CPU_MPC5744P
-    volatile fnet_uint32 reserved16[1];
+    volatile fnet_uint32_t reserved16[1];
 #else     
-    volatile fnet_uint32 IEEE_T_SQE;
+    volatile fnet_uint32_t IEEE_T_SQE;
 #endif     
-    volatile fnet_uint32 IEEE_T_FDXFC;
-    volatile fnet_uint32 IEEE_T_OCTETS_OK;
-    volatile fnet_uint32 reserved17[3];
-    volatile fnet_uint32 RMON_R_PACKETS;
-    volatile fnet_uint32 RMON_R_BC_PKT;
-    volatile fnet_uint32 RMON_R_MC_PKT;
-    volatile fnet_uint32 RMON_R_CRC_ALIGN;
-    volatile fnet_uint32 RMON_R_UNDERSIZE;
-    volatile fnet_uint32 RMON_R_OVERSIZE;
-    volatile fnet_uint32 RMON_R_FRAG;
-    volatile fnet_uint32 RMON_R_JAB;
-    volatile fnet_uint32 RMON_R_RESVD_0;
-    volatile fnet_uint32 RMON_R_P64;
-    volatile fnet_uint32 RMON_R_P65TO127;
-    volatile fnet_uint32 RMON_R_P128TO255;
-    volatile fnet_uint32 RMON_R_P256TO511;
-    volatile fnet_uint32 RMON_R_512TO1023;
-    volatile fnet_uint32 RMON_R_1024TO2047;
-    volatile fnet_uint32 RMON_R_P_GTE2048;
-    volatile fnet_uint32 RMON_R_OCTETS;
-    volatile fnet_uint32 IEEE_R_DROP;
-    volatile fnet_uint32 IEEE_R_FRAME_OK;
-    volatile fnet_uint32 IEEE_R_CRC;
-    volatile fnet_uint32 IEEE_R_ALIGN;
-    volatile fnet_uint32 IEEE_R_MACERR;
-    volatile fnet_uint32 IEEE_R_FDXFC;
-    volatile fnet_uint32 IEEE_R_OCTETS_OK;
+    volatile fnet_uint32_t IEEE_T_FDXFC;
+    volatile fnet_uint32_t IEEE_T_OCTETS_OK;
+    volatile fnet_uint32_t reserved17[3];
+    volatile fnet_uint32_t RMON_R_PACKETS;
+    volatile fnet_uint32_t RMON_R_BC_PKT;
+    volatile fnet_uint32_t RMON_R_MC_PKT;
+    volatile fnet_uint32_t RMON_R_CRC_ALIGN;
+    volatile fnet_uint32_t RMON_R_UNDERSIZE;
+    volatile fnet_uint32_t RMON_R_OVERSIZE;
+    volatile fnet_uint32_t RMON_R_FRAG;
+    volatile fnet_uint32_t RMON_R_JAB;
+    volatile fnet_uint32_t RMON_R_RESVD_0;
+    volatile fnet_uint32_t RMON_R_P64;
+    volatile fnet_uint32_t RMON_R_P65TO127;
+    volatile fnet_uint32_t RMON_R_P128TO255;
+    volatile fnet_uint32_t RMON_R_P256TO511;
+    volatile fnet_uint32_t RMON_R_512TO1023;
+    volatile fnet_uint32_t RMON_R_1024TO2047;
+    volatile fnet_uint32_t RMON_R_P_GTE2048;
+    volatile fnet_uint32_t RMON_R_OCTETS;
+    volatile fnet_uint32_t IEEE_R_DROP;
+    volatile fnet_uint32_t IEEE_R_FRAME_OK;
+    volatile fnet_uint32_t IEEE_R_CRC;
+    volatile fnet_uint32_t IEEE_R_ALIGN;
+    volatile fnet_uint32_t IEEE_R_MACERR;
+    volatile fnet_uint32_t IEEE_R_FDXFC;
+    volatile fnet_uint32_t IEEE_R_OCTETS_OK;
 #endif
 #if 0 /* Not used. Present in Panther, Kinetis, Modelo.*/
-    volatile fnet_uint32 RESERVED_18[71];
-    volatile fnet_uint32 ATCR;                   /* Timer Control Register, offset: 0x400 */
-    volatile fnet_uint32 ATVR;                   /* Timer Value Register, offset: 0x404 */
-    volatile fnet_uint32 ATOFF;                  /* Timer Offset Register, offset: 0x408 */
-    volatile fnet_uint32 ATPER;                  /* Timer Period Register, offset: 0x40C */
-    volatile fnet_uint32 ATCOR;                  /* Timer Correction Register, offset: 0x410 */
-    volatile fnet_uint32 ATINC;                  /* Time-Stamping Clock Period Register, offset: 0x414 */
-    volatile fnet_uint32 ATSTMP;                 /* Timestamp of Last Transmitted Frame, offset: 0x418 */
-    volatile fnet_uint32 RESERVED_19[122];
-    volatile fnet_uint32 TGSR;                   /* Timer Global Status Register, offset: 0x604 */
+    volatile fnet_uint32_t RESERVED_18[71];
+    volatile fnet_uint32_t ATCR;                   /* Timer Control Register, offset: 0x400 */
+    volatile fnet_uint32_t ATVR;                   /* Timer Value Register, offset: 0x404 */
+    volatile fnet_uint32_t ATOFF;                  /* Timer Offset Register, offset: 0x408 */
+    volatile fnet_uint32_t ATPER;                  /* Timer Period Register, offset: 0x40C */
+    volatile fnet_uint32_t ATCOR;                  /* Timer Correction Register, offset: 0x410 */
+    volatile fnet_uint32_t ATINC;                  /* Time-Stamping Clock Period Register, offset: 0x414 */
+    volatile fnet_uint32_t ATSTMP;                 /* Timestamp of Last Transmitted Frame, offset: 0x418 */
+    volatile fnet_uint32_t RESERVED_19[122];
+    volatile fnet_uint32_t TGSR;                   /* Timer Global Status Register, offset: 0x604 */
     struct 
     {                                   /* offset: 0x608, array step: 0x8 */
-        volatile fnet_uint32 TCSR;               /*!< Timer Control Status Register, array offset: 0x608, array step: 0x8 */
-        volatile fnet_uint32 TCCR;               /*!< Timer Compare Capture Register, array offset: 0x60C, array step: 0x8 */
+        volatile fnet_uint32_t TCSR;               /*!< Timer Control Status Register, array offset: 0x608, array step: 0x8 */
+        volatile fnet_uint32_t TCCR;               /*!< Timer Compare Capture Register, array offset: 0x60C, array step: 0x8 */
     } CHANNEL[4];
 #endif    
 }
@@ -557,9 +557,9 @@ fnet_fec_reg_t;
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    volatile unsigned short status FNET_COMP_PACKED;     /* Control and status info.*/
-    unsigned short length FNET_COMP_PACKED;              /* Data length.*/
-    unsigned char *buf_ptr FNET_COMP_PACKED;             /* Buffer pointer.*/
+    volatile fnet_uint16_t  status FNET_COMP_PACKED;     /* Control and status info.*/
+    fnet_uint16_t           length FNET_COMP_PACKED;              /* Data length.*/
+    fnet_uint8_t            *buf_ptr FNET_COMP_PACKED;             /* Buffer pointer.*/
 }
 fnet_fec_buf_desc_t;
 FNET_COMP_PACKED_END
@@ -569,22 +569,22 @@ typedef struct
 {
     volatile fnet_fec_reg_t  *reg;               /* Pointer to the eth registers. */
     volatile fnet_fec_reg_t  *reg_phy;           /* Pointer to the eth registers, used for comunication with phy. */
-    unsigned int             vector_number;      /* Vector number of the Ethernet Receive Frame interrupt.*/
+    fnet_uint32_t             vector_number;     /* Vector number of the Ethernet Receive Frame interrupt.*/
     fnet_fec_buf_desc_t      *tx_buf_desc;       /* Tx Buffer Descriptors.*/
     fnet_fec_buf_desc_t      *tx_buf_desc_cur;   /* Points to the descriptor of the current outcoming buffer.*/
     fnet_fec_buf_desc_t      *rx_buf_desc;       /* Rx Buffer Descriptors.*/
     fnet_fec_buf_desc_t      *rx_buf_desc_cur;   /* Points to the descriptor of the current incoming buffer.*/
-    unsigned char            phy_addr;
-    unsigned char            tx_buf_desc_num;    /* Number of allocated Tx Buffer Descriptors.*/    
-    unsigned char            rx_buf_desc_num;    /* Number of allocated Tx Buffer Descriptors.*/  
+    fnet_uint8_t             phy_addr;
+    fnet_uint8_t             tx_buf_desc_num;    /* Number of allocated Tx Buffer Descriptors.*/    
+    fnet_uint8_t             rx_buf_desc_num;    /* Number of allocated Tx Buffer Descriptors.*/  
 #if FNET_CFG_MULTICAST    
-    fnet_uint32              GALR_double;
-    fnet_uint32              GAUR_double;
+    fnet_uint32_t              GALR_double;
+    fnet_uint32_t              GAUR_double;
 #endif
-    fnet_uint8 tx_buf_desc_buf[(FNET_FEC_TX_BUF_NUM * sizeof(fnet_fec_buf_desc_t)) + (FNET_FEC_BUF_DESC_DIV-1U)];
-    fnet_uint8 rx_buf_desc_buf[(FNET_FEC_RX_BUF_NUM * sizeof(fnet_fec_buf_desc_t)) + (FNET_FEC_BUF_DESC_DIV-1U)];
-    fnet_uint8 tx_buf[FNET_FEC_TX_BUF_NUM][FNET_FEC_BUF_SIZE + (FNET_FEC_TX_BUF_DIV-1U)];
-    fnet_uint8 rx_buf[FNET_FEC_RX_BUF_NUM][FNET_FEC_BUF_SIZE + (FNET_FEC_RX_BUF_DIV-1U)];    
+    fnet_uint8_t tx_buf_desc_buf[(FNET_FEC_TX_BUF_NUM * sizeof(fnet_fec_buf_desc_t)) + (FNET_FEC_BUF_DESC_DIV-1U)];
+    fnet_uint8_t rx_buf_desc_buf[(FNET_FEC_RX_BUF_NUM * sizeof(fnet_fec_buf_desc_t)) + (FNET_FEC_BUF_DESC_DIV-1U)];
+    fnet_uint8_t tx_buf[FNET_FEC_TX_BUF_NUM][FNET_FEC_BUF_SIZE + (FNET_FEC_TX_BUF_DIV-1U)];
+    fnet_uint8_t rx_buf[FNET_FEC_RX_BUF_NUM][FNET_FEC_BUF_SIZE + (FNET_FEC_RX_BUF_DIV-1U)];    
 }
 fnet_fec_if_t;
 
@@ -601,34 +601,34 @@ extern const fnet_netif_api_t fnet_fec_api;
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-int fnet_fec_init(fnet_netif_t *netif);
-void fnet_fec_release(fnet_netif_t *netif);
-void fnet_fec_input(fnet_netif_t *netif);
-int fnet_fec_get_hw_addr(fnet_netif_t *netif, unsigned char * hw_addr);
-int fnet_fec_set_hw_addr(fnet_netif_t *netif, unsigned char * hw_addr);
-int fnet_fec_is_connected(fnet_netif_t *netif);
-int fnet_fec_get_statistics(struct fnet_netif *netif, struct fnet_netif_statistics * statistics);
-void fnet_fec_output(fnet_netif_t *netif, unsigned short type, const fnet_mac_addr_t dest_addr, fnet_netbuf_t* nb);
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /* Ethernet IO initialization.*/
 void fnet_eth_io_init(void) ;
 /* Ethernet On-chip Physical Transceiver initialization and/or reset. */
 void fnet_eth_phy_init(fnet_fec_if_t *ethif);
-
-int fnet_fec_mii_write(fnet_fec_if_t *ethif, unsigned int reg_addr, fnet_uint16 data);
-int fnet_fec_mii_read(fnet_fec_if_t *ethif, unsigned int reg_addr, fnet_uint16 *data); 
-
+void fnet_fec_output(fnet_netif_t *netif, fnet_uint16_t type, const fnet_mac_addr_t dest_addr, fnet_netbuf_t* nb);
 #if FNET_CFG_MULTICAST      
 void fnet_fec_multicast_join(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
 void fnet_fec_multicast_leave(fnet_netif_t *netif, fnet_mac_addr_t multicast_addr);
 #endif /* FNET_CFG_MULTICAST */
 
 /* For debug needs.*/
-void fnet_fec_output_frame(fnet_netif_t *netif, char* frame, unsigned int frame_size);
-int fnet_fec_input_frame(fnet_netif_t *netif, char* buf, unsigned int buf_size);    
+void fnet_fec_output_frame(fnet_netif_t *netif, fnet_uint8_t* frame, fnet_size_t frame_size);
+fnet_size_t fnet_fec_input_frame(fnet_netif_t *netif, fnet_uint8_t* buf, fnet_size_t buf_size);    
 void fnet_fec_debug_mii_print_regs(fnet_netif_t *netif);
 void fnet_fec_stop(fnet_netif_t *netif);
 void fnet_fec_resume(fnet_netif_t *netif);
+
+fnet_return_t fnet_fec_mii_write(fnet_fec_if_t *ethif, fnet_uint32_t reg_addr, fnet_uint16_t data);
+fnet_return_t fnet_fec_mii_read(fnet_fec_if_t *ethif, fnet_uint32_t reg_addr, fnet_uint16_t *data); 
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 #endif /* (FNET_MCF || FNET_MK || FNET_MPC) && FNET_CFG_ETH */

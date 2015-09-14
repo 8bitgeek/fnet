@@ -72,6 +72,9 @@
 #error "Flash Module Driver is not implemented/tested for your platform!"
 #endif
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -96,7 +99,7 @@
  * Erase page size is defined by @ref FNET_CFG_CPU_FLASH_PAGE_SIZE.
  *
  ******************************************************************************/
-void fnet_flash_erase( void *flash_addr, unsigned bytes);
+void fnet_flash_erase( void *flash_addr, fnet_size_t bytes);
 
 /***************************************************************************/ /*!
  *
@@ -118,7 +121,11 @@ void fnet_flash_erase( void *flash_addr, unsigned bytes);
  * pointed by @c src directly to the Flash memory pointed by @c flash_addr.
  *
  ******************************************************************************/
-void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_VAR const void *src, unsigned n );
+void fnet_flash_memcpy( FNET_COMP_PACKED_VAR void *flash_addr, FNET_COMP_PACKED_VAR const void *src, fnet_size_t n );
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

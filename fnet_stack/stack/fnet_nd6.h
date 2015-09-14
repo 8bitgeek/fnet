@@ -42,7 +42,7 @@
 #ifndef _FNET_ND6_H_
 
 #define _FNET_ND6_H_
-
+#include "fnet.h"
 #include "fnet_timer_prv.h"
 #include "fnet_ip6.h"
 #include "fnet_icmp6.h"
@@ -51,7 +51,7 @@
 
 /* Neighbor Cache and Default Router List combined to one list.*/
 #define FNET_ND6_NEIGHBOR_CACHE_SIZE         (FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE + FNET_CFG_ND6_ROUTER_LIST_SIZE) 
-#define FNET_ND6_PREFIX_LIST_SIZE            (FNET_CFG_ND6_PREFIX_LIST_SIZE + 1U) /* One more for link-local prefix.*/
+#define FNET_ND6_PREFIX_LIST_SIZE            (FNET_CFG_ND6_PREFIX_LIST_SIZE + 1u) /* One more for link-local prefix.*/
 #define FNET_ND6_REDIRECT_TABLE_SIZE         (4U) /* TBD config parameter.*/
 
 /**************************************************************
@@ -161,17 +161,17 @@ typedef enum fnet_nd6_prefix_state
 typedef struct fnet_nd6_prefix_entry
 {
     fnet_ip6_addr_t         prefix;         /* Prefix of an IPv6 address. */
-    unsigned long           prefix_length;  /* Prefix length (in bits). The number of leading bits
+    fnet_size_t             prefix_length;  /* Prefix length (in bits). The number of leading bits
                                              * in the Prefix that are valid. */
     fnet_nd6_prefix_state_t state;          /* Prefix state.*/                                 
-    unsigned long           lifetime;       /* Valid Lifetime
+    fnet_time_t             lifetime;       /* Valid Lifetime
                                              * 32-bit unsigned integer. The length of time in
                                              * seconds (relative to the time the packet is sent)
                                              * that the prefix is valid for the purpose of on-link
                                              * determination. A value of all one bits
                                              * (0xffffffff) represents infinity. The Valid
                                              * Lifetime is also used by [ADDRCONF].*/
-    unsigned long           creation_time;  /* Time of entry creation, in seconds.*/                                     
+    fnet_time_t             creation_time;  /* Time of entry creation, in seconds.*/                                     
 } fnet_nd6_prefix_entry_t;
 
 /**************************************************************
@@ -207,19 +207,19 @@ typedef struct fnet_nd6_neighbor_entry
     fnet_ip6_addr_t             ip_addr;        /* Neighbor’s on-link unicast IP address. */
     fnet_netif_ll_addr_t        ll_addr;        /* Its link-layer address. Actual size is defiined by fnet_netif_api_t->hw_addr_size. */
     fnet_nd6_neighbor_state_t   state;          /* Neighbor’s reachability state.*/
-    unsigned long               state_time;     /* Time of last state event.*/
+    fnet_time_t                 state_time;     /* Time of last state event.*/
     fnet_netbuf_t               *waiting_netbuf;/* Pointer to any queued packetwaiting for address resolution to complete.*/
                                                 /* RFC 4861 7.2.2: While waiting for address resolution to complete, the sender MUST,
                                                  * for each neighbor, retain a small queue of packets waiting for
                                                  * address resolution to complete. The queue MUST hold at least one
                                                  * packet, and MAY contain more.
                                                  * When a queue  overflows, the new arrival SHOULD replace the oldest entry.*/    
-    int                         solicitation_send_counter;  /* Counter - how many soicitations where sent.*/
+    fnet_index_t                solicitation_send_counter;  /* Counter - how many soicitations where sent.*/
     fnet_ip6_addr_t             solicitation_src_ip_addr;   /* IP address used during AR solicitation messages. */    
-    unsigned long               creation_time;              /* Time of entry creation, in seconds.*/    
+    fnet_time_t                 creation_time;              /* Time of entry creation, in seconds.*/    
     /* Default Router list entry info.*/
-    int                         is_router;          /* A flag indicating whether the neighbor is a router or a host.*/
-    unsigned long               router_lifetime;    /* The lifetime associated
+    fnet_bool_t                 is_router;          /* A flag indicating whether the neighbor is a router or a host.*/
+    fnet_time_t                 router_lifetime;    /* The lifetime associated
                                                     * with the default router in units of seconds. The
                                                     * field can contain values up to 65535 and receivers
                                                     * should handle any value, while the sending rules in
@@ -245,7 +245,7 @@ typedef struct fnet_nd6_redirect_entry
                                              * first-hop router and the Target Address MUST be the
                                              * router’s link-local address so that hosts can
                                              * uniquely identify routers. */
-    unsigned long       creation_time;      /* Time of entry creation.*/
+    fnet_time_t         creation_time;      /* Time of entry creation.*/
 } fnet_nd6_redirect_entry_t;
 
 /***********************************************************************
@@ -256,8 +256,8 @@ typedef struct fnet_nd6_rdnss_entry
     fnet_ip6_addr_t             rdnss_addr;         /* IPv6 address of the Recursive
                                                     * DNS Server, which is available for recursive DNS resolution
                                                     * service in the network advertising the RDNSS option. */
-    unsigned long               creation_time;      /* Time of entry creation, in seconds.*/    
-    unsigned long               lifetime;           /* The maximum time, in
+    fnet_time_t               creation_time;      /* Time of entry creation, in seconds.*/    
+    fnet_time_t               lifetime;           /* The maximum time, in
                                                     * seconds (relative to the time the packet is sent),
                                                     * over which this DNSSL domain name MAY be used for
                                                     * name resolution.
@@ -293,7 +293,7 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_ns_header
 {
     fnet_icmp6_header_t icmp6_header    FNET_COMP_PACKED;               
-    unsigned char       _reserved[4]    FNET_COMP_PACKED;
+    fnet_uint8_t        _reserved[4]    FNET_COMP_PACKED;
     fnet_ip6_addr_t     target_addr     FNET_COMP_PACKED;
 } fnet_nd6_ns_header_t;
 FNET_COMP_PACKED_END
@@ -325,8 +325,8 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_na_header
 {
     fnet_icmp6_header_t icmp6_header    FNET_COMP_PACKED; 
-    unsigned char       flag            FNET_COMP_PACKED;
-    unsigned char       _reserved[3]    FNET_COMP_PACKED;
+    fnet_uint8_t        flag            FNET_COMP_PACKED;
+    fnet_uint8_t        _reserved[3]    FNET_COMP_PACKED;
     fnet_ip6_addr_t     target_addr     FNET_COMP_PACKED;    
 } fnet_nd6_na_header_t;
 FNET_COMP_PACKED_END
@@ -389,7 +389,7 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_rd_header
 {
     fnet_icmp6_header_t icmp6_header        FNET_COMP_PACKED; 
-    unsigned char       _reserved[4]        FNET_COMP_PACKED;
+    fnet_uint8_t        _reserved[4]        FNET_COMP_PACKED;
     fnet_ip6_addr_t     target_addr         FNET_COMP_PACKED;  
     fnet_ip6_addr_t     destination_addr    FNET_COMP_PACKED;    
 } fnet_nd6_rd_header_t;
@@ -414,7 +414,7 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_rs_header
 {
     fnet_icmp6_header_t icmp6_header    FNET_COMP_PACKED;  
-    unsigned char       _reserved[4]    FNET_COMP_PACKED;
+    fnet_uint8_t        _reserved[4]    FNET_COMP_PACKED;
 } fnet_nd6_rs_header_t;
 FNET_COMP_PACKED_END
 
@@ -440,12 +440,12 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_ra_header
 {
     fnet_icmp6_header_t icmp6_header    FNET_COMP_PACKED;   /* ICMPv6 header.*/
-    unsigned char       cur_hop_limit   FNET_COMP_PACKED;   /* 8-bit unsigned integer. The default value that
+    fnet_uint8_t        cur_hop_limit   FNET_COMP_PACKED;   /* 8-bit unsigned integer. The default value that
                                                              * should be placed in the Hop Count field of the IP
                                                              * header for outgoing IP packets. A value of zero
                                                              * means unspecified (by this router). */
-    unsigned char       flag            FNET_COMP_PACKED;   /* ND6_RS_FLAG_M and/or ND6_RS_FLAG_O flags.*/
-    unsigned short      router_lifetime FNET_COMP_PACKED;   /* 16-bit unsigned integer. The lifetime associated
+    fnet_uint8_t        flag            FNET_COMP_PACKED;   /* ND6_RS_FLAG_M and/or ND6_RS_FLAG_O flags.*/
+    fnet_uint16_t       router_lifetime FNET_COMP_PACKED;   /* 16-bit unsigned integer. The lifetime associated
                                                              * with the default router in units of seconds. The
                                                              * field can contain values up to 65535 and receivers
                                                              * should handle any value, while the sending rules in
@@ -458,13 +458,13 @@ typedef struct fnet_nd6_ra_header
                                                              * message fields or options. Options that need time
                                                              * limits for their information include their own
                                                              * lifetime fields.*/
-    unsigned long       reachable_time  FNET_COMP_PACKED;   /* 32-bit unsigned integer. The time, in
+    fnet_uint32_t       reachable_time  FNET_COMP_PACKED;   /* 32-bit unsigned integer. The time, in
                                                              * milliseconds, that a node assumes a neighbor is
                                                              * reachable after having received a reachability
                                                              * confirmation. Used by the Neighbor Unreachability
                                                              * Detection algorithm (see Section 7.3). A value of
                                                              * zero means unspecified (by this router). */                                       
-    unsigned long       retrans_timer   FNET_COMP_PACKED;   /* 32-bit unsigned integer. The time, in
+    fnet_uint32_t       retrans_timer   FNET_COMP_PACKED;   /* 32-bit unsigned integer. The time, in
                                                              * milliseconds, between retransmitted Neighbor
                                                              * Solicitation messages. Used by address resolution
                                                              * and the Neighbor Unreachability Detection algorithm
@@ -506,8 +506,8 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_option_header
 {
-    unsigned char type      FNET_COMP_PACKED;   /* Identifier of the type of option.*/
-    unsigned char length    FNET_COMP_PACKED;   /* The length of the option
+    fnet_uint8_t type      FNET_COMP_PACKED;   /* Identifier of the type of option.*/
+    fnet_uint8_t length    FNET_COMP_PACKED;   /* The length of the option
                                                  * (including the type and length fields) in units of
                                                  * 8 octets.  The value 0 is invalid.  Nodes MUST
                                                  * silently discard an ND packet that contains an
@@ -525,7 +525,7 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_option_lla_header
 {
     fnet_nd6_option_header_t    option_header   FNET_COMP_PACKED;   /* Option general header.*/
-    unsigned char               addr[6]         FNET_COMP_PACKED;   /* The length of the option. Can be more or less than 6.*/
+    fnet_uint8_t                addr[6]         FNET_COMP_PACKED;   /* The length of the option. Can be more or less than 6.*/
 }fnet_nd6_option_lla_header_t;
 FNET_COMP_PACKED_END
 
@@ -541,8 +541,8 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_option_mtu_header
 {
     fnet_nd6_option_header_t    option_header   FNET_COMP_PACKED;   /* Option general header.*/
-    unsigned char               _reserved[2]    FNET_COMP_PACKED;
-    unsigned long               mtu             FNET_COMP_PACKED;   /* The recommended MTU for the link.*/
+    fnet_uint8_t                _reserved[2]    FNET_COMP_PACKED;
+    fnet_uint32_t               mtu             FNET_COMP_PACKED;   /* The recommended MTU for the link.*/
 }fnet_nd6_option_mtu_header_t;
 FNET_COMP_PACKED_END
 
@@ -570,7 +570,7 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_option_prefix_header
 {
     fnet_nd6_option_header_t    option_header   FNET_COMP_PACKED;   /* Option general header.*/
-    unsigned char               prefix_length   FNET_COMP_PACKED;   /* The number of leading bits
+    fnet_uint8_t                prefix_length   FNET_COMP_PACKED;   /* The number of leading bits
                                                                      * in the Prefix that are valid. The value ranges
                                                                      * from 0 to 128. The prefix length field provides
                                                                      * necessary information for on-link determination
@@ -579,14 +579,14 @@ typedef struct fnet_nd6_option_prefix_header
                                                                      * autoconfiguration as specified in [ADDRCONF], for
                                                                      * which there may be more restrictions on the prefix
                                                                      * length.*/
-    unsigned char               flag            FNET_COMP_PACKED;   /* ND6_OPTION_FLAG_L and/or ND6_OPTION_FLAG_O flags.*/
-    unsigned long               valid_lifetime  FNET_COMP_PACKED;   /* The length of time in
+    fnet_uint8_t                flag            FNET_COMP_PACKED;   /* ND6_OPTION_FLAG_L and/or ND6_OPTION_FLAG_O flags.*/
+    fnet_uint32_t               valid_lifetime  FNET_COMP_PACKED;   /* The length of time in
                                                                      * seconds (relative to the time the packet is sent)
                                                                      * that the prefix is valid for the purpose of on-link
                                                                      * determination. A value of all one bits
                                                                      * (0xffffffff) represents infinity. The Valid
                                                                      * Lifetime is also used by [ADDRCONF].*/
-    unsigned long               prefered_lifetime FNET_COMP_PACKED; /* The length of time in
+    fnet_uint32_t               prefered_lifetime FNET_COMP_PACKED; /* The length of time in
                                                                      * seconds (relative to the time the packet is sent)
                                                                      * that addresses generated from the prefix via
                                                                      * stateless address autoconfiguration remain
@@ -595,7 +595,7 @@ typedef struct fnet_nd6_option_prefix_header
                                                                      * Note that the value of this field MUST NOT exceed
                                                                      * the Valid Lifetime field to avoid preferring
                                                                      * addresses that are no longer valid.*/  
-    unsigned long               _reserved       FNET_COMP_PACKED;        
+    fnet_uint32_t               _reserved       FNET_COMP_PACKED;        
     fnet_ip6_addr_t             prefix          FNET_COMP_PACKED;   /* An IP address or a prefix of an IP address. The
                                                                      * Prefix Length field contains the number of valid
                                                                      * leading bits in the prefix. The bits in the prefix
@@ -638,8 +638,8 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_nd6_option_rdnss_header
 {
     fnet_nd6_option_header_t    option_header   FNET_COMP_PACKED;   /* Option general header.*/
-    unsigned short              _reserved       FNET_COMP_PACKED;   
-    unsigned long               lifetime        FNET_COMP_PACKED;   /* The maximum time, in
+    fnet_uint16_t               _reserved       FNET_COMP_PACKED;   
+    fnet_uint32_t               lifetime        FNET_COMP_PACKED;   /* The maximum time, in
                                                                      * seconds (relative to the time the packet is sent),
                                                                      * over which this RDNSS address MAY be used for name
                                                                      * resolution.*/
@@ -684,27 +684,27 @@ typedef struct fnet_nd6_if
     fnet_timer_desc_t           timer;                  /* General ND timer.*/
     
     /* Router Discovery variables.*/
-    unsigned long               rd_transmit_counter;    /* Counter used by RD. Equals to the number 
+    fnet_index_t                rd_transmit_counter;    /* Counter used by RD. Equals to the number 
                                                          * of RS transmits till RD is finished.*/                                                    
-    unsigned long               rd_time;                /* Time of last RS transmit.*/    
+    fnet_time_t                 rd_time;                /* Time of last RS transmit.*/    
     
     /* Interface variables */  
-    unsigned long               mtu;                    /* The recommended MTU for the link.
+    fnet_size_t                 mtu;                    /* The recommended MTU for the link.
                                                          * Updated by RA messages.*/
-    unsigned char               cur_hop_limit;          /* The default value that
+    fnet_uint8_t                cur_hop_limit;          /* The default value that
                                                          * should be placed in the Hop Count field of the IP
                                                          * header for outgoing IP packets.*/
-    unsigned long               reachable_time;         /* The time, in milliseconds,
+    fnet_time_t                 reachable_time;         /* The time, in milliseconds,
                                                          * that a node assumes a neighbor is
                                                          * reachable after having received a reachability
                                                          * confirmation. Used by the Neighbor Unreachability
                                                          * Detection algorithm.*/ 
-    unsigned long               retrans_timer;          /* The time, in milliseconds,
+    fnet_time_t                 retrans_timer;          /* The time, in milliseconds,
                                                          * between retransmitted Neighbor
                                                          * Solicitation messages. Used by address resolution
                                                          * and the Neighbor Unreachability Detection algorithm
                                                          * (see Sections 7.2 and 7.3).*/  
-    int                         ip6_disabled;           /* IP operation on the interface is disabled.*/
+    fnet_bool_t                 ip6_disabled;           /* IP operation on the interface is disabled.*/
 } fnet_nd6_if_t;
 
 /* Forward declaration.*/
@@ -713,23 +713,27 @@ struct fnet_netif_ip6_addr;
 /***********************************************************************
 * Function Prototypes
 ***********************************************************************/
-int fnet_nd6_init (struct fnet_netif *netif, fnet_nd6_if_t *nd6_if_ptr);
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+fnet_return_t fnet_nd6_init (struct fnet_netif *netif, fnet_nd6_if_t *nd6_if_ptr);
 void fnet_nd6_release (struct fnet_netif *netif);
-fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_add(struct fnet_netif *if_ptr, const fnet_ip6_addr_t *prefix, unsigned long prefix_length, unsigned long lifetime);
+fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_add(struct fnet_netif *if_ptr, const fnet_ip6_addr_t *prefix, fnet_size_t prefix_length, fnet_time_t lifetime);
 void fnet_nd6_prefix_list_del(fnet_nd6_prefix_entry_t *prefix_entry);
 fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_get(struct fnet_netif *netif, fnet_ip6_addr_t *prefix);
-int fnet_nd6_addr_is_onlink(struct fnet_netif *netif, const fnet_ip6_addr_t *addr);
+fnet_bool_t fnet_nd6_addr_is_onlink(struct fnet_netif *netif, const fnet_ip6_addr_t *addr);
 fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_get(struct fnet_netif *netif, const fnet_ip6_addr_t *ip_addr);
 void fnet_nd6_neighbor_cache_del(struct fnet_netif *netif, fnet_nd6_neighbor_entry_t *neighbor_entry);
 fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(struct fnet_netif *netif, const fnet_ip6_addr_t *ip_addr, fnet_netif_ll_addr_t ll_addr, fnet_nd6_neighbor_state_t state);
 void fnet_nd6_neighbor_enqueue_waiting_netbuf(fnet_nd6_neighbor_entry_t *neighbor_entry, fnet_netbuf_t *waiting_netbuf);
 void fnet_nd6_neighbor_send_waiting_netbuf(struct fnet_netif *netif, fnet_nd6_neighbor_entry_t *neighbor_entry);
-void fnet_nd6_router_list_add( fnet_nd6_neighbor_entry_t *neighbor_entry, unsigned long lifetime );
+void fnet_nd6_router_list_add( fnet_nd6_neighbor_entry_t *neighbor_entry, fnet_time_t lifetime );
 void fnet_nd6_router_list_del( fnet_nd6_neighbor_entry_t *neighbor_entry );
 fnet_nd6_neighbor_entry_t *fnet_nd6_default_router_get(struct fnet_netif *netif);
 void fnet_nd6_neighbor_solicitation_send(struct fnet_netif *netif, const fnet_ip6_addr_t *ipsrc /* NULL for, DAD */, const fnet_ip6_addr_t *ipdest /*set for NUD,  NULL for DAD & AR */, const fnet_ip6_addr_t *target_addr);
 void fnet_nd6_neighbor_solicitation_receive(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
-void fnet_nd6_neighbor_advertisement_send(struct fnet_netif *netif, const fnet_ip6_addr_t *ipsrc, const fnet_ip6_addr_t *ipdest, unsigned char na_flags);
+void fnet_nd6_neighbor_advertisement_send(struct fnet_netif *netif, const fnet_ip6_addr_t *ipsrc, const fnet_ip6_addr_t *ipdest, fnet_uint8_t na_flags);
 void fnet_nd6_neighbor_advertisement_receive(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
 void fnet_nd6_router_solicitation_send(struct fnet_netif *netif);
 void fnet_nd6_router_advertisement_receive(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
@@ -739,7 +743,11 @@ void fnet_nd6_dad_start(struct fnet_netif *netif , struct fnet_netif_ip6_addr *a
 void fnet_nd6_rd_start(struct fnet_netif *netif);
 void fnet_nd6_debug_print_prefix_list(struct fnet_netif *netif);
 #if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
-int fnet_nd6_rdnss_get_addr(struct fnet_netif *netif, unsigned int n, fnet_ip6_addr_t *addr_dns);
+fnet_bool_t fnet_nd6_rdnss_get_addr(struct fnet_netif *netif, fnet_index_t n, fnet_ip6_addr_t *addr_dns);
+#endif
+
+#if defined(__cplusplus)
+}
 #endif
 
 #endif /* _FNET_ND6_H_ */

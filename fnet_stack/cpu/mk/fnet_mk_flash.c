@@ -42,7 +42,7 @@
 #if FNET_MK && FNET_CFG_CPU_FLASH
 
 
-#if (FNET_CFG_CPU_FLASH_PROGRAM_SIZE != 4) && (FNET_CFG_CPU_FLASH_PROGRAM_SIZE != 8)
+#if (FNET_CFG_CPU_FLASH_PROGRAM_SIZE != 4u) && (FNET_CFG_CPU_FLASH_PROGRAM_SIZE != 8u)
     #error "MK Flash driver supports only 4 and 8 size of program-block"
 #endif 
 
@@ -61,7 +61,7 @@ static
 #endif
     void fnet_ftfl_command_lunch_inram(void);
 
-static void fnet_ftfl_command(unsigned char command, unsigned long *address, const unsigned char *data);
+static void fnet_ftfl_command(fnet_uint8_t command, fnet_uint32_t *address, const fnet_uint8_t *data);
 #if !FNET_MK_FLASH_RAM_SECTION 
 static void fnet_ftfl_command_lunch_inram_end(void);
 #endif
@@ -96,7 +96,7 @@ static
     void fnet_ftfl_command_lunch_inram(void)
 {
     FNET_MK_FTFL_FSTAT = FNET_MK_FTFL_FSTAT_CCIF_MASK;
-    while ((FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK) == 0) 
+    while ((FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK) == 0u) 
     {}
 }
 
@@ -111,7 +111,7 @@ static void(*fnet_ftfl_command_lunch_inram_ptr)(void) = FNET_NULL;
 
 /* Buffer to copy the fnet_ftfl_command_lunch_inram().*/
 /* Length depends on fnet_ftfl_command_lunch_inram() size to be copied to RAM.*/
-static fnet_uint8 fnet_ftfl_command_lunch_inram_buf[160];  /* 160 is OK. If lower -> hard fault - very strange */
+static fnet_uint8_t fnet_ftfl_command_lunch_inram_buf[160];  /* 160 is OK. If lower -> hard fault - very strange */
 #endif
 
 /************************************************************************
@@ -119,15 +119,15 @@ static fnet_uint8 fnet_ftfl_command_lunch_inram_buf[160];  /* 160 is OK. If lowe
 *
 * DESCRIPTION: FTFL command 
 ************************************************************************/
-static void fnet_ftfl_command( unsigned char command, unsigned long *address, const unsigned char *data )
+static void fnet_ftfl_command( fnet_uint8_t command, fnet_uint32_t *address, const fnet_uint8_t *data )
 {
     fnet_cpu_irq_desc_t irq_desc;
     
     #if FNET_CFG_CPU_MK60N512 /* This problem exists in first-released-version product (mask set: 0M33Z). */
        
     #if 0  /* For restoring.*/
-    	fnet_uint32 fmc_pfb0cr_reg = FNET_MK_FMC_PFB0CR;
-    	fnet_uint32 fmc_pfb1cr_reg = FNET_MK_FMC_PFB1CR;
+    	fnet_uint32_t fmc_pfb0cr_reg = FNET_MK_FMC_PFB0CR;
+    	fnet_uint32_t fmc_pfb1cr_reg = FNET_MK_FMC_PFB1CR;
     #endif
         
         /* Workaround:  Allow pflash_only or pflash_only with pflash_swap 
@@ -185,7 +185,7 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, co
     * command write sequence cannot be started, and all writes to the FCCOB registers are
     * ignored.
     */
-    while ((FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK) == 0)     
+    while ((FNET_MK_FTFL_FSTAT & FNET_MK_FTFL_FSTAT_CCIF_MASK) == 0u)     
     {}
     
     /* Ensure that the ACCERR and FPVIOL bits in the FSTAT register are cleared prior to
@@ -199,22 +199,22 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, co
     FNET_MK_FTFL_FCCOB0 = command;
     
     /* Flash address.*/
-    FNET_MK_FTFL_FCCOB1 = (fnet_uint8)(((fnet_uint32)address) >> 16);   /* Flash address [23:16] */
-    FNET_MK_FTFL_FCCOB2 = (fnet_uint8)(((fnet_uint32)address) >> 8);    /* Flash address [15:8] */
-    FNET_MK_FTFL_FCCOB3 = (fnet_uint8)((fnet_uint32)address);           /* Flash address [7:0] */
+    FNET_MK_FTFL_FCCOB1 = (fnet_uint8_t)(((fnet_uint32_t)address) >> 16);   /* Flash address [23:16] */
+    FNET_MK_FTFL_FCCOB2 = (fnet_uint8_t)(((fnet_uint32_t)address) >> 8);    /* Flash address [15:8] */
+    FNET_MK_FTFL_FCCOB3 = (fnet_uint8_t)((fnet_uint32_t)address);           /* Flash address [7:0] */
     /* Data.*/
 
-    FNET_MK_FTFL_FCCOB4 = (fnet_uint8)(*(data+3));    /* Data Byte 0.*/                       
-    FNET_MK_FTFL_FCCOB5 = (fnet_uint8)(*(data+2));    /* Data Byte 1.*/
-    FNET_MK_FTFL_FCCOB6 = (fnet_uint8)(*(data+1));    /* Data Byte 2.*/
-    FNET_MK_FTFL_FCCOB7 = (fnet_uint8)(*data);        /* Data Byte 3.*/
-#if FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 8 /* K70 */
+    FNET_MK_FTFL_FCCOB4 = (fnet_uint8_t)(*(data+3));    /* Data Byte 0.*/                       
+    FNET_MK_FTFL_FCCOB5 = (fnet_uint8_t)(*(data+2));    /* Data Byte 1.*/
+    FNET_MK_FTFL_FCCOB6 = (fnet_uint8_t)(*(data+1));    /* Data Byte 2.*/
+    FNET_MK_FTFL_FCCOB7 = (fnet_uint8_t)(*data);        /* Data Byte 3.*/
+#if FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 8u /* K70 */
 	if(command == FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PHRASE)
 	{
-    	FNET_MK_FTFL_FCCOB8 = (fnet_uint8)(*(data+7));                   
-    	FNET_MK_FTFL_FCCOB9 = (fnet_uint8)(*(data+6));    
-    	FNET_MK_FTFL_FCCOBA = (fnet_uint8)(*(data+5));     
-    	FNET_MK_FTFL_FCCOBB = (fnet_uint8)(*(data+4));  
+    	FNET_MK_FTFL_FCCOB8 = (fnet_uint8_t)(*(data+7));                   
+    	FNET_MK_FTFL_FCCOB9 = (fnet_uint8_t)(*(data+6));    
+    	FNET_MK_FTFL_FCCOBA = (fnet_uint8_t)(*(data+5));     
+    	FNET_MK_FTFL_FCCOBB = (fnet_uint8_t)(*(data+4));  
 	}
 #endif
 
@@ -225,9 +225,9 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, co
     if(fnet_ftfl_command_lunch_inram_ptr == FNET_NULL)
     {
         fnet_ftfl_command_lunch_inram_ptr = (void(*)(void))fnet_memcpy_func(fnet_ftfl_command_lunch_inram_buf, 
-                                                                            (const fnet_uint8 *)(fnet_ftfl_command_lunch_inram), 
+                                                                            (const fnet_uint8_t *)(fnet_ftfl_command_lunch_inram), 
                                                                             /* sizeof(fnet_ftfl_command_lunch_inram_buf)*/
-                                                                            (unsigned int)fnet_ftfl_command_lunch_inram_end - (unsigned int)fnet_ftfl_command_lunch_inram    );
+                                                                            (fnet_size_t)fnet_ftfl_command_lunch_inram_end - (fnet_size_t)fnet_ftfl_command_lunch_inram    );
     }
     fnet_ftfl_command_lunch_inram_ptr();
 #endif
@@ -247,7 +247,7 @@ static void fnet_ftfl_command( unsigned char command, unsigned long *address, co
 ************************************************************************/
 void fnet_cpu_flash_erase( void *flash_page_addr)
 {
-    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_SECTOR, flash_page_addr, 0);
+    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_SECTOR, (fnet_uint32_t *)flash_page_addr, 0);
 }
 
 /************************************************************************
@@ -255,12 +255,12 @@ void fnet_cpu_flash_erase( void *flash_page_addr)
 *
 * DESCRIPTION:
 ************************************************************************/
-void fnet_cpu_flash_write( unsigned char *dest, const unsigned char *data)
+void fnet_cpu_flash_write( fnet_uint8_t *dest, const fnet_uint8_t *data)
 {
-#if FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 4 /* K60 */
-    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_LONGWORD, (unsigned long *)dest, data);
+#if FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 4u /* K60 */
+    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_LONGWORD, (fnet_uint32_t *)dest, data);
 #else /* FNET_CFG_CPU_FLASH_PROGRAM_SIZE == 8 K70 */
-    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PHRASE, (unsigned long *)dest, data);
+    fnet_ftfl_command(FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PHRASE, (fnet_uint32_t *)dest, data);
 #endif
 }
 

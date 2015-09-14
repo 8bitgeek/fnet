@@ -80,45 +80,49 @@ typedef struct fnet_netbuf
     struct fnet_netbuf  *next_chain;    /**< next chain in queue/record */
     void                *data;          /**< pointer to the beginning of the data buffer */
     void                *data_ptr;      /**< pointer to actual data */
-    unsigned long       length;         /**< amount of actual data in this net_buf */
-    unsigned long       total_length;   /**< length of buffer + additionally chained buffers (only for first netbuf)*/
-    unsigned long       flags;
+    fnet_size_t         length;         /**< amount of actual data in this net_buf */
+    fnet_size_t         total_length;   /**< length of buffer + additionally chained buffers (only for first netbuf)*/
+    fnet_flag_t         flags;
 } fnet_netbuf_t;
 
-#define FNET_NETBUF_COPYALL   (-1)
+#define FNET_NETBUF_COPYALL   ((fnet_size_t)(-1))
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /* Memory management functions */
-int fnet_heap_init( unsigned char *heap_ptr, unsigned long heap_size );
+fnet_return_t fnet_heap_init( void *heap_ptr, fnet_size_t heap_size );
 void fnet_free( void *ap );
-void *fnet_malloc( unsigned nbytes );
-void *fnet_malloc_zero( unsigned nbytes );
-unsigned long fnet_free_mem_status( void );
-unsigned long fnet_malloc_max( void );
+void *fnet_malloc( fnet_size_t nbytes );
+void *fnet_malloc_zero( fnet_size_t nbytes );
+fnet_size_t fnet_free_mem_status( void );
+fnet_size_t fnet_malloc_max( void );
 void fnet_mem_release( void );
 
 void fnet_free_netbuf( void *ap );
-void *fnet_malloc_netbuf( unsigned nbytes );
-unsigned long fnet_free_mem_status_netbuf( void );
-unsigned long fnet_malloc_max_netbuf( void );
+void *fnet_malloc_netbuf( fnet_size_t nbytes );
+fnet_size_t fnet_free_mem_status_netbuf( void );
+fnet_size_t fnet_malloc_max_netbuf( void );
 void fnet_mem_release_netbuf( void );
 
 /* Netbuf service routines */
-fnet_netbuf_t *fnet_netbuf_new( unsigned int len, int drain );
+fnet_netbuf_t *fnet_netbuf_new( fnet_size_t len, fnet_bool_t drain );
 fnet_netbuf_t *fnet_netbuf_free( fnet_netbuf_t *nb );
-fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, int offset, int len, int drain );
-fnet_netbuf_t *fnet_netbuf_from_buf( void *data_ptr, int len,int drain );
+fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, fnet_size_t offset, fnet_size_t len, fnet_bool_t drain );
+fnet_netbuf_t *fnet_netbuf_from_buf( void *data_ptr, fnet_size_t len, fnet_bool_t drain );
 fnet_netbuf_t *fnet_netbuf_concat( fnet_netbuf_t *nb1, fnet_netbuf_t *nb2 );
-void fnet_netbuf_to_buf( fnet_netbuf_t *nb, int offset, int len, void *data_ptr );
-fnet_netbuf_t *fnet_netbuf_pullup( fnet_netbuf_t *nb, int len);
-void fnet_netbuf_trim( fnet_netbuf_t ** nb_ptr, int len );
-fnet_netbuf_t *fnet_netbuf_cut_center( fnet_netbuf_t ** nb_ptr, int offset, int len);
+void fnet_netbuf_to_buf( fnet_netbuf_t *nb, fnet_size_t offset, fnet_size_t len, void *data_ptr );
+fnet_return_t fnet_netbuf_pullup( fnet_netbuf_t **nb_ptr, fnet_size_t len);
+void fnet_netbuf_trim( fnet_netbuf_t ** nb_ptr, fnet_int32_t len );
+fnet_netbuf_t *fnet_netbuf_cut_center( fnet_netbuf_t ** nb_ptr, fnet_size_t offset, fnet_size_t len);
 void fnet_netbuf_add_chain( fnet_netbuf_t ** nb_ptr, fnet_netbuf_t *nb_chain );
 void fnet_netbuf_del_chain( fnet_netbuf_t ** nb_ptr, fnet_netbuf_t *nb_chain );
 void fnet_netbuf_free_chain( fnet_netbuf_t *nb );
                                              
 #if 0 /* For Debug needs.*/                                            
-int fnet_netbuf_mempool_check( void ); 
-void FNET_DEBUG_NETBUF_print_chain( fnet_netbuf_t *nb, char *str, int max);                                       
+fnet_return_t fnet_netbuf_mempool_check( void ); 
+void FNET_DEBUG_NETBUF_print_chain( fnet_netbuf_t *nb, fnet_uint8_t *str, fnrt_index_t max);                                       
 #endif
 
 #if 0 /* For Debug needs.*/
@@ -126,6 +130,10 @@ void FNET_DEBUG_NETBUF_print_chain( fnet_netbuf_t *nb, char *str, int max);
     #define fnet_free_netbuf(ap )   do{ fnet_free_netbuf_low( ap ); \
                                                 ap = (void *)0x0; \
                                             } while(0)
+#endif
+
+#if defined(__cplusplus)
+}
 #endif
 
 #endif

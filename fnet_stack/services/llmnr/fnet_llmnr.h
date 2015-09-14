@@ -79,9 +79,9 @@
  ******************************************************************************/
 struct fnet_llmnr_params
 {
-    fnet_netif_desc_t           netif_desc;     /**<  @brief Network interface descriptor to be used by the LLMNR server.*/
-    const char                  *host_name;     /**< @brief Link-local host name advertised by LLMNR server. */
-    fnet_uint32                 host_name_ttl;  /**< @brief TTL value that indicates for how many seconds link-local host name is valid for LLMNR querier, in seconds (it is optional).@n
+    fnet_netif_desc_t           netif_desc;     /**< @brief Network interface descriptor to be used by the LLMNR server.*/
+    const fnet_char_t                  *host_name;     /**< @brief Link-local host name advertised by LLMNR server. */
+    fnet_uint32_t                 host_name_ttl;  /**< @brief TTL value that indicates for how many seconds link-local host name is valid for LLMNR querier, in seconds (it is optional).@n
                                                  * Default value is defined by @ref FNET_CFG_LLMNR_HOSTNAME_TTL. */
     fnet_address_family_t       addr_family;    /**< @brief Address family (IPv6 or IPv4 or both) the server will listen for LLMNR query (it is optional).@n
                                                    Default value is defined by @ref AF_SUPPORTED.*/
@@ -91,7 +91,11 @@ struct fnet_llmnr_params
  * @brief LLMNR server descriptor.
  * @see fnet_llmnr_init()
  ******************************************************************************/
-typedef long fnet_llmnr_desc_t;
+typedef fnet_int32_t fnet_llmnr_desc_t;
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -150,7 +154,11 @@ void fnet_llmnr_release(fnet_llmnr_desc_t desc);
  * This function detects if the LLMNR Server service is initialized or is released.
  *
  ******************************************************************************/
-int fnet_llmnr_enabled(fnet_llmnr_desc_t desc);
+fnet_bool_t fnet_llmnr_enabled(fnet_llmnr_desc_t desc);
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

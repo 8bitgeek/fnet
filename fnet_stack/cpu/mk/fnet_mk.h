@@ -53,32 +53,28 @@
 * The basic data types.
 *
 *********************************************************************/
-typedef unsigned char fnet_uint8;       /*  8 bits */
+typedef unsigned char fnet_uint8_t;       /*  8 bits */
 
-typedef unsigned short int fnet_uint16; /* 16 bits */
-typedef unsigned long int fnet_uint32;  /* 32 bits */
+typedef unsigned short int fnet_uint16_t; /* 16 bits */
+typedef unsigned long int fnet_uint32_t;  /* 32 bits */
 
-typedef signed char fnet_int8;          /*  8 bits */
-typedef signed short int fnet_int16;    /* 16 bits */
-typedef signed long int fnet_int32;     /* 32 bits */
+typedef signed char fnet_int8_t;          /*  8 bits */
+typedef signed short int fnet_int16_t;    /* 16 bits */
+typedef signed long int fnet_int32_t;     /* 32 bits */
 
-typedef volatile fnet_uint8 fnet_vuint8;     /*  8 bits */
-typedef volatile fnet_uint16 fnet_vuint16;   /* 16 bits */
-typedef volatile fnet_uint32 fnet_vuint32;   /* 32 bits */
-
-
-void fnet_mk_irq_enable(fnet_uint32 irq_desc);
-fnet_uint32 fnet_mk_irq_disable(void);
+typedef volatile fnet_uint8_t fnet_vuint8_t;     /*  8 bits */
+typedef volatile fnet_uint16_t fnet_vuint16_t;   /* 16 bits */
+typedef volatile fnet_uint32_t fnet_vuint32_t;   /* 32 bits */
 
 
 /* Ensure that the Thumb bit is set.*/
-#define FNET_CPU_ADDR_TO_INSTRUCTION(addr)    ((unsigned)(addr)|0x1u)
-#define FNET_CPU_INSTRUCTION_TO_ADDR(addr)    ((unsigned)(addr)&(~0x1u))
+#define FNET_CPU_ADDR_TO_INSTRUCTION(addr)    ((fnet_uint32_t)(addr)|0x1u)
+#define FNET_CPU_INSTRUCTION_TO_ADDR(addr)    ((fnet_uint32_t)(addr)&(~0x1u))
 
 /************************************************************************
 * Kinetis peripheral clock in KHZ.
 *************************************************************************/
-unsigned long fnet_mk_periph_clk_khz(void); 
+fnet_uint32_t fnet_mk_periph_clk_khz(void); 
 
 #define FNET_MK_PERIPH_CLOCK_KHZ       fnet_mk_periph_clk_khz()     
 #define FNET_MK_PERIPH_CLOCK_MHZ       (fnet_mk_periph_clk_khz()/1000)  
@@ -90,41 +86,41 @@ unsigned long fnet_mk_periph_clk_khz(void);
 
 /* UART - Peripheral register structure */
 typedef struct FNET_MK_UART_MemMap {
-  fnet_uint8 BDH;                                     /* UART Baud Rate Registers:High, offset: 0x0 */
-  fnet_uint8 BDL;                                     /* UART Baud Rate Registers: Low, offset: 0x1 */
-  fnet_uint8 C1;                                      /* UART Control Register 1, offset: 0x2 */
-  fnet_uint8 C2;                                      /* UART Control Register 2, offset: 0x3 */
-  fnet_uint8 S1;                                      /* UART Status Register 1, offset: 0x4 */
-  fnet_uint8 S2;                                      /* UART Status Register 2, offset: 0x5 */
-  fnet_uint8 C3;                                      /* UART Control Register 3, offset: 0x6 */
-  fnet_uint8 D;                                       /* UART Data Register, offset: 0x7 */
-  fnet_uint8 MA1;                                     /* UART Match Address Registers 1, offset: 0x8 */
-  fnet_uint8 MA2;                                     /* UART Match Address Registers 2, offset: 0x9 */
-  fnet_uint8 C4;                                      /* UART Control Register 4, offset: 0xA */
-  fnet_uint8 C5;                                      /* UART Control Register 5, offset: 0xB */
-  fnet_uint8 ED;                                      /* UART Extended Data Register, offset: 0xC */
-  fnet_uint8 MODEM;                                   /* UART Modem Register, offset: 0xD */
-  fnet_uint8 IR;                                      /* UART Infrared Register, offset: 0xE */
-  fnet_uint8 RESERVED_0[1];
-  fnet_uint8 PFIFO;                                   /* UART FIFO Parameters, offset: 0x10 */
-  fnet_uint8 CFIFO;                                   /* UART FIFO Control Register, offset: 0x11 */
-  fnet_uint8 SFIFO;                                   /* UART FIFO Status Register, offset: 0x12 */
-  fnet_uint8 TWFIFO;                                  /* UART FIFO Transmit Watermark, offset: 0x13 */
-  fnet_uint8 TCFIFO;                                  /* UART FIFO Transmit Count, offset: 0x14 */
-  fnet_uint8 RWFIFO;                                  /* UART FIFO Receive Watermark, offset: 0x15 */
-  fnet_uint8 RCFIFO;                                  /* UART FIFO Receive Count, offset: 0x16 */
-  fnet_uint8 RESERVED_1[1];
-  fnet_uint8 C7816;                                   /* UART 7816 Control Register, offset: 0x18 */
-  fnet_uint8 IE7816;                                  /* UART 7816 Interrupt Enable Register, offset: 0x19 */
-  fnet_uint8 IS7816;                                  /* UART 7816 Interrupt Status Register, offset: 0x1A */
+  fnet_uint8_t BDH;                                     /* UART Baud Rate Registers:High, offset: 0x0 */
+  fnet_uint8_t BDL;                                     /* UART Baud Rate Registers: Low, offset: 0x1 */
+  fnet_uint8_t C1;                                      /* UART Control Register 1, offset: 0x2 */
+  fnet_uint8_t C2;                                      /* UART Control Register 2, offset: 0x3 */
+  fnet_uint8_t S1;                                      /* UART Status Register 1, offset: 0x4 */
+  fnet_uint8_t S2;                                      /* UART Status Register 2, offset: 0x5 */
+  fnet_uint8_t C3;                                      /* UART Control Register 3, offset: 0x6 */
+  fnet_uint8_t D;                                       /* UART Data Register, offset: 0x7 */
+  fnet_uint8_t MA1;                                     /* UART Match Address Registers 1, offset: 0x8 */
+  fnet_uint8_t MA2;                                     /* UART Match Address Registers 2, offset: 0x9 */
+  fnet_uint8_t C4;                                      /* UART Control Register 4, offset: 0xA */
+  fnet_uint8_t C5;                                      /* UART Control Register 5, offset: 0xB */
+  fnet_uint8_t ED;                                      /* UART Extended Data Register, offset: 0xC */
+  fnet_uint8_t MODEM;                                   /* UART Modem Register, offset: 0xD */
+  fnet_uint8_t IR;                                      /* UART Infrared Register, offset: 0xE */
+  fnet_uint8_t RESERVED_0[1];
+  fnet_uint8_t PFIFO;                                   /* UART FIFO Parameters, offset: 0x10 */
+  fnet_uint8_t CFIFO;                                   /* UART FIFO Control Register, offset: 0x11 */
+  fnet_uint8_t SFIFO;                                   /* UART FIFO Status Register, offset: 0x12 */
+  fnet_uint8_t TWFIFO;                                  /* UART FIFO Transmit Watermark, offset: 0x13 */
+  fnet_uint8_t TCFIFO;                                  /* UART FIFO Transmit Count, offset: 0x14 */
+  fnet_uint8_t RWFIFO;                                  /* UART FIFO Receive Watermark, offset: 0x15 */
+  fnet_uint8_t RCFIFO;                                  /* UART FIFO Receive Count, offset: 0x16 */
+  fnet_uint8_t RESERVED_1[1];
+  fnet_uint8_t C7816;                                   /* UART 7816 Control Register, offset: 0x18 */
+  fnet_uint8_t IE7816;                                  /* UART 7816 Interrupt Enable Register, offset: 0x19 */
+  fnet_uint8_t IS7816;                                  /* UART 7816 Interrupt Status Register, offset: 0x1A */
   union {                                             /* offset: 0x1B */
-    fnet_uint8 WP7816_T_TYPE0;                          /* UART 7816 Wait Parameter Register, offset: 0x1B */
-    fnet_uint8 WP7816_T_TYPE1;                          /* UART 7816 Wait Parameter Register, offset: 0x1B */
+    fnet_uint8_t WP7816_T_TYPE0;                          /* UART 7816 Wait Parameter Register, offset: 0x1B */
+    fnet_uint8_t WP7816_T_TYPE1;                          /* UART 7816 Wait Parameter Register, offset: 0x1B */
   };
-  fnet_uint8 WN7816;                                  /* UART 7816 Wait N Register, offset: 0x1C */
-  fnet_uint8 WF7816;                                  /* UART 7816 Wait FD Register, offset: 0x1D */
-  fnet_uint8 ET7816;                                  /* UART 7816 Error Threshold Register, offset: 0x1E */
-  fnet_uint8 TL7816;                                  /* UART 7816 Transmit Length Register, offset: 0x1F */
+  fnet_uint8_t WN7816;                                  /* UART 7816 Wait N Register, offset: 0x1C */
+  fnet_uint8_t WF7816;                                  /* UART 7816 Wait FD Register, offset: 0x1D */
+  fnet_uint8_t ET7816;                                  /* UART 7816 Error Threshold Register, offset: 0x1E */
+  fnet_uint8_t TL7816;                                  /* UART 7816 Transmit Length Register, offset: 0x1F */
 } volatile *FNET_MK_UART_MemMapPtr;
 
 /* ----------------------------------------------------------------------------
@@ -171,7 +167,7 @@ typedef struct FNET_MK_UART_MemMap {
 /* BDH Bit Fields */
 #define FNET_MK_UART_BDH_SBR_MASK                        0x1Fu
 #define FNET_MK_UART_BDH_SBR_SHIFT                       0
-#define FNET_MK_UART_BDH_SBR(x)                          (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_BDH_SBR_SHIFT))&FNET_MK_UART_BDH_SBR_MASK)
+#define FNET_MK_UART_BDH_SBR(x)                          (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_BDH_SBR_SHIFT))&FNET_MK_UART_BDH_SBR_MASK)
 #define FNET_MK_UART_BDH_RXEDGIE_MASK                    0x40u
 #define FNET_MK_UART_BDH_RXEDGIE_SHIFT                   6
 #define FNET_MK_UART_BDH_LBKDIE_MASK                     0x80u
@@ -179,7 +175,7 @@ typedef struct FNET_MK_UART_MemMap {
 /* BDL Bit Fields */
 #define FNET_MK_UART_BDL_SBR_MASK                        0xFFu
 #define FNET_MK_UART_BDL_SBR_SHIFT                       0
-#define FNET_MK_UART_BDL_SBR(x)                          (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_BDL_SBR_SHIFT))&FNET_MK_UART_BDL_SBR_MASK)
+#define FNET_MK_UART_BDL_SBR(x)                          (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_BDL_SBR_SHIFT))&FNET_MK_UART_BDL_SBR_MASK)
 /* C1 Bit Fields */
 #define FNET_MK_UART_C1_PT_MASK                          0x1u
 #define FNET_MK_UART_C1_PT_SHIFT                         0
@@ -268,19 +264,19 @@ typedef struct FNET_MK_UART_MemMap {
 /* D Bit Fields */
 #define FNET_MK_UART_D_RT_MASK                           0xFFu
 #define FNET_MK_UART_D_RT_SHIFT                          0
-#define FNET_MK_UART_D_RT(x)                             (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_D_RT_SHIFT))&FNET_MK_UART_D_RT_MASK)
+#define FNET_MK_UART_D_RT(x)                             (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_D_RT_SHIFT))&FNET_MK_UART_D_RT_MASK)
 /* MA1 Bit Fields */
 #define FNET_MK_UART_MA1_MA_MASK                         0xFFu
 #define FNET_MK_UART_MA1_MA_SHIFT                        0
-#define FNET_MK_UART_MA1_MA(x)                           (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_MA1_MA_SHIFT))&FNET_MK_UART_MA1_MA_MASK)
+#define FNET_MK_UART_MA1_MA(x)                           (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_MA1_MA_SHIFT))&FNET_MK_UART_MA1_MA_MASK)
 /* MA2 Bit Fields */
 #define FNET_MK_UART_MA2_MA_MASK                         0xFFu
 #define FNET_MK_UART_MA2_MA_SHIFT                        0
-#define FNET_MK_UART_MA2_MA(x)                           (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_MA2_MA_SHIFT))&FNET_MK_UART_MA2_MA_MASK)
+#define FNET_MK_UART_MA2_MA(x)                           (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_MA2_MA_SHIFT))&FNET_MK_UART_MA2_MA_MASK)
 /* C4 Bit Fields */
 #define FNET_MK_UART_C4_BRFA_MASK                        0x1Fu
 #define FNET_MK_UART_C4_BRFA_SHIFT                       0
-#define FNET_MK_UART_C4_BRFA(x)                          (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_C4_BRFA_SHIFT))&FNET_MK_UART_C4_BRFA_MASK)
+#define FNET_MK_UART_C4_BRFA(x)                          (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_C4_BRFA_SHIFT))&FNET_MK_UART_C4_BRFA_MASK)
 #define FNET_MK_UART_C4_M10_MASK                         0x20u
 #define FNET_MK_UART_C4_M10_SHIFT                        5
 #define FNET_MK_UART_C4_MAEN2_MASK                       0x40u
@@ -309,18 +305,18 @@ typedef struct FNET_MK_UART_MemMap {
 /* IR Bit Fields */
 #define FNET_MK_UART_IR_TNP_MASK                         0x3u
 #define FNET_MK_UART_IR_TNP_SHIFT                        0
-#define FNET_MK_UART_IR_TNP(x)                           (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_IR_TNP_SHIFT))&FNET_MK_UART_IR_TNP_MASK)
+#define FNET_MK_UART_IR_TNP(x)                           (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_IR_TNP_SHIFT))&FNET_MK_UART_IR_TNP_MASK)
 #define FNET_MK_UART_IR_IREN_MASK                        0x4u
 #define FNET_MK_UART_IR_IREN_SHIFT                       2
 /* PFIFO Bit Fields */
 #define FNET_MK_UART_PFIFO_RXFIFOSIZE_MASK               0x7u
 #define FNET_MK_UART_PFIFO_RXFIFOSIZE_SHIFT              0
-#define FNET_MK_UART_PFIFO_RXFIFOSIZE(x)                 (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_PFIFO_RXFIFOSIZE_SHIFT))&FNET_MK_UART_PFIFO_RXFIFOSIZE_MASK)
+#define FNET_MK_UART_PFIFO_RXFIFOSIZE(x)                 (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_PFIFO_RXFIFOSIZE_SHIFT))&FNET_MK_UART_PFIFO_RXFIFOSIZE_MASK)
 #define FNET_MK_UART_PFIFO_RXFE_MASK                     0x8u
 #define FNET_MK_UART_PFIFO_RXFE_SHIFT                    3
 #define FNET_MK_UART_PFIFO_TXFIFOSIZE_MASK               0x70u
 #define FNET_MK_UART_PFIFO_TXFIFOSIZE_SHIFT              4
-#define FNET_MK_UART_PFIFO_TXFIFOSIZE(x)                 (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_PFIFO_TXFIFOSIZE_SHIFT))&FNET_MK_UART_PFIFO_TXFIFOSIZE_MASK)
+#define FNET_MK_UART_PFIFO_TXFIFOSIZE(x)                 (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_PFIFO_TXFIFOSIZE_SHIFT))&FNET_MK_UART_PFIFO_TXFIFOSIZE_MASK)
 #define FNET_MK_UART_PFIFO_TXFE_MASK                     0x80u
 #define FNET_MK_UART_PFIFO_TXFE_SHIFT                    7
 /* CFIFO Bit Fields */
@@ -344,19 +340,19 @@ typedef struct FNET_MK_UART_MemMap {
 /* TWFIFO Bit Fields */
 #define FNET_MK_UART_TWFIFO_TXWATER_MASK                 0xFFu
 #define FNET_MK_UART_TWFIFO_TXWATER_SHIFT                0
-#define FNET_MK_UART_TWFIFO_TXWATER(x)                   (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_TWFIFO_TXWATER_SHIFT))&FNET_MK_UART_TWFIFO_TXWATER_MASK)
+#define FNET_MK_UART_TWFIFO_TXWATER(x)                   (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_TWFIFO_TXWATER_SHIFT))&FNET_MK_UART_TWFIFO_TXWATER_MASK)
 /* TCFIFO Bit Fields */
 #define FNET_MK_UART_TCFIFO_TXCOUNT_MASK                 0xFFu
 #define FNET_MK_UART_TCFIFO_TXCOUNT_SHIFT                0
-#define FNET_MK_UART_TCFIFO_TXCOUNT(x)                   (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_TCFIFO_TXCOUNT_SHIFT))&FNET_MK_UART_TCFIFO_TXCOUNT_MASK)
+#define FNET_MK_UART_TCFIFO_TXCOUNT(x)                   (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_TCFIFO_TXCOUNT_SHIFT))&FNET_MK_UART_TCFIFO_TXCOUNT_MASK)
 /* RWFIFO Bit Fields */
 #define FNET_MK_UART_RWFIFO_RXWATER_MASK                 0xFFu
 #define FNET_MK_UART_RWFIFO_RXWATER_SHIFT                0
-#define FNET_MK_UART_RWFIFO_RXWATER(x)                   (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_RWFIFO_RXWATER_SHIFT))&FNET_MK_UART_RWFIFO_RXWATER_MASK)
+#define FNET_MK_UART_RWFIFO_RXWATER(x)                   (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_RWFIFO_RXWATER_SHIFT))&FNET_MK_UART_RWFIFO_RXWATER_MASK)
 /* RCFIFO Bit Fields */
 #define FNET_MK_UART_RCFIFO_RXCOUNT_MASK                 0xFFu
 #define FNET_MK_UART_RCFIFO_RXCOUNT_SHIFT                0
-#define FNET_MK_UART_RCFIFO_RXCOUNT(x)                   (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_RCFIFO_RXCOUNT_SHIFT))&FNET_MK_UART_RCFIFO_RXCOUNT_MASK)
+#define FNET_MK_UART_RCFIFO_RXCOUNT(x)                   (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_RCFIFO_RXCOUNT_SHIFT))&FNET_MK_UART_RCFIFO_RXCOUNT_MASK)
 /* C7816 Bit Fields */
 #define FNET_MK_UART_C7816_ISO_7816E_MASK                0x1u
 #define FNET_MK_UART_C7816_ISO_7816E_SHIFT               0
@@ -401,33 +397,33 @@ typedef struct FNET_MK_UART_MemMap {
 /* WP7816_T_TYPE0 Bit Fields */
 #define FNET_MK_UART_WP7816_T_TYPE0_WI_MASK              0xFFu
 #define FNET_MK_UART_WP7816_T_TYPE0_WI_SHIFT             0
-#define FNET_MK_UART_WP7816_T_TYPE0_WI(x)                (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_WP7816_T_TYPE0_WI_SHIFT))&FNET_MK_UART_WP7816_T_TYPE0_WI_MASK)
+#define FNET_MK_UART_WP7816_T_TYPE0_WI(x)                (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_WP7816_T_TYPE0_WI_SHIFT))&FNET_MK_UART_WP7816_T_TYPE0_WI_MASK)
 /* WP7816_T_TYPE1 Bit Fields */
 #define FNET_MK_UART_WP7816_T_TYPE1_BWI_MASK             0xFu
 #define FNET_MK_UART_WP7816_T_TYPE1_BWI_SHIFT            0
-#define FNET_MK_UART_WP7816_T_TYPE1_BWI(x)               (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_WP7816_T_TYPE1_BWI_SHIFT))&FNET_MK_UART_WP7816_T_TYPE1_BWI_MASK)
+#define FNET_MK_UART_WP7816_T_TYPE1_BWI(x)               (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_WP7816_T_TYPE1_BWI_SHIFT))&FNET_MK_UART_WP7816_T_TYPE1_BWI_MASK)
 #define FNET_MK_UART_WP7816_T_TYPE1_CWI_MASK             0xF0u
 #define FNET_MK_UART_WP7816_T_TYPE1_CWI_SHIFT            4
-#define FNET_MK_UART_WP7816_T_TYPE1_CWI(x)               (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_WP7816_T_TYPE1_CWI_SHIFT))&FNET_MK_UART_WP7816_T_TYPE1_CWI_MASK)
+#define FNET_MK_UART_WP7816_T_TYPE1_CWI(x)               (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_WP7816_T_TYPE1_CWI_SHIFT))&FNET_MK_UART_WP7816_T_TYPE1_CWI_MASK)
 /* WN7816 Bit Fields */
 #define FNET_MK_UART_WN7816_GTN_MASK                     0xFFu
 #define FNET_MK_UART_WN7816_GTN_SHIFT                    0
-#define FNET_MK_UART_WN7816_GTN(x)                       (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_WN7816_GTN_SHIFT))&FNET_MK_UART_WN7816_GTN_MASK)
+#define FNET_MK_UART_WN7816_GTN(x)                       (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_WN7816_GTN_SHIFT))&FNET_MK_UART_WN7816_GTN_MASK)
 /* WF7816 Bit Fields */
 #define FNET_MK_UART_WF7816_GTFD_MASK                    0xFFu
 #define FNET_MK_UART_WF7816_GTFD_SHIFT                   0
-#define FNET_MK_UART_WF7816_GTFD(x)                      (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_WF7816_GTFD_SHIFT))&FNET_MK_UART_WF7816_GTFD_MASK)
+#define FNET_MK_UART_WF7816_GTFD(x)                      (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_WF7816_GTFD_SHIFT))&FNET_MK_UART_WF7816_GTFD_MASK)
 /* ET7816 Bit Fields */
 #define FNET_MK_UART_ET7816_RXTHRESHOLD_MASK             0xFu
 #define FNET_MK_UART_ET7816_RXTHRESHOLD_SHIFT            0
-#define FNET_MK_UART_ET7816_RXTHRESHOLD(x)               (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_ET7816_RXTHRESHOLD_SHIFT))&FNET_MK_UART_ET7816_RXTHRESHOLD_MASK)
+#define FNET_MK_UART_ET7816_RXTHRESHOLD(x)               (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_ET7816_RXTHRESHOLD_SHIFT))&FNET_MK_UART_ET7816_RXTHRESHOLD_MASK)
 #define FNET_MK_UART_ET7816_TXTHRESHOLD_MASK             0xF0u
 #define FNET_MK_UART_ET7816_TXTHRESHOLD_SHIFT            4
-#define FNET_MK_UART_ET7816_TXTHRESHOLD(x)               (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_ET7816_TXTHRESHOLD_SHIFT))&FNET_MK_UART_ET7816_TXTHRESHOLD_MASK)
+#define FNET_MK_UART_ET7816_TXTHRESHOLD(x)               (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_ET7816_TXTHRESHOLD_SHIFT))&FNET_MK_UART_ET7816_TXTHRESHOLD_MASK)
 /* TL7816 Bit Fields */
 #define FNET_MK_UART_TL7816_TLEN_MASK                    0xFFu
 #define FNET_MK_UART_TL7816_TLEN_SHIFT                   0
-#define FNET_MK_UART_TL7816_TLEN(x)                      (((fnet_uint8)(((fnet_uint8)(x))<<FNET_MK_UART_TL7816_TLEN_SHIFT))&FNET_MK_UART_TL7816_TLEN_MASK)
+#define FNET_MK_UART_TL7816_TLEN(x)                      (((fnet_uint8_t)(((fnet_uint8_t)(x))<<FNET_MK_UART_TL7816_TLEN_SHIFT))&FNET_MK_UART_TL7816_TLEN_MASK)
 
 
 /* UART - Peripheral instance base addresses */
@@ -603,31 +599,31 @@ typedef struct FNET_MK_UART_MemMap {
 
 /* SIM - Peripheral register structure */
 typedef struct FNET_MK_SIM_MemMap {
-  fnet_uint32 SOPT1;                                  /* System Options Register 1, offset: 0x0 */
-  fnet_uint8 RESERVED_0[4096];
-  fnet_uint32 SOPT2;                                  /* System Options Register 2, offset: 0x1004 */
-  fnet_uint8 RESERVED_1[4];
-  fnet_uint32 SOPT4;                                  /* System Options Register 4, offset: 0x100C */
-  fnet_uint32 SOPT5;                                  /* System Options Register 5, offset: 0x1010 */
-  fnet_uint32 SOPT6;                                  /* System Options Register 6, offset: 0x1014 */
-  fnet_uint32 SOPT7;                                  /* System Options Register 7, offset: 0x1018 */
-  fnet_uint8 RESERVED_2[8];
-  fnet_uint32 SDID;                                   /* System Device Identification Register, offset: 0x1024 */
-  fnet_uint32 SCGC1;                                  /* System Clock Gating Control Register 1, offset: 0x1028 */
-  fnet_uint32 SCGC2;                                  /* System Clock Gating Control Register 2, offset: 0x102C */
-  fnet_uint32 SCGC3;                                  /* System Clock Gating Control Register 3, offset: 0x1030 */
-  fnet_uint32 SCGC4;                                  /* System Clock Gating Control Register 4, offset: 0x1034 */
-  fnet_uint32 SCGC5;                                  /* System Clock Gating Control Register 5, offset: 0x1038 */
-  fnet_uint32 SCGC6;                                  /* System Clock Gating Control Register 6, offset: 0x103C */
-  fnet_uint32 SCGC7;                                  /* System Clock Gating Control Register 7, offset: 0x1040 */
-  fnet_uint32 CLKDIV1;                                /* System Clock Divider Register 1, offset: 0x1044 */
-  fnet_uint32 CLKDIV2;                                /* System Clock Divider Register 2, offset: 0x1048 */
-  fnet_uint32 FCFG1;                                  /* Flash Configuration Register 1, offset: 0x104C */
-  fnet_uint32 FCFG2;                                  /* Flash Configuration Register 2, offset: 0x1050 */
-  fnet_uint32 UIDH;                                   /* Unique Identification Register High, offset: 0x1054 */
-  fnet_uint32 UIDMH;                                  /* Unique Identification Register Mid-High, offset: 0x1058 */
-  fnet_uint32 UIDML;                                  /* Unique Identification Register Mid Low, offset: 0x105C */
-  fnet_uint32 UIDL;                                   /* Unique Identification Register Low, offset: 0x1060 */
+  fnet_uint32_t SOPT1;                                  /* System Options Register 1, offset: 0x0 */
+  fnet_uint8_t RESERVED_0[4096];
+  fnet_uint32_t SOPT2;                                  /* System Options Register 2, offset: 0x1004 */
+  fnet_uint8_t RESERVED_1[4];
+  fnet_uint32_t SOPT4;                                  /* System Options Register 4, offset: 0x100C */
+  fnet_uint32_t SOPT5;                                  /* System Options Register 5, offset: 0x1010 */
+  fnet_uint32_t SOPT6;                                  /* System Options Register 6, offset: 0x1014 */
+  fnet_uint32_t SOPT7;                                  /* System Options Register 7, offset: 0x1018 */
+  fnet_uint8_t RESERVED_2[8];
+  fnet_uint32_t SDID;                                   /* System Device Identification Register, offset: 0x1024 */
+  fnet_uint32_t SCGC1;                                  /* System Clock Gating Control Register 1, offset: 0x1028 */
+  fnet_uint32_t SCGC2;                                  /* System Clock Gating Control Register 2, offset: 0x102C */
+  fnet_uint32_t SCGC3;                                  /* System Clock Gating Control Register 3, offset: 0x1030 */
+  fnet_uint32_t SCGC4;                                  /* System Clock Gating Control Register 4, offset: 0x1034 */
+  fnet_uint32_t SCGC5;                                  /* System Clock Gating Control Register 5, offset: 0x1038 */
+  fnet_uint32_t SCGC6;                                  /* System Clock Gating Control Register 6, offset: 0x103C */
+  fnet_uint32_t SCGC7;                                  /* System Clock Gating Control Register 7, offset: 0x1040 */
+  fnet_uint32_t CLKDIV1;                                /* System Clock Divider Register 1, offset: 0x1044 */
+  fnet_uint32_t CLKDIV2;                                /* System Clock Divider Register 2, offset: 0x1048 */
+  fnet_uint32_t FCFG1;                                  /* Flash Configuration Register 1, offset: 0x104C */
+  fnet_uint32_t FCFG2;                                  /* Flash Configuration Register 2, offset: 0x1050 */
+  fnet_uint32_t UIDH;                                   /* Unique Identification Register High, offset: 0x1054 */
+  fnet_uint32_t UIDMH;                                  /* Unique Identification Register Mid-High, offset: 0x1058 */
+  fnet_uint32_t UIDML;                                  /* Unique Identification Register Mid Low, offset: 0x105C */
+  fnet_uint32_t UIDL;                                   /* Unique Identification Register Low, offset: 0x1060 */
 } volatile *FNET_MK_SIM_MemMapPtr;
 
 /* ----------------------------------------------------------------------------
@@ -972,15 +968,15 @@ typedef struct FNET_MK_SIM_MemMap {
 
 /* PORT - Peripheral register structure */
 typedef struct FNET_MK_PORT_MemMap {
-  fnet_uint32 PCR[32];                                /* Pin Control Register n, array offset: 0x0, array step: 0x4 */
-  fnet_uint32 GPCLR;                                  /* Global Pin Control Low Register, offset: 0x80 */
-  fnet_uint32 GPCHR;                                  /* Global Pin Control High Register, offset: 0x84 */
-  fnet_uint8 RESERVED_0[24];
-  fnet_uint32 ISFR;                                   /* Interrupt Status Flag Register, offset: 0xA0 */
-  fnet_uint8 RESERVED_1[28];
-  fnet_uint32 DFER;                                   /* Digital Filter Enable Register, offset: 0xC0 */
-  fnet_uint32 DFCR;                                   /* Digital Filter Clock Register, offset: 0xC4 */
-  fnet_uint32 DFWR;                                   /* Digital Filter Width Register, offset: 0xC8 */
+  fnet_uint32_t PCR[32];                                /* Pin Control Register n, array offset: 0x0, array step: 0x4 */
+  fnet_uint32_t GPCLR;                                  /* Global Pin Control Low Register, offset: 0x80 */
+  fnet_uint32_t GPCHR;                                  /* Global Pin Control High Register, offset: 0x84 */
+  fnet_uint8_t RESERVED_0[24];
+  fnet_uint32_t ISFR;                                   /* Interrupt Status Flag Register, offset: 0xA0 */
+  fnet_uint8_t RESERVED_1[28];
+  fnet_uint32_t DFER;                                   /* Digital Filter Enable Register, offset: 0xC0 */
+  fnet_uint32_t DFCR;                                   /* Digital Filter Clock Register, offset: 0xC4 */
+  fnet_uint32_t DFWR;                                   /* Digital Filter Width Register, offset: 0xC8 */
 } volatile *FNET_MK_PORT_MemMapPtr;
 
 /* ----------------------------------------------------------------------------
@@ -1014,43 +1010,43 @@ typedef struct FNET_MK_PORT_MemMap {
 #define FNET_MK_PORT_PCR_DSE_SHIFT                       6
 #define FNET_MK_PORT_PCR_MUX_MASK                        0x700u
 #define FNET_MK_PORT_PCR_MUX_SHIFT                       8
-#define FNET_MK_PORT_PCR_MUX(x)                          (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_PCR_MUX_SHIFT))&FNET_MK_PORT_PCR_MUX_MASK)
+#define FNET_MK_PORT_PCR_MUX(x)                          (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_PCR_MUX_SHIFT))&FNET_MK_PORT_PCR_MUX_MASK)
 #define FNET_MK_PORT_PCR_LK_MASK                         0x8000u
 #define FNET_MK_PORT_PCR_LK_SHIFT                        15
 #define FNET_MK_PORT_PCR_IRQC_MASK                       0xF0000u
 #define FNET_MK_PORT_PCR_IRQC_SHIFT                      16
-#define FNET_MK_PORT_PCR_IRQC(x)                         (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_PCR_IRQC_SHIFT))&FNET_MK_PORT_PCR_IRQC_MASK)
+#define FNET_MK_PORT_PCR_IRQC(x)                         (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_PCR_IRQC_SHIFT))&FNET_MK_PORT_PCR_IRQC_MASK)
 #define FNET_MK_PORT_PCR_ISF_MASK                        0x1000000u
 #define FNET_MK_PORT_PCR_ISF_SHIFT                       24
 /* GPCLR Bit Fields */
 #define FNET_MK_PORT_GPCLR_GPWD_MASK                     0xFFFFu
 #define FNET_MK_PORT_GPCLR_GPWD_SHIFT                    0
-#define FNET_MK_PORT_GPCLR_GPWD(x)                       (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_GPCLR_GPWD_SHIFT))&FNET_MK_PORT_GPCLR_GPWD_MASK)
+#define FNET_MK_PORT_GPCLR_GPWD(x)                       (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_GPCLR_GPWD_SHIFT))&FNET_MK_PORT_GPCLR_GPWD_MASK)
 #define FNET_MK_PORT_GPCLR_GPWE_MASK                     0xFFFF0000u
 #define FNET_MK_PORT_GPCLR_GPWE_SHIFT                    16
-#define FNET_MK_PORT_GPCLR_GPWE(x)                       (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_GPCLR_GPWE_SHIFT))&FNET_MK_PORT_GPCLR_GPWE_MASK)
+#define FNET_MK_PORT_GPCLR_GPWE(x)                       (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_GPCLR_GPWE_SHIFT))&FNET_MK_PORT_GPCLR_GPWE_MASK)
 /* GPCHR Bit Fields */
 #define FNET_MK_PORT_GPCHR_GPWD_MASK                     0xFFFFu
 #define FNET_MK_PORT_GPCHR_GPWD_SHIFT                    0
-#define FNET_MK_PORT_GPCHR_GPWD(x)                       (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_GPCHR_GPWD_SHIFT))&FNET_MK_PORT_GPCHR_GPWD_MASK)
+#define FNET_MK_PORT_GPCHR_GPWD(x)                       (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_GPCHR_GPWD_SHIFT))&FNET_MK_PORT_GPCHR_GPWD_MASK)
 #define FNET_MK_PORT_GPCHR_GPWE_MASK                     0xFFFF0000u
 #define FNET_MK_PORT_GPCHR_GPWE_SHIFT                    16
-#define FNET_MK_PORT_GPCHR_GPWE(x)                       (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_GPCHR_GPWE_SHIFT))&FNET_MK_PORT_GPCHR_GPWE_MASK)
+#define FNET_MK_PORT_GPCHR_GPWE(x)                       (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_GPCHR_GPWE_SHIFT))&FNET_MK_PORT_GPCHR_GPWE_MASK)
 /* ISFR Bit Fields */
 #define FNET_MK_PORT_ISFR_ISF_MASK                       0xFFFFFFFFu
 #define FNET_MK_PORT_ISFR_ISF_SHIFT                      0
-#define FNET_MK_PORT_ISFR_ISF(x)                         (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_ISFR_ISF_SHIFT))&FNET_MK_PORT_ISFR_ISF_MASK)
+#define FNET_MK_PORT_ISFR_ISF(x)                         (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_ISFR_ISF_SHIFT))&FNET_MK_PORT_ISFR_ISF_MASK)
 /* DFER Bit Fields */
 #define FNET_MK_PORT_DFER_DFE_MASK                       0xFFFFFFFFu
 #define FNET_MK_PORT_DFER_DFE_SHIFT                      0
-#define FNET_MK_PORT_DFER_DFE(x)                         (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_DFER_DFE_SHIFT))&FNET_MK_PORT_DFER_DFE_MASK)
+#define FNET_MK_PORT_DFER_DFE(x)                         (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_DFER_DFE_SHIFT))&FNET_MK_PORT_DFER_DFE_MASK)
 /* DFCR Bit Fields */
 #define FNET_MK_PORT_DFCR_CS_MASK                        0x1u
 #define FNET_MK_PORT_DFCR_CS_SHIFT                       0
 /* DFWR Bit Fields */
 #define FNET_MK_PORT_DFWR_FILT_MASK                      0x1Fu
 #define FNET_MK_PORT_DFWR_FILT_SHIFT                     0
-#define FNET_MK_PORT_DFWR_FILT(x)                        (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_PORT_DFWR_FILT_SHIFT))&FNET_MK_PORT_DFWR_FILT_MASK)
+#define FNET_MK_PORT_DFWR_FILT(x)                        (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_PORT_DFWR_FILT_SHIFT))&FNET_MK_PORT_DFWR_FILT_MASK)
 
 
 /* PORT - Peripheral instance base addresses */
@@ -1320,19 +1316,19 @@ typedef struct FNET_MK_PORT_MemMap {
 
 /* NVIC - Peripheral register structure */
 typedef struct FNET_MK_NVIC_MemMap {
-  fnet_uint32 ISER[4];                                /* Interrupt Set Enable Register n, array offset: 0x0, array step: 0x4 */
-  fnet_uint8 RESERVED_0[112];
-  fnet_uint32 ICER[4];                                /* Interrupt Clear Enable Register n, array offset: 0x80, array step: 0x4 */
-  fnet_uint8 RESERVED_1[112];
-  fnet_uint32 ISPR[4];                                /* Interrupt Set Pending Register n, array offset: 0x100, array step: 0x4 */
-  fnet_uint8 RESERVED_2[112];
-  fnet_uint32 ICPR[4];                                /* Interrupt Clear Pending Register n, array offset: 0x180, array step: 0x4 */
-  fnet_uint8 RESERVED_3[112];
-  fnet_uint32 IABR[4];                                /* Interrupt Active bit Register n, array offset: 0x200, array step: 0x4 */
-  fnet_uint8 RESERVED_4[240];
-  fnet_uint8 IP[104];                                 /* Interrupt Priority Register n, array offset: 0x300, array step: 0x1 */
-  fnet_uint8 RESERVED_5[2712];
-  fnet_uint32 STIR[1];                                /* Software Trigger Interrupt Register, array offset: 0xE00, array step: 0x4 */
+  fnet_uint32_t ISER[4];                                /* Interrupt Set Enable Register n, array offset: 0x0, array step: 0x4 */
+  fnet_uint8_t RESERVED_0[112];
+  fnet_uint32_t ICER[4];                                /* Interrupt Clear Enable Register n, array offset: 0x80, array step: 0x4 */
+  fnet_uint8_t RESERVED_1[112];
+  fnet_uint32_t ISPR[4];                                /* Interrupt Set Pending Register n, array offset: 0x100, array step: 0x4 */
+  fnet_uint8_t RESERVED_2[112];
+  fnet_uint32_t ICPR[4];                                /* Interrupt Clear Pending Register n, array offset: 0x180, array step: 0x4 */
+  fnet_uint8_t RESERVED_3[112];
+  fnet_uint32_t IABR[4];                                /* Interrupt Active bit Register n, array offset: 0x200, array step: 0x4 */
+  fnet_uint8_t RESERVED_4[240];
+  fnet_uint8_t IP[104];                                 /* Interrupt Priority Register n, array offset: 0x300, array step: 0x1 */
+  fnet_uint8_t RESERVED_5[2712];
+  fnet_uint32_t STIR[1];                                /* Software Trigger Interrupt Register, array offset: 0xE00, array step: 0x4 */
 } volatile *FNET_MK_NVIC_MemMapPtr;
 
 /* ----------------------------------------------------------------------------
@@ -1843,13 +1839,13 @@ typedef struct FNET_MK_NVIC_MemMap {
 
 /* PIT - Peripheral register structure */
 typedef struct FNET_MK_PIT_MemMap {
-  fnet_uint32 MCR;                                      /* PIT Module Control Register, offset: 0x0 */
-  fnet_uint8 RESERVED_0[252];
+  fnet_uint32_t MCR;                                      /* PIT Module Control Register, offset: 0x0 */
+  fnet_uint8_t RESERVED_0[252];
   struct {                                              /* offset: 0x100, array step: 0x10 */
-    fnet_uint32 LDVAL;                                  /* Timer Load Value Register, array offset: 0x100, array step: 0x10 */
-    fnet_uint32 CVAL;                                   /* Current Timer Value Register, array offset: 0x104, array step: 0x10 */
-    fnet_uint32 TCTRL;                                  /* Timer Control Register, array offset: 0x108, array step: 0x10 */
-    fnet_uint32 TFLG;                                   /* Timer Flag Register, array offset: 0x10C, array step: 0x10 */
+    fnet_uint32_t LDVAL;                                  /* Timer Load Value Register, array offset: 0x100, array step: 0x10 */
+    fnet_uint32_t CVAL;                                   /* Current Timer Value Register, array offset: 0x104, array step: 0x10 */
+    fnet_uint32_t TCTRL;                                  /* Timer Control Register, array offset: 0x108, array step: 0x10 */
+    fnet_uint32_t TFLG;                                   /* Timer Flag Register, array offset: 0x10C, array step: 0x10 */
   } CHANNEL[4];
 } volatile *FNET_MK_PIT_MemMapPtr;
 
@@ -1930,16 +1926,16 @@ typedef struct FNET_MK_PIT_MemMap {
 
 /* MPU - Peripheral register structure */
 typedef struct FNET_MK_MPU_MemMap {
-  fnet_uint32 CESR;                                     /* Control/Error Status Register, offset: 0x0 */
-  fnet_uint8 RESERVED_0[12];
+  fnet_uint32_t CESR;                                     /* Control/Error Status Register, offset: 0x0 */
+  fnet_uint8_t RESERVED_0[12];
   struct {                                              /* offset: 0x10, array step: 0x8 */
-    fnet_uint32 EAR;                                    /* Error Address Register, Slave Port n, array offset: 0x10, array step: 0x8 */
-    fnet_uint32 EDR;                                    /* Error Detail Register, Slave Port n, array offset: 0x14, array step: 0x8 */
+    fnet_uint32_t EAR;                                    /* Error Address Register, Slave Port n, array offset: 0x10, array step: 0x8 */
+    fnet_uint32_t EDR;                                    /* Error Detail Register, Slave Port n, array offset: 0x14, array step: 0x8 */
   } SP[5];
-  fnet_uint8 RESERVED_1[968];
-  fnet_uint32 WORD[12][4];                              /* Region Descriptor n, Word 0..Region Descriptor n, Word 3, array offset: 0x400, array step: index*0x10, index2*0x4 */
-  fnet_uint8 RESERVED_2[832];
-  fnet_uint32 RGDAAC[12];                               /* Region Descriptor Alternate Access Control n, array offset: 0x800, array step: 0x4 */
+  fnet_uint8_t RESERVED_1[968];
+  fnet_uint32_t WORD[12][4];                              /* Region Descriptor n, Word 0..Region Descriptor n, Word 3, array offset: 0x400, array step: index*0x10, index2*0x4 */
+  fnet_uint8_t RESERVED_2[832];
+  fnet_uint32_t RGDAAC[12];                               /* Region Descriptor Alternate Access Control n, array offset: 0x800, array step: 0x4 */
 } volatile *FNET_MK_MPU_MemMapPtr;
 
 /* ----------------------------------------------------------------------------
@@ -2174,15 +2170,15 @@ typedef struct FNET_MK_MPU_MemMap {
 
 /* FMC - Peripheral register structure */
 typedef struct FNET_MK_FMC_MemMap {
-  fnet_uint32 PFAPR;                                    /* Flash Access Protection Register, offset: 0x0 */
-  fnet_uint32 PFB0CR;                                   /* Flash Bank 0 Control Register, offset: 0x4 */
-  fnet_uint32 PFB1CR;                                   /* Flash Bank 1 Control Register, offset: 0x8 */
-  fnet_uint8 RESERVED_0[244];
-  fnet_uint32 TAGVD[4][8];                              /* Cache Directory Storage, array offset: 0x100, array step: index*0x20, index2*0x4 */
-  fnet_uint8 RESERVED_1[128];
+  fnet_uint32_t PFAPR;                                    /* Flash Access Protection Register, offset: 0x0 */
+  fnet_uint32_t PFB0CR;                                   /* Flash Bank 0 Control Register, offset: 0x4 */
+  fnet_uint32_t PFB1CR;                                   /* Flash Bank 1 Control Register, offset: 0x8 */
+  fnet_uint8_t RESERVED_0[244];
+  fnet_uint32_t TAGVD[4][8];                              /* Cache Directory Storage, array offset: 0x100, array step: index*0x20, index2*0x4 */
+  fnet_uint8_t RESERVED_1[128];
   struct {                                              /* offset: 0x200, array step: index*0x40, index2*0x8 */
-    fnet_uint32 DATA_U;                                 /* Cache Data Storage (upper word), array offset: 0x200, array step: index*0x40, index2*0x8 */
-    fnet_uint32 DATA_L;                                 /* Cache Data Storage (lower word), array offset: 0x204, array step: index*0x40, index2*0x8 */
+    fnet_uint32_t DATA_U;                                 /* Cache Data Storage (upper word), array offset: 0x200, array step: index*0x40, index2*0x8 */
+    fnet_uint32_t DATA_L;                                 /* Cache Data Storage (lower word), array offset: 0x204, array step: index*0x40, index2*0x8 */
   } SET[4][8];
 } volatile *FNET_MK_FMC_MemMapPtr;
 
@@ -2425,29 +2421,29 @@ typedef struct FNET_MK_FMC_MemMap {
 
 /* FTFL - Peripheral register structure */
 typedef struct FNET_MK_FTFL_MemMap {
-  fnet_vuint8 FSTAT;                                   /* Flash Status Register, offset: 0x0 */
-  fnet_vuint8 FCNFG;                                   /* Flash Configuration Register, offset: 0x1 */
-  fnet_vuint8 FSEC;                                    /* Flash Security Register, offset: 0x2 */
-  fnet_vuint8 FOPT;                                    /* Flash Option Register, offset: 0x3 */
-  fnet_vuint8 FCCOB3;                                  /* Flash Common Command Object Registers, offset: 0x4 */
-  fnet_vuint8 FCCOB2;                                  /* Flash Common Command Object Registers, offset: 0x5 */
-  fnet_vuint8 FCCOB1;                                  /* Flash Common Command Object Registers, offset: 0x6 */
-  fnet_vuint8 FCCOB0;                                  /* Flash Common Command Object Registers, offset: 0x7 */
-  fnet_vuint8 FCCOB7;                                  /* Flash Common Command Object Registers, offset: 0x8 */
-  fnet_vuint8 FCCOB6;                                  /* Flash Common Command Object Registers, offset: 0x9 */
-  fnet_vuint8 FCCOB5;                                  /* Flash Common Command Object Registers, offset: 0xA */
-  fnet_vuint8 FCCOB4;                                  /* Flash Common Command Object Registers, offset: 0xB */
-  fnet_vuint8 FCCOBB;                                  /* Flash Common Command Object Registers, offset: 0xC */
-  fnet_vuint8 FCCOBA;                                  /* Flash Common Command Object Registers, offset: 0xD */
-  fnet_vuint8 FCCOB9;                                  /* Flash Common Command Object Registers, offset: 0xE */
-  fnet_vuint8 FCCOB8;                                  /* Flash Common Command Object Registers, offset: 0xF */
-  fnet_vuint8 FPROT3;                                  /* Program Flash Protection Registers, offset: 0x10 */
-  fnet_vuint8 FPROT2;                                  /* Program Flash Protection Registers, offset: 0x11 */
-  fnet_vuint8 FPROT1;                                  /* Program Flash Protection Registers, offset: 0x12 */
-  fnet_vuint8 FPROT0;                                  /* Program Flash Protection Registers, offset: 0x13 */
-  fnet_vuint8 RESERVED_0[2];
-  fnet_vuint8 FEPROT;                                  /* EEPROM Protection Register, offset: 0x16 */
-  fnet_vuint8 FDPROT;                                  /* Data Flash Protection Register, offset: 0x17 */
+  fnet_vuint8_t FSTAT;                                   /* Flash Status Register, offset: 0x0 */
+  fnet_vuint8_t FCNFG;                                   /* Flash Configuration Register, offset: 0x1 */
+  fnet_vuint8_t FSEC;                                    /* Flash Security Register, offset: 0x2 */
+  fnet_vuint8_t FOPT;                                    /* Flash Option Register, offset: 0x3 */
+  fnet_vuint8_t FCCOB3;                                  /* Flash Common Command Object Registers, offset: 0x4 */
+  fnet_vuint8_t FCCOB2;                                  /* Flash Common Command Object Registers, offset: 0x5 */
+  fnet_vuint8_t FCCOB1;                                  /* Flash Common Command Object Registers, offset: 0x6 */
+  fnet_vuint8_t FCCOB0;                                  /* Flash Common Command Object Registers, offset: 0x7 */
+  fnet_vuint8_t FCCOB7;                                  /* Flash Common Command Object Registers, offset: 0x8 */
+  fnet_vuint8_t FCCOB6;                                  /* Flash Common Command Object Registers, offset: 0x9 */
+  fnet_vuint8_t FCCOB5;                                  /* Flash Common Command Object Registers, offset: 0xA */
+  fnet_vuint8_t FCCOB4;                                  /* Flash Common Command Object Registers, offset: 0xB */
+  fnet_vuint8_t FCCOBB;                                  /* Flash Common Command Object Registers, offset: 0xC */
+  fnet_vuint8_t FCCOBA;                                  /* Flash Common Command Object Registers, offset: 0xD */
+  fnet_vuint8_t FCCOB9;                                  /* Flash Common Command Object Registers, offset: 0xE */
+  fnet_vuint8_t FCCOB8;                                  /* Flash Common Command Object Registers, offset: 0xF */
+  fnet_vuint8_t FPROT3;                                  /* Program Flash Protection Registers, offset: 0x10 */
+  fnet_vuint8_t FPROT2;                                  /* Program Flash Protection Registers, offset: 0x11 */
+  fnet_vuint8_t FPROT1;                                  /* Program Flash Protection Registers, offset: 0x12 */
+  fnet_vuint8_t FPROT0;                                  /* Program Flash Protection Registers, offset: 0x13 */
+  fnet_vuint8_t RESERVED_0[2];
+  fnet_vuint8_t FEPROT;                                  /* EEPROM Protection Register, offset: 0x16 */
+  fnet_vuint8_t FDPROT;                                  /* Data Flash Protection Register, offset: 0x17 */
 } volatile *FNET_MK_FTFL_MemMapPtr;
 
 /* ----------------------------------------------------------------------------
@@ -2637,21 +2633,21 @@ typedef struct FNET_MK_FTFL_MemMap {
 
 
 /* Command definitions for FNET_FTFL_FCCOB0 */
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_BLOCK             (0x00)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_SECTION           (0x01)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_CHECK          (0x02)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_RESOURCE          (0x03)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_LONGWORD       (0x06) 
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PHRASE         (0x07) /*Program 8 bytes in a program flash block or a data flash block. FTFE K70 */ 
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_BLOCK            (0x08)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_SECTOR           (0x09)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_SECTION        (0x0B)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_BLOCKS            (0x40)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_ONCE              (0x41)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_ONCE           (0x43)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_BLOCKS           (0x44)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_VERIFY_KEY             (0x45)
-#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PARTITION      (0x80)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_BLOCK             (0x00u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_SECTION           (0x01u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_CHECK          (0x02u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_RESOURCE          (0x03u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_LONGWORD       (0x06u) 
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PHRASE         (0x07u) /*Program 8 bytes in a program flash block or a data flash block. FTFE K70 */ 
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_BLOCK            (0x08u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_SECTOR           (0x09u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_SECTION        (0x0Bu)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_BLOCKS            (0x40u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_READ_ONCE              (0x41u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_ONCE           (0x43u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_ERASE_BLOCKS           (0x44u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_VERIFY_KEY             (0x45u)
+#define FNET_MK_FNET_FTFL_FCCOB0_CMD_PROGRAM_PARTITION      (0x80u)
 
 /* ----------------------------------------------------------------------------
    -- SCB
@@ -2659,25 +2655,25 @@ typedef struct FNET_MK_FTFL_MemMap {
 
 /* SCB - Peripheral register structure */
 typedef struct FNET_MK_SCB_MemMap {
-  fnet_vuint8 RESERVED_0[8];
-  fnet_vuint32 ACTLR;                                  /* Auxiliary Control Register,, offset: 0x8 */
-  fnet_vuint8 RESERVED_1[3316];
-  fnet_vuint32 CPUID;                                  /* CPUID Base Register, offset: 0xD00 */
-  fnet_vuint32 ICSR;                                   /* Interrupt Control and State Register, offset: 0xD04 */
-  fnet_vuint32 VTOR;                                   /* Vector Table Offset Register, offset: 0xD08 */
-  fnet_vuint32 AIRCR;                                  /* Application Interrupt and Reset Control Register, offset: 0xD0C */
-  fnet_vuint32 SCR;                                    /* System Control Register, offset: 0xD10 */
-  fnet_vuint32 CCR;                                    /* Configuration and Control Register, offset: 0xD14 */
-  fnet_vuint32 SHPR1;                                  /* System Handler Priority Register 1, offset: 0xD18 */
-  fnet_vuint32 SHPR2;                                  /* System Handler Priority Register 2, offset: 0xD1C */
-  fnet_vuint32 SHPR3;                                  /* System Handler Priority Register 3, offset: 0xD20 */
-  fnet_vuint32 SHCSR;                                  /* System Handler Control and State Register, offset: 0xD24 */
-  fnet_vuint32 CFSR;                                   /* Configurable Fault Status Registers, offset: 0xD28 */
-  fnet_vuint32 HFSR;                                   /* HardFault Status register, offset: 0xD2C */
-  fnet_vuint32 DFSR;                                   /* Debug Fault Status Register, offset: 0xD30 */
-  fnet_vuint32 MMFAR;                                  /* MemManage Address Register, offset: 0xD34 */
-  fnet_vuint32 BFAR;                                   /* BusFault Address Register, offset: 0xD38 */
-  fnet_vuint32 AFSR;                                   /* Auxiliary Fault Status Register, offset: 0xD3C */
+  fnet_vuint8_t RESERVED_0[8];
+  fnet_vuint32_t ACTLR;                                  /* Auxiliary Control Register,, offset: 0x8 */
+  fnet_vuint8_t RESERVED_1[3316];
+  fnet_vuint32_t CPUID;                                  /* CPUID Base Register, offset: 0xD00 */
+  fnet_vuint32_t ICSR;                                   /* Interrupt Control and State Register, offset: 0xD04 */
+  fnet_vuint32_t VTOR;                                   /* Vector Table Offset Register, offset: 0xD08 */
+  fnet_vuint32_t AIRCR;                                  /* Application Interrupt and Reset Control Register, offset: 0xD0C */
+  fnet_vuint32_t SCR;                                    /* System Control Register, offset: 0xD10 */
+  fnet_vuint32_t CCR;                                    /* Configuration and Control Register, offset: 0xD14 */
+  fnet_vuint32_t SHPR1;                                  /* System Handler Priority Register 1, offset: 0xD18 */
+  fnet_vuint32_t SHPR2;                                  /* System Handler Priority Register 2, offset: 0xD1C */
+  fnet_vuint32_t SHPR3;                                  /* System Handler Priority Register 3, offset: 0xD20 */
+  fnet_vuint32_t SHCSR;                                  /* System Handler Control and State Register, offset: 0xD24 */
+  fnet_vuint32_t CFSR;                                   /* Configurable Fault Status Registers, offset: 0xD28 */
+  fnet_vuint32_t HFSR;                                   /* HardFault Status register, offset: 0xD2C */
+  fnet_vuint32_t DFSR;                                   /* Debug Fault Status Register, offset: 0xD30 */
+  fnet_vuint32_t MMFAR;                                  /* MemManage Address Register, offset: 0xD34 */
+  fnet_vuint32_t BFAR;                                   /* BusFault Address Register, offset: 0xD38 */
+  fnet_vuint32_t AFSR;                                   /* Auxiliary Fault Status Register, offset: 0xD3C */
 } volatile *FNET_MK_SCB_MemMapPtr;
 
 /* ----------------------------------------------------------------------------
@@ -2717,25 +2713,25 @@ typedef struct FNET_MK_SCB_MemMap {
 /* CPUID Bit Fields */
 #define FNET_MK_SCB_CPUID_REVISION_MASK                  0xFu
 #define FNET_MK_SCB_CPUID_REVISION_SHIFT                 0
-#define FNET_MK_SCB_CPUID_REVISION(x)                    (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_CPUID_REVISION_SHIFT))&FNET_MK_SCB_CPUID_REVISION_MASK)
+#define FNET_MK_SCB_CPUID_REVISION(x)                    (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_CPUID_REVISION_SHIFT))&FNET_MK_SCB_CPUID_REVISION_MASK)
 #define FNET_MK_SCB_CPUID_PARTNO_MASK                    0xFFF0u
 #define FNET_MK_SCB_CPUID_PARTNO_SHIFT                   4
-#define FNET_MK_SCB_CPUID_PARTNO(x)                      (((fnet_uint32)(((fnrt_uint32)(x))<<FNET_MK_SCB_CPUID_PARTNO_SHIFT))&FNET_MK_SCB_CPUID_PARTNO_MASK)
+#define FNET_MK_SCB_CPUID_PARTNO(x)                      (((fnet_uint32_t)(((fnrt_uint32)(x))<<FNET_MK_SCB_CPUID_PARTNO_SHIFT))&FNET_MK_SCB_CPUID_PARTNO_MASK)
 #define FNET_MK_SCB_CPUID_VARIANT_MASK                   0xF00000u
 #define FNET_MK_SCB_CPUID_VARIANT_SHIFT                  20
-#define FNET_MK_SCB_CPUID_VARIANT(x)                     (((fnrt_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_CPUID_VARIANT_SHIFT))&FNET_MK_SCB_CPUID_VARIANT_MASK)
+#define FNET_MK_SCB_CPUID_VARIANT(x)                     (((fnrt_uint32)(((fnet_uint32_t)(x))<<FNET_MK_SCB_CPUID_VARIANT_SHIFT))&FNET_MK_SCB_CPUID_VARIANT_MASK)
 #define FNET_MK_SCB_CPUID_IMPLEMENTER_MASK               0xFF000000u
 #define FNET_MK_SCB_CPUID_IMPLEMENTER_SHIFT              24
-#define FNET_MK_SCB_CPUID_IMPLEMENTER(x)                 (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_CPUID_IMPLEMENTER_SHIFT))&FNET_MK_SCB_CPUID_IMPLEMENTER_MASK)
+#define FNET_MK_SCB_CPUID_IMPLEMENTER(x)                 (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_CPUID_IMPLEMENTER_SHIFT))&FNET_MK_SCB_CPUID_IMPLEMENTER_MASK)
 /* ICSR Bit Fields */
 #define FNET_MK_SCB_ICSR_VECTACTIVE_MASK                 0x1FFu
 #define FNET_MK_SCB_ICSR_VECTACTIVE_SHIFT                0
-#define FNET_MK_SCB_ICSR_VECTACTIVE(x)                   (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_ICSR_VECTACTIVE_SHIFT))&FNET_MK_SCB_ICSR_VECTACTIVE_MASK)
+#define FNET_MK_SCB_ICSR_VECTACTIVE(x)                   (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_ICSR_VECTACTIVE_SHIFT))&FNET_MK_SCB_ICSR_VECTACTIVE_MASK)
 #define FNET_MK_SCB_ICSR_RETTOBASE_MASK                  0x800u
 #define FNET_MK_SCB_ICSR_RETTOBASE_SHIFT                 11
 #define FNET_MK_SCB_ICSR_VECTPENDING_MASK                0x3F000u
 #define FNET_MK_SCB_ICSR_VECTPENDING_SHIFT               12
-#define FNET_MK_SCB_ICSR_VECTPENDING(x)                  (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_ICSR_VECTPENDING_SHIFT))&FNET_MK_SCB_ICSR_VECTPENDING_MASK)
+#define FNET_MK_SCB_ICSR_VECTPENDING(x)                  (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_ICSR_VECTPENDING_SHIFT))&FNET_MK_SCB_ICSR_VECTPENDING_MASK)
 #define FNET_MK_SCB_ICSR_ISRPENDING_MASK                 0x400000u
 #define FNET_MK_SCB_ICSR_ISRPENDING_SHIFT                22
 #define FNET_MK_SCB_ICSR_ISRPREEMPT_MASK                 0x800000u
@@ -2753,7 +2749,7 @@ typedef struct FNET_MK_SCB_MemMap {
 /* VTOR Bit Fields */
 #define FNET_MK_SCB_VTOR_TBLOFF_MASK                     0xFFFFFF80u
 #define FNET_MK_SCB_VTOR_TBLOFF_SHIFT                    7
-#define FNET_MK_SCB_VTOR_TBLOFF(x)                       (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_VTOR_TBLOFF_SHIFT))&FNET_MK_SCB_VTOR_TBLOFF_MASK)
+#define FNET_MK_SCB_VTOR_TBLOFF(x)                       (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_VTOR_TBLOFF_SHIFT))&FNET_MK_SCB_VTOR_TBLOFF_MASK)
 /* AIRCR Bit Fields */
 #define FNET_MK_SCB_AIRCR_VECTRESET_MASK                 0x1u
 #define FNET_MK_SCB_AIRCR_VECTRESET_SHIFT                0
@@ -2763,12 +2759,12 @@ typedef struct FNET_MK_SCB_MemMap {
 #define FNET_MK_SCB_AIRCR_SYSRESETREQ_SHIFT              2
 #define FNET_MK_SCB_AIRCR_PRIGROUP_MASK                  0x700u
 #define FNET_MK_SCB_AIRCR_PRIGROUP_SHIFT                 8
-#define FNET_MK_SCB_AIRCR_PRIGROUP(x)                    (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_AIRCR_PRIGROUP_SHIFT))&FNET_MK_SCB_AIRCR_PRIGROUP_MASK)
+#define FNET_MK_SCB_AIRCR_PRIGROUP(x)                    (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_AIRCR_PRIGROUP_SHIFT))&FNET_MK_SCB_AIRCR_PRIGROUP_MASK)
 #define FNET_MK_SCB_AIRCR_ENDIANNESS_MASK                0x8000u
 #define FNET_MK_SCB_AIRCR_ENDIANNESS_SHIFT               15
 #define FNET_MK_SCB_AIRCR_VECTKEY_MASK                   0xFFFF0000u
 #define FNET_MK_SCB_AIRCR_VECTKEY_SHIFT                  16
-#define FNET_MK_SCB_AIRCR_VECTKEY(x)                     (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_AIRCR_VECTKEY_SHIFT))&FNET_MK_SCB_AIRCR_VECTKEY_MASK)
+#define FNET_MK_SCB_AIRCR_VECTKEY(x)                     (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_AIRCR_VECTKEY_SHIFT))&FNET_MK_SCB_AIRCR_VECTKEY_MASK)
 /* SCR Bit Fields */
 #define FNET_MK_SCB_SCR_SLEEPONEXIT_MASK                 0x2u
 #define FNET_MK_SCB_SCR_SLEEPONEXIT_SHIFT                1
@@ -2792,24 +2788,24 @@ typedef struct FNET_MK_SCB_MemMap {
 /* SHPR1 Bit Fields */
 #define FNET_MK_SCB_SHPR1_PRI_4_MASK                     0xFFu
 #define FNET_MK_SCB_SHPR1_PRI_4_SHIFT                    0
-#define FNET_MK_SCB_SHPR1_PRI_4(x)                       (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_SHPR1_PRI_4_SHIFT))&FNET_MK_SCB_SHPR1_PRI_4_MASK)
+#define FNET_MK_SCB_SHPR1_PRI_4(x)                       (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_SHPR1_PRI_4_SHIFT))&FNET_MK_SCB_SHPR1_PRI_4_MASK)
 #define FNET_MK_SCB_SHPR1_PRI_5_MASK                     0xFF00u
 #define FNET_MK_SCB_SHPR1_PRI_5_SHIFT                    8
-#define FNET_MK_SCB_SHPR1_PRI_5(x)                       (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_SHPR1_PRI_5_SHIFT))&FNET_MK_SCB_SHPR1_PRI_5_MASK)
+#define FNET_MK_SCB_SHPR1_PRI_5(x)                       (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_SHPR1_PRI_5_SHIFT))&FNET_MK_SCB_SHPR1_PRI_5_MASK)
 #define FNET_MK_SCB_SHPR1_PRI_6_MASK                     0xFF0000u
 #define FNET_MK_SCB_SHPR1_PRI_6_SHIFT                    16
-#define FNET_MK_SCB_SHPR1_PRI_6(x)                       (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_SHPR1_PRI_6_SHIFT))&FNET_MK_SCB_SHPR1_PRI_6_MASK)
+#define FNET_MK_SCB_SHPR1_PRI_6(x)                       (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_SHPR1_PRI_6_SHIFT))&FNET_MK_SCB_SHPR1_PRI_6_MASK)
 /* SHPR2 Bit Fields */
 #define FNET_MK_SCB_SHPR2_PRI_11_MASK                    0xFF000000u
 #define FNET_MK_SCB_SHPR2_PRI_11_SHIFT                   24
-#define FNET_MK_SCB_SHPR2_PRI_11(x)                      (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_SHPR2_PRI_11_SHIFT))&FNET_MK_SCB_SHPR2_PRI_11_MASK)
+#define FNET_MK_SCB_SHPR2_PRI_11(x)                      (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_SHPR2_PRI_11_SHIFT))&FNET_MK_SCB_SHPR2_PRI_11_MASK)
 /* SHPR3 Bit Fields */
 #define FNET_MK_SCB_SHPR3_PRI_14_MASK                    0xFF0000u
 #define FNET_MK_SCB_SHPR3_PRI_14_SHIFT                   16
-#define FNET_MK_SCB_SHPR3_PRI_14(x)                      (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_SHPR3_PRI_14_SHIFT))&FNET_MK_SCB_SHPR3_PRI_14_MASK)
+#define FNET_MK_SCB_SHPR3_PRI_14(x)                      (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_SHPR3_PRI_14_SHIFT))&FNET_MK_SCB_SHPR3_PRI_14_MASK)
 #define FNET_MK_SCB_SHPR3_PRI_15_MASK                    0xFF000000u
 #define FNET_MK_SCB_SHPR3_PRI_15_SHIFT                   24
-#define FNET_MK_SCB_SHPR3_PRI_15(x)                      (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_SHPR3_PRI_15_SHIFT))&FNET_MK_SCB_SHPR3_PRI_15_MASK)
+#define FNET_MK_SCB_SHPR3_PRI_15(x)                      (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_SHPR3_PRI_15_SHIFT))&FNET_MK_SCB_SHPR3_PRI_15_MASK)
 /* SHCSR Bit Fields */
 #define FNET_MK_SCB_SHCSR_MEMFAULTACT_MASK               0x1u
 #define FNET_MK_SCB_SHCSR_MEMFAULTACT_SHIFT              0
@@ -2899,15 +2895,15 @@ typedef struct FNET_MK_SCB_MemMap {
 /* MMFAR Bit Fields */
 #define FNET_MK_SCB_MMFAR_ADDRESS_MASK                   0xFFFFFFFFu
 #define FNET_MK_SCB_MMFAR_ADDRESS_SHIFT                  0
-#define FNET_MK_SCB_MMFAR_ADDRESS(x)                     (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_MMFAR_ADDRESS_SHIFT))&FNET_MK_SCB_MMFAR_ADDRESS_MASK)
+#define FNET_MK_SCB_MMFAR_ADDRESS(x)                     (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_MMFAR_ADDRESS_SHIFT))&FNET_MK_SCB_MMFAR_ADDRESS_MASK)
 /* BFAR Bit Fields */
 #define FNET_MK_SCB_BFAR_ADDRESS_MASK                    0xFFFFFFFFu
 #define FNET_MK_SCB_BFAR_ADDRESS_SHIFT                   0
-#define FNET_MK_SCB_BFAR_ADDRESS(x)                      (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_BFAR_ADDRESS_SHIFT))&FNET_MK_SCB_BFAR_ADDRESS_MASK)
+#define FNET_MK_SCB_BFAR_ADDRESS(x)                      (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_BFAR_ADDRESS_SHIFT))&FNET_MK_SCB_BFAR_ADDRESS_MASK)
 /* AFSR Bit Fields */
 #define FNET_MK_SCB_AFSR_AUXFAULT_MASK                   0xFFFFFFFFu
 #define FNET_MK_SCB_AFSR_AUXFAULT_SHIFT                  0
-#define FNET_MK_SCB_AFSR_AUXFAULT(x)                     (((fnet_uint32)(((fnet_uint32)(x))<<FNET_MK_SCB_AFSR_AUXFAULT_SHIFT))&FNET_MK_SCB_AFSR_AUXFAULT_MASK)
+#define FNET_MK_SCB_AFSR_AUXFAULT(x)                     (((fnet_uint32_t)(((fnet_uint32_t)(x))<<FNET_MK_SCB_AFSR_AUXFAULT_SHIFT))&FNET_MK_SCB_AFSR_AUXFAULT_MASK)
 
 
 /* SCB - Peripheral instance base addresses */
@@ -2944,6 +2940,16 @@ typedef struct FNET_MK_SCB_MemMap {
 *********************************************************************/
 #define FNET_FEC0_BASE_ADDR                             (0x400C0004u)
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+void fnet_mk_irq_enable(fnet_uint32_t irq_desc);
+fnet_uint32_t fnet_mk_irq_disable(void);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* FNET_MK */
 

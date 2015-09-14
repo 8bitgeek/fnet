@@ -47,10 +47,9 @@
 #include "fnet_config.h"
 #include "compiler/fnet_comp.h"
 #include "cpu/fnet_cpu.h"
-#include "os/fnet_os.h"
 #include "stack/fnet_stack.h"
 #include "services/fnet_services.h"
-
+#include "os/fnet_os.h"
 
 /*! @addtogroup fnet_define
 * These definitions are used for reference purposes only.
@@ -93,9 +92,9 @@
  *        string.
  * @showinitializer 
  ******************************************************************************/
-#define FNET_VERSION            "2.8.1"
+#define FNET_VERSION            "2.9.0"
 
 /*! @} */
 
-#endif
+#endif /* _FNET_H_ */
 

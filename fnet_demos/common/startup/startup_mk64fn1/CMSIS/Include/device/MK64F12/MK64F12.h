@@ -135,8 +135,8 @@
  * @param Bit Bit number to access.
  * @return Value of the targeted bit in the bit band region.
  */
-#define BITBAND_REG32(Reg,Bit) (*((uint32_t volatile*)(BITBAND_REGADDR(Reg,Bit))))
-#define BITBAND_REG(Reg,Bit) (BITBAND_REG32(Reg,Bit))
+#define BITBAND_REG32(Reg,Bit) (*((uint32_t volatile*)(BITBAND_REGADDR((Reg),(Bit)))))
+#define BITBAND_REG(Reg,Bit) (BITBAND_REG32((Reg),(Bit)))
 /**
  * @brief Macro to access a single bit of a peripheral register (bit band region
  *        0x40000000 to 0x400FFFFF) using the bit-band alias region access. Can
@@ -2933,11 +2933,11 @@ typedef struct {
 #define CAU_AESIC_CA8                            CAU_AESIC_CA_REG(CAU,8)
 
 /* CAU - Register array accessors */
-#define CAU_DIRECT(index)                        CAU_DIRECT_REG(CAU,index)
-#define CAU_LDR_CA(index)                        CAU_LDR_CA_REG(CAU,index)
-#define CAU_STR_CA(index)                        CAU_STR_CA_REG(CAU,index)
-#define CAU_ADR_CA(index)                        CAU_ADR_CA_REG(CAU,index)
-#define CAU_RADR_CA(index)                       CAU_RADR_CA_REG(CAU,index)
+#define CAU_DIRECT(index)                        CAU_DIRECT_REG(CAU,(index))
+#define CAU_LDR_CA(index)                        CAU_LDR_CA_REG(CAU,(index))
+#define CAU_STR_CA(index)                        CAU_STR_CA_REG(CAU,(index))
+#define CAU_ADR_CA(index)                        CAU_ADR_CA_REG(CAU,(index))
+#define CAU_RADR_CA(index)                       CAU_RADR_CA_REG(CAU,(index))
 #define CAU_XOR_CA(index)                        CAU_XOR_CA_REG(CAU,index)
 #define CAU_ROTL_CA(index)                       CAU_ROTL_CA_REG(CAU,index)
 #define CAU_AESC_CA(index)                       CAU_AESC_CA_REG(CAU,index)

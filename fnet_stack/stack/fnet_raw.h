@@ -52,7 +52,7 @@
 /************************************************************************
 *     RAW definitions
 *************************************************************************/
-#define FNET_RAW_TTL            (64)                        /* Default TTL.*/
+#define FNET_RAW_TTL            (64u)                             /* Default TTL for RAW socket.*/
 #define FNET_RAW_TX_BUF_MAX     (FNET_CFG_SOCKET_RAW_TX_BUF_SIZE) /* Default maximum size for send socket buffer.*/
 #define FNET_RAW_RX_BUF_MAX     (FNET_CFG_SOCKET_RAW_RX_BUF_SIZE) /* Default maximum size for receive socket buffer.*/
 
@@ -64,7 +64,13 @@ extern fnet_prot_if_t fnet_raw_prot_if;
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
+#if defined(__cplusplus)
+extern "C" {
+#endif
 void fnet_raw_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  struct sockaddr *local_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip_nb);
+#if defined(__cplusplus)
+}
+#endif
 
 #endif  /* FNET_CFG_RAW */
 

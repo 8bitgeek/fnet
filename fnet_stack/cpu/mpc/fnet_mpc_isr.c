@@ -62,13 +62,13 @@ void fnet_cpu_isr(void)
 #if FNET_CFG_CPU_INDEX==0
     /* ICSR register [VECTACTIVE].*/ 
    #if FNET_CFG_CPU_MPC5744P
-      fnet_uint16 vector_number = (fnet_uint16) ((FNET_MPC_INTC_IACKR_PRC0 & 0xFFC) >> 2);
+      fnet_uint16_t vector_number = (fnet_uint16_t) ((FNET_MPC_INTC_IACKR_PRC0 & 0xFFC) >> 2);
    #else
-      fnet_uint16 vector_number = (fnet_uint16) ((FNET_MPC_INTC_IACKR_PRC0 & 0x7FC) >> 2);
+      fnet_uint16_t vector_number = (fnet_uint16_t) ((FNET_MPC_INTC_IACKR_PRC0 & 0x7FC) >> 2);
    #endif
 #else
     /* ICSR register [VECTACTIVE].*/ 
-    fnet_uint16 vector_number = (fnet_uint16) ((FNET_MPC_INTC_IACKR_PRC1 & 0x7FC) >> 2);
+    fnet_uint16_t vector_number = (fnet_uint16_t) ((FNET_MPC_INTC_IACKR_PRC1 & 0x7FC) >> 2);
 #endif
 
     /* Call FNET isr handler.*/

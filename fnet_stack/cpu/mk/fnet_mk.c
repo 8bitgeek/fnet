@@ -80,9 +80,9 @@ void fnet_cpu_irq_enable(fnet_cpu_irq_desc_t irq_desc)
 *
 * DESCRIPTION: Kinetis peripheral clock in KHZ.
 *************************************************************************/
-unsigned long fnet_mk_periph_clk_khz(void)
+fnet_uint32_t fnet_mk_periph_clk_khz(void)
 {
-    return (FNET_CPU_CLOCK_KHZ / (((FNET_MK_SIM_CLKDIV1 & FNET_MK_SIM_CLKDIV1_OUTDIV2_MASK) >> 24)+ 1));
+    return (FNET_CPU_CLOCK_KHZ / (((FNET_MK_SIM_CLKDIV1 & FNET_MK_SIM_CLKDIV1_OUTDIV2_MASK) >> 24)+ 1u));
 }
 
 #endif /*FNET_MK*/

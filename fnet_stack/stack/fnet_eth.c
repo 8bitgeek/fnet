@@ -64,12 +64,12 @@ const fnet_mac_addr_t fnet_eth_broadcast =
 *
 * DESCRIPTION: Converts MAC address to an null-terminated string.
 *************************************************************************/
-char *fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac )
+fnet_char_t *fnet_mac_to_str( fnet_mac_addr_t addr, fnet_char_t *str_mac )
 {
-    unsigned char *p;
+    fnet_uint8_t *p;
     if(str_mac)
     {
-        p = (unsigned char *)addr;
+        p = (fnet_uint8_t *)addr;
         fnet_sprintf(str_mac, "%02X:%02X:%02X:%02X:%02X:%02X", p[0], p[1], p[2], p[3], p[4], p[5]);
     }
     return str_mac;
@@ -80,13 +80,13 @@ char *fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac )
 *
 * DESCRIPTION: This function interprets the character string into MAC addr.
 *************************************************************************/
-int fnet_str_to_mac( char *str_mac, fnet_mac_addr_t addr )
+fnet_return_t fnet_str_to_mac( fnet_char_t *str_mac, fnet_mac_addr_t addr )
 {
-    unsigned long   val;
-    char            c;
-    unsigned long   octet[6];
-    unsigned long   *octetptr = octet;
-    int             i;
+    fnet_uint32_t   val;
+    fnet_uint8_t    c;
+    fnet_uint32_t   octet[6];
+    fnet_uint32_t   *octetptr = octet;
+    fnet_index_t    i;
 
     while(1)
     {
@@ -96,13 +96,13 @@ int fnet_str_to_mac( char *str_mac, fnet_mac_addr_t addr )
         {
             if((c >= '0') && (c <= '9'))
             {
-                val = (val * 16U) + (unsigned long)(c - '0');
+                val = (val * 16U) + (fnet_uint32_t)(c - '0');
                 str_mac++;
                 continue;
             }
             else if(((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')))
             {
-                val = (val << 4U) + (unsigned long)(c + 10U - (((c >= 'a') && (c <= 'f')) ? 'a' : 'A'));
+                val = (val << 4U) + (fnet_uint32_t)(c + 10U - (((c >= 'a') && (c <= 'f')) ? 'a' : 'A'));
                 str_mac++;
                 continue;
             }
@@ -118,7 +118,9 @@ int fnet_str_to_mac( char *str_mac, fnet_mac_addr_t addr )
             str_mac++;
 
             if(octetptr >= octet + 6)
+            {
                 goto ERROR;
+            }
 
             continue;
         }
@@ -126,33 +128,34 @@ int fnet_str_to_mac( char *str_mac, fnet_mac_addr_t addr )
         break;
     }
     /* Check for trailing characters. */
-    if(*str_mac && !(*str_mac == ' '))
+    if((*str_mac) && (!(*str_mac == ' ')))
+    {            
         goto ERROR;
+    }
 
     *octetptr++ = val;
 
     if((octetptr - octet) == 6)
     {
-        for (i = 0; i < 6; i++)
+        for (i = 0u; i < 6u; i++)
         {
-          addr[i] = (unsigned char)octet[i];
+          addr[i] = (fnet_uint8_t)octet[i];
         }
     }
     else
+    {
         goto ERROR;
+    }
 
     return (FNET_OK);
 ERROR:
     return (FNET_ERR);
 }
 
-
-
 #if (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
 
-
 /* Number of initialised ethernet devices.*/
-unsigned int fnet_eth_number = 0U;
+static fnet_index_t fnet_eth_number = 0U;
 
 /************************************************************************
 *     List of Network Layer Protocols used by Ethernet Interface.
@@ -195,9 +198,9 @@ static const fnet_eth_prot_if_t fnet_eth_prot_if_list[] =
                 (mac_addr)[0] = 0x01U; \
                 (mac_addr)[1] = 0x00U; \
                 (mac_addr)[2] = 0x5EU; \
-                (mac_addr)[3] = (unsigned char)(((unsigned char *)(&ip4_addr))[1] & 0x7FU); \
-                (mac_addr)[4] = ((unsigned char *)(&ip4_addr))[2];  \
-                (mac_addr)[5] = ((unsigned char *)(&ip4_addr))[3];  \
+                (mac_addr)[3] = (fnet_uint8_t)(((fnet_uint8_t *)(&(ip4_addr)))[1] & 0x7FU); \
+                (mac_addr)[4] = ((fnet_uint8_t *)(&(ip4_addr)))[2];  \
+                (mac_addr)[5] = ((fnet_uint8_t *)(&(ip4_addr)))[3];  \
             }while(0)
 
 /* For IPv6 */
@@ -205,10 +208,10 @@ static const fnet_eth_prot_if_t fnet_eth_prot_if_list[] =
             do{   \
                 (mac_addr)[0] = 0x33U;               \
                 (mac_addr)[1] = 0x33U;               \
-                (mac_addr)[2] = ip6_addr->addr[12]; \
-                (mac_addr)[3] = ip6_addr->addr[13]; \
-                (mac_addr)[4] = ip6_addr->addr[14]; \
-                (mac_addr)[5] = ip6_addr->addr[15];  \
+                (mac_addr)[2] = (ip6_addr)->addr[12]; \
+                (mac_addr)[3] = (ip6_addr)->addr[13]; \
+                (mac_addr)[4] = (ip6_addr)->addr[14]; \
+                (mac_addr)[5] = (ip6_addr)->addr[15];  \
             }while(0)
 
 
@@ -217,18 +220,16 @@ static const fnet_eth_prot_if_t fnet_eth_prot_if_list[] =
 *     Function Prototypes
 *******************************************************************************/
 #define FNET_ETH_TIMER_PERIOD (4000U) /*ms*/
-static void fnet_eth_timer( void *cookie );
-
-
+static void fnet_eth_timer(fnet_uint32_t cookie );
 
 /************************************************************************
 * NAME: fnet_eth_prot_input
 *
 * DESCRIPTION: Eth. network-layer input function.
 *************************************************************************/
-void fnet_eth_prot_input( fnet_netif_t *netif, fnet_netbuf_t *nb, unsigned short protocol )
+void fnet_eth_prot_input( fnet_netif_t *netif, fnet_netbuf_t *nb, fnet_uint16_t protocol )
 {
-    unsigned int i;
+    fnet_index_t i;
     
     if(netif && nb)
     {
@@ -256,9 +257,9 @@ void fnet_eth_prot_input( fnet_netif_t *netif, fnet_netbuf_t *nb, unsigned short
 *
 * DESCRIPTION: Do initialization for an Ethernet-type interface.
 *************************************************************************/
-int fnet_eth_init( fnet_netif_t *netif)
+fnet_return_t fnet_eth_init( fnet_netif_t *netif)
 {
-    int result;
+    fnet_return_t result;
 
 #if !FNET_CFG_CPU_ETH_MIB 
     /* Clear Ethernet statistics. */
@@ -319,7 +320,7 @@ int fnet_eth_init( fnet_netif_t *netif)
         ((fnet_eth_if_t *)(netif->if_ptr))->connection_flag = fnet_netif_connected(netif);
         
         ((fnet_eth_if_t *)(netif->if_ptr))->eth_timer = 
-                            fnet_timer_new((FNET_ETH_TIMER_PERIOD / FNET_TIMER_PERIOD_MS), fnet_eth_timer, netif);
+                            fnet_timer_new((FNET_ETH_TIMER_PERIOD / FNET_TIMER_PERIOD_MS), fnet_eth_timer, (fnet_uint32_t)netif);
         
         fnet_eth_number++;
     }
@@ -381,7 +382,9 @@ void fnet_eth_change_addr_notify(fnet_netif_t *netif)
 {
 #if FNET_CFG_IP4
     if(netif->ip4_addr.address)
+    {
     	fnet_arp_request(netif, netif->ip4_addr.address); /* Gratuitous ARP request.*/
+    }
 #else
     FNET_COMP_UNUSED_ARG(netif);
 #endif /* FNET_CFG_IP4 */   
@@ -392,20 +395,22 @@ void fnet_eth_change_addr_notify(fnet_netif_t *netif)
 *
 * DESCRIPTION: 
 *************************************************************************/
-static void fnet_eth_timer( void *cookie )
+static void fnet_eth_timer(fnet_uint32_t cookie )
 {
-    fnet_netif_t *netif = (fnet_netif_t *) cookie;
-    int connection_flag = ((fnet_eth_if_t *)(netif->if_ptr))->connection_flag;
-
+    fnet_netif_t    *netif = (fnet_netif_t *) cookie;
+    fnet_bool_t     connection_flag = ((fnet_eth_if_t *)(netif->if_ptr))->connection_flag;
 
     if(fnet_netif_connected(netif) != connection_flag) /* Is any change in connection. */
     {
-        if(connection_flag == 0)  /* Connected. */
+        if(connection_flag == FNET_FALSE)  /* Connected. */
         {
             fnet_eth_change_addr_notify(netif);
+            ((fnet_eth_if_t *)(netif->if_ptr))->connection_flag = FNET_TRUE;
         }
-            
-        ((fnet_eth_if_t *)(netif->if_ptr))->connection_flag = connection_flag ^ 1;
+        else
+        {
+            ((fnet_eth_if_t *)(netif->if_ptr))->connection_flag = FNET_FALSE;
+        }
     }
 }
 
@@ -434,9 +439,9 @@ void fnet_eth_output_ip4(fnet_netif_t *netif, fnet_ip4_addr_t dest_ip_addr, fnet
         destination_addr[0] = 0x01U;
         destination_addr[1] = 0x0U;
         destination_addr[2] = 0x5eU;
-        destination_addr[3] = (unsigned char)(FNET_IP4_ADDR2(dest_ip_addr)& 0x7fU);
-        destination_addr[4] = (unsigned char)(FNET_IP4_ADDR3(dest_ip_addr));
-        destination_addr[5] = (unsigned char)(FNET_IP4_ADDR4(dest_ip_addr));
+        destination_addr[3] = (fnet_uint8_t)(FNET_IP4_ADDR2(dest_ip_addr)& 0x7fU);
+        destination_addr[4] = (fnet_uint8_t)(FNET_IP4_ADDR3(dest_ip_addr));
+        destination_addr[5] = (fnet_uint8_t)(FNET_IP4_ADDR4(dest_ip_addr));
         /* TBD Use macro. */
     }
     else
@@ -469,8 +474,7 @@ EXIT:
 void fnet_eth_output_ip6(fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip_addr,  const fnet_ip6_addr_t *dest_ip_addr, fnet_netbuf_t* nb)
 {
     fnet_mac_addr_t dest_mac_addr; /* 48-bit destination address */
-    unsigned char *dest_mac_addr_ptr;
-  
+    fnet_uint8_t *dest_mac_addr_ptr;
  
     /********************************************
     * Multicast.
@@ -479,7 +483,7 @@ void fnet_eth_output_ip6(fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip_addr
     {
         FNET_ETH_MULTICAST_IP6_TO_MAC(dest_ip_addr, dest_mac_addr);
         
-        dest_mac_addr_ptr = (unsigned char *)dest_mac_addr;
+        dest_mac_addr_ptr = (fnet_uint8_t *)dest_mac_addr;
     } 
     /********************************************
     * Unicast.
@@ -515,7 +519,7 @@ void fnet_eth_output_ip6(fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip_addr
                 neighbor = fnet_nd6_neighbor_cache_add(netif, dest_ip_addr, FNET_NULL, FNET_ND6_NEIGHBOR_STATE_INCOMPLETE);
                 
                 neighbor->state_time = fnet_timer_ms();
-                neighbor->solicitation_send_counter = 0;
+                neighbor->solicitation_send_counter = 0u;
                 FNET_IP6_ADDR_COPY(src_ip_addr, &neighbor->solicitation_src_ip_addr); /* Save src address for later usage.*/
                 
                 /* AR: Transmitting a Neighbor Solicitation message targeted at the neighbor.*/
@@ -545,7 +549,7 @@ void fnet_eth_output_ip6(fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip_addr
         {
             neighbor->state = FNET_ND6_NEIGHBOR_STATE_INCOMPLETE;
             neighbor->state_time = fnet_timer_ms();
-            neighbor->solicitation_send_counter = 0;
+            neighbor->solicitation_send_counter = 0u;
             FNET_IP6_ADDR_COPY(src_ip_addr, &neighbor->solicitation_src_ip_addr); /* Save src address for later usage.*/
             /* AR: Transmitting a Neighbor Solicitation message targeted at the neighbor.*/
             fnet_nd6_neighbor_solicitation_send(netif, src_ip_addr, FNET_NULL /* NULL for AR */, dest_ip_addr);            
@@ -571,7 +575,7 @@ void fnet_eth_output_ip6(fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip_addr
         }    
         
         /* Get destination MAC/HW address.*/
-        dest_mac_addr_ptr = (unsigned char *)(&neighbor->ll_addr[0]);
+        dest_mac_addr_ptr = (fnet_uint8_t *)(&neighbor->ll_addr[0]);
     }
         
     /* Send Ethernet frame. */
@@ -652,10 +656,10 @@ EXIT:
 *
 * DESCRIPTION: Prints an Ethernet header. For debug needs only.
 *************************************************************************/
-#if FNET_CFG_DEBUG_TRACE_ETH
-void fnet_eth_trace(char *str, fnet_eth_header_t *eth_hdr)
+#if FNET_CFG_DEBUG_TRACE_ETH && FNET_CFG_DEBUG_TRACE
+void fnet_eth_trace(fnet_uint8_t *str, fnet_eth_header_t *eth_hdr)
 {
-    char mac_str[FNET_MAC_ADDR_STR_SIZE];
+    fnet_uint8_t mac_str[FNET_MAC_ADDR_STR_SIZE];
 
     fnet_printf(FNET_SERIAL_ESC_FG_GREEN"%s", str); /* Print app-specific header.*/
     fnet_println("[ETH header]"FNET_SERIAL_ESC_FG_BLACK); 

@@ -40,17 +40,46 @@
 ***************************************************************************/
 #include "fnet.h"
 
+#if (FNET_CFG_CPU_TIMER_NUMBER<0u)||(FNET_CFG_CPU_TIMER_NUMBER>FNET_CFG_CPU_TIMER_NUMBER_MAX)
+    #error "FNET_CFG_CPU_TIMER_NUMBER must be from 0 to FNET_CFG_CPU_TIMER_NUMBER_MAX."
+#endif
+
+#if (FNET_CFG_CPU_TIMER_VECTOR_PRIORITY<1u)||(FNET_CFG_CPU_TIMER_VECTOR_PRIORITY>7u)
+    #error "FNET_CFG_CPU_TIMER_VECTOR_PRIORITY must be from 1 to 7."
+#endif
+
+#if (FNET_CFG_CPU_ETH0_MTU > 1500u) /* Limit maximum size.*/
+    #error "FNET_CFG_CPU_ETH0_MTU must be <= 1500"
+#endif
+
+#if (FNET_CFG_CPU_ETH1_MTU > 1500u) /* Limit maximum size.*/
+    #error "FNET_CFG_CPU_ETH1_MTU must be <= 1500"
+#endif 
+
+#if (FNET_CFG_CPU_ETH_VECTOR_PRIORITY<1u)||(FNET_CFG_CPU_ETH_VECTOR_PRIORITY>7u)
+    #error "FNET_CFG_CPU_ETH_VECTOR_PRIORITY must be from 1 to 7."
+#endif
+
+#if (FNET_CFG_CPU_ETH_TX_BUFS_MAX < 2u)
+    #error "FNET_CFG_CPU_ETH_TX_BUFS_MAX is less than 2, minimal required value is 2 - see errata MCF5235"
+#endif
+
+#if (FNET_CFG_CPU_ETH_RX_BUFS_MAX < 2u)
+    #error "FNET_CFG_CPU_ETH_RX_BUFS_MAX is less than 2, minimal required value is 2 - see errata MCF5235"
+#endif
+   
+
 #if FNET_CFG_CPU_LITTLE_ENDIAN
 /* Convert short from host- to network byte order.*/
-unsigned short fnet_htons(unsigned short short_var)                                
+fnet_uint16_t fnet_htons(fnet_uint16_t short_var)                                
 {
-    unsigned short result = FNET_HTONS(short_var);
+    fnet_uint16_t result = FNET_HTONS(short_var);
     return result;
 }
 /* Convert long from host- to network byte order.*/
-unsigned long fnet_htonl(unsigned long long_var)                                 
+fnet_uint32_t fnet_htonl(fnet_uint32_t long_var)                                 
 {
-    unsigned long result = FNET_HTONL(long_var);
+    fnet_uint32_t result = FNET_HTONL(long_var);
     return result;    
 }
 #endif /* FNET_CFG_CPU_LITTLE_ENDIAN */

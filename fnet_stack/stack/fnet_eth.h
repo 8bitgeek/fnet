@@ -45,7 +45,6 @@
 
 #include "fnet_config.h"
 
-
 /**************************************************************************
 *     Definitions
 ***************************************************************************/
@@ -67,12 +66,15 @@
 /**************************************************************************/ /*!
  * @brief Media Access Control (MAC) address  type.
  ******************************************************************************/
-typedef unsigned char fnet_mac_addr_t[6]; /* MAC address type.*/
-
+typedef fnet_uint8_t fnet_mac_addr_t[6]; /* MAC address type.*/
 
 /******************************************************************************
 *     Function Prototypes
 *******************************************************************************/
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -96,7 +98,7 @@ typedef unsigned char fnet_mac_addr_t[6]; /* MAC address type.*/
  * in transmission order (e.g. 01:23:45:67:89:ab ), into buffer pointed to by the
  * @c str_mac.
  ******************************************************************************/
-char *fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac );
+fnet_char_t *fnet_mac_to_str( fnet_mac_addr_t addr, fnet_char_t *str_mac );
 
 /***************************************************************************/ /*!
  *
@@ -121,7 +123,11 @@ char *fnet_mac_to_str( fnet_mac_addr_t addr, char *str_mac );
  * in transmission order. The value returned, pointed to by the @c addr,
  * is a number suitable for use as an MAC address.
  ******************************************************************************/
-int fnet_str_to_mac( char *str_mac, fnet_mac_addr_t addr );
+fnet_return_t fnet_str_to_mac( fnet_char_t *str_mac, fnet_mac_addr_t addr );
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

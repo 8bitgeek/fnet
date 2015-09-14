@@ -116,7 +116,7 @@
 *    {
 *       struct fnet_fs_dirent ep;
 *       FNET_FS_DIR dir;
-*       char name[FNET_CFG_FS_MOUNT_NAME_MAX+1];
+*       fnet_uint8_t name[FNET_CFG_FS_MOUNT_NAME_MAX+1];
 *
 *       // Open dir.
 *       dir = fnet_fs_opendir("\rom");
@@ -213,15 +213,18 @@ typedef enum
  ******************************************************************************/ 
 struct fnet_fs_dirent
 {
-    unsigned long   d_ino;      /**< @brief Entry serial number. */
-    fnet_fs_d_type_t d_type;    /**< @brief Type of the entry defined by
-                                 *   the  @ref fnet_fs_d_type_t.*/
-    const char   *d_name;       /**< @brief Name of the entry (null-terminated 
-                                 *   string).*/ 
-    unsigned long d_size;       /**< @brief Size of the file entry. @n
-	                             * If the entry is a directory this field is set to @c 0.*/
+    fnet_uint32_t           d_ino;      /**< @brief Entry serial number. */
+    fnet_fs_d_type_t        d_type;    /**< @brief Type of the entry defined by
+                                        *   the  @ref fnet_fs_d_type_t.*/
+    const fnet_char_t      *d_name;    /**< @brief Name of the entry (null-terminated 
+                                        *   string).*/ 
+    fnet_size_t             d_size;     /**< @brief Size of the file entry. @n
+                                        * If the entry is a directory this field is set to @c 0.*/
 };
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -240,7 +243,7 @@ struct fnet_fs_dirent
  * functions.
  *
  ******************************************************************************/
-int fnet_fs_init(void);
+fnet_return_t fnet_fs_init(void);
 
 /***************************************************************************/ /*!
  *
@@ -286,7 +289,7 @@ void fnet_fs_release(void);
  * mount point named by the @c mount_name and is ready to use. 
  *
  ******************************************************************************/
-int fnet_fs_mount( char *fs_name, const char *mount_name, const void *arg );
+fnet_return_t fnet_fs_mount( fnet_char_t *fs_name, const fnet_char_t *mount_name, const void *arg );
 
 /***************************************************************************/ /*!
  *
@@ -307,7 +310,7 @@ int fnet_fs_mount( char *fs_name, const char *mount_name, const void *arg );
  * @c mount_name making it no longer accessible.
  *
  ******************************************************************************/
-int fnet_fs_unmount( const char *mount_name );
+fnet_return_t fnet_fs_unmount( const fnet_char_t *mount_name );
 
 /***************************************************************************/ /*!
  *
@@ -327,7 +330,7 @@ int fnet_fs_unmount( const char *mount_name );
  * to the directory named by the @c dirname. 
  *
  ******************************************************************************/
-FNET_FS_DIR fnet_fs_opendir( const char *dirname);
+FNET_FS_DIR fnet_fs_opendir( const fnet_char_t *dirname);
 
 /***************************************************************************/ /*!
  *
@@ -346,7 +349,7 @@ FNET_FS_DIR fnet_fs_opendir( const char *dirname);
  * This function closes the directory descriptor reffered to by the @c dir.
  *
  ******************************************************************************/
-int fnet_fs_closedir( FNET_FS_DIR dir);
+fnet_return_t fnet_fs_closedir( FNET_FS_DIR dir);
 
 /***************************************************************************/ /*!
  *
@@ -371,7 +374,7 @@ int fnet_fs_closedir( FNET_FS_DIR dir);
  * can be read by calling the @ref fnet_fs_readdir() function repeatedly.@n 
  *
  ******************************************************************************/
-int fnet_fs_readdir(FNET_FS_DIR dir, struct fnet_fs_dirent* dirent);
+fnet_return_t fnet_fs_readdir(FNET_FS_DIR dir, struct fnet_fs_dirent* dirent);
 
 /***************************************************************************/ /*!
  *
@@ -438,7 +441,7 @@ void fnet_fs_rewinddir( FNET_FS_DIR dir );
  * NOTE: The current version of FS API supports the reading mode only.
  *
  ******************************************************************************/
-FNET_FS_FILE fnet_fs_fopen(const char *filename, const char *mode);
+FNET_FS_FILE fnet_fs_fopen(const fnet_char_t *filename, const fnet_char_t *mode);
 
 /***************************************************************************/ /*!
  *
@@ -491,7 +494,7 @@ FNET_FS_FILE fnet_fs_fopen(const char *filename, const char *mode);
  * NOTE: The current version of FS API supports the reading mode only.
  *
  ******************************************************************************/
-FNET_FS_FILE fnet_fs_fopen_re(const char *filename, const char *mode, FNET_FS_FILE dir);
+FNET_FS_FILE fnet_fs_fopen_re(const fnet_char_t *filename, const fnet_char_t *mode, FNET_FS_FILE dir);
 
 /***************************************************************************/ /*!
  *
@@ -511,7 +514,7 @@ FNET_FS_FILE fnet_fs_fopen_re(const char *filename, const char *mode, FNET_FS_FI
  * and disassociates it.
  *
  ******************************************************************************/
-int fnet_fs_fclose(FNET_FS_FILE file);
+fnet_return_t fnet_fs_fclose(FNET_FS_FILE file);
 
 /***************************************************************************/ /*!
  *
@@ -536,7 +539,7 @@ int fnet_fs_fclose(FNET_FS_FILE file);
  * total amount of bytes read.
  *
  ******************************************************************************/
-unsigned long fnet_fs_fread(void * buf, unsigned long size, FNET_FS_FILE file);
+fnet_size_t fnet_fs_fread(void * buf, fnet_size_t size, FNET_FS_FILE file);
 
 /***************************************************************************/ /*!
  *
@@ -561,8 +564,8 @@ void fnet_fs_rewind( FNET_FS_FILE file );
  * @param file  File descriptor.
  *
  * @return This function returns:
- *   - @ref FNET_FS_EOF in the case that the End-of-File is set.
- *   - @c 0 in the case that the End-of-File is NOT set.
+ *   - @c FNET_TRUE in the case that the End-of-File is set.
+ *   - @c FNET_FALSE in the case that the End-of-File is NOT set.
  *
  * @see fnet_fs_fread()
  *
@@ -577,7 +580,7 @@ void fnet_fs_rewind( FNET_FS_FILE file );
  * is successfully called to set the position indicator to a new value.
  *
  ******************************************************************************/
-int fnet_fs_feof(FNET_FS_FILE file);
+fnet_bool_t fnet_fs_feof(FNET_FS_FILE file);
 
 /***************************************************************************/ /*!
  *
@@ -586,7 +589,7 @@ int fnet_fs_feof(FNET_FS_FILE file);
  * @param file  File descriptor.
  *
  * @return This function returns:
- *   - The character read is returned as an int value.
+ *   - The character read is returned as an fnet_int32_t value.
  *   - @ref FNET_ERR if an error occurs.
  *
  * @see fnet_fs_fread()
@@ -599,7 +602,7 @@ int fnet_fs_feof(FNET_FS_FILE file);
  * to point to the next character.
  *
  ******************************************************************************/
-int fnet_fs_fgetc(FNET_FS_FILE file);
+fnet_int32_t fnet_fs_fgetc(FNET_FS_FILE file);
 
 /***************************************************************************/ /*!
  *
@@ -610,6 +613,7 @@ int fnet_fs_fgetc(FNET_FS_FILE file);
  *
  * @param offset    Specifies the number of bytes from @c origin, 
  *                  where the position indicator should be placed.
+ *                  It may be negative and positive.
  *
  * @param origin    Origin position defined by @ref fnet_fs_seek_origin_t.
  *
@@ -626,7 +630,7 @@ int fnet_fs_fgetc(FNET_FS_FILE file);
  * position specified by @c origin.
  *
  ******************************************************************************/
-int fnet_fs_fseek (FNET_FS_FILE file, long offset, int origin);
+fnet_return_t fnet_fs_fseek (FNET_FS_FILE file, fnet_int32_t offset, fnet_fs_seek_origin_t origin);
 
 /***************************************************************************/ /*!
  *
@@ -647,7 +651,7 @@ int fnet_fs_fseek (FNET_FS_FILE file, long offset, int origin);
  * from the beginning of the file.
  *
  ******************************************************************************/
-long fnet_fs_ftell (FNET_FS_FILE file);
+fnet_int32_t fnet_fs_ftell (FNET_FS_FILE file);
 
 /***************************************************************************/ /*!
  *
@@ -669,7 +673,11 @@ long fnet_fs_ftell (FNET_FS_FILE file);
  * The information is defined by the @ref fnet_fs_dirent structure. 
  *
  ******************************************************************************/
-int fnet_fs_finfo (FNET_FS_FILE file, struct fnet_fs_dirent *dirent);
+fnet_return_t fnet_fs_finfo (FNET_FS_FILE file, struct fnet_fs_dirent *dirent);
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 /*! @} */

@@ -49,7 +49,7 @@
 #include "fnet_netif_prv.h"
 
 
-#if FNET_CFG_DEBUG_ARP    
+#if FNET_CFG_DEBUG_ARP && FNET_CFG_DEBUG   
     #define FNET_DEBUG_ARP   FNET_DEBUG
 #else
     #define FNET_DEBUG_ARP(...)     do{}while(0)
@@ -59,32 +59,31 @@
 *     Function Prototypes
 *************************************************************************/
 #if FNET_CFG_ARP_EXPIRE_TIMEOUT
-static void fnet_arp_timer( void *cookie );
+static void fnet_arp_timer( fnet_uint32_t cookie );
 #endif
 
 static fnet_arp_entry_t *fnet_arp_add_entry( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, 
                                             const fnet_mac_addr_t ethaddr );
 static fnet_arp_entry_t *fnet_arp_update_entry( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr,
                                             fnet_mac_addr_t ethaddr );
-static void fnet_arp_ip_duplicated(void *cookie);
+static void fnet_arp_ip_duplicated(fnet_uint32_t cookie);
 
-#if FNET_CFG_DEBUG_TRACE_ARP
-    static void fnet_arp_trace(char *str, fnet_arp_header_t *arp_hdr);
+#if FNET_CFG_DEBUG_TRACE_ARP && FNET_CFG_DEBUG_TRACE
+    static void fnet_arp_trace(fnet_uint8_t *str, fnet_arp_header_t *arp_hdr);
 #else
     #define fnet_arp_trace(str, arp_hdr)    do{}while(0)
 #endif
-
 
 /************************************************************************
 * NAME: fnet_arp_init
 *
 * DESCRIPTION: ARP module initialization.
 *************************************************************************/
-int fnet_arp_init( fnet_netif_t *netif )
+fnet_return_t fnet_arp_init( fnet_netif_t *netif )
 {
     fnet_arp_if_t  *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); 
-    unsigned int   i;
-    int            result= FNET_ERR;
+    fnet_index_t   i;
+    fnet_return_t  result= FNET_ERR;
 
     for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; i++)
     {
@@ -93,15 +92,17 @@ int fnet_arp_init( fnet_netif_t *netif )
 
 #if FNET_CFG_ARP_EXPIRE_TIMEOUT
     arpif->arp_tmr = fnet_timer_new((FNET_ARP_TIMER_PERIOD / FNET_TIMER_PERIOD_MS), 
-                        fnet_arp_timer, arpif);
+                        fnet_arp_timer, (fnet_uint32_t)arpif);
 #endif
 
     if(arpif->arp_tmr)
     {
         /* Install event Handler. */
-    	arpif->arp_event = fnet_event_init(fnet_arp_ip_duplicated, netif);
+    	arpif->arp_event = fnet_event_init(fnet_arp_ip_duplicated, (fnet_uint32_t)netif);
     	if(arpif->arp_event != FNET_ERR)
+        {
     	    result = FNET_OK;
+        }
     }
         
     return result;
@@ -127,19 +128,20 @@ void fnet_arp_release( fnet_netif_t *netif )
 * DESCRIPTION: ARP aging timer.
 *************************************************************************/
 #if FNET_CFG_ARP_EXPIRE_TIMEOUT
-static void fnet_arp_timer( void *cookie )
+static void fnet_arp_timer(fnet_uint32_t cookie )
 {
     fnet_arp_if_t   *arpif =  (fnet_arp_if_t *)cookie;
-    unsigned int    i;
+    fnet_index_t    i;
 
     for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; i++)
     {
         if((arpif->arp_table[i].prot_addr)
-             && ((fnet_timer_ticks() - arpif->arp_table[i].cr_time))
-                              > (unsigned long)((FNET_CFG_ARP_EXPIRE_TIMEOUT*1000U) / FNET_TIMER_PERIOD_MS))
+          && (((fnet_timer_ticks() - arpif->arp_table[i].cr_time)) > (fnet_time_t)((FNET_CFG_ARP_EXPIRE_TIMEOUT*1000U) / FNET_TIMER_PERIOD_MS)))
         {
             if(arpif->arp_table[i].hold)
+            {
                 fnet_netbuf_free_chain(arpif->arp_table[i].hold);
+            }
 
             fnet_memset_zero(&(arpif->arp_table[i]), sizeof(fnet_arp_entry_t));
         }
@@ -156,9 +158,9 @@ static fnet_arp_entry_t *fnet_arp_add_entry( fnet_netif_t *netif, fnet_ip4_addr_
                                         const fnet_mac_addr_t ethaddr )
 {
     fnet_arp_if_t   *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if);
-    unsigned int    i;
-    unsigned int    j;
-    unsigned long   max_time;
+    fnet_index_t    i;
+    fnet_index_t    j;
+    fnet_time_t     max_time;
 
     /* Find an entry to update. */
     for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
@@ -229,7 +231,7 @@ static fnet_arp_entry_t *fnet_arp_update_entry( fnet_netif_t *netif, fnet_ip4_ad
                                             fnet_mac_addr_t ethaddr )
 {
     fnet_arp_if_t   *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); 
-    unsigned int    i;
+    fnet_index_t    i;
 
     /* Find an entry to update. */
     for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; ++i)
@@ -257,7 +259,7 @@ static fnet_arp_entry_t *fnet_arp_update_entry( fnet_netif_t *netif, fnet_ip4_ad
 fnet_mac_addr_t *fnet_arp_lookup( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
 {
     fnet_arp_if_t       *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); /* PFI */
-    unsigned int        i;
+    fnet_index_t        i;
     fnet_mac_addr_t     *result = FNET_NULL;
 
     /* Find an entry. */
@@ -288,7 +290,7 @@ fnet_mac_addr_t *fnet_arp_lookup( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
 void fnet_arp_resolve( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, fnet_netbuf_t *nb )
 {
     fnet_arp_if_t       *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); /* PFI */
-    unsigned int        i;
+    fnet_index_t        i;
     fnet_arp_entry_t    *entry;
 
     for (i = 0U; i < FNET_CFG_ARP_TABLE_SIZE; i++)
@@ -301,9 +303,13 @@ void fnet_arp_resolve( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, fnet_netbuf_
 
     /* If no unused entry is found, create it. */
     if(i == FNET_CFG_ARP_TABLE_SIZE)
+    {
         entry = fnet_arp_add_entry(netif, ipaddr, fnet_eth_null_addr);
+    }
     else
+    {
         entry = &arpif->arp_table[i];
+    }
 
     if(entry->hold)
     {
@@ -319,7 +325,9 @@ void fnet_arp_resolve( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, fnet_netbuf_
         fnet_arp_request(netif, ipaddr);
     }
     else
+    {
         entry->hold = nb;
+    }
 }
 
 /************************************************************************
@@ -330,7 +338,7 @@ void fnet_arp_resolve( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, fnet_netbuf_
 void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
 {
 	fnet_arp_if_t       *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if);
-    fnet_arp_header_t   *arp_hdr = nb->data_ptr;
+    fnet_arp_header_t   *arp_hdr = (fnet_arp_header_t *)nb->data_ptr;
     fnet_mac_addr_t     local_addr;
     fnet_arp_entry_t    *entry;
 
@@ -343,15 +351,15 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
         if(nb->total_length > sizeof(fnet_arp_header_t)) 
         {
             /* Logical size and the physical size of the packet should be the same.*/
-            fnet_netbuf_trim(&nb, (int)sizeof(fnet_arp_header_t) - (int)nb->total_length); 
+            fnet_netbuf_trim(&nb, (fnet_int32_t)sizeof(fnet_arp_header_t) - (fnet_int32_t)nb->total_length); 
         }
         
         fnet_arp_trace("RX", arp_hdr); /* Print ARP header. */
         
         fnet_netif_get_hw_addr(netif, local_addr, sizeof(fnet_mac_addr_t));
 
-        if(!(!fnet_memcmp(arp_hdr->sender_hard_addr, local_addr, sizeof(fnet_mac_addr_t)) /* It's from me => ignore it.*/
-        || !fnet_memcmp(arp_hdr->sender_hard_addr, fnet_eth_broadcast, sizeof(fnet_mac_addr_t)))  /* It's broadcast=> error. */
+        if(!((!fnet_memcmp(arp_hdr->sender_hard_addr, local_addr, sizeof(fnet_mac_addr_t))) /* It's from me => ignore it.*/
+        || (!fnet_memcmp(arp_hdr->sender_hard_addr, fnet_eth_broadcast, sizeof(fnet_mac_addr_t))))  /* It's broadcast=> error. */
         )
         {
             fnet_ip4_addr_t sender_prot_addr = arp_hdr->sender_prot_addr;
@@ -368,7 +376,7 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
                     entry = fnet_arp_update_entry(netif, sender_prot_addr, arp_hdr->sender_hard_addr);
                 }
 
-                if(entry && entry->hold)
+                if(entry && (entry->hold))
                 {
                     /* Send waiting data.*/
                     ((fnet_eth_if_t *)(netif->if_ptr))->output(netif, FNET_ETH_TYPE_IP4, entry->hard_addr, entry->hold);
@@ -412,14 +420,14 @@ void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb )
 *************************************************************************/
 void fnet_arp_request( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
 {
-    fnet_arp_header_t *arp_hdr;
-    fnet_mac_addr_t sender_addr;
+    fnet_arp_header_t   *arp_hdr;
+    fnet_mac_addr_t     sender_addr;
 
     fnet_netbuf_t *nb;
 
     if((nb = fnet_netbuf_new(sizeof(fnet_arp_header_t), FNET_TRUE)) != 0)
     {
-        arp_hdr = nb->data_ptr;
+        arp_hdr = (fnet_arp_header_t *)nb->data_ptr;
         arp_hdr->hard_type = FNET_HTONS(FNET_ARP_HARD_TYPE); /* The type of hardware address (=1 for Ethernet).*/
         arp_hdr->prot_type = FNET_HTONS(FNET_ETH_TYPE_IP4);   /* The type of protocol address (=0x0800 for IP). */
         arp_hdr->hard_size = FNET_ARP_HARD_SIZE; /* The size in bytes of the hardware address (=6). */
@@ -446,7 +454,7 @@ void fnet_arp_request( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr )
 * DESCRIPTION: This function is called on the IP address
 *              duplication event.
 *************************************************************************/
-static void fnet_arp_ip_duplicated(void *cookie)
+static void fnet_arp_ip_duplicated(fnet_uint32_t cookie)
 {
 	
     FNET_DEBUG_ARP("");
@@ -462,7 +470,7 @@ static void fnet_arp_ip_duplicated(void *cookie)
 *************************************************************************/
 void fnet_arp_drain(fnet_netif_t *netif)
 {
-   unsigned int     i;
+   fnet_index_t     i;
    fnet_arp_if_t    *arpif = &(((fnet_eth_if_t *)(netif->if_ptr))->arp_if); /* PFI */
      
    fnet_isr_lock();
@@ -487,11 +495,11 @@ void fnet_arp_drain(fnet_netif_t *netif)
 *
 * DESCRIPTION: Prints ARP header. For debugging purposes.
 *************************************************************************/
-#if FNET_CFG_DEBUG_TRACE_ARP
-static void fnet_arp_trace(char *str, fnet_arp_header_t *arp_hdr)
+#if FNET_CFG_DEBUG_TRACE_ARP && FNET_CFG_DEBUG_TRACE
+static void fnet_arp_trace(fnet_uint8_t *str, fnet_arp_header_t *arp_hdr)
 {
-    char mac_str[FNET_MAC_ADDR_STR_SIZE];
-    char ip_str[FNET_IP4_ADDR_STR_SIZE];
+    fnet_uint8_t mac_str[FNET_MAC_ADDR_STR_SIZE];
+    fnet_uint8_t ip_str[FNET_IP4_ADDR_STR_SIZE];
 
     fnet_printf(FNET_SERIAL_ESC_FG_GREEN"%s", str); /* Print app-specific header.*/
     fnet_println("[ARP header]"FNET_SERIAL_ESC_FG_BLACK);

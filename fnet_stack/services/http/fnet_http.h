@@ -104,9 +104,9 @@
  * @brief The minor version number of HTTP protocol supported by the HTTP server.
  ******************************************************************************/
 #if FNET_CFG_HTTP_VERSION_MAJOR /* HTTP/1.x*/
-    #define FNET_HTTP_VERSION_MINOR     (0)
+    #define FNET_HTTP_VERSION_MINOR     (0u)
 #else   /*HTTP/0.9*/
-    #define FNET_HTTP_VERSION_MINOR     (9)
+    #define FNET_HTTP_VERSION_MINOR     (9u)
 #endif
 
 
@@ -209,8 +209,8 @@ typedef enum
  ******************************************************************************/
 struct fnet_http_params
 {
-    char * root_path;           /**< @brief Server root-directory path (null-terminated string). */
-    char * index_path;          /**< @brief Index file path (null-terminated string). @n
+    fnet_char_t * root_path;           /**< @brief Server root-directory path (null-terminated string). */
+    fnet_char_t * index_path;          /**< @brief Index file path (null-terminated string). @n
                                  *   It's relative to the @c root_path.*/
     struct sockaddr address;    /**< @brief Server socket address. @n
                                  * If server IP address is set to @c 0s, the server will listen to all current network interfaces. @n
@@ -224,11 +224,11 @@ struct fnet_http_params
     const struct fnet_http_cgi *cgi_table;      /**< @brief Pointer to the optional
                                                  * CGI callback function table. */
 #endif
-#if FNET_CFG_HTTP_AUTHENTICATION_BASIC || defined(__DOXYGEN__)
+#if (FNET_CFG_HTTP_AUTHENTICATION_BASIC && FNET_CFG_HTTP_VERSION_MAJOR) || defined(__DOXYGEN__)
     const struct fnet_http_auth  *auth_table;   /**< @brief Pointer to the optional
                                                  * HTTP Access Authentification table. */	        
 #endif
-#if FNET_CFG_HTTP_POST || defined(__DOXYGEN__)
+#if (FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR) || defined(__DOXYGEN__)
     const struct fnet_http_post *post_table;    /**< @brief Pointer to the optional
                                                  * POST callback function table. */
 #endif
@@ -238,7 +238,11 @@ struct fnet_http_params
  * @brief HTTP server descriptor.
  * @see fnet_http_init()
  ******************************************************************************/
-typedef long fnet_http_desc_t;
+typedef fnet_int32_t fnet_http_desc_t;
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -295,7 +299,7 @@ void fnet_http_release(fnet_http_desc_t desc);
  * This function detects if the HTTP Server service is initialized or is released.
  *
  ******************************************************************************/
-int fnet_http_enabled(fnet_http_desc_t desc);
+fnet_bool_t fnet_http_enabled(fnet_http_desc_t desc);
 
 /***************************************************************************/ /*!
  *
@@ -321,7 +325,11 @@ int fnet_http_enabled(fnet_http_desc_t desc);
  * to properly interpret the request.
  *
  ******************************************************************************/
-void fnet_http_query_unencode(char * dest, char * src);
+void fnet_http_query_unencode(fnet_uint8_t * dest, fnet_uint8_t * src);
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

@@ -59,7 +59,7 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static void fapp_ping_handler(int result, unsigned long packet_count, struct sockaddr *target_addr, long cookie);
+static void fapp_ping_handler(fnet_error_t result, fnet_size_t packet_count, struct sockaddr *target_addr, fnet_uint32_t cookie);
 static void fapp_ping_on_ctrlc(fnet_shell_desc_t desc);
 
 /************************************************************************
@@ -67,16 +67,16 @@ static void fapp_ping_on_ctrlc(fnet_shell_desc_t desc);
 *
 * DESCRIPTION:
 ************************************************************************/
-static void fapp_ping_handler (int result, unsigned long packet_count, struct sockaddr *target_addr, long cookie)
+static void fapp_ping_handler (fnet_error_t result, fnet_size_t packet_count, struct sockaddr *target_addr, fnet_uint32_t cookie)
 {
-    char                ip_str[FNET_IP_ADDR_STR_SIZE];
+    fnet_char_t                ip_str[FNET_IP_ADDR_STR_SIZE];
     fnet_shell_desc_t   desc = (fnet_shell_desc_t)cookie;
     
-    if(result == FNET_OK)
+    if(result == FNET_ERR_OK)
     {
         fnet_shell_println(desc, FAPP_PING_STR_REPLY, fnet_inet_ntop(target_addr->sa_family, target_addr->sa_data, ip_str, sizeof(ip_str)));
     }    
-    else if(result == (int)FNET_ERR_TIMEDOUT)
+    else if(result == FNET_ERR_TIMEDOUT)
     {
         fnet_shell_println(desc, FAPP_PING_STR_TIMEOUT);
     }
@@ -108,18 +108,18 @@ static void fapp_ping_on_ctrlc(fnet_shell_desc_t desc)
 *
 * DESCRIPTION: Ping command. 
 ************************************************************************/
-void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_ping_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     struct fnet_ping_params ping_params;
-    int                     i;
-    char                    *p;
-    unsigned long           value;
-    char                    ip_str[FNET_IP_ADDR_STR_SIZE];
+    fnet_index_t            i;
+    fnet_char_t             *p;
+    fnet_uint32_t           value;
+    fnet_char_t             ip_str[FNET_IP_ADDR_STR_SIZE];
     
     
     fnet_memset_zero(&ping_params, sizeof(ping_params));
     
-    ping_params.cookie = desc;
+    ping_params.cookie = (fnet_uint32_t)desc;
     ping_params.handler = fapp_ping_handler;
     ping_params.packet_size = FAPP_PING_DEFAULT_SIZE;
     ping_params.timeout = FAPP_PING_DEFAULT_TIMEOUT;
@@ -128,7 +128,7 @@ void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     ping_params.packet_count = FAPP_PING_DEFAULT_NUMBER;
     
     /* Last parameter must be ip address.*/
-    i = argc-1;
+    i = (argc-1u);
     if(fnet_inet_ptos(argv[i], &ping_params.target_addr) == FNET_ERR)
     {
         goto ERROR_PARAMETER;
@@ -136,65 +136,75 @@ void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     else
     {
         /* TBD Optimise parameters parsing.*/
-        if(argc > 2) /* There are additional parameters */
+        if(argc > 2u) /* There are additional parameters */
         { 
             /* [-c <count>][-i <seconds>]\n\t[-p <pattern>][-s <size>][-h <hoplimit/ttl>] */
-            for(i=1; i<argc-1; i++)
+            for(i=1u; i<(fnet_index_t)(argc-1u); i++)
             {
                 if (!fnet_strcmp(argv[i], "-c"))
                 {
                     i++;
-                    value = fnet_strtoul(argv[i], &p, 10);
+                    value = fnet_strtoul(argv[i], &p, 10u);
 		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
 		            else
+                    {
 		                ping_params.packet_count = value;
+                    }
                 }
                 else if (!fnet_strcmp(argv[i], "-i"))
                 {
                     i++;
-                    value = fnet_strtoul(argv[i], &p, 10);
+                    value = fnet_strtoul(argv[i], &p, 10u);
 		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
 		            else
+                    {
 		                ping_params.timeout = value*1000U;
+                    }
                 }
                 else if (!fnet_strcmp(argv[i], "-p"))
                 {
                     i++;
-                    value = fnet_strtoul(argv[i], &p, 10);
+                    value = fnet_strtoul(argv[i], &p, 10u);
 		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
 		            else
-		                ping_params.pattern = (unsigned char)value;
+                    {
+		                ping_params.pattern = (fnet_uint8_t)value;
+                    }
                 }
                 else if (!fnet_strcmp(argv[i], "-s"))
                 {
                     i++;
-                    value = fnet_strtoul(argv[i], &p, 10);
+                    value = fnet_strtoul(argv[i], &p, 10u);
 		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
 		            else
-		                ping_params.packet_size = (unsigned short)value;
+                    {
+		                ping_params.packet_size = (fnet_size_t)value;
+                    }
                 }
                 else if (!fnet_strcmp(argv[i], "-h"))
                 {
                     i++;
-                    value = fnet_strtoul(argv[i], &p, 10);
+                    value = fnet_strtoul(argv[i], &p, 10u);
 		            if ((value == 0U) && (p == argv[i]))
 		            {
 		                goto ERROR_PARAMETER;
 		            }
 		            else
-		                ping_params.ttl = (unsigned char)value;
+                    {
+		                ping_params.ttl = (fnet_uint8_t)value;
+                    }
                 }
                 else if (!fnet_strcmp(argv[i], "-n"))
                 {

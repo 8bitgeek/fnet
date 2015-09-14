@@ -52,10 +52,10 @@
 void fnet_cpu_isr(void)
 {
     /* ICSR register [VECTACTIVE].*/ 
-    fnet_uint8 vector_number = (*(volatile fnet_uint8*)(0xE000ED04u));
+    fnet_uint8_t vector_number = (*(volatile fnet_uint8_t*)(0xE000ED04u));
 
     /* Call FNET isr handler.*/
-    fnet_isr_handler( vector_number );
+    fnet_isr_handler((fnet_uint32_t)vector_number );
 
     return;
 }

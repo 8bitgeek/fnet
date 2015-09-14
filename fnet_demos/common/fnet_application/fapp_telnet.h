@@ -47,10 +47,17 @@
 
 #if FAPP_CFG_TELNET_CMD  
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-void fapp_telnet_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_telnet_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 void fapp_telnet_info(fnet_shell_desc_t desc);
 void fapp_telnet_release(void);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

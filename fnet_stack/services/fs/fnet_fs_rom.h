@@ -80,7 +80,7 @@
 *    {
 *       struct fnet_fs_dirent ep;
 *       FNET_FS_DIR dir;
-*       char name[FNET_CFG_FS_MOUNT_NAME_MAX+1];
+*       fnet_uint8_t name[FNET_CFG_FS_MOUNT_NAME_MAX+1];
 *
 *       // Open dir.
 *       dir = fnet_fs_opendir("rom");
@@ -124,11 +124,11 @@
  ******************************************************************************/  
 struct fnet_fs_rom_node
 { 
-	const char *name;               /**< @brief Name of a file or directory 
+	const fnet_char_t *name;               /**< @brief Name of a file or directory 
                                     * (null-terminated string). */
-	const unsigned char *data;      /**< @brief Pointer to a file-content buffer. @n
+	const fnet_uint8_t *data;      /**< @brief Pointer to a file-content buffer. @n
                                     * For a directory this field must be set to @c 0.*/
-	unsigned long data_size;        /**< @brief Size of the file buffer pointed to
+	fnet_size_t data_size;         /**< @brief Size of the file buffer pointed to
                                     * by the @c data field. @n
                                     * For a directory this field must be set to @c 0.*/
 	const struct fnet_fs_rom_node * parent_node;    /**< @brief Pointer to the
@@ -142,15 +142,15 @@ struct fnet_fs_rom_node
  ******************************************************************************/ 
 struct fnet_fs_rom_image
 {
-	const char *name;               /**< @brief File-system name (null-terminated string).@n
-	                                 * Should be set to the @ref FNET_FS_ROM_NAME. */  
-	unsigned long version;          /**< @brief File-system version the FS image 
-	                                 * was generated for.*/
-	const struct fnet_fs_rom_node *nodes;   /**< @brief Array of file-system nodes.@n
-	                                         * The last node element must have 
-	                                         * all fields set to zero 
-	                                         * as the end-of-array mark.
-	                                         */
+	const fnet_char_t              *name;      /**< @brief File-system name (null-terminated string).@n
+                                                * Should be set to the @ref FNET_FS_ROM_NAME. */  
+	fnet_uint32_t                   version;    /**< @brief File-system version the FS image 
+                                                * was generated for.*/
+	const struct fnet_fs_rom_node   *nodes;     /**< @brief Array of file-system nodes.@n
+                                                * The last node element must have 
+                                                * all fields set to zero 
+                                                * as the end-of-array mark.
+                                                */
 };
 
 /**************************************************************************/ /*!
@@ -161,7 +161,11 @@ struct fnet_fs_rom_image
 /**************************************************************************/ /*!
  * @brief FNET ROM file-system current version.
  ******************************************************************************/ 
-#define FNET_FS_ROM_VERSION  (2)
+#define FNET_FS_ROM_VERSION  (2u)
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -188,6 +192,10 @@ void fnet_fs_rom_register(void);
  *
  ******************************************************************************/
 void fnet_fs_rom_unregister(void);
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

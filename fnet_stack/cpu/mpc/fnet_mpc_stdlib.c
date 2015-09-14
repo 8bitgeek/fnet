@@ -51,12 +51,12 @@
 
 /****************************************************************/
 #if FNET_CFG_OVERLOAD_MEMCPY
-void *fnet_memcpy (void *dest, const void *src, unsigned n)
+void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const void *from_ptr, fnet_size_t number_of_bytes);
 {
 	int longs, bytes;
-	fnet_uint32 *dpl = (fnet_uint32 *)dest;
-	fnet_uint32 *spl = (fnet_uint32 *)src;
-	fnet_uint8  *dpb, *spb;
+	fnet_uint32_t *dpl = (fnet_uint32 *)dest;
+	fnet_uint32_t *spl = (fnet_uint32 *)src;
+	fnet_uint8_t  *dpb, *spb;
 
     bytes = (n & 0x3);
     longs = ((n - bytes) >> 2);
@@ -70,7 +70,6 @@ void *fnet_memcpy (void *dest, const void *src, unsigned n)
     for (bytes++; --bytes;)
         *dpb++ = *spb++;
 
-	return dest;
 }
 #endif
 

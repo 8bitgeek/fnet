@@ -51,19 +51,18 @@
 #include "fnet_socket_prv.h"
 #include "fnet_checksum.h"
 
-
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
 static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
 static void fnet_icmp_output( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb );
+static void fnet_icmp_notify_protocol(fnet_prot_notify_t prot_cmd, fnet_netbuf_t *nb );
                         
-#if FNET_CFG_DEBUG_TRACE_ICMP
-void fnet_icmp_trace(char *str, fnet_icmp_header_t *icmpp_hdr);
+#if FNET_CFG_DEBUG_TRACE_ICMP && FNET_CFG_DEBUG_TRACE
+void fnet_icmp_trace(fnet_uint8_t *str, fnet_icmp_header_t *icmpp_hdr);
 #else
 #define fnet_icmp_trace(str, icmp_hdr)  do{}while(0)
 #endif
-
 
 /************************************************************************
 * Protocol API structure.
@@ -81,7 +80,6 @@ fnet_prot_if_t fnet_icmp_prot_if =
     0,                      /* protocol drain function.*/
     0                       /* Socket API */
 };
-                        
 
 /************************************************************************
 * NAME: fnet_icmp_input
@@ -92,8 +90,6 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
 {
     fnet_icmp_header_t      *hdr;
     fnet_prot_notify_t      prot_cmd;
-    fnet_prot_if_t          *protocol;
-    fnet_netbuf_t           *tmp_nb;
     fnet_ip4_addr_t         src_ip;
     fnet_ip4_addr_t         dest_ip;
     
@@ -101,13 +97,12 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
     
     if((netif != 0) && (nb != 0) )
     {
-        if((tmp_nb = fnet_netbuf_pullup(nb, sizeof(fnet_icmp_header_t))) == 0) /* The header must reside in contiguous area of memory. */
+        if(fnet_netbuf_pullup(&nb, sizeof(fnet_icmp_header_t)) == FNET_ERR) /* The header must reside in contiguous area of memory. */
         {
             goto DISCARD;
         }
-        nb = tmp_nb;
 
-        hdr = nb->data_ptr;
+        hdr = (fnet_icmp_header_t *)nb->data_ptr;
 
         src_ip = ((struct sockaddr_in*)(src_addr))->sin_addr.s_addr;
         dest_ip = ((struct sockaddr_in*)(dest_addr))->sin_addr.s_addr;
@@ -116,8 +111,8 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
         #if FNET_CFG_CPU_ETH_HW_RX_PROTOCOL_CHECKSUM || FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM
             ((nb->flags & FNET_NETBUF_FLAG_HW_PROTOCOL_CHECKSUM) == 0) &&
         #endif
-            fnet_checksum(nb, (int)nb->total_length) 
-            || fnet_ip_addr_is_broadcast(src_ip, netif)
+            (fnet_checksum(nb, nb->total_length))
+            || (fnet_ip_addr_is_broadcast(src_ip, netif))
             || FNET_IP4_ADDR_IS_MULTICAST(src_ip))
         {
             goto DISCARD;
@@ -134,7 +129,7 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                 if((nb->total_length < sizeof(fnet_icmp_echo_header_t)) ||
                 /* An ICMP Echo Request destined to an IP broadcast or IP
                 * multicast address MAY be silently discarded.(RFC1122)*/
-                fnet_ip_addr_is_broadcast(dest_ip, netif) || FNET_IP4_ADDR_IS_MULTICAST(dest_ip))
+                (fnet_ip_addr_is_broadcast(dest_ip, netif)) || FNET_IP4_ADDR_IS_MULTICAST(dest_ip))
                 {
                     goto DISCARD;
                 }
@@ -150,12 +145,10 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
             case FNET_ICMP_TSTAMP:
  
                 /* The header must reside in contiguous area of memory. */
-                if((tmp_nb = fnet_netbuf_pullup(nb, sizeof(fnet_icmp_timestamp_header_t))) == 0)
+                if(fnet_netbuf_pullup(&nb, sizeof(fnet_icmp_timestamp_header_t)) == FNET_ERR)
                 {
                     goto DISCARD;
                 }
-
-                nb = tmp_nb;
 
                 hdr = nb->data_ptr;
 
@@ -174,12 +167,10 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
              ************************/
             case FNET_ICMP_MASKREQ:
                 /* The header must reside in contiguous area of memory*/
-                if((tmp_nb = fnet_netbuf_pullup(nb, sizeof(fnet_icmp_mask_header_t))) == 0) 
+                if(fnet_netbuf_pullup(&nb, sizeof(fnet_icmp_mask_header_t)) == FNET_ERR) 
                 {
                     goto DISCARD;
                 }
-
-                nb = tmp_nb;
 
                 hdr = nb->data_ptr;
 
@@ -232,7 +223,7 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                     default:
                         goto DISCARD;
                 }
-                goto NOTIFY_PROT;
+                fnet_icmp_notify_protocol(prot_cmd, nb);  /* Protocol notification.*/
                 break;
             case FNET_ICMP_TIMXCEED:
                 switch(hdr->code)
@@ -249,64 +240,25 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                         goto DISCARD;
                 }
 
-                goto NOTIFY_PROT;
+                fnet_icmp_notify_protocol(prot_cmd, nb);  /* Protocol notification.*/
                 break;
             case FNET_ICMP_PARAMPROB:                       /* Parameter Problem Message.*/
-                if(hdr->code > 1)
+                if(hdr->code > 1u)
+                {
                     goto DISCARD;
+                }
 
                 prot_cmd = FNET_PROT_NOTIFY_PARAMPROB;
-                goto NOTIFY_PROT;
+                fnet_icmp_notify_protocol(prot_cmd, nb);  /* Protocol notification.*/
                 break;
             case FNET_ICMP_SOURCEQUENCH:                    /* Source Quench Message; packet lost, slow down.*/
                 if(hdr->code)
+                {
                     goto DISCARD;
+                }
 
                 prot_cmd = FNET_PROT_NOTIFY_QUENCH;
-
-    NOTIFY_PROT: /* Protocol notification.*/
-                {
-                    fnet_icmp_err_header_t  *hdr_err = (fnet_icmp_err_header_t *)nb->data_ptr;
-                    fnet_ip_header_t        *ip_header = &hdr_err->ip;
-                    unsigned int            hdr_err_length = sizeof(fnet_icmp_err_header_t) /*+ ((FNET_IP_HEADER_GET_HEADER_LENGTH(ip_header) << 2) - sizeof(fnet_ip_header_t))*/; 
-                    unsigned int            hdr_err_data_length = hdr_err_length+8; /* 8 bytes is enough for transport protocol (port numbers).*/
-
-                    if(nb->total_length < hdr_err_data_length) 
-                    {
-                        goto DISCARD;
-                    }
-
-                    if(nb->total_length > hdr_err_data_length)
-                    {
-                        fnet_netbuf_trim(&nb, (int)(hdr_err_data_length - nb->total_length));
-                    }
-
-                    if((tmp_nb = fnet_netbuf_pullup(nb, (int)nb->total_length)) == 0) /* The header must reside in contiguous area of memory.*/
-                    {
-                        goto DISCARD;
-                    }
-                    nb = tmp_nb;
-
-                    hdr_err = (fnet_icmp_err_header_t *)nb->data_ptr;
-                    ip_header = &hdr_err->ip;
-
-                    if((protocol = fnet_prot_find(AF_INET, SOCK_UNSPEC, hdr_err->ip.protocol)) != 0)
-                    {
-                        if(protocol->prot_control_input)
-                        {
-                            struct sockaddr     err_src_addr;
-                            struct sockaddr     err_dest_addr;
-
-                            /* Prepare addreses for upper protocol.*/
-                            fnet_ip_set_socket_addr(ip_header, &err_src_addr,  &err_dest_addr );
-
-                            fnet_netbuf_trim(&nb, (int)(hdr_err_length)); /* Cut the ICMP error header.*/
-
-                            protocol->prot_control_input(prot_cmd, &err_src_addr, &err_dest_addr, nb);
-                        }
-                    }
-                }
-                goto DISCARD;
+                fnet_icmp_notify_protocol(prot_cmd, nb);  /* Protocol notification.*/
                 break;
             /************************
              * Ignore others
@@ -332,6 +284,58 @@ DISCARD:
 }
 
 /************************************************************************
+* NAME: fnet_icmp_notify_protocol
+*
+* DESCRIPTION: Upper protocol notification..
+*************************************************************************/
+static void fnet_icmp_notify_protocol(fnet_prot_notify_t prot_cmd, fnet_netbuf_t *nb)
+{
+    fnet_icmp_err_header_t  *hdr_err = (fnet_icmp_err_header_t *)nb->data_ptr;
+    fnet_ip_header_t        *ip_header = &hdr_err->ip;
+    fnet_size_t             hdr_err_length = sizeof(fnet_icmp_err_header_t) /*+ ((FNET_IP_HEADER_GET_HEADER_LENGTH(ip_header) << 2) - sizeof(fnet_ip_header_t))*/; 
+    fnet_size_t             hdr_err_data_length = hdr_err_length+8u; /* 8 bytes is enough for transport protocol (port numbers).*/
+    fnet_prot_if_t          *protocol;
+
+    if(nb->total_length < hdr_err_data_length) 
+    {
+        goto DISCARD;
+    }
+
+    if(nb->total_length > hdr_err_data_length)
+    {
+        fnet_netbuf_trim(&nb, (fnet_int32_t)(hdr_err_data_length - nb->total_length));
+    }
+
+    if(fnet_netbuf_pullup(&nb, nb->total_length) == FNET_ERR) /* The header must reside in contiguous area of memory.*/
+    {
+        goto DISCARD;
+    }
+
+    hdr_err = (fnet_icmp_err_header_t *)nb->data_ptr;
+    ip_header = &hdr_err->ip;
+
+    if((protocol = fnet_prot_find(AF_INET, SOCK_UNSPEC, (fnet_uint32_t)hdr_err->ip.protocol)) != 0)
+    {
+        if(protocol->prot_control_input)
+        {
+            struct sockaddr     err_src_addr;
+            struct sockaddr     err_dest_addr;
+
+            /* Prepare addreses for upper protocol.*/
+            fnet_ip_set_socket_addr(ip_header, &err_src_addr,  &err_dest_addr );
+
+            fnet_netbuf_trim(&nb, (fnet_int32_t)(hdr_err_length)); /* Cut the ICMP error header.*/
+
+            protocol->prot_control_input(prot_cmd, &err_src_addr, &err_dest_addr, nb);
+        }
+    }
+
+DISCARD:
+     fnet_netbuf_free_chain(nb);
+}
+
+
+/************************************************************************
 * NAME: fnet_icmp_output
 *
 * DESCRIPTION: ICMP output function.
@@ -339,9 +343,9 @@ DISCARD:
 static void fnet_icmp_output( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, 
                                 fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb )
 {
-    fnet_icmp_header_t *hdr = nb->data_ptr;
+    fnet_icmp_header_t *hdr = (fnet_icmp_header_t *)nb->data_ptr;
 
-    hdr->checksum = 0;
+    hdr->checksum = 0u;
 #if FNET_CFG_CPU_ETH_HW_TX_PROTOCOL_CHECKSUM 
     if( netif 
             && (netif->features & FNET_NETIF_FEATURE_HW_TX_PROTOCOL_CHECKSUM)
@@ -351,9 +355,9 @@ static void fnet_icmp_output( fnet_netif_t *netif, fnet_ip4_addr_t src_ip,
     }
     else
 #endif
-        hdr->checksum = fnet_checksum(nb, (int)nb->total_length);
+        hdr->checksum = fnet_checksum(nb, nb->total_length);
 
-    fnet_ip_output(netif, src_ip, dest_ip, FNET_IP_PROTOCOL_ICMP, FNET_ICMP_TOS, FNET_ICMP_TTL, nb, 0, 0, 0);
+    fnet_ip_output(netif, src_ip, dest_ip, FNET_IP_PROTOCOL_ICMP, FNET_ICMP_TOS, FNET_ICMP_TTL, nb, FNET_FALSE, FNET_FALSE, 0);
 }
 
 /************************************************************************
@@ -361,8 +365,7 @@ static void fnet_icmp_output( fnet_netif_t *netif, fnet_ip4_addr_t src_ip,
 *
 * DESCRIPTION: Sends ICMP error message.
 *************************************************************************/
-void fnet_icmp_error( fnet_netif_t *netif, unsigned char type, 
-                        unsigned char code, fnet_netbuf_t *nb )
+void fnet_icmp_error( fnet_netif_t *netif, fnet_uint8_t type, fnet_uint8_t code, fnet_netbuf_t *nb )
 {
     fnet_ip_header_t        *ipheader;
     fnet_netbuf_t           *nb_header;
@@ -373,50 +376,50 @@ void fnet_icmp_error( fnet_netif_t *netif, unsigned char type,
 
     if(nb)
     {
-        ipheader = nb->data_ptr;
+        ipheader = (fnet_ip_header_t *)nb->data_ptr;
         
         source_addr = ipheader->source_addr;
         destination_addr = ipheader->desination_addr;
 
         /* Do not send error if not the first fragment of message (RFC1122)*/
-        if((FNET_IP_HEADER_GET_OFFSET(ipheader) != 0) ||
+        if((FNET_IP_HEADER_GET_OFFSET(ipheader) != 0u) ||
             /* Do not send error on ICMP error messages*/
             ((ipheader->protocol == FNET_IP_PROTOCOL_ICMP)
-                 && (!FNET_ICMP_IS_QUERY_TYPE(((fnet_icmp_header_t *)((unsigned char *)nb->data_ptr
-                      + (FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2)))->type))) 
+              && (!FNET_ICMP_IS_QUERY_TYPE(((fnet_icmp_header_t *)((fnet_uint8_t *)(nb->data_ptr) + (FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2)))->type))) 
             /* Do not send error on a datagram whose source address does not define a single
              * host -- e.g., a zero address, a loopback address, a
              * broadcast address, a multicast address, or a Class E
              * address.*/
-            ||(fnet_ip_addr_is_broadcast(source_addr, netif)
+            || (fnet_ip_addr_is_broadcast(source_addr, netif))
             || FNET_IP4_ADDR_IS_MULTICAST(source_addr) 
-            || FNET_IP4_CLASS_E(source_addr))
+            || FNET_IP4_CLASS_E(source_addr)
             /* Do not send error on a datagram destined to an IP broadcast or IP multicast address*/
-            ||(fnet_ip_addr_is_broadcast(destination_addr, netif)
+            || (fnet_ip_addr_is_broadcast(destination_addr, netif))
             || FNET_IP4_ADDR_IS_MULTICAST(destination_addr)
              /* Do not send error on datagram sent as a link-layer broadcast or multicast.*/
-            ||((nb->flags & FNET_NETBUF_FLAG_BROADCAST) != 0) || ((nb->flags & FNET_NETBUF_FLAG_MULTICAST) != 0))
+            ||((nb->flags & FNET_NETBUF_FLAG_BROADCAST) != 0u) || ((nb->flags & FNET_NETBUF_FLAG_MULTICAST) != 0u)
         )
         {
             goto FREE_NB;
         }
 
         /* Construct ICMP error header*/
-        if((nb_header = fnet_netbuf_new((sizeof(fnet_icmp_err_header_t)
-                                             - sizeof(fnet_ip_header_t)), FNET_FALSE)) == 0)
+        if((nb_header = fnet_netbuf_new((sizeof(fnet_icmp_err_header_t) - sizeof(fnet_ip_header_t)), FNET_FALSE)) == 0)
+        {
             goto FREE_NB;
+        }
 
-        icmpheader = nb_header->data_ptr;
-        icmpheader->fields.unused = 0;
+        icmpheader = (fnet_icmp_err_header_t *)nb_header->data_ptr;
+        icmpheader->fields.unused = 0u;
 
         if(type == FNET_ICMP_PARAMPROB)
         {
-            icmpheader->fields.ptr = fnet_htons((unsigned short)code);
-            code = 0;
+            icmpheader->fields.ptr = fnet_htons((fnet_uint16_t)code);
+            code = 0u;
         }
         else if((type == FNET_ICMP_PARAMPROB) && (code == FNET_ICMP_UNREACHABLE_NEEDFRAG) && netif)
         {    
-            icmpheader->fields.mtu = fnet_htons((unsigned short)netif->mtu);
+            icmpheader->fields.mtu = fnet_htons((fnet_uint16_t)netif->mtu);
         }
         else
         {}
@@ -424,8 +427,10 @@ void fnet_icmp_error( fnet_netif_t *netif, unsigned char type,
         icmpheader->header.type = type;
         icmpheader->header.code = code;
 
-        if(((FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2) + 8) < nb->total_length)
-            fnet_netbuf_trim(&nb, (int)(((FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2) + 8) - nb->total_length));
+        if((fnet_size_t)((FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2) + 8u) < nb->total_length)
+        {
+            fnet_netbuf_trim(&nb, (fnet_int32_t)((fnet_size_t)((FNET_IP_HEADER_GET_HEADER_LENGTH(ipheader) << 2) + 8u) - nb->total_length));
+        }
 
         nb = fnet_netbuf_concat(nb_header, nb);
 
@@ -443,8 +448,8 @@ FREE_NB:
 *
 * DESCRIPTION: Prints an ICMP header. For debug needs only.
 *************************************************************************/
-#if FNET_CFG_DEBUG_TRACE_ICMP
-void fnet_icmp_trace(char *str, fnet_icmp_header_t *icmp_hdr)
+#if FNET_CFG_DEBUG_TRACE_ICMP && FNET_CFG_DEBUG_TRACE
+void fnet_icmp_trace(fnet_uint8_t *str, fnet_icmp_header_t *icmp_hdr)
 {
 
     fnet_printf(FNET_SERIAL_ESC_FG_GREEN"%s", str); /* Print app-specific header.*/

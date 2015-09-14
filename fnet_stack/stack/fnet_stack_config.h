@@ -76,7 +76,7 @@
  * @showinitializer 
  ******************************************************************************/ 
 #ifndef FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE
-   #define FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE     (5)
+   #define FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE     (5u)
 #endif
 
 /**************************************************************************/ /*!
@@ -85,7 +85,7 @@
  * @showinitializer 
  ******************************************************************************/ 
 #ifndef FNET_CFG_ND6_PREFIX_LIST_SIZE
-    #define FNET_CFG_ND6_PREFIX_LIST_SIZE       (4)
+    #define FNET_CFG_ND6_PREFIX_LIST_SIZE       (4u)
 #endif
 
 /**************************************************************************/ /*!
@@ -97,7 +97,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_ND6_ROUTER_LIST_SIZE
-    #define FNET_CFG_ND6_ROUTER_LIST_SIZE       (2)
+    #define FNET_CFG_ND6_ROUTER_LIST_SIZE       (2u)
 #endif
 
 /**************************************************************************/ /*!
@@ -112,19 +112,8 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_ND6_DAD_TRANSMITS 
-    #define FNET_CFG_ND6_DAD_TRANSMITS          (1)
+    #define FNET_CFG_ND6_DAD_TRANSMITS          (1u)
 #endif 
-
-/* Check minimum values.*/
-#if FNET_CFG_ND6_ROUTER_LIST_SIZE < 1 
-    #error FNET_CFG_ND6_ROUTER_LIST_SIZE must be > 0
-#endif
-#if FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE  < 1
-    #error FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE must be > 0
-#endif
-#if FNET_CFG_ND6_PREFIX_LIST_SIZE < 1 
-    #error FNET_CFG_ND6_PREFIX_LIST_SIZE must be > 0
-#endif
 
 /**************************************************************************/ /*!
  * @def     FNET_CFG_ND6_RDNSS
@@ -149,13 +138,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_ND6_RDNSS_LIST_SIZE
-    #define FNET_CFG_ND6_RDNSS_LIST_SIZE        (3)
-#endif
-
-/* Control FNET_CFG_ND6_RDNSS_LIST_SIZE minimum value.*/
-#if FNET_CFG_ND6_RDNSS_LIST_SIZE < 1
-    #undef FNET_CFG_ND6_RDNSS_LIST_SIZE
-    #define FNET_CFG_ND6_RDNSS_LIST_SIZE        (1)
+    #define FNET_CFG_ND6_RDNSS_LIST_SIZE        (3u)
 #endif
 
 /**************************************************************************/ /*!
@@ -189,13 +172,8 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_NETIF_IP6_ADDR_MAX
-    #define FNET_CFG_NETIF_IP6_ADDR_MAX         (5)
+    #define FNET_CFG_NETIF_IP6_ADDR_MAX         (5u)
 #endif
-
-#if FNET_CFG_NETIF_IP6_ADDR_MAX < 2 
-    #undef FNET_CFG_NETIF_IP6_ADDR_MAX
-    #define FNET_CFG_NETIF_IP6_ADDR_MAX         (2)
-#endif 
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_MLD
@@ -348,12 +326,6 @@
     #define FNET_CFG_IGMP                   (0)
 #endif
 
-#if FNET_CFG_IGMP
-    /* IGMP requires IPv4 multicast support.*/
-    #undef FNET_CFG_MULTICAST
-    #define  FNET_CFG_MULTICAST             (1)
-#endif
-
 /**************************************************************************/ /*!
  * @def      FNET_CFG_IGMP_VERSION
  * @brief    Internet Group Management Protocol (IGMP) version:
@@ -365,11 +337,6 @@
 #ifndef FNET_CFG_IGMP_VERSION
     #define FNET_CFG_IGMP_VERSION           (2)
 #endif
-
-#if (FNET_CFG_IGMP_VERSION < 1) || (FNET_CFG_IGMP_VERSION > 2)
-    #error "FNET_CFG_IGMP_VERSION must be set to 1 or to 2"
-#endif
-
 
 /*! @} */
 
@@ -467,20 +434,15 @@
 /**************************************************************************/ /*!
  * @def      FNET_CFG_MULTICAST
  * @brief    Multicast group support:
- *               - @c 1 = is enabled. @n 
+ *               - @c 1 = is enabled (Default value). @n 
  *                 It is set automatically  to @c 1, if @c FNET_CFG_IP6 is set to @c 1.
- *               - @c 0 = is disabled (default value, if only IPv4 is enabled).@n
+ *               - @c 0 = is disabled .@n
  * @see FNET_CFG_MULTICAST_MAX, FNET_CFG_MULTICAST_SOCKET_MAX, FNET_CFG_IGMP
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_MULTICAST
-    #define FNET_CFG_MULTICAST              (0)
-#endif
-
-#if FNET_CFG_IP6 /* Multicast must be enabled for IPv6. */
-    #undef FNET_CFG_MULTICAST
     #define FNET_CFG_MULTICAST              (1)
-#endif    
+#endif
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_MULTICAST_MAX
@@ -491,7 +453,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_MULTICAST_MAX
-    #define FNET_CFG_MULTICAST_MAX          (5U)
+    #define FNET_CFG_MULTICAST_MAX          (5u)
 #endif
 
 /**************************************************************************/ /*!
@@ -502,7 +464,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_MULTICAST_SOCKET_MAX
-    #define FNET_CFG_MULTICAST_SOCKET_MAX   (1)
+    #define FNET_CFG_MULTICAST_SOCKET_MAX   (1u)
 #endif
 
 /**************************************************************************/ /*!
@@ -600,7 +562,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_RAW
-    #define FNET_CFG_RAW                        (0)
+    #define FNET_CFG_RAW                        (1)
 #endif
 
 
@@ -629,6 +591,17 @@
 #endif
 
 /**************************************************************************/ /*!
+ * @def      FNET_CFG_SOCKET_BSD_NAMES
+ * @brief    BSD Socket API names:
+ *               - @c 1 = are suported (Default value).
+ *               - @b @c 0 = are not suported.@n
+ * @showinitializer 
+ ******************************************************************************/
+#ifndef FNET_CFG_SOCKET_BSD_NAMES
+    #define FNET_CFG_SOCKET_BSD_NAMES           (1)
+#endif
+
+/**************************************************************************/ /*!
  * @def      FNET_CFG_SOCKET_TCP_MSS
  * @brief    The default value of the @ref TCP_MSS option 
  *           (TCP Maximum Segment Size).
@@ -654,13 +627,13 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_SOCKET_TCP_MSS
-    #define FNET_CFG_SOCKET_TCP_MSS             (0)
+    #define FNET_CFG_SOCKET_TCP_MSS             (0u)
 #endif
 
 /**************************************************************************/ /*!
  * @def      FNET_CFG_SOCKET_TCP_TX_BUF_SIZE
  * @brief    Default maximum size for the TCP send-socket buffer.
- *           At runtime, it can be changed by @ref setsockopt()
+ *           At runtime, it can be changed by @ref fnet_socket_setopt()
  *           using the @ref SO_SNDBUF socket option.
  * @showinitializer
  ******************************************************************************/
@@ -671,7 +644,7 @@
 /**************************************************************************/ /*!
  * @def      FNET_CFG_SOCKET_TCP_RX_BUF_SIZE
  * @brief    Default maximum size for the TCP receive-socket buffer.
- *           At runtime, it can be changed by @ref setsockopt()
+ *           At runtime, it can be changed by @ref fnet_socket_setopt()
  *           using the @ref SO_RCVBUF socket option.
  * @showinitializer
  ******************************************************************************/
@@ -682,7 +655,7 @@
 /**************************************************************************/ /*!
  * @def      FNET_CFG_SOCKET_UDP_TX_BUF_SIZE
  * @brief    Default maximum size for the UDP send-socket buffer.
- *           At runtime, it can be changed by @ref setsockopt()
+ *           At runtime, it can be changed by @ref fnet_socket_setopt()
  *           using the @ref SO_SNDBUF socket option.
  * @showinitializer
  ******************************************************************************/
@@ -693,7 +666,7 @@
 /**************************************************************************/ /*!
  * @def      FNET_CFG_SOCKET_UDP_RX_BUF_SIZE
  * @brief    Default maximum size for the UDP receive-socket buffer.
- *           At runtime, it can be changed by @ref setsockopt()
+ *           At runtime, it can be changed by @ref fnet_socket_setopt()
  *           using the @ref SO_RCVBUF socket option.
  * @showinitializer
  ******************************************************************************/
@@ -704,7 +677,7 @@
 /**************************************************************************/ /*!
  * @def      FNET_CFG_SOCKET_RAW_TX_BUF_SIZE
  * @brief    Default maximum size for the RAW send-socket buffer.
- *           At runtime, it can be changed by @ref setsockopt()
+ *           At runtime, it can be changed by @ref fnet_socket_setopt()
  *           using the @ref SO_SNDBUF socket option.
  * @showinitializer
  ******************************************************************************/
@@ -715,7 +688,7 @@
 /**************************************************************************/ /*!
  * @def      FNET_CFG_SOCKET_RAW_RX_BUF_SIZE
  * @brief    Default maximum size for the RAW receive-socket buffer.
- *           At runtime, it can be changed by @ref setsockopt()
+ *           At runtime, it can be changed by @ref fnet_socket_setopt()
  *           using the @ref SO_RCVBUF socket option.
  * @showinitializer
  ******************************************************************************/
@@ -811,10 +784,6 @@
     #define FNET_CFG_DEBUG_DNS          (0)
 #endif
 
-#ifndef FNET_CFG_DEBUG_BENCH
-    #define FNET_CFG_DEBUG_BENCH        (0)
-#endif
-
 #ifndef FNET_CFG_DEBUG_STARTUP_MS
     #define FNET_CFG_DEBUG_STARTUP_MS   (0)
 #endif
@@ -861,63 +830,6 @@
 
 #ifndef FNET_CFG_DEBUG_TRACE_TCP
     #define FNET_CFG_DEBUG_TRACE_TCP    (0)
-#endif
-
-
- 
-
-#if !FNET_CFG_DEBUG /* Clear all debuging flags. */
-    #undef  FNET_CFG_DEBUG_TIMER
-    #define FNET_CFG_DEBUG_TIMER        (0)
-    #undef  FNET_CFG_DEBUG_HTTP
-    #define FNET_CFG_DEBUG_HTTP         (0)
-    #undef  FNET_CFG_DEBUG_DHCP
-    #define FNET_CFG_DEBUG_DHCP         (0)        
-    #undef  FNET_CFG_DEBUG_TELNET
-    #define FNET_CFG_DEBUG_TELNET       (0)     
-    #undef  FNET_CFG_DEBUG_ARP
-    #define FNET_CFG_DEBUG_ARP          (0)    
-    #undef  FNET_CFG_DEBUG_MEMPOOL
-    #define FNET_CFG_DEBUG_MEMPOOL      (0) 
-    #undef  FNET_CFG_DEBUG_TFTP_CLN
-    #define FNET_CFG_DEBUG_TFTP_CLN     (0)          
-    #undef  FNET_CFG_DEBUG_TFTP_SRV
-    #define FNET_CFG_DEBUG_TFTP_SRV     (0)    
-    #undef  FNET_CFG_DEBUG_STACK
-    #define FNET_CFG_DEBUG_STACK        (0) 
-    #undef  FNET_CFG_DEBUG_SHELL
-    #define FNET_CFG_DEBUG_SHELL        (0)     
-    #undef  FNET_CFG_DEBUG_DNS
-    #define FNET_CFG_DEBUG_DNS          (0)         
-    #undef  FNET_CFG_DEBUG_BENCH
-    #define FNET_CFG_DEBUG_BENCH        (0)
-    #undef  FNET_CFG_DEBUG_STARTUP_MS
-    #define FNET_CFG_DEBUG_STARTUP_MS   (0)  
-    #undef  FNET_CFG_DEBUG_TRACE
-    #define FNET_CFG_DEBUG_TRACE        (0)    
-    #undef  FNET_CFG_DEBUG_IP6
-    #define FNET_CFG_DEBUG_IP6          (0)
-    #undef  FNET_CFG_DEBUG_LLMNR    
-    #define FNET_CFG_DEBUG_LLMNR        (0)
-    #undef FNET_CFG_DEBUG_PING 
-    #define FNET_CFG_DEBUG_PING         0
-#endif
-
-#if !FNET_CFG_DEBUG_TRACE /* Clear all trace flags. */
-    #undef  FNET_CFG_DEBUG_TRACE_IP
-    #define FNET_CFG_DEBUG_TRACE_IP     (0)
-    #undef  FNET_CFG_DEBUG_TRACE_ICMP
-    #define FNET_CFG_DEBUG_TRACE_ICMP   (0)    
-    #undef  FNET_CFG_DEBUG_TRACE_IGMP
-    #define FNET_CFG_DEBUG_TRACE_IGMP   (0)    
-    #undef  FNET_CFG_DEBUG_TRACE_ETH
-    #define FNET_CFG_DEBUG_TRACE_ETH    (0)    
-    #undef  FNET_CFG_DEBUG_TRACE_ARP
-    #define FNET_CFG_DEBUG_TRACE_ARP    (0)      
-    #undef  FNET_CFG_DEBUG_TRACE_UDP
-    #define FNET_CFG_DEBUG_TRACE_UDP    (0)    
-    #undef  FNET_CFG_DEBUG_TRACE_TCP
-    #define FNET_CFG_DEBUG_TRACE_TCP    (0)    
 #endif
 
 

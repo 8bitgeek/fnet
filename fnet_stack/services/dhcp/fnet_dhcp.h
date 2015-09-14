@@ -140,7 +140,7 @@ struct fnet_dhcp_params
                                              * assigned to the client.@n
                                              * This parameter is optional and can be set to @c 0.
                                              */
-    unsigned long requested_lease_time;     /**< @brief Suggested Lease time in seconds.@n
+    fnet_uint32_t requested_lease_time;     /**< @brief Suggested Lease time in seconds.@n
                                              * The client can suggest to the DHCP server
                                              * that a particular lease time should be 
                                              * assigned to the client IP address.@n
@@ -222,21 +222,21 @@ struct fnet_dhcp_options
 
     /* For debug needs: */
 
-    unsigned long t1;           /**< @brief Renewal (T1) Time Value in seconds (in network byte order).@n
+    fnet_uint32_t t1;           /**< @brief Renewal (T1) Time Value in seconds (in network byte order).@n
                                 * This option specifies the time interval from 
                                 * address assignment, until the client transitions 
                                 * to the RENEWING state.@n
                                 * A user application may ignore this option value. 
                                 * It is used for internal and debug purposes only.
                                 */
-    unsigned long t2;           /**< @brief Rebinding (T2) Time Value in seconds (in network byte order).@n
+    fnet_uint32_t t2;           /**< @brief Rebinding (T2) Time Value in seconds (in network byte order).@n
                                 * This option specifies the time interval from 
                                 * address assignment until the client transitions 
                                 * to the REBINDING state.@n
                                 * A user application may ignore this option value. 
                                 * It is used for internal and debug purposes only.
                                 */
-    unsigned long lease_time;   /**< @brief The IP Address Lease Time in seconds (in network byte order).@n
+    fnet_uint32_t lease_time;   /**< @brief The IP Address Lease Time in seconds (in network byte order).@n
                                 * @c t1 < @c t2 < @c lease_time.@n
                                 * By default, @c t1=0.5*lease_time; @c t2=0.875*lease_time.@n
                                 * A user application may ignore this option value. 
@@ -245,6 +245,9 @@ struct fnet_dhcp_options
 
 };
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -269,7 +272,7 @@ struct fnet_dhcp_options
  * in the background.
  *
  ******************************************************************************/
-int fnet_dhcp_init( fnet_netif_desc_t netif, struct fnet_dhcp_params *params );
+fnet_return_t fnet_dhcp_init( fnet_netif_desc_t netif, struct fnet_dhcp_params *params );
 
 /***************************************************************************/ /*!
  *
@@ -389,6 +392,10 @@ void fnet_dhcp_handler_updated_set (fnet_dhcp_handler_updated_t handler_updated,
  *
  ******************************************************************************/
 void fnet_dhcp_handler_discover_set (fnet_dhcp_handler_discover_t handler_discover, void *param);
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 /*! @} */

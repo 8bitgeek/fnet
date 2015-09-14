@@ -50,6 +50,10 @@
 */
 /*! @{ */
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /***************************************************************************/ /*!
  *
  * @brief    Converts an IPv4 address into a string in Internet 
@@ -82,7 +86,7 @@
  * fnet_inet_ntoa() is now considered to be deprecated.
  *
  ******************************************************************************/
-char *fnet_inet_ntoa( struct in_addr addr, char *res_str );
+fnet_char_t *fnet_inet_ntoa( struct in_addr addr, fnet_char_t *res_str );
 
 /***************************************************************************/ /*!
  *
@@ -115,7 +119,7 @@ char *fnet_inet_ntoa( struct in_addr addr, char *res_str );
  * fnet_inet_aton() is now considered to be deprecated. 
  *
  ******************************************************************************/
-int fnet_inet_aton( char *cp, struct in_addr *addr );
+fnet_return_t fnet_inet_aton( fnet_char_t *cp, struct in_addr *addr );
 
 /***************************************************************************/ /*!
  *
@@ -155,7 +159,7 @@ int fnet_inet_aton( char *cp, struct in_addr *addr );
  * fnet_inet_ntoa() is now considered to be deprecated.
  *
  ******************************************************************************/
-char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, unsigned long str_len);
+fnet_char_t *fnet_inet_ntop(fnet_address_family_t family, const void *addr, fnet_char_t *str, fnet_size_t str_len);
 
 /***************************************************************************/ /*!
  *
@@ -192,7 +196,7 @@ char *fnet_inet_ntop(fnet_address_family_t family, const void *addr, char *str, 
  * fnet_inet_aton() is now considered to be deprecated. 
  *
  ******************************************************************************/
-int fnet_inet_pton (fnet_address_family_t family, const char *str, void *addr, unsigned long addr_len);
+fnet_return_t fnet_inet_pton (fnet_address_family_t family, const fnet_char_t *str, void *addr, fnet_size_t addr_len);
 
 
 /***************************************************************************/ /*!
@@ -219,7 +223,11 @@ int fnet_inet_pton (fnet_address_family_t family, const char *str, void *addr, u
  * structure.
  *
  ******************************************************************************/
-int fnet_inet_ptos (const char *str, struct sockaddr *addr);
+fnet_return_t fnet_inet_ptos (const fnet_char_t *str, struct sockaddr *addr);
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 /*! @} */

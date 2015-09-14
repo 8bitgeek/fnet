@@ -81,8 +81,8 @@ FNET_COMP_PACKED_BEGIN
 typedef struct fnet_mld_header
 {
     fnet_icmp6_header_t icmp6_header        FNET_COMP_PACKED; 
-    unsigned short      max_resp_delay      FNET_COMP_PACKED;
-    unsigned char       _reserved[2]        FNET_COMP_PACKED;
+    fnet_uint16_t       max_resp_delay      FNET_COMP_PACKED;
+    fnet_uint8_t        _reserved[2]        FNET_COMP_PACKED;
     fnet_ip6_addr_t     multicast_addr      FNET_COMP_PACKED;    
 } fnet_mld_header_t;
 FNET_COMP_PACKED_END
@@ -100,14 +100,14 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct fnet_mld_ra_option
 {
-    unsigned char               next_header         FNET_COMP_PACKED;   /* 8-bit selector. Identifies the type of header
+    fnet_uint8_t                next_header         FNET_COMP_PACKED;   /* 8-bit selector. Identifies the type of header
                                                                          * immediately following the Options
                                                                          * header. */
-    unsigned char               hdr_ext_length      FNET_COMP_PACKED;   /* 8-bit unsigned integer. Length of the Hop-by-
+    fnet_uint8_t                hdr_ext_length      FNET_COMP_PACKED;   /* 8-bit unsigned integer. Length of the Hop-by-
                                                                          * Hop Options header in 8-octet units, not
                                                                          * including the first 8 octets. */
     fnet_ip6_option_header_t    ra_option_header    FNET_COMP_PACKED;   /* Router Alert Option. */
-    unsigned short              ra_option_value     FNET_COMP_PACKED;   /* Router Alert Option value. */   
+    fnet_uint16_t               ra_option_value     FNET_COMP_PACKED;   /* Router Alert Option value. */   
     fnet_ip6_option_header_t    padn_option_header  FNET_COMP_PACKED;   /* Padding. It must be multiple to 8 octets. */                                                 
 } fnet_mld_ra_option_header_t;
 FNET_COMP_PACKED_END
@@ -116,11 +116,18 @@ FNET_COMP_PACKED_END
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 void fnet_mld_join(fnet_netif_t *netif, fnet_ip6_addr_t  *group_addr);
 void fnet_mld_leave(fnet_netif_t *netif, fnet_ip6_addr_t  *group_addr);
 void fnet_mld_report_all(fnet_netif_t *netif);
 void fnet_mld_query_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb);
 
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* FNET_CFG_MLD */
 

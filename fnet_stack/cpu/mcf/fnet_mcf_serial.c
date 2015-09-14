@@ -45,7 +45,7 @@
 #include "fnet.h"
 
 /********************************************************************/
-void fnet_cpu_serial_putchar( long port_number, int character)
+void fnet_cpu_serial_putchar (fnet_index_t port_number, fnet_char_t character)
 {
 #if FNET_CFG_MCF_SCI /* Lasko */ 
     /* Wait for the transmitter to be empty.
@@ -53,7 +53,7 @@ void fnet_cpu_serial_putchar( long port_number, int character)
     while (!FNET_MCF_SCI_S1_TDRE(port_number))
     {};
     /* Send a character by SCI */
-    FNET_MCF_SCI_D(port_number) = (unsigned char)character;                
+    FNET_MCF_SCI_D(port_number) = character;                
 #endif    
 
 #if FNET_CFG_MCF_UART  
@@ -61,13 +61,13 @@ void fnet_cpu_serial_putchar( long port_number, int character)
     while(!(FNET_MCF_UART_USR(port_number) & FNET_MCF_UART_USR_TXRDY))
     {};
     /* Send the character */
-    FNET_MCF_UART_UTB(port_number) = (unsigned char)character;
+    FNET_MCF_UART_UTB(port_number) = character;
 #endif
       
 }
 
 /********************************************************************/
-int fnet_cpu_serial_getchar( long port_number )
+fnet_int32_t fnet_cpu_serial_getchar (fnet_index_t port_number)
 {
 #if FNET_CFG_MCF_SCI /* Lasko */  
     /* If character received. */
@@ -85,7 +85,7 @@ int fnet_cpu_serial_getchar( long port_number )
 }
 
 /********************************************************************/
-static inline void fnet_cpu_serial_gpio_init(long port_number) 
+static inline void fnet_cpu_serial_gpio_init(fnet_index_t port_number) 
 {
     /* Enable the proper UART pins */
     
@@ -201,12 +201,12 @@ static inline void fnet_cpu_serial_gpio_init(long port_number)
 }
 
 /********************************************************************/
-void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
+void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
 {
 	/*
 	 * Initialize UART for serial communications
 	 */
-	fnet_uint16 ubgs;
+	fnet_uint16_t ubgs;
     
     /* Init GPIO.*/
     fnet_cpu_serial_gpio_init(port_number); 
@@ -246,16 +246,16 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
 	 * Calculate baud settings
 	 */
 
-	ubgs = (fnet_uint16)(FNET_CFG_CPU_CLOCK_HZ/(baud_rate * 32));
+	ubgs = (fnet_uint16_t)(FNET_CFG_CPU_CLOCK_HZ/(baud_rate * 32));
 
-	FNET_MCF_UART_UBG1(port_number) = (fnet_uint8)((ubgs >> 8) & 0xFF);
-	FNET_MCF_UART_UBG2(port_number) = (fnet_uint8)(ubgs & 0xFF);
+	FNET_MCF_UART_UBG1(port_number) = (fnet_uint8_t)((ubgs >> 8) & 0xFF);
+	FNET_MCF_UART_UBG2(port_number) = (fnet_uint8_t)(ubgs & 0xFF);
 
 
 	/*
 	 * Enable receiver and transmitter
 	 */
-	FNET_MCF_UART_UCR(port_number) = (fnet_uint8)(0
+	FNET_MCF_UART_UCR(port_number) = (fnet_uint8_t)(0
 		| FNET_MCF_UART_UCR_TX_ENABLED
 		| FNET_MCF_UART_UCR_RX_ENABLED);
 

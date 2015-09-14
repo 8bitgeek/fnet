@@ -73,14 +73,14 @@ void fnet_cpu_reset (void)
 *************************************************************************/
 static fnet_cpu_irq_desc_t fnet_mcf_set_irqlevel(unsigned long level)
 {
-    fnet_uint16 csr;
+    fnet_uint16_t csr;
     fnet_cpu_irq_desc_t oldlevel;
     
     csr = fnet_mcf_sr_rd();
 
     oldlevel = (fnet_cpu_irq_desc_t)((csr & FNET_MCF_SR_IPL) >> 8);
 
-    csr = (fnet_uint16)((csr & (~FNET_MCF_SR_IPL)) | FNET_MCF_SR_S | ((level << 8)&FNET_MCF_SR_IPL));
+    csr = (fnet_uint16_t)((csr & (~FNET_MCF_SR_IPL)) | FNET_MCF_SR_S | ((level << 8)&FNET_MCF_SR_IPL));
 
     fnet_mcf_sr_wr(csr);
 

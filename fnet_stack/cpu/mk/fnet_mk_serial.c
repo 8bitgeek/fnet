@@ -57,37 +57,40 @@ static FNET_MK_UART_MemMapPtr fnet_mk_get_uart_port_ptr[FNET_MK_UART_PORT_NUMBER
 };
 
 /********************************************************************/
-void fnet_cpu_serial_putchar (long port_number, int character)
+void fnet_cpu_serial_putchar (fnet_index_t port_number, fnet_char_t character)
 {
     FNET_MK_UART_MemMapPtr port_ptr = fnet_mk_get_uart_port_ptr[port_number];
       
     /* Wait until space is available in the FIFO */
-    while((FNET_MK_UART_S1_REG(port_ptr) & FNET_MK_UART_S1_TDRE_MASK) == 0)
+    while((FNET_MK_UART_S1_REG(port_ptr) & FNET_MK_UART_S1_TDRE_MASK) == 0u)
     {}
     
     /* Send the character */
-    FNET_MK_UART_D_REG(port_ptr) = (fnet_uint8)character;
+    FNET_MK_UART_D_REG(port_ptr) = character;
  }
 /********************************************************************/
-int fnet_cpu_serial_getchar (long port_number)
+fnet_int32_t fnet_cpu_serial_getchar (fnet_index_t port_number)
 {
     FNET_MK_UART_MemMapPtr port_ptr = fnet_mk_get_uart_port_ptr[port_number];
    
        /* Wait until character has been received */
-    if((FNET_MK_UART_S1_REG(port_ptr) & FNET_MK_UART_S1_RDRF_MASK) != 0)
+    if((FNET_MK_UART_S1_REG(port_ptr) & FNET_MK_UART_S1_RDRF_MASK) != 0u)
+    {
         /* Return the 8-bit data from the receiver */
-        return FNET_MK_UART_D_REG(port_ptr);
+        return (fnet_int32_t)FNET_MK_UART_D_REG(port_ptr);
+    }
     
     return FNET_ERR;   
 }
 
 /********************************************************************/
-void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
+void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
 {
-    int 					sysclk; /* UART module Clock in kHz.*/
+    fnet_uint32_t			sysclk; /* UART module Clock in kHz.*/
     FNET_MK_UART_MemMapPtr  uartch;
-    fnet_uint16 			sbr, brfa;
-    fnet_uint8 				temp;
+    fnet_uint16_t 			sbr;
+    fnet_uint16_t 			brfa;
+    fnet_uint8_t 		    temp;
 
   
     /* Enable the pins for the selected UART */
@@ -190,10 +193,14 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
     * clocked from the peripheral clock. So we have to determine which clock
     * to send to the uart_init function.
     */
-    if ((port_number != 0) && (port_number != 1))
+    if ((port_number != 0u) && (port_number != 1u))
+    {
         sysclk = FNET_MK_PERIPH_CLOCK_KHZ;
+    }
     else
+    {
         sysclk = FNET_CPU_CLOCK_KHZ;
+    }
 		
     /* Initialize the UART for 8N1 operation, interrupts disabled, and
     *  no hardware flow-control.
@@ -208,19 +215,19 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
     FNET_MK_UART_C2_REG(uartch) &= ~(FNET_MK_UART_C2_TE_MASK | FNET_MK_UART_C2_RE_MASK);
     
     /* Configure the UART for 8-bit mode, no parity */
-    FNET_MK_UART_C1_REG(uartch) = 0;	/* We need all default settings, so entire register is cleared */
+    FNET_MK_UART_C1_REG(uartch) = 0u;	/* We need all default settings, so entire register is cleared */
         
     /* Calculate baud settings */
-    sbr = (fnet_uint16)((sysclk*1000)/(baud_rate * 16));
+    sbr = (fnet_uint16_t)((sysclk*1000u)/(baud_rate * 16u));
             
     /* Save off the current value of the UARTx_BDH except for the SBR field */
     temp = FNET_MK_UART_BDH_REG(uartch) & ~(FNET_MK_UART_BDH_SBR(0x1F));
         
-    FNET_MK_UART_BDH_REG(uartch) = temp |  FNET_MK_UART_BDH_SBR(((sbr & 0x1F00) >> 8));
-    FNET_MK_UART_BDL_REG(uartch) = (fnet_uint8)(sbr & FNET_MK_UART_BDL_SBR_MASK);
+    FNET_MK_UART_BDH_REG(uartch) = temp |  FNET_MK_UART_BDH_SBR(((sbr & 0x1F00u) >> 8));
+    FNET_MK_UART_BDL_REG(uartch) = (fnet_uint8_t)(sbr & FNET_MK_UART_BDL_SBR_MASK);
         
     /* Determine if a fractional divider is needed to get closer to the baud rate */
-    brfa = (((sysclk*32000)/(baud_rate * 16)) - (sbr * 32));
+    brfa = (fnet_uint16_t)(((sysclk*32000u)/(baud_rate * 16u)) - ((fnet_uint32_t)sbr * 32u));
         
     /* Save off the current value of the UARTx_C4 register except for the BRFA field */
     temp = FNET_MK_UART_C4_REG(uartch) & ~(FNET_MK_UART_C4_BRFA(0x1F));

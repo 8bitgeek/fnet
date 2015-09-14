@@ -50,7 +50,7 @@
 
 static fnet_http_desc_t fapp_http_desc = 0; /* HTTP service descriptor. */
 
-static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned long buffer_size, char * eof, long *cookie);
+static fnet_size_t fapp_http_string_buffer_respond(fnet_uint8_t * buffer, fnet_size_t buffer_size, fnet_bool_t * eof, fnet_uint32_t *cookie);
 
 
 /************************************************************************
@@ -63,8 +63,8 @@ static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned lon
 
 struct fapp_http_echo_variable
 {
-    const char *variable;   
-    const char *value;
+    const fnet_char_t *variable;   
+    const fnet_char_t *value;
 };
 
 static const struct fapp_http_echo_variable fapp_http_echo_variables[] =
@@ -78,9 +78,9 @@ static const struct fapp_http_echo_variable fapp_http_echo_variables[] =
     {0,0} /* End of the table.*/
 };
 
-static char fapp_http_ssi_buffer[FAPP_HTTP_SSI_BUFFER_MAX];    /* Temporary buffer for run-time SSIs. */
+static fnet_uint8_t fapp_http_ssi_buffer[FAPP_HTTP_SSI_BUFFER_MAX];    /* Temporary buffer for run-time SSIs. */
 
-static int fapp_http_ssi_echo_handle(char * query, long *cookie);
+static fnet_return_t fapp_http_ssi_echo_handle(fnet_char_t * query, fnet_uint32_t *cookie);
 
 /* SSI table */
 static const struct fnet_http_ssi fapp_ssi_table[] =
@@ -98,32 +98,32 @@ static const struct fnet_http_ssi fapp_ssi_table[] =
 
 #define CGI_MAX        sizeof("({ \"time\":\"00:00:00\",\"tx\":0000000000,\"rx\":0000000000})")
 
-static int fapp_http_cgi_stdata_handle(char * query, long *cookie);
-static int fapp_http_cgi_graph_handle(char * query, long *cookie);
-#if FNET_CFG_HTTP_POST
-static int fapp_http_cgi_post_handle(char * query, long *cookie);
+static fnet_return_t fapp_http_cgi_stdata_handle(fnet_char_t * query, fnet_uint32_t *cookie);
+static fnet_return_t fapp_http_cgi_graph_handle(fnet_char_t * query, fnet_uint32_t *cookie);
+#if FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR
+static fnet_return_t fapp_http_cgi_post_handle(fnet_char_t * query, fnet_uint32_t *cookie);
 #endif
 
-static unsigned int fapp_http_cgi_rand(void);
+static fnet_uint32_t fapp_http_cgi_rand(void);
 
 /* CGI table */
 static const struct fnet_http_cgi fapp_cgi_table[] =
 {
     {"stdata.cgi", fapp_http_cgi_stdata_handle, fapp_http_string_buffer_respond},
     {"graph.cgi", fapp_http_cgi_graph_handle, fapp_http_string_buffer_respond},
-#if FNET_CFG_HTTP_POST    
+#if FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR    
     {"post.cgi", fapp_http_cgi_post_handle, fapp_http_string_buffer_respond},   
 #endif    
     {0, 0, 0} /* End of the table. */
 };
-static char fapp_http_cgi_buffer[CGI_MAX]; /* CGI Temporary buffer. */
+static fnet_uint8_t fapp_http_cgi_buffer[CGI_MAX]; /* CGI Temporary buffer. */
 
 #endif /* FNET_CFG_HTTP_CGI */
 
 /************************************************************************
 * Authentification definitions
 *************************************************************************/
-#if FNET_CFG_HTTP_AUTHENTICATION_BASIC
+#if FNET_CFG_HTTP_AUTHENTICATION_BASIC && FNET_CFG_HTTP_VERSION_MAJOR
 static const struct fnet_http_auth fapp_auth_table[]=
 {   
     {"auth", "fnet", "freescale", FNET_HTTP_AUTH_SCHEME_BASIC},
@@ -134,9 +134,9 @@ static const struct fnet_http_auth fapp_auth_table[]=
 /************************************************************************
 * POST definitions.
 *************************************************************************/
-#if FNET_CFG_HTTP_POST
+#if FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR
 
-static int fapp_http_post_receive (char * buffer, unsigned long buffer_size, long *cookie);
+static fnet_int32_t fapp_http_post_receive (fnet_uint8_t * buffer, fnet_size_t buffer_size, fnet_uint32_t *cookie);
 
 static const struct fnet_http_post fapp_post_table[]=
 {   
@@ -144,8 +144,8 @@ static const struct fnet_http_post fapp_post_table[]=
     {0, 0, 0, 0}
 };
 
-#define FAPP_HTTP_POST_BUFFER_SIZE    (50)
-static char fapp_http_post_buffer[FAPP_HTTP_POST_BUFFER_SIZE+1/* For zero-termination.*/];
+#define FAPP_HTTP_POST_BUFFER_SIZE    (50u)
+static fnet_uint8_t fapp_http_post_buffer[FAPP_HTTP_POST_BUFFER_SIZE+1u/* For zero-termination.*/];
 
 #endif
 
@@ -154,28 +154,32 @@ static char fapp_http_post_buffer[FAPP_HTTP_POST_BUFFER_SIZE+1/* For zero-termin
 *
 * DESCRIPTION:
 *************************************************************************/
-static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned long buffer_size, char * eof, long *cookie)
+static fnet_size_t fapp_http_string_buffer_respond(fnet_uint8_t *buffer, fnet_size_t buffer_size, fnet_bool_t * eof, fnet_uint32_t *cookie)
 {
-    unsigned long   result = 0U;
-    char            *string_buffer_ptr = (char *) *cookie;
-    unsigned long   send_size = fnet_strlen(string_buffer_ptr);
+    fnet_size_t     result = 0U;
+    fnet_char_t            *string_buffer_ptr = (fnet_char_t *) *cookie;
+    fnet_size_t     send_size = fnet_strlen(string_buffer_ptr);
     
-    *eof = (char)1; /* No aditional send by default. */
+    *eof = FNET_TRUE; /* No aditional send by default. */
     
     if(buffer && buffer_size)
     {
 	    if(send_size>buffer_size)
+        {
 	        send_size = buffer_size; 
+        }
 	 
 	    fnet_memcpy(buffer, string_buffer_ptr, send_size);
 
 	    string_buffer_ptr += send_size;
 	    if(*string_buffer_ptr!='\0') /* If any data for sending.*/ 
-	        *eof = (char)0;    /* Need more itteration. */
+        {
+	        *eof = FNET_FALSE;    /* Need more itteration. */
+        }
 
 	    result = send_size;
 	    
-	    *cookie = (long)string_buffer_ptr; /* Save cgi_buffer_ptr as cookie.*/
+	    *cookie = (fnet_uint32_t)string_buffer_ptr; /* Save cgi_buffer_ptr as cookie.*/
     }
     
     return result;    
@@ -187,20 +191,19 @@ static unsigned long fapp_http_string_buffer_respond(char * buffer, unsigned lon
 * DESCRIPTION:
 *************************************************************************/
 #if FNET_CFG_HTTP_SSI
-static int fapp_http_ssi_echo_handle(char * query, long *cookie)
+static fnet_return_t fapp_http_ssi_echo_handle(fnet_char_t *query, fnet_uint32_t *cookie)
 {
-    int result = FNET_OK;
-    const struct fapp_http_echo_variable *  echo_var_ptr;
-    fnet_netif_desc_t netif = fapp_default_netif;
-    
-    const char *ssi_buffer_ptr = 0;
+    fnet_return_t                           result = FNET_OK;
+    const struct fapp_http_echo_variable    *echo_var_ptr;
+    fnet_netif_desc_t                       netif = fapp_default_netif;
+    const fnet_uint8_t                      *ssi_buffer_ptr = 0;
     
     /* Find static echo value. */
-	for(echo_var_ptr = fapp_http_echo_variables; echo_var_ptr->variable && echo_var_ptr->value; echo_var_ptr++)
+	for(echo_var_ptr = fapp_http_echo_variables; (echo_var_ptr->variable != 0) && (echo_var_ptr->value != 0); echo_var_ptr++)
 	{
         if (!fnet_strcmp( query, echo_var_ptr->variable))                    
         {				 
-            ssi_buffer_ptr = echo_var_ptr->value;
+            ssi_buffer_ptr = (const fnet_uint8_t *)echo_var_ptr->value;
             break;
         }
     }
@@ -209,7 +212,7 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
     if(ssi_buffer_ptr == 0)
     {
     #if FNET_CFG_IP4
-        char ip_str[FNET_IP4_ADDR_STR_SIZE];
+        fnet_char_t ip_str[FNET_IP4_ADDR_STR_SIZE];
     #endif
 
         ssi_buffer_ptr = fapp_http_ssi_buffer; 
@@ -218,7 +221,7 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
         #if FNET_CFG_IP4
             fnet_ip4_addr_t ip_adr = fnet_netif_get_ip4_addr(netif);
             fnet_inet_ntoa(*(struct in_addr *)( &ip_adr), ip_str);
-            fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", ip_str);
+            fnet_snprintf((fnet_char_t*)fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", ip_str);
         #else
             fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "...");            
         #endif /* FNET_CFG_IP4 */
@@ -228,7 +231,7 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
         #if FNET_CFG_IP4
             fnet_ip4_addr_t ip_adr = fnet_netif_get_ip4_subnet_mask(netif);
             fnet_inet_ntoa(*(struct in_addr *)( &ip_adr), ip_str);
-            fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", ip_str);
+            fnet_snprintf((fnet_char_t*)fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", ip_str);
         #else
             fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "...");            
         #endif /* FNET_CFG_IP4 */            
@@ -238,7 +241,7 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
         #if FNET_CFG_IP4
             fnet_ip4_addr_t ip_adr = fnet_netif_get_ip4_gateway(netif);
             fnet_inet_ntoa(*(struct in_addr *)( &ip_adr), ip_str);
-            fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", ip_str);
+            fnet_snprintf((fnet_char_t*)fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", ip_str);
         #else
             fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "...");            
         #endif /* FNET_CFG_IP4 */            
@@ -246,9 +249,10 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
         else if (!fnet_strcmp( query, "MAC"))
         {
             fnet_mac_addr_t macaddr;
-            char mac_str[FNET_MAC_ADDR_STR_SIZE];
+            fnet_char_t    mac_str[FNET_MAC_ADDR_STR_SIZE];
+
             fnet_netif_get_hw_addr(netif, macaddr, sizeof(fnet_mac_addr_t));
-            fnet_snprintf(fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", fnet_mac_to_str(macaddr, mac_str));
+            fnet_snprintf((fnet_char_t*)fapp_http_ssi_buffer, sizeof(fapp_http_ssi_buffer), "%s", fnet_mac_to_str(macaddr, mac_str));
         }
         else
         {
@@ -256,7 +260,7 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
         }
     }
     
-    *cookie = (long)ssi_buffer_ptr; /* Save ssi_buffer_ptr as cookie.*/
+    *cookie = (fnet_uint32_t)ssi_buffer_ptr; /* Save ssi_buffer_ptr as cookie.*/
     
     return result;
 }
@@ -270,12 +274,12 @@ static int fapp_http_ssi_echo_handle(char * query, long *cookie)
 *
 * DESCRIPTION:
 *************************************************************************/
-static int fapp_http_cgi_stdata_handle(char * query, long *cookie)
+static fnet_return_t fapp_http_cgi_stdata_handle(fnet_char_t *query, fnet_uint32_t *cookie)
 {
-    unsigned long                   cur_time;
-    unsigned long                   t_hour;
-    unsigned long                   t_min;
-    unsigned long                   t_sec;
+    fnet_time_t                     cur_time;
+    fnet_time_t                     t_hour;
+    fnet_time_t                     t_min;
+    fnet_time_t                   t_sec;
 	struct fnet_netif_statistics    statistics;
 
     FNET_COMP_UNUSED_ARG(query);
@@ -291,24 +295,24 @@ static int fapp_http_cgi_stdata_handle(char * query, long *cookie)
     fnet_netif_get_statistics(fapp_default_netif, &statistics);
 
 	/* Write to the temprorary buffer. */
-    fnet_snprintf(fapp_http_cgi_buffer, sizeof(fapp_http_cgi_buffer), "({\"time\":\"%02d:%02d:%02d\",\"tx\":%d,\"rx\":%d})", 
+    fnet_snprintf((fnet_char_t*)fapp_http_cgi_buffer, sizeof(fapp_http_cgi_buffer), "({\"time\":\"%02d:%02d:%02d\",\"tx\":%d,\"rx\":%d})", 
                              t_hour, t_min, t_sec, statistics.tx_packet, statistics.rx_packet);
 
-    *cookie = (long)fapp_http_cgi_buffer; /* Save fapp_http_cgi_buffer as cookie.*/
+    *cookie = (fnet_uint32_t)fapp_http_cgi_buffer; /* Save fapp_http_cgi_buffer as cookie.*/
                                  
     return FNET_OK;
 }
 
 #define FAPP_HTTP_CGI_GRAPH_MIN     (30u)
-static unsigned int fapp_http_cgi_rand_next;
+static fnet_uint32_t fapp_http_cgi_rand_next;
 /************************************************************************
 * NAME: fapp_http_cgi_rand
 *
 * DESCRIPTION:
 *************************************************************************/
-static unsigned int fapp_http_cgi_rand(void)
+static fnet_uint32_t fapp_http_cgi_rand(void)
 {
-  fapp_http_cgi_rand_next = fapp_http_cgi_rand_next * 11 + 12;
+  fapp_http_cgi_rand_next = fapp_http_cgi_rand_next * 11u + 12u;
   return (((fapp_http_cgi_rand_next>>4) & 0xFFlu) + FAPP_HTTP_CGI_GRAPH_MIN);
 }
 
@@ -317,37 +321,37 @@ static unsigned int fapp_http_cgi_rand(void)
 *
 * DESCRIPTION:
 *************************************************************************/
-static int fapp_http_cgi_graph_handle(char * query, long *cookie)
+static fnet_return_t fapp_http_cgi_graph_handle(fnet_char_t *query, fnet_uint32_t *cookie)
 {
-    int q1= (int)fapp_http_cgi_rand();
-    int q2= (int)fapp_http_cgi_rand();
-    int q3= (int)fapp_http_cgi_rand();
-    int q4= (int)fapp_http_cgi_rand();
-    int q5= (int)fapp_http_cgi_rand();
+    fnet_uint32_t q1= fapp_http_cgi_rand();
+    fnet_uint32_t q2= fapp_http_cgi_rand();
+    fnet_uint32_t q3= fapp_http_cgi_rand();
+    fnet_uint32_t q4= fapp_http_cgi_rand();
+    fnet_uint32_t q5= fapp_http_cgi_rand();
 
     FNET_COMP_UNUSED_ARG(query);
 
 	/* Wrie to the temprorary buffer. */
-    fnet_snprintf(fapp_http_cgi_buffer, sizeof(fapp_http_cgi_buffer), 
+    fnet_snprintf((fnet_char_t*)fapp_http_cgi_buffer, sizeof(fapp_http_cgi_buffer), 
                         "({\"q1\":%d,\"q2\":%d,\"q3\":%d,\"q4\":%d,\"q5\":%d})", 
                         q1, q2, q3, q4, q5);
 
-    *cookie = (long)fapp_http_cgi_buffer; /* Save fapp_http_cgi_buffer as cookie.*/                        
+    *cookie = (fnet_uint32_t)fapp_http_cgi_buffer; /* Save fapp_http_cgi_buffer as cookie.*/                        
     
     return FNET_OK;
 }
 
-#if FNET_CFG_HTTP_POST
+#if FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR
 /************************************************************************
 * NAME: fapp_http_cgi_post_handle
 *
 * DESCRIPTION:
 *************************************************************************/
-static int fapp_http_cgi_post_handle(char * query, long *cookie)
+static fnet_return_t fapp_http_cgi_post_handle(fnet_char_t *query, fnet_uint32_t *cookie)
 {
     FNET_COMP_UNUSED_ARG(query);
 
-    *cookie = (long)fapp_http_post_buffer; /* Save fapp_http_post_buffer as cookie.*/                        
+    *cookie = (fnet_uint32_t)fapp_http_post_buffer; /* Save fapp_http_post_buffer as cookie.*/                        
     
     return FNET_OK;
 }
@@ -356,28 +360,30 @@ static int fapp_http_cgi_post_handle(char * query, long *cookie)
 #endif /*FNET_CFG_HTTP_CGI*/
 
 
-#if FNET_CFG_HTTP_POST
+#if FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR
 /************************************************************************
 * NAME: fapp_http_post_receive
 *
 * DESCRIPTION:
 *************************************************************************/
-static int fapp_http_post_receive (char *buffer, unsigned long buffer_size, long *cookie)
+static fnet_int32_t fapp_http_post_receive (fnet_uint8_t *buffer, fnet_size_t buffer_size, fnet_uint32_t *cookie)
 {
-    long post_buffer_index = *cookie;
-    long post_buffer_free_size = FAPP_HTTP_POST_BUFFER_SIZE - post_buffer_index;
-    long receive_size = (long)buffer_size;
+    fnet_size_t post_buffer_index = (fnet_size_t)*cookie;
+    fnet_size_t post_buffer_free_size = FAPP_HTTP_POST_BUFFER_SIZE - post_buffer_index;
+    fnet_size_t receive_size = buffer_size;
     
     if(post_buffer_free_size)
     {
         if(receive_size > post_buffer_free_size)
+        {
 	        receive_size = post_buffer_free_size; 
+        }
 	 
-	    fnet_memcpy(&fapp_http_post_buffer[post_buffer_index], buffer, (unsigned)receive_size);
+	    fnet_memcpy(&fapp_http_post_buffer[post_buffer_index], buffer, receive_size);
 	    post_buffer_index += receive_size;
 	    fapp_http_post_buffer[post_buffer_index] = '\0';
     
-        *cookie = post_buffer_index; /* Save buffer index as cookie.*/
+        *cookie = (fnet_uint32_t)post_buffer_index; /* Save buffer index as cookie.*/
     }
     
     return FNET_OK;
@@ -401,12 +407,12 @@ void fapp_http_release(void)
 *
 * DESCRIPTION: Run HTTP server.
 *************************************************************************/
-void fapp_http_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_http_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     struct fnet_http_params params;
     fnet_http_desc_t        http_desc;
 
-    if(argc == 1) /* By default is "init".*/
+    if(argc == 1u) /* By default is "init".*/
     {
         fnet_memset_zero(&params, sizeof(struct fnet_http_params));
         
@@ -418,10 +424,10 @@ void fapp_http_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     #if FNET_CFG_HTTP_CGI            
         params.cgi_table = fapp_cgi_table;
     #endif        
-    #if FNET_CFG_HTTP_AUTHENTICATION_BASIC
+    #if FNET_CFG_HTTP_AUTHENTICATION_BASIC && FNET_CFG_HTTP_VERSION_MAJOR
         params.auth_table = fapp_auth_table;
     #endif  
-    #if FNET_CFG_HTTP_POST
+    #if FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR
         params.post_table = fapp_post_table;
     #endif       
 
@@ -441,7 +447,7 @@ void fapp_http_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
             fnet_shell_println(desc, FAPP_INIT_ERR, "HTTP");
         }
     }
-    else if(argc == 2 && fnet_strcasecmp(&FAPP_COMMAND_RELEASE[0], argv[1]) == 0) /* [release] */
+    else if((argc == 2u) && (fnet_strcasecmp(&FAPP_COMMAND_RELEASE[0], argv[1]) == 0)) /* [release] */
     {
         fapp_http_release();
     }

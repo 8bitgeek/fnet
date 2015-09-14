@@ -88,31 +88,29 @@ static fnet_prot_if_t * const fnet_prot_if_list[] =
 
 #define FNET_PROT_TRANSPORT_IF_LIST_SIZE  (sizeof(fnet_prot_if_list)/sizeof(fnet_prot_if_t*))
 
-
-
-
-
 /************************************************************************
 * NAME: fnet_prot_init
 *
 * DESCRIPTION: Transport and IP layers initialization. 
 *************************************************************************/
-int fnet_prot_init( void )
+fnet_return_t fnet_prot_init( void )
 {
-    int i;
-    int result = FNET_OK;
+    fnet_index_t    i;
+    fnet_return_t   result = FNET_OK;
  
     fnet_isr_lock();
     
-    for(i=0; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
+    for(i = 0u; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
     {
         fnet_prot_if_list[i]->head = 0;
         if(fnet_prot_if_list[i]->prot_init)
+        {
             if(fnet_prot_if_list[i]->prot_init() == FNET_ERR)
             {
                 result = FNET_ERR;
                 goto ERROR;
             }
+        }
     }
 
 #if FNET_CFG_IP4 
@@ -143,14 +141,16 @@ ERROR:
 *************************************************************************/
 void fnet_prot_release( void )
 {
-    int i;
+    fnet_index_t i;
     
     fnet_isr_lock();
 
-    for(i=0; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
+    for(i = 0u; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
     {
         if(fnet_prot_if_list[i]->prot_release)
+        {
             fnet_prot_if_list[i]->prot_release();
+        }
     }
 
 #if FNET_CFG_IP4 
@@ -170,15 +170,15 @@ void fnet_prot_release( void )
 * DESCRIPTION: This function looks up a protocol by domain family name, 
 *              by type and by protocol number.
 *************************************************************************/
-fnet_prot_if_t *fnet_prot_find( fnet_address_family_t family, fnet_socket_type_t type, int protocol )
+fnet_prot_if_t *fnet_prot_find( fnet_address_family_t family, fnet_socket_type_t type, fnet_uint32_t protocol )
 {
-    int i;
+    fnet_index_t i;
     
-    for(i=0; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
+    for(i=0u; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
     {
         if( ((fnet_prot_if_list[i]->family & family) != 0) && 
-            ( ((fnet_prot_if_list[i]->type == type) && (((protocol == 0)||(fnet_prot_if_list[i]->protocol == 0)) ? 1: (fnet_prot_if_list[i]->protocol == protocol)))
-            || ((type == 0) && (fnet_prot_if_list[i]->protocol == protocol)) ) )
+            ( ((fnet_prot_if_list[i]->type == type) && (((protocol == 0u)||(fnet_prot_if_list[i]->protocol == 0u)) ? 1: (fnet_prot_if_list[i]->protocol == protocol)))
+            || ((type == SOCK_UNSPEC) && (fnet_prot_if_list[i]->protocol == protocol)) ) )
         {
             return (fnet_prot_if_list[i]);
         }
@@ -195,16 +195,18 @@ fnet_prot_if_t *fnet_prot_find( fnet_address_family_t family, fnet_socket_type_t
 *************************************************************************/
 void fnet_prot_drain( void )
 {
-    int i;
+    fnet_size_t i;
 
 #if 0 /* For debug needs.*/
     fnet_println("DRAIN");
 #endif
 
-    for(i=0; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
+    for(i = 0u; i < FNET_PROT_TRANSPORT_IF_LIST_SIZE; i++)
     {
         if(fnet_prot_if_list[i]->prot_drain)
+        {
             fnet_prot_if_list[i]->prot_drain();
+        }
     }
 
 #if FNET_CFG_IP4

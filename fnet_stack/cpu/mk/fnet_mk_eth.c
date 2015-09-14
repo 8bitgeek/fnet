@@ -47,7 +47,7 @@
 /************************************************************************
 * Ethernet interface structure.
 *************************************************************************/
-fnet_eth_if_t fnet_mk_eth0_if =
+static fnet_eth_if_t fnet_mk_eth0_if =
 {
     &fnet_fec0_if               /* Points to CPU-specific control data structure of the interface. */
     ,0
@@ -80,21 +80,21 @@ void fnet_eth_io_init(void)
 
 #if FNET_CFG_CPU_MK64FN1
     pctl = (FNET_MK_PORT_MemMapPtr)FNET_MK_PORTC_BASE_PTR;    
-    pctl->PCR[16] = 0x00000400;     
-    pctl->PCR[17] = 0x00000400;     
-    pctl->PCR[18] = 0x00000400;     
-    pctl->PCR[19] = 0x00000400;     
+    pctl->PCR[16] = 0x00000400u;     
+    pctl->PCR[17] = 0x00000400u;     
+    pctl->PCR[18] = 0x00000400u;     
+    pctl->PCR[19] = 0x00000400u;     
 
 
     pctl = (FNET_MK_PORT_MemMapPtr)FNET_MK_PORTA_BASE_PTR;    
-    pctl->PCR[12] = 0x00000400;     /* PTA12, RMII0_RXD1/MII0_RXD1      */
-    pctl->PCR[13] = 0x00000400;     /* PTA13, RMII0_RXD0/MII0_RXD0      */
-    pctl->PCR[14] = 0x00000400;     /* PTA14, RMII0_CRS_DV/MII0_RXDV    */
-    pctl->PCR[15] = 0x00000400;     /* PTA15, RMII0_TXEN/MII0_TXEN      */
-    pctl->PCR[16] = 0x00000400;     /* PTA16, RMII0_TXD0/MII0_TXD0      */
-    pctl->PCR[17] = 0x00000400;     /* PTA17, RMII0_TXD1/MII0_TXD1      */
-    pctl->PCR[5] = 0x00000400;     
-    pctl->PCR[28] = 0x00000400;     
+    pctl->PCR[12] = 0x00000400u;     /* PTA12, RMII0_RXD1/MII0_RXD1      */
+    pctl->PCR[13] = 0x00000400u;     /* PTA13, RMII0_RXD0/MII0_RXD0      */
+    pctl->PCR[14] = 0x00000400u;     /* PTA14, RMII0_CRS_DV/MII0_RXDV    */
+    pctl->PCR[15] = 0x00000400u;     /* PTA15, RMII0_TXEN/MII0_TXEN      */
+    pctl->PCR[16] = 0x00000400u;     /* PTA16, RMII0_TXD0/MII0_TXD0      */
+    pctl->PCR[17] = 0x00000400u;     /* PTA17, RMII0_TXD1/MII0_TXD1      */
+    pctl->PCR[5] = 0x00000400u;     
+    pctl->PCR[28] = 0x00000400u;     
     
     pctl = (FNET_MK_PORT_MemMapPtr)FNET_MK_PORTB_BASE_PTR;
     pctl->PCR[0] = FNET_MK_PORT_PCR_MUX(4) | FNET_MK_PORT_PCR_ODE_MASK | FNET_MK_PORT_PCR_PS_MASK | FNET_MK_PORT_PCR_PE_MASK; /* PTB0, RMII0_MDIO/MII0_MDIO   */
@@ -103,12 +103,12 @@ void fnet_eth_io_init(void)
 #else
     
     pctl = (FNET_MK_PORT_MemMapPtr)FNET_MK_PORTA_BASE_PTR;    
-    pctl->PCR[12] = 0x00000400;     /* PTA12, RMII0_RXD1/MII0_RXD1      */
-    pctl->PCR[13] = 0x00000400;     /* PTA13, RMII0_RXD0/MII0_RXD0      */
-    pctl->PCR[14] = 0x00000400;     /* PTA14, RMII0_CRS_DV/MII0_RXDV    */
-    pctl->PCR[15] = 0x00000400;     /* PTA15, RMII0_TXEN/MII0_TXEN      */
-    pctl->PCR[16] = 0x00000400;     /* PTA16, RMII0_TXD0/MII0_TXD0      */
-    pctl->PCR[17] = 0x00000400;     /* PTA17, RMII0_TXD1/MII0_TXD1      */
+    pctl->PCR[12] = 0x00000400u;     /* PTA12, RMII0_RXD1/MII0_RXD1      */
+    pctl->PCR[13] = 0x00000400u;     /* PTA13, RMII0_RXD0/MII0_RXD0      */
+    pctl->PCR[14] = 0x00000400u;     /* PTA14, RMII0_CRS_DV/MII0_RXDV    */
+    pctl->PCR[15] = 0x00000400u;     /* PTA15, RMII0_TXEN/MII0_TXEN      */
+    pctl->PCR[16] = 0x00000400u;     /* PTA16, RMII0_TXD0/MII0_TXD0      */
+    pctl->PCR[17] = 0x00000400u;     /* PTA17, RMII0_TXD1/MII0_TXD1      */
 
     pctl = (FNET_MK_PORT_MemMapPtr)FNET_MK_PORTB_BASE_PTR;
     pctl->PCR[0] = FNET_MK_PORT_PCR_MUX(4) | FNET_MK_PORT_PCR_ODE_MASK; /* PTB0, RMII0_MDIO/MII0_MDIO   */
@@ -120,7 +120,7 @@ void fnet_eth_io_init(void)
     sim->SCGC2 |= FNET_MK_SIM_SCGC2_ENET_MASK;
     
     /*Allow concurrent access to MPU controller. Example: ENET uDMA to SRAM, otherwise bus error*/
-    FNET_MK_MPU_CESR = 0;  /* MPU is disabled. All accesses from all bus masters are allowed.*/
+    FNET_MK_MPU_CESR = 0u;  /* MPU is disabled. All accesses from all bus masters are allowed.*/
 
 }
 

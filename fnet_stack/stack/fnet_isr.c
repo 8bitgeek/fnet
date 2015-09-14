@@ -52,28 +52,28 @@
 typedef struct fnet_isr_entry
 {
     struct fnet_isr_entry   *next;                           /* Next isr in chain */
-    unsigned int            vector_number;                   /* Vector number */
-    void                    (*handler_top)(void *cookie);    /* "Critical handler" - it will 
+    fnet_uint32_t           vector_number;                   /* Vector number */
+    void                    (*handler_top)(fnet_uint32_t cookie);    /* "Critical handler" - it will 
                                                               * be called every time on interrupt event, 
                                                               * (e.g. user can put here clear flags etc.)*/
 
-    void                    (*handler_bottom)(void *cookie); /* "Bottom half handler" - it will be called after 
+    void                    (*handler_bottom)(fnet_uint32_t cookie); /* "Bottom half handler" - it will be called after 
                                                               *  isr_handler_top() in case NO SW lock 
                                                               *  or on SW unlock.*/
-    unsigned int            pended;                          /* indicates interrupt pending */
-    void                    *cookie;                         /* Handler Cookie. */
+    fnet_bool_t             pended;                          /* indicates interrupt pending */
+    fnet_uint32_t           cookie;                         /* Handler Cookie. */
 } fnet_isr_entry_t;
 
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(void *cookie), void (*handler_bottom)(void *cookie), void *cookie);
+static fnet_return_t fnet_isr_register( fnet_uint32_t vector_number, void (*handler_top)(fnet_uint32_t cookie), void (*handler_bottom)(fnet_uint32_t cookie), fnet_uint32_t cookie);
 
 
 /************************************************************************
 *     Variables,
 *************************************************************************/
-unsigned long fnet_locked = 0;
+static fnet_uint32_t    fnet_locked = 0u;
 static fnet_isr_entry_t *fnet_isr_table = 0;
 
 static fnet_event_desc_t fnet_event_desc_last = FNET_EVENT_VECTOR_NUMBER;
@@ -85,7 +85,7 @@ static fnet_event_desc_t fnet_event_desc_last = FNET_EVENT_VECTOR_NUMBER;
 *              If fnet_locked == 0 - executes the
 *              corresponding handler; else - marks it as pended.
 *************************************************************************/
-void fnet_isr_handler( int vector_number )
+void fnet_isr_handler( fnet_uint32_t vector_number )
 {
     fnet_isr_entry_t *isr_cur;
 
@@ -103,18 +103,22 @@ void fnet_isr_handler( int vector_number )
         if(isr_cur->vector_number == vector_number) /* we got it. */
         {
             if(isr_cur->handler_top)
+            {
                 isr_cur->handler_top(isr_cur->cookie);         /* Call "top half" handler. */
+            }
 
             if(fnet_locked)
             {
-                isr_cur->pended = 1;
+                isr_cur->pended = FNET_TRUE;
             }
             else
             {
-                isr_cur->pended = 0;
+                isr_cur->pended = FNET_FALSE;
 
                 if(isr_cur->handler_bottom)
+                {
                     isr_cur->handler_bottom(isr_cur->cookie); /* Call "bottom half" handler.*/
+                }
             }
 
             break;
@@ -129,10 +133,10 @@ void fnet_isr_handler( int vector_number )
 *              'vector_number' at the internal vector queue and interrupt 
 *              handler 'fnet_cpu_isr' at the real vector table
 *************************************************************************/
-int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)(void *cookie),
-                                   void (*handler_bottom)(void *cookie), unsigned int priority, void *cookie )
+fnet_return_t fnet_isr_vector_init( fnet_uint32_t vector_number, void (*handler_top)(fnet_uint32_t cookie),
+                                   void (*handler_bottom)(fnet_uint32_t cookie), fnet_uint32_t priority, fnet_uint32_t cookie )
 {
-    int result;
+    fnet_return_t result;
 
     /* CPU-specific initalisation. */
     result = fnet_cpu_isr_install(vector_number, priority);
@@ -150,16 +154,18 @@ int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)(void *
 *
 * DESCRIPTION: Register the event handler.
 *************************************************************************/
-fnet_event_desc_t fnet_event_init( void (*event_handler)(void *cookie), void *cookie)
+fnet_event_desc_t fnet_event_init( void (*event_handler)(fnet_uint32_t cookie), fnet_uint32_t cookie)
 {
-    unsigned int    vector_number = (unsigned int)(fnet_event_desc_last++);
+    fnet_uint32_t    vector_number = (fnet_uint32_t)(fnet_event_desc_last++);
 
-    if( fnet_isr_register(vector_number, 0, event_handler, cookie) == FNET_ERR)
+    if(fnet_isr_register(vector_number, 0, event_handler, cookie) == FNET_ERR)
     {
     	return FNET_ERR;    	
     }
     else
+    {
     	return (fnet_event_desc_t)vector_number;
+    }
 }
 
 /************************************************************************
@@ -167,9 +173,9 @@ fnet_event_desc_t fnet_event_init( void (*event_handler)(void *cookie), void *co
 *
 * DESCRIPTION: Register 'handler' at the isr table.
 *************************************************************************/
-static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(void *handler_top_cookie), void (*handler_bottom)(void *handler_bottom_cookie), void *cookie )
+static fnet_return_t fnet_isr_register( fnet_uint32_t vector_number, void (*handler_top)(fnet_uint32_t handler_top_cookie), void (*handler_bottom)(fnet_uint32_t handler_bottom_cookie), fnet_uint32_t cookie )
 {
-    int                 result;
+    fnet_return_t       result;
     fnet_isr_entry_t    *isr_temp;
 
     isr_temp = (fnet_isr_entry_t *)fnet_malloc_zero(sizeof(fnet_isr_entry_t));
@@ -177,8 +183,8 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
     if(isr_temp)
     {
         isr_temp->vector_number = vector_number;
-        isr_temp->handler_top = (void (*)(void *handler_top_cookie))handler_top;
-        isr_temp->handler_bottom = (void (*)(void *handler_bottom_cookie))handler_bottom;
+        isr_temp->handler_top = (void (*)(fnet_uint32_t handler_top_cookie))handler_top;
+        isr_temp->handler_bottom = (void (*)(fnet_uint32_t handler_bottom_cookie))handler_bottom;
         isr_temp->next = fnet_isr_table;
         isr_temp->cookie = cookie;
         fnet_isr_table = isr_temp;
@@ -186,7 +192,9 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
         result = FNET_OK;
     }
     else
+    {
         result = FNET_ERR;
+    }
 
     return result;
 }
@@ -199,7 +207,7 @@ static int fnet_isr_register( unsigned int vector_number, void (*handler_top)(vo
 *              destroys info about old interrupt handler and removes
 *              information from 'fnet_isr_table' queue
 *************************************************************************/
-void fnet_isr_vector_release( unsigned int vector_number)
+void fnet_isr_vector_release( fnet_uint32_t vector_number)
 {
     fnet_isr_entry_t *isr_temp;
 
@@ -208,7 +216,9 @@ void fnet_isr_vector_release( unsigned int vector_number)
     while(isr_temp != 0)
     {
         if(isr_temp->vector_number == vector_number)
+        {
             break;
+        }
 
         isr_temp = isr_temp->next;
     }
@@ -271,20 +281,21 @@ void fnet_isr_unlock( void )
     *Always exits by decrementing fnet_locked so as to bump up a lock level.
 	*/	
 
-    if(fnet_locked == 1)
+    if(fnet_locked == 1u)
     {
         isr_temp = fnet_isr_table;
 
         while(isr_temp != 0)
         {
-            if(isr_temp->pended)
+            if(isr_temp->pended == FNET_TRUE)
             {
-                isr_temp->pended = 0;
+                isr_temp->pended = FNET_FALSE;
 
                 if(isr_temp->handler_bottom)
+                {
                     isr_temp->handler_bottom(isr_temp->cookie);
+                }
             }
-
             isr_temp = isr_temp->next;
         }
     }
@@ -313,9 +324,9 @@ void fnet_isr_unlock( void )
 
         while(isr_temp != 0)
         {
-            if(isr_temp->pended)
+            if(isr_temp->pended == FNET_TRUE)
             {
-                isr_temp->pended = 0;
+                isr_temp->pended = FNET_FALSE;
 
                 if(isr_temp->handler_bottom)
                     isr_temp->handler_bottom(isr_temp->cookie);
@@ -334,7 +345,7 @@ void fnet_isr_unlock( void )
 *************************************************************************/
 void fnet_event_raise( fnet_event_desc_t event_number )
 {
-    unsigned int        vector_number = (unsigned int)(event_number);
+    fnet_uint32_t       vector_number = (fnet_uint32_t)(event_number);
     fnet_isr_entry_t    *isr_temp;
 
     isr_temp = fnet_isr_table;
@@ -346,17 +357,23 @@ void fnet_event_raise( fnet_event_desc_t event_number )
         if(isr_temp->vector_number == vector_number)
         {
             if(isr_temp->handler_top)
-                isr_temp->handler_top(isr_temp->cookie);
-
-            if(fnet_locked == 1)
             {
-                isr_temp->pended = 0;
+                isr_temp->handler_top(isr_temp->cookie);
+            }
+
+            if(fnet_locked == 1u)
+            {
+                isr_temp->pended = FNET_FALSE;
 
                 if(isr_temp->handler_bottom)
+                {
                     isr_temp->handler_bottom(isr_temp->cookie);
+                }
             }
             else
-                isr_temp->pended = 1;
+            {
+                isr_temp->pended = FNET_TRUE;
+            }
 
             break;
         }
@@ -375,6 +392,6 @@ void fnet_event_raise( fnet_event_desc_t event_number )
 *************************************************************************/
 void fnet_isr_init(void)
 {
-    fnet_locked = 0;
+    fnet_locked = 0u;
     fnet_isr_table = 0;
 }

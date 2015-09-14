@@ -46,16 +46,18 @@
 #include "fnet_config.h"
 #include "fnet_netbuf.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-unsigned short fnet_checksum_buf(char *buf, unsigned int buf_len);
-unsigned short fnet_checksum_pseudo_buf(char *buf, unsigned short buf_len, unsigned short protocol, const char *ip_src, const char *ip_dest, unsigned int addr_size);
+fnet_uint16_t fnet_checksum_buf(fnet_uint8_t *buf, fnet_size_t buf_len);
+fnet_uint16_t fnet_checksum_pseudo_buf(fnet_uint8_t *buf, fnet_uint16_t buf_len, fnet_uint16_t protocol, const fnet_uint8_t *ip_src, const fnet_uint8_t *ip_dest, fnet_size_t addr_size);
+fnet_uint16_t fnet_checksum(fnet_netbuf_t * nb, fnet_size_t len);
+fnet_uint16_t fnet_checksum_pseudo_start( fnet_netbuf_t *nb, fnet_uint16_t protocol, fnet_uint16_t protocol_len );
+fnet_uint16_t fnet_checksum_pseudo_end( fnet_uint16_t sum_s, const fnet_uint8_t *ip_src, const fnet_uint8_t *ip_dest, fnet_size_t addr_size );
 
-unsigned short fnet_checksum(fnet_netbuf_t * nb, unsigned int len);
-
-unsigned short fnet_checksum_pseudo_start( fnet_netbuf_t *nb,
-                                           unsigned short protocol, unsigned short protocol_len );
-
-unsigned short fnet_checksum_pseudo_end( unsigned short sum_s, const char *ip_src, const char *ip_dest, unsigned int addr_size );
-
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

@@ -62,7 +62,7 @@
 /* Defines the maximum number of incoming frames that may 
  *           be buffered by the Ethernet module.*/
 #ifndef FNET_CFG_CPU_ETH_RX_BUFS_MAX
-    #define FNET_CFG_CPU_ETH_RX_BUFS_MAX        (4U)
+    #define FNET_CFG_CPU_ETH_RX_BUFS_MAX        (4u)
 #endif
 
 /* The platform has Kinetis Flash Memory Module (FTFL).*/

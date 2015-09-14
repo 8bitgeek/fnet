@@ -46,8 +46,8 @@
 #include "fnet_http_prv.h"
 
 /* Prototypes */
-static int fnet_http_get_handle(struct fnet_http_if * http, struct fnet_http_uri * uri);
-static int fnet_http_get_send(struct fnet_http_if * http);
+static fnet_int32_t fnet_http_get_handle(struct fnet_http_if * http, struct fnet_http_uri * uri);
+static fnet_return_t fnet_http_get_send(struct fnet_http_if * http);
 static void fnet_http_get_close(struct fnet_http_if * http);
 
 /* GET method. */
@@ -65,10 +65,10 @@ const struct fnet_http_method fnet_http_method_get =
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fnet_http_get_handle(struct fnet_http_if * http, struct fnet_http_uri * uri)
+static fnet_int32_t fnet_http_get_handle(struct fnet_http_if * http, struct fnet_http_uri * uri)
 {
     struct fnet_http_session_if *session =  http->session_active;
-    int                         result = FNET_ERR;
+    fnet_int32_t               result = FNET_ERR;
     
     /* Request is found */
     if(uri)
@@ -91,15 +91,19 @@ static int fnet_http_get_handle(struct fnet_http_if * http, struct fnet_http_uri
 * DESCRIPTION: Simple-Response. Simple-responce consists only of the 
 * entity body and is terminated by the server closing connection.
 ************************************************************************/
-static int fnet_http_get_send(struct fnet_http_if * http)
+static fnet_return_t fnet_http_get_send(struct fnet_http_if * http)
 {
     struct fnet_http_session_if *session =  http->session_active;
-    int                         result;
+    fnet_return_t               result;
     
-    if((session->buffer_actual_size = session->response.send_file_handler->file_send(http)) > 0)
+    if((session->buffer_actual_size = session->response.send_file_handler->file_send(http)) > 0u)
+    {
         result = FNET_OK;                            
+    }
     else
-        result = FNET_ERR;
+    {
+        result = FNET_ERR;  
+    }
     
     return result;
 }
@@ -113,8 +117,10 @@ static void fnet_http_get_close(struct fnet_http_if * http)
 {
     struct fnet_http_session_if *session =  http->session_active;
 
-    if(session->response.send_file_handler && session->response.send_file_handler->file_close)
+    if((session->response.send_file_handler) && (session->response.send_file_handler->file_close))
+    {
         session->response.send_file_handler->file_close(http);
+    }
 }
 
 #endif

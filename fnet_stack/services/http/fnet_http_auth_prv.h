@@ -46,26 +46,34 @@
 #include "fnet_config.h"
 
 
-#if FNET_CFG_HTTP && FNET_CFG_HTTP_AUTHENTICATION_BASIC
+#if FNET_CFG_HTTP && FNET_CFG_HTTP_AUTHENTICATION_BASIC && FNET_CFG_HTTP_VERSION_MAJOR
 
 
 #include "fnet.h"
 #include "fnet_http_auth.h"
 
-typedef int(*fnet_http_auth_scheme_validate_t)(const struct fnet_http_auth *auth_entry, char * auth_param);
-typedef int(*fnet_http_auth_scheme_generate_t)(struct fnet_http_if * http, char *buffer, unsigned int buffer_size);
+typedef fnet_return_t(*fnet_http_auth_scheme_validate_t)(const struct fnet_http_auth *auth_entry, fnet_char_t *auth_param);
+typedef fnet_size_t(*fnet_http_auth_scheme_generate_t)(struct fnet_http_if * http, fnet_uint8_t *buffer, fnet_size_t buffer_size);
 
 struct fnet_http_auth_scheme
 {
-    fnet_http_auth_scheme_t id;
-    const char *name;
-    fnet_http_auth_scheme_validate_t validate; /* Validate credentials params.*/
-    fnet_http_auth_scheme_generate_t generate; /* Generate challenge params.*/
+    fnet_http_auth_scheme_t             id;
+    fnet_char_t                                *name;
+    fnet_http_auth_scheme_validate_t    validate; /* Validate credentials params.*/
+    fnet_http_auth_scheme_generate_t    generate; /* Generate challenge params.*/
 };
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 void fnet_http_auth_validate_uri(struct fnet_http_if * http);
-int fnet_http_auth_validate_credentials(struct fnet_http_if * http, char *credentials);
-int fnet_http_auth_generate_challenge(struct fnet_http_if * http, char *buffer, unsigned int buffer_size);
+fnet_return_t fnet_http_auth_validate_credentials(struct fnet_http_if * http, fnet_char_t *credentials);
+fnet_size_t fnet_http_auth_generate_challenge(struct fnet_http_if * http, fnet_uint8_t *buffer, fnet_size_t buffer_size);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

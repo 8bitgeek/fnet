@@ -95,7 +95,7 @@ typedef enum
  * called when the PING-service has completed the requesting.
  *
  * @param result        Result of the PING-service request, which equals to:
- *                          - FNE_OK - if correct reply is received.
+ *                          - FNET_ERR_OK - if correct reply is received.
  *                          - FNET_ERR_TIMEDOUT - if there is no correct response during specified timeout.
  *                          - Error code, if any happened during receiving.
  * @param packet_count  Number of request packets to be sent, till the PING-service release.@n
@@ -108,7 +108,7 @@ typedef enum
  *
  * @see fnet_ping_request(), fnet_ping_params
  ******************************************************************************/  
- typedef void(*fnet_ping_handler_t)(int result, unsigned long packet_count, struct sockaddr *target_addr, long cookie);
+ typedef void(*fnet_ping_handler_t)(fnet_error_t result, fnet_size_t packet_count, struct sockaddr *target_addr, fnet_uint32_t cookie);
 
 
 /**************************************************************************/ /*!
@@ -118,28 +118,32 @@ struct fnet_ping_params
 {
     struct sockaddr     target_addr;    /**< @brief Socket address of the destination to ping.
                                          */
-    unsigned long       packet_size;    /**< @brief The size of the echo request, in bytes (without ICMP header). @n
+    fnet_size_t         packet_size;    /**< @brief The size of the echo request, in bytes (without ICMP header). @n
                                          *  The maximum value is limited by @ref FNET_CFG_PING_PACKET_MAX value.
                                          */
-    unsigned long       packet_count;   /**< @brief Number of packets to be sent.
+    fnet_size_t         packet_count;   /**< @brief Number of packets to be sent.
                                          */                                         
-    unsigned long       timeout;        /**< @brief Timeout value in milliseconds, that service 
+    fnet_time_t       timeout;        /**< @brief Timeout value in milliseconds, that service 
                                          * waits for reply on ping request.
                                          */
-    unsigned char       ttl;            /**< @brief IPv4 Time To Live (TTL) or IPv6 Hop Limit value. @n
+    fnet_uint8_t        ttl;            /**< @brief IPv4 Time To Live (TTL) or IPv6 Hop Limit value. @n
                                          */                                         
-    unsigned char       pattern;        /**< @brief  Pattern byte to fill out the packet.@n
+    fnet_uint8_t        pattern;        /**< @brief  Pattern byte to fill out the packet.@n
                                          *   This is useful for diagnosing data-dependent problems in a network.
                                          */                                        
     fnet_ping_handler_t handler;        /**< @brief Pointer to the callback function defined by 
                                          * @ref fnet_ping_handler_t. It is called when the 
                                          * correct echo response is receved or timeout is occured.
                                          */
-    long                cookie;         /**< @brief Optional application-specific parameter. @n 
+    fnet_uint32_t       cookie;         /**< @brief Optional application-specific parameter. @n 
                                          * It's passed to the @c handler callback 
                                          * function as input parameter.
                                          */
 };
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -168,7 +172,7 @@ struct fnet_ping_params
  * Call fnet_ping_release() if you need to terminate it earlier.
  *
  ******************************************************************************/
-int fnet_ping_request( struct fnet_ping_params *params );
+fnet_return_t fnet_ping_request( struct fnet_ping_params *params );
 
 /***************************************************************************/ /*!
  *
@@ -203,6 +207,10 @@ void fnet_ping_release(void);
  *
  ******************************************************************************/
 fnet_ping_state_t fnet_ping_state(void);
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 /*! @} */

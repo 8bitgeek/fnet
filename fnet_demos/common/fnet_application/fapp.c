@@ -49,7 +49,7 @@
 
 #include "fapp_mem.h"
 
-#if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP
+#if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP && FNET_CFG_IP4
 
 #include "fapp_dhcp.h"
 
@@ -102,26 +102,26 @@
 /************************************************************************
 *     Definitions.
 *************************************************************************/
-const char FAPP_DELIMITER_STR[] = "************************************************";
-const char FAPP_CANCELLED_STR[] = "\nCancelled";
-const char FAPP_TOCANCEL_STR[] = "Press [Ctr+C] to cancel.";
+const fnet_char_t FAPP_DELIMITER_STR[] = "************************************************";
+const fnet_char_t FAPP_CANCELLED_STR[] = "\nCancelled";
+const fnet_char_t FAPP_TOCANCEL_STR[] = "Press [Ctr+C] to cancel.";
 
 /* Error mesages */
-const char FAPP_PARAM_ERR[] = "Error: Invalid paremeter \'%s\'";
-static const char FAPP_NET_ERR[]   = "Error: Network Interface is not configurated!\n";
-const char FAPP_INIT_ERR[]  = "Error: %s initialization is failed!";
+const fnet_char_t FAPP_PARAM_ERR[] = "Error: Invalid paremeter \'%s\'";
+static const fnet_char_t FAPP_NET_ERR[]   = "Error: Network Interface is not configurated!\n";
+const fnet_char_t FAPP_INIT_ERR[]  = "Error: %s initialization is failed!";
 
 
 
-const char FAPP_SHELL_INFO_FORMAT_S[]  = " %-16s : %s";
-const char FAPP_SHELL_INFO_FORMAT_D[]  = " %-16s : %u";
+const fnet_char_t FAPP_SHELL_INFO_FORMAT_S[]  = " %-16s : %s";
+const fnet_char_t FAPP_SHELL_INFO_FORMAT_D[]  = " %-16s : %u";
 
-const char FAPP_SHELL_INFO_ENABLED[]  = "enabled";
-const char FAPP_SHELL_INFO_DISABLED[]  = "disabled";
-const char FAPP_SHELL_CANCELED_CTRL_C[]  = "Canceled by [Ctrl+C]!";
+const fnet_char_t FAPP_SHELL_INFO_ENABLED[]  = "enabled";
+const fnet_char_t FAPP_SHELL_INFO_DISABLED[]  = "disabled";
+const fnet_char_t FAPP_SHELL_CANCELED_CTRL_C[]  = "Canceled by [Ctrl+C]!";
 
 /* Service release command */
-const char FAPP_COMMAND_RELEASE [] = "release";
+const fnet_char_t FAPP_COMMAND_RELEASE [] = "release";
 
 #define FAPP_GO_STR             "go 0x%08X"
 #define FAPP_SAVE_STR           "Parameters saved"
@@ -145,13 +145,13 @@ static void fapp_boot_mode_go(fnet_shell_desc_t desc);
 static void fapp_boot_mode_script(fnet_shell_desc_t desc);
 #endif
 #if FAPP_CFG_GO_CMD || FAPP_CFG_BOOTLOADER || FAPP_CFG_SETGET_CMD_BOOT
-static void fapp_go (fnet_shell_desc_t desc, unsigned long address);
+static void fapp_go (fnet_shell_desc_t desc, fnet_uint32_t address);
 #endif
 #if FAPP_CFG_REINIT_CMD 
-void fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_reinit_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 #if FAPP_CFG_DEBUG_CMD 
-void fapp_debug_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_debug_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 static void fapp_boot(fnet_shell_desc_t desc);
 #if FNET_CFG_IP4
@@ -159,22 +159,25 @@ static void fapp_dup_ip_handler( fnet_netif_desc_t netif );
 #endif
 
 #if FAPP_CFG_BIND_CMD && FNET_CFG_IP6
-static void fapp_bind_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+static void fapp_bind_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 #if FAPP_CFG_INFO_CMD
-static void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+static void fapp_info_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 #if FAPP_CFG_RESET_CMD || FAPP_CFG_REBOOT_CMD
-static void fapp_reset_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+static void fapp_reset_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
-#if FAPP_CFG_SAVE_CMD 
-static void fapp_save_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
+#if FAPP_CFG_SAVE_CMD && FNET_CFG_FLASH
+static void fapp_save_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 #if FAPP_CFG_STAT_CMD
-static void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+static void fapp_stat_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 #if FAPP_CFG_UNBIND_CMD && FNET_CFG_IP6
-static void fapp_unbind_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+static void fapp_unbind_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+#endif
+#if FAPP_CFG_EXP_CMD && FNET_CFG_FS
+static void fapp_exp_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
 #endif
 static void fapp_info_print( fnet_shell_desc_t desc );
 
@@ -183,90 +186,90 @@ static void fapp_info_print( fnet_shell_desc_t desc );
 *************************************************************************/
 const struct fnet_shell_command fapp_cmd_table [] =
 {
-    { FNET_SHELL_CMD_TYPE_NORMAL, "help",       0, 0, (void *)fapp_help_cmd,    "Display this help message", ""},
+    { "help",       0u, 0u, fapp_help_cmd,    "Display this help message", ""},
 #if FAPP_CFG_SETGET_CMD
-    { FNET_SHELL_CMD_TYPE_NORMAL, "set",        0, 2, (void *)fapp_set_cmd,     "Set parameter", "[<parameter> <value>]"},
-    { FNET_SHELL_CMD_TYPE_NORMAL, "get",        0, 1, (void *)fapp_get_cmd,     "Get parameters", "[<parameter>]" },
+    { "set",        0u, 2u, fapp_set_cmd,     "Set parameter", "[<parameter> <value>]"},
+    { "get",        0u, 1u, fapp_get_cmd,     "Get parameters", "[<parameter>]" },
 #endif  
 #if FAPP_CFG_BIND_CMD && FNET_CFG_IP6
-    { FNET_SHELL_CMD_TYPE_NORMAL, "bind",       1, 1, (void *)fapp_bind_cmd,    "Bind IPv6 Address", "<IP6 address>"},
+    { "bind",       1u, 1u, fapp_bind_cmd,    "Bind IPv6 Address", "<IP6 address>"},
 #endif
 #if FAPP_CFG_UNBIND_CMD && FNET_CFG_IP6
-    { FNET_SHELL_CMD_TYPE_NORMAL, "unbind",     1, 1, (void *)fapp_unbind_cmd,  "Unbind IPv6 Address", "<IP6 address>"},
+    { "unbind",     1u, 1u, fapp_unbind_cmd,  "Unbind IPv6 Address", "<IP6 address>"},
 #endif    
 #if FAPP_CFG_INFO_CMD
-    { FNET_SHELL_CMD_TYPE_NORMAL, "info",       0, 0, (void *)fapp_info_cmd,    "Show interface info", ""},
+    { "info",       0u, 0u, fapp_info_cmd,    "Show interface info", ""},
 #endif
 #if FAPP_CFG_STAT_CMD
-    { FNET_SHELL_CMD_TYPE_NORMAL, "stat",       0, 0, (void *)fapp_stat_cmd,    "Show interface statistics", ""},
+    { "stat",       0u, 0u, fapp_stat_cmd,    "Show interface statistics", ""},
 #endif
 #if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP && FNET_CFG_IP4
-    { FNET_SHELL_CMD_TYPE_NORMAL, "dhcp",       0, 1, (void *)fapp_dhcp_cmd,    "Start DHCP client", "[release]"},
+    { "dhcp",       0u, 1u, fapp_dhcp_cmd,    "Start DHCP client", "[release]"},
 #endif
 #if FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP
-    { FNET_SHELL_CMD_TYPE_NORMAL, "http",       0, 1, (void *)fapp_http_cmd,    "Start HTTP Server", "[release]"},
+    { "http",       0u, 1u, fapp_http_cmd,    "Start HTTP Server", "[release]"},
 #endif
-#if FAPP_CFG_EXP_CMD && FNET_CFG_FS
-    { FNET_SHELL_CMD_TYPE_SHELL,  "exp",        0, 1, (void *)&fapp_fs_shell,   "File Explorer submenu...", ""},
+#if FAPP_CFG_EXP_CMD && FNET_CFG_FS 
+    { "exp",        0u, 1u, fapp_exp_cmd,     "File Explorer submenu...", ""},
 #endif    
 #if FAPP_CFG_TFTP_CMD
-    { FNET_SHELL_CMD_TYPE_NORMAL, "tftp",       0, 3, (void *)fapp_tftp_cmd,    "TFTP firmware loader", "[<image name>[<server ip>[<type>]]]"},
+    { "tftp",       0u, 3u, fapp_tftp_cmd,    "TFTP firmware loader", "[<image name>[<server ip>[<type>]]]"},
 #endif
 #if FAPP_CFG_TFTPUP_CMD
-    { FNET_SHELL_CMD_TYPE_NORMAL, "tftpup",     0, 3, (void *)fapp_tftp_cmd,    "TFTP firmware uploader", "[<image name>[<server ip>[<type>]]]"},
+    { "tftpup",     0u, 3u, fapp_tftp_cmd,    "TFTP firmware uploader", "[<image name>[<server ip>[<type>]]]"},
 #endif  
 #if FAPP_CFG_TFTPS_CMD  
-    { FNET_SHELL_CMD_TYPE_NORMAL, "tftps",      0, 1, (void *)fapp_tftps_cmd,   "TFTP firmware server", "[release]"},
+    { "tftps",      0u, 1u, fapp_tftps_cmd,   "TFTP firmware server", "[release]"},
 #endif
 #if FAPP_CFG_TELNET_CMD && FNET_CFG_TELNET
-    { FNET_SHELL_CMD_TYPE_NORMAL, "telnet",     0, 1, (void *)fapp_telnet_cmd,  "Start Telnet Server", "[release]"},
+    { "telnet",     0u, 1u, fapp_telnet_cmd,  "Start Telnet Server", "[release]"},
 #endif 
 #if FAPP_CFG_DNS_CMD && FNET_CFG_DNS && FNET_CFG_DNS_RESOLVER
-    { FNET_SHELL_CMD_TYPE_NORMAL, "dns",        2, 3, (void *)fapp_dns_cmd,     "Resolve IPv4|6 address of <host name>", "<host name> 4|6 [<server ip>]"},
+    { "dns",        2u, 3u, fapp_dns_cmd,     "Resolve IPv4|6 address of <host name>", "<host name> 4|6 [<server ip>]"},
 #endif 
 #if FAPP_CFG_LLMNR_CMD && FNET_CFG_LLMNR
-    { FNET_SHELL_CMD_TYPE_NORMAL, "llmnr",     0, 1, (void *)fapp_llmnr_cmd,  "Start LLMNR Server", "[release]"},
+    { "llmnr",     0u, 1u, fapp_llmnr_cmd,    "Start LLMNR Server", "[release]"},
 #endif 
 #if FAPP_CFG_MEM_CMD    
-    { FNET_SHELL_CMD_TYPE_NORMAL, "mem",        0, 0, (void *)fapp_mem_cmd,     "Show memory map", ""},
+    { "mem",        0u, 0u, fapp_mem_cmd,     "Show memory map", ""},
 #endif  
 #if FAPP_CFG_ERASE_CMD    
-    { FNET_SHELL_CMD_TYPE_NORMAL, "erase",      1, 2, (void *)fapp_mem_erase_cmd,   "Erase flash memory", "all|[0x<erase address> <bytes>]"},
+    { "erase",      1u, 2u, fapp_mem_erase_cmd,   "Erase flash memory", "all|[0x<erase address> <bytes>]"},
 #endif 
-#if FAPP_CFG_SAVE_CMD       
-    { FNET_SHELL_CMD_TYPE_NORMAL, "save",       0, 0, (void *)fapp_save_cmd,    "Save parameters to the FLASH", ""},
+#if FAPP_CFG_SAVE_CMD && FNET_CFG_FLASH      
+    { "save",       0u, 0u, fapp_save_cmd,    "Save parameters to the FLASH", ""},
 #endif 
 #if FAPP_CFG_GO_CMD    
-    { FNET_SHELL_CMD_TYPE_NORMAL, "go",         0, 1, (void *)fapp_go_cmd,      "Start application at address", "[0x<address>]"},
+    { "go",         0u, 1u, fapp_go_cmd,      "Start application at address", "[0x<address>]"},
 #endif 
 #if FAPP_CFG_RESET_CMD    
-    { FNET_SHELL_CMD_TYPE_NORMAL, "reset",      0, 0, (void *)fapp_reset_cmd,   "Reset the board", ""},
+    { "reset",      0u, 0u, fapp_reset_cmd,   "Reset the board", ""},
 #endif    
 #if FAPP_CFG_REBOOT_CMD /* Used only for IPv6 TAHI Testing.*/   
-    { FNET_SHELL_CMD_TYPE_NORMAL, "reboot",     0, 0, (void *)fapp_reset_cmd,   "Reset the board", ""},
+    { "reboot",     0u, 0u, fapp_reset_cmd,   "Reset the board", ""},
 #endif  
 #if FAPP_CFG_BENCH_CMD   
-    { FNET_SHELL_CMD_TYPE_NORMAL, "benchrx",    0, 2, (void *)fapp_benchrx_cmd, "Receiver Benchmark", "[tcp|udp [multicast ip]"},
-    { FNET_SHELL_CMD_TYPE_NORMAL, "benchtx",    1, 5, (void *)fapp_benchtx_cmd, "Transmitter Benchmark", "<remote ip>[tcp|udp[<message size>\r\n\t[<number of messages>[<number of iterations>]]]"},
+    { "benchrx",    0u, 2u, fapp_benchrx_cmd, "Receiver Benchmark", "[tcp|udp [multicast ip]"},
+    { "benchtx",    1u, 5u, fapp_benchtx_cmd, "Transmitter Benchmark", "<remote ip>[tcp|udp[<message size>\r\n\t[<number of messages>[<number of iterations>]]]"},
 #endif
 #if FAPP_CFG_REINIT_CMD   /* Used to test FNET release/init only. */
-    { FNET_SHELL_CMD_TYPE_NORMAL, "reinit",     0, 0, (void *)fapp_reinit_cmd,  "Reinit application", ""},
+    { "reinit",     0u, 0u, fapp_reinit_cmd,  "Reinit application", ""},
 #endif
 #if FNET_CFG_PING && FAPP_CFG_PING_CMD 
-    { FNET_SHELL_CMD_TYPE_NORMAL, "ping",       1, 14, (void *)fapp_ping_cmd,    "Send ECHO requests", "[-c <count>][-i <seconds>]\n\r\t[-p <pattern>][-s <size>][-h <hoplimit/ttl>] <ip>"}, /* -s -n should be ignored.*/
+    { "ping",       1u, 14u, fapp_ping_cmd,   "Send ECHO requests", "[-c <count>][-i <seconds>]\n\r\t[-p <pattern>][-s <size>][-h <hoplimit/ttl>] <ip>"}, /* -s -n should be ignored.*/
 #endif
 #if FNET_CFG_PING && FAPP_CFG_PING6_CMD 
-    { FNET_SHELL_CMD_TYPE_NORMAL, "ping6",      1, 14, (void *)fapp_ping_cmd,   "Send ECHO requests", "[-c <count>][-i <seconds>]\n\r\t[-p <pattern>][-s <size>][-h <hoplimit/ttl>] <ip>"}, /* -s -n should be ignored.*/
+    { "ping6",      1u, 14u, fapp_ping_cmd,   "Send ECHO requests", "[-c <count>][-i <seconds>]\n\r\t[-p <pattern>][-s <size>][-h <hoplimit/ttl>] <ip>"}, /* -s -n should be ignored.*/
 #endif
 
 #if FAPP_CFG_DEBUG_CMD   /* Used for DEBUGING needs only. */
-    { FNET_SHELL_CMD_TYPE_NORMAL, "d",          0, 0, (void *)fapp_debug_cmd,   "Print debug info.", ""},
+    { "d",          0u, 0u, fapp_debug_cmd,   "Print debug info.", ""},
 #endif
-    { FNET_SHELL_CMD_TYPE_END,     0,           0, 0, 0, 0, 0}  
+    { 0,           0u, 0u, 0, 0, 0}
 };
 
 /* Shell command-line buffer.*/
-static char fapp_cmd_line_buffer[FAPP_CFG_SHELL_MAX_LINE_LENGTH];
+static fnet_char_t fapp_cmd_line_buffer[FAPP_CFG_SHELL_MAX_LINE_LENGTH];
 
 /************************************************************************
 *     The main shell control data structure.
@@ -288,7 +291,7 @@ static fnet_shell_desc_t fapp_shell_desc = 0; /* Shell descriptor. */
 #define FAPP_PARAMS_BOOT_MODE_SCRIPT_STR    "script" /* Start boot-script.*/
 
 /* Boot modes. */
-const struct boot_mode boot_modes[] =
+static const struct boot_mode boot_modes[] =
 {
     {FAPP_PARAMS_BOOT_MODE_STOP,    FAPP_PARAMS_BOOT_MODE_STOP_STR, 0},
     {FAPP_PARAMS_BOOT_MODE_GO,      FAPP_PARAMS_BOOT_MODE_GO_STR, fapp_boot_mode_go},
@@ -304,18 +307,18 @@ const struct boot_mode boot_modes[] =
 *
 * DESCRIPTION:
 ************************************************************************/
-const struct boot_mode *fapp_boot_mode_by_index (unsigned long index)
+const struct boot_mode *fapp_boot_mode_by_index (fapp_params_boot_mode_t index)
 {
     const struct boot_mode *result = &BOOT_MODE_DEFAULT;
-    const struct boot_mode *mode = boot_modes;
-    while( mode->name )
+    fnet_index_t            i;
+
+    for(i=0u; i< BOOT_MODE_COUNT; i++)
     {
-        if( mode->index == index )
+        if( boot_modes[i].index == index )
         {
-            result = mode;
+            result = &boot_modes[i];
             break;
         } 
-        mode++;  
     }
     
     return result;    
@@ -326,18 +329,18 @@ const struct boot_mode *fapp_boot_mode_by_index (unsigned long index)
 *
 * DESCRIPTION:
 ************************************************************************/
-const struct boot_mode *fapp_boot_mode_by_name (char *name)
+const struct boot_mode *fapp_boot_mode_by_name (fnet_char_t *name)
 {
     const struct boot_mode *result = 0;
-    const struct boot_mode *mode = boot_modes;
-    while( mode->name )
+    fnet_index_t            i;
+
+    for(i=0u; i< BOOT_MODE_COUNT; i++)
     {
-        if(fnet_strcmp( mode->name, name ) == 0)
+        if(fnet_strcmp(boot_modes[i].name, name ) == 0)
         {
-            result = mode;
+            result = &boot_modes[i];
             break;
         } 
-        mode++;  
     }
     
     return result;   
@@ -377,7 +380,7 @@ static void fapp_boot(fnet_shell_desc_t desc)
 
     /* The bootloader wait some time for a key over a serial connection.*/
     /* The wait time is given by the boot_delay parameter.*/
-    int delay;
+    fnet_time_t delay;
 
     const struct boot_mode *mode;
 
@@ -386,14 +389,17 @@ static void fapp_boot(fnet_shell_desc_t desc)
 
     if(mode->handler)
     {
-        delay = (int)fapp_params_boot_config.delay;
+        delay = fapp_params_boot_config.delay;
         
         fnet_shell_printf(desc, FAPP_BOOT_STR, mode->name, delay);
 
-        while(--delay >= 0)
+        while(delay > 0u)
         {
+            delay--;
             if( fnet_shell_getchar(desc) != FNET_ERR)
+            {
                 break;
+            }
                 
             fnet_timer_delay(FNET_TIMER_TICK_IN_SEC); /* 1 sec. delay. */
             fnet_shell_printf(desc, "\b\b\b\b %3d", delay);
@@ -401,7 +407,7 @@ static void fapp_boot(fnet_shell_desc_t desc)
        
         fnet_shell_println(desc, "");
        
-        if(delay < 0)
+        if(delay == 0u)
         {
             /* Auto-start*/
             mode->handler(desc);
@@ -426,7 +432,7 @@ static void fapp_boot(fnet_shell_desc_t desc)
 * DESCRIPTION: Reset command reboots the system. 
 ************************************************************************/
 #if FAPP_CFG_RESET_CMD || FAPP_CFG_REBOOT_CMD
-static void fapp_reset_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_reset_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     FNET_COMP_UNUSED_ARG(desc);
     FNET_COMP_UNUSED_ARG(argc);
@@ -444,7 +450,7 @@ static void fapp_reset_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: Print your DEBUG info. 
 ************************************************************************/
 #if FAPP_CFG_DEBUG_CMD
-void fapp_debug_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_debug_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     FNET_COMP_UNUSED_ARG(desc);
     FNET_COMP_UNUSED_ARG(argc);
@@ -457,13 +463,13 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 
 #if 0
     {
-        int             i = 0;
+        fnet_index_t    i = 0;
         fnet_ip6_addr_t addr_dns;
-        char            ip_str[FNET_IP_ADDR_STR_SIZE]={0};
+        fnet_uint8_t    ip_str[FNET_IP_ADDR_STR_SIZE]={0};
         
         while(fnet_netif_get_ip6_dns(fapp_default_netif, i, &addr_dns ) == FNET_TRUE)
         {
-            fnet_inet_ntop(AF_INET6, (char*)(&addr_dns), ip_str, sizeof(ip_str));
+            fnet_inet_ntop(AF_INET6, (fnet_uint8_t*)(&addr_dns), ip_str, sizeof(ip_str));
             fnet_shell_println(desc, "DNS[%d]=%s", i, ip_str);
             i++;
         }
@@ -486,8 +492,8 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 #if FNET_CFG_IP4
 static void fapp_dup_ip_handler( fnet_netif_desc_t netif )
 {
-    char name[FNET_NETIF_NAMELEN];
-    char ip_str[FNET_IP4_ADDR_STR_SIZE];
+    fnet_char_t name[FNET_NETIF_NAMELEN];
+    fnet_char_t ip_str[FNET_IP4_ADDR_STR_SIZE];
     fnet_ip4_addr_t addr;
     
     fnet_netif_get_name( netif, name, FNET_NETIF_NAMELEN );
@@ -505,14 +511,13 @@ static void fapp_dup_ip_handler( fnet_netif_desc_t netif )
 ************************************************************************/
 static void fapp_init(void)
 {
-    static unsigned char stack_heap[FNET_CFG_HEAP_SIZE];
-    struct fnet_init_params init_params;
-    
-    struct fnet_shell_params shell_params;
+    static fnet_uint8_t         stack_heap[FNET_CFG_HEAP_SIZE];
+    struct fnet_init_params     init_params;
+    struct fnet_shell_params    shell_params;
 
     /* Input parameters for FNET stack initialization */
     init_params.netheap_ptr = stack_heap;
-    init_params.netheap_size = (unsigned long)FNET_CFG_HEAP_SIZE;
+    init_params.netheap_size = FNET_CFG_HEAP_SIZE;
 
     
     /* Add event handler on duplicated IP address */
@@ -545,7 +550,7 @@ static void fapp_init(void)
         shell_params.cmd_line_buffer = fapp_cmd_line_buffer;
         shell_params.cmd_line_buffer_size = sizeof(fapp_cmd_line_buffer);
         shell_params.stream = FNET_SERIAL_STREAM_DEFAULT;
-        shell_params.echo = 1;
+        shell_params.echo = FNET_TRUE;
             
         if((fapp_shell_desc = fnet_shell_init(&shell_params)) != FNET_ERR)
         {
@@ -575,10 +580,10 @@ static void fapp_release(fnet_shell_desc_t desc)
     fapp_llmnr_release();
     #endif  
 
-    #if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP
+    #if FAPP_CFG_DHCP_CMD && FNET_CFG_DHCP && FNET_CFG_IP4
     fapp_dhcp_release();                            /* Release DHCP client. */
     #endif
-    
+
     #if FAPP_CFG_TELNET_CMD && FNET_CFG_TELNET      /* Release TELNET server. */   
     fapp_telnet_release();
     #endif
@@ -625,7 +630,7 @@ void fapp_main(void)
 ************************************************************************/
 void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif)
 {
-    char name[FNET_NETIF_NAMELEN];
+    fnet_char_t name[FNET_NETIF_NAMELEN];
 
     fnet_netif_get_name(netif, name, FNET_NETIF_NAMELEN);
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Interface", name);
@@ -634,7 +639,7 @@ void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif)
 #if FNET_CFG_IP4
     {    
         fnet_ip4_addr_t ip_addr;
-        char ip_str[FNET_IP4_ADDR_STR_SIZE];
+        fnet_char_t            ip_str[FNET_IP4_ADDR_STR_SIZE];
           
         ip_addr = fnet_netif_get_ip4_subnet_mask(netif);
         fnet_inet_ntoa(*(struct in_addr *)( &ip_addr), ip_str);
@@ -659,9 +664,9 @@ void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif)
 *
 * DESCRIPTION: Print Interface IP addresses. 
 ************************************************************************/
-void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family, fnet_netif_desc_t netif, int print_type)
+void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family, fnet_netif_desc_t netif, fnet_bool_t print_type)
 {
-	char    ip_str[FNET_IP_ADDR_STR_SIZE]={0};
+	fnet_char_t    ip_str[FNET_IP_ADDR_STR_SIZE]={0};
     
 #if FNET_CFG_IP4
     if((family & AF_INET)==AF_INET)
@@ -683,8 +688,8 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
 #if FNET_CFG_IP6
     if((family & AF_INET6)==AF_INET6)
     {
-        int                         result;
-        unsigned int                n;
+        fnet_bool_t                 result;
+        fnet_index_t                n;
         fnet_netif_ip6_addr_info_t  addr_info;
         
         /* Print all assigned IPv6 addreses.*/
@@ -695,16 +700,22 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
             
             if(result == FNET_TRUE)
             {
-                fnet_inet_ntop(AF_INET6, (char*)(&addr_info.address), ip_str, sizeof(ip_str));
+                fnet_inet_ntop(AF_INET6, (fnet_uint8_t*)(&addr_info.address), ip_str, sizeof(ip_str));
                             
                 fnet_shell_printf(desc, FAPP_SHELL_INFO_FORMAT_S, "IPv6 Address", ip_str);
                 if(print_type)
+                {
                     fnet_shell_println(desc," <%s> ScopeID:%d", (addr_info.type == FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE)  ? "autoconfigurable" : "manual", fnet_netif_get_scope_id(netif)); 
+                }
                 else
+                {
                     fnet_shell_println(desc,"");    
+                }
             }
             else
+            {
                break;
+            }
 
             n++;
         }
@@ -719,9 +730,9 @@ void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family,
 ************************************************************************/
 static void fapp_info_print( fnet_shell_desc_t desc )
 {
-    char mac_str[FNET_MAC_ADDR_STR_SIZE];
-    fnet_mac_addr_t macaddr;
-    fnet_netif_desc_t netif = fapp_default_netif;         
+    fnet_char_t                mac_str[FNET_MAC_ADDR_STR_SIZE];
+    fnet_mac_addr_t     macaddr;
+    fnet_netif_desc_t   netif = fapp_default_netif;         
 
     fapp_netif_info_print(desc, netif);
 
@@ -761,7 +772,7 @@ static void fapp_info_print( fnet_shell_desc_t desc )
 * DESCRIPTION: "info" command
 ************************************************************************/
 #if FAPP_CFG_INFO_CMD
-static void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_info_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     FNET_COMP_UNUSED_ARG(argc);
     FNET_COMP_UNUSED_ARG(argv);
@@ -776,7 +787,7 @@ static void fapp_info_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: "stat" command
 ************************************************************************/
 #if FAPP_CFG_STAT_CMD
-static void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_stat_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     struct fnet_netif_statistics statistics;
     fnet_netif_desc_t netif = fapp_default_netif;  
@@ -794,11 +805,11 @@ static void fapp_stat_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 
 #if FNET_CFG_IP6
     {
-        unsigned int                        i;
+        fnet_index_t                        i;
         fnet_netif_ip6_prefix_t             ip6_prefix;
         fnet_netif_ip6_neighbor_cache_t     ip6_neighbor_cache;
-        char                                numaddr[FNET_IP6_ADDR_STR_SIZE];
-        char                                mac_str[FNET_MAC_ADDR_STR_SIZE];
+        fnet_char_t                                numaddr[FNET_IP6_ADDR_STR_SIZE];
+        fnet_char_t                                mac_str[FNET_MAC_ADDR_STR_SIZE];
 
         /* Print content of IPv6 Prefix List. */
         fnet_shell_println(desc, "\nIPv6 Prefix List:");
@@ -856,14 +867,14 @@ void fapp_shell_init( fnet_shell_desc_t desc )
 * DESCRIPTION:  
 ************************************************************************/
 #if FAPP_CFG_GO_CMD
-void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_go_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **argv )
 {
-	unsigned long address;
-	char *p;
+	fnet_uint32_t   address;
+	fnet_char_t    *p;
 
-	if (argc == 2)
+	if (argc == 2u)
 	{
-		address = fnet_strtoul(argv[1],&p,16);
+		address = fnet_strtoul(argv[1],&p,16u);
 		
 		if (p == argv[1])
         {
@@ -872,7 +883,9 @@ void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
         }
     }
     else
+    {    
         address = fapp_params_boot_config.go_address;
+    }
   
 	fapp_go(desc, address);	
 }
@@ -884,9 +897,9 @@ void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION:   Jump to application entry point.
 ************************************************************************/
 #if FAPP_CFG_GO_CMD || FAPP_CFG_BOOTLOADER || FAPP_CFG_SETGET_CMD_BOOT
-static void fapp_go ( fnet_shell_desc_t desc, unsigned long address )
+static void fapp_go ( fnet_shell_desc_t desc, fnet_uint32_t address )
 {
-    if((fapp_params_boot_config.go_address == 0) || (*(fnet_uint32*)address == 0xffffffffu))
+    if((fapp_params_boot_config.go_address == 0u) || (*(fnet_uint32_t*)address == 0xffffffffu))
     {
         fnet_printf("\nThere is no code on user application startup vector.\n");
     }
@@ -907,8 +920,8 @@ static void fapp_go ( fnet_shell_desc_t desc, unsigned long address )
 *
 * DESCRIPTION: Save environment variables to persistent storage. 
 ************************************************************************/
-#if FAPP_CFG_SAVE_CMD 
-static void fapp_save_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+#if FAPP_CFG_SAVE_CMD && FNET_CFG_FLASH 
+static void fapp_save_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     (void)argc;
 	(void)argv;
@@ -930,7 +943,7 @@ static void fapp_save_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 *
 * DESCRIPTION: Display command help. 
 ************************************************************************/
-void fapp_help_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_help_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **argv )
 {
     (void)argc;
 	(void)argv;
@@ -944,7 +957,7 @@ void fapp_help_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: Used to test FNET release/init only. 
 ************************************************************************/
 #if FAPP_CFG_REINIT_CMD 
-void fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_reinit_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     (void)argc;
 	(void)argv;
@@ -961,7 +974,7 @@ void fapp_reinit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: Binds IPv6 address to the default interface. 
 ************************************************************************/
 #if FAPP_CFG_BIND_CMD && FNET_CFG_IP6
-static void fapp_bind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_bind_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     fnet_netif_desc_t   netif = fapp_default_netif;
     fnet_ip6_addr_t     addr;
@@ -985,7 +998,7 @@ static void fapp_bind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: Unbinds IPv6 address from the default interface. 
 ************************************************************************/
 #if FAPP_CFG_UNBIND_CMD && FNET_CFG_IP6
-static void fapp_unbind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_unbind_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     fnet_netif_desc_t   netif = fapp_default_netif;
     fnet_ip6_addr_t     addr;
@@ -1000,6 +1013,21 @@ static void fapp_unbind_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     {
         fnet_shell_println(desc, FAPP_PARAM_ERR, argv[1]);
     }
+}
+#endif
+
+/************************************************************************
+* NAME: fapp_exp_cmd
+*
+* DESCRIPTION: Start file explorer shell. 
+************************************************************************/
+#if FAPP_CFG_EXP_CMD && FNET_CFG_FS
+static void fapp_exp_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
+{
+    FNET_COMP_UNUSED_ARG(argc);
+    FNET_COMP_UNUSED_ARG(argv);
+
+    fnet_shell_switch(desc, &fapp_fs_shell);
 }
 #endif
 

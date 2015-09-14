@@ -82,7 +82,7 @@ void init_data_bss(void)
     if (__VECTOR_RAM != __VECTOR_TABLE)
     {   
         /* Copy the vector table from ROM to RAM */
-        for (n = 0; n < ((uint32_t)__RAM_VECTOR_TABLE_SIZE)/sizeof(uint32_t); n++)
+        for (n = 0u; n < ((uint32_t)__RAM_VECTOR_TABLE_SIZE)/sizeof(uint32_t); n++)
         {
             __VECTOR_RAM[n] = __VECTOR_TABLE[n];
         }
@@ -106,7 +106,7 @@ void init_data_bss(void)
 #if defined(__GNUC__)
     extern uint32_t __DATA_ROM[];
     extern uint32_t __DATA_RAM[];
-    extern char __DATA_END[];
+    extern uint8_t __DATA_END[];
     data_ram = (uint8_t *)__DATA_RAM;
     data_rom = (uint8_t *)__DATA_ROM;
     data_rom_end  = (uint8_t *)__DATA_END;

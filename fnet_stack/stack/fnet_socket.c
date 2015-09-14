@@ -49,21 +49,21 @@
 *     Global Data Structures
 *************************************************************************/
 
-int fnet_enabled = 0;   /* Flag that the stack is initialized. */
+fnet_bool_t _fnet_enabled = FNET_FALSE;   /* Flag that the stack is initialized. */
 
-static unsigned short fnet_port_last = FNET_SOCKET_PORT_RESERVED + 1;
+static fnet_uint16_t fnet_port_last = FNET_SOCKET_PORT_RESERVED + 1u;
 
 /* Array of sockets descriptors. */
-static fnet_socket_t *fnet_socket_desc[FNET_CFG_SOCKET_MAX];
+static fnet_socket_if_t *fnet_socket_desc[FNET_CFG_SOCKET_MAX];
 
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static SOCKET fnet_socket_desc_alloc(void);
-static void fnet_socket_desc_set(SOCKET desc, fnet_socket_t *sock);
-static void fnet_socket_desc_free(SOCKET desc);
-static fnet_socket_t *fnet_socket_desc_find(SOCKET desc);
-static int fnet_socket_addr_check_len(const struct sockaddr *addr, unsigned int addr_len);
+static fnet_socket_t fnet_socket_desc_alloc(void);
+static void fnet_socket_desc_set(fnet_socket_t desc, fnet_socket_if_t *sock);
+static void fnet_socket_desc_free(fnet_socket_t desc);
+static fnet_socket_if_t *fnet_socket_desc_find(fnet_socket_t desc);
+static fnet_error_t fnet_socket_addr_check_len(const struct sockaddr *addr, fnet_size_t addr_len);
 
 /************************************************************************
 * NAME: fnet_socket_init
@@ -80,12 +80,12 @@ void fnet_socket_init( void )
 *
 * DESCRIPTION: This function sets socket error. 
 *************************************************************************/
-void fnet_socket_set_error( fnet_socket_t *sock, int error )
+void fnet_socket_set_error( fnet_socket_if_t *sock, fnet_error_t error )
 {
-    if(sock->options.local_error != FNET_OK)
+    if(sock->options.local_error != FNET_ERR_OK)
     {
         error = sock->options.local_error;
-        sock->options.local_error = FNET_OK;
+        sock->options.local_error = FNET_ERR_OK;
     }
 
     sock->options.error = error;
@@ -98,13 +98,15 @@ void fnet_socket_set_error( fnet_socket_t *sock, int error )
 *
 * DESCRIPTION: This function adds socket into the queue.
 *************************************************************************/
-void fnet_socket_list_add( fnet_socket_t ** head, fnet_socket_t *s )
+void fnet_socket_list_add( fnet_socket_if_t ** head, fnet_socket_if_t *s )
 {
     fnet_isr_lock();
     s->next = *head;
 
     if(s->next != 0)
+    {
         s->next->prev = s;
+    }
 
     s->prev = 0;
     *head = s;
@@ -116,17 +118,23 @@ void fnet_socket_list_add( fnet_socket_t ** head, fnet_socket_t *s )
 *
 * DESCRIPTION: This function removes socket from the queue 
 *************************************************************************/
-void fnet_socket_list_del( fnet_socket_t ** head, fnet_socket_t *s )
+void fnet_socket_list_del( fnet_socket_if_t ** head, fnet_socket_if_t *s )
 {
     fnet_isr_lock();
 
     if(s->prev == 0)
-      *head=s->next;
+    {
+        *head=s->next;
+    }
     else
+    {
         s->prev->next = s->next;
+    }
 
     if(s->next != 0)
+    {
         s->next->prev = s->prev;
+    }
 
     fnet_isr_unlock();
 }
@@ -136,19 +144,19 @@ void fnet_socket_list_del( fnet_socket_t ** head, fnet_socket_t *s )
 *
 * DESCRIPTION: This function reserves socket descriptor.
 *************************************************************************/
-static SOCKET fnet_socket_desc_alloc( void )
+static fnet_socket_t fnet_socket_desc_alloc( void )
 {
-    int i;
-    int res = FNET_ERR;
+    fnet_index_t    i;
+    fnet_socket_t          res = FNET_ERR;
 
     fnet_isr_lock();
 
-    for (i = 0; i < FNET_CFG_SOCKET_MAX; i++) /* Find the empty descriptor.*/
+    for (i = 0u; i < FNET_CFG_SOCKET_MAX; i++) /* Find the empty descriptor.*/
     {
         if(fnet_socket_desc[i] == 0)
         {
-            fnet_socket_desc[i] = (fnet_socket_t *)FNET_SOCKET_DESC_RESERVED;
-            res = i;
+            fnet_socket_desc[i] = (fnet_socket_if_t *)FNET_SOCKET_DESC_RESERVED;
+            res = (fnet_socket_t)i;
             break;
         }
     }
@@ -163,7 +171,7 @@ static SOCKET fnet_socket_desc_alloc( void )
 *
 * DESCRIPTION: This function assigns the socket descriptor to the socket.
 *************************************************************************/
-static void fnet_socket_desc_set( SOCKET desc, fnet_socket_t *sock )
+static void fnet_socket_desc_set( fnet_socket_t desc, fnet_socket_if_t *sock )
 {
     fnet_socket_desc[desc] = sock;
     sock->descriptor = desc;
@@ -174,7 +182,7 @@ static void fnet_socket_desc_set( SOCKET desc, fnet_socket_t *sock )
 *
 * DESCRIPTION: This function frees the socket descriptor.
 *************************************************************************/
-static void fnet_socket_desc_free( SOCKET desc )
+static void fnet_socket_desc_free( fnet_socket_t desc )
 {
     fnet_socket_desc[desc] = 0;
 }
@@ -185,14 +193,16 @@ static void fnet_socket_desc_free( SOCKET desc )
 * DESCRIPTION: This function looking for socket structure 
 *              associated with the socket descriptor.
 *************************************************************************/
-static fnet_socket_t *fnet_socket_desc_find( SOCKET desc )
+static fnet_socket_if_t *fnet_socket_desc_find( fnet_socket_t desc )
 {
-    fnet_socket_t *s = 0;
+    fnet_socket_if_t *s = 0;
 
-    if(fnet_enabled && (desc >= 0) && (desc!=SOCKET_INVALID))
+    if(_fnet_enabled && (desc >= 0) && (desc!=FNET_ERR))
     {
-        if((desc < FNET_CFG_SOCKET_MAX))
+        if((desc < (fnet_socket_t)FNET_CFG_SOCKET_MAX))
+        {
             s = fnet_socket_desc[desc];
+        }
     }
 
     return (s);
@@ -203,7 +213,7 @@ static fnet_socket_t *fnet_socket_desc_find( SOCKET desc )
 *
 * DESCRIPTION: This function release all resources allocated for the socket. 
 *************************************************************************/
-void fnet_socket_release( fnet_socket_t ** head, fnet_socket_t *sock )
+void fnet_socket_release( fnet_socket_if_t ** head, fnet_socket_if_t *sock )
 {
     fnet_isr_lock();
     fnet_socket_list_del(head, sock);
@@ -219,18 +229,20 @@ void fnet_socket_release( fnet_socket_t ** head, fnet_socket_t *sock )
 * DESCRIPTION: Return FNET_TRUE if there's a socket whose addresses 'confict' 
 *              with the supplied addresses.
 *************************************************************************/
-int fnet_socket_conflict( fnet_socket_t *head,  const struct sockaddr *local_addr, 
-                          const struct sockaddr *foreign_addr /*optional*/, int wildcard )
+fnet_bool_t fnet_socket_conflict( fnet_socket_if_t *head,  const struct sockaddr *local_addr, 
+                          const struct sockaddr *foreign_addr /*optional*/, fnet_bool_t wildcard )
 {
-    fnet_socket_t *sock = head;
+    fnet_socket_if_t *sock = head;
 
     while(sock != 0)
     {
-          if((sock->local_addr.sa_port == local_addr->sa_port)
-               && ((fnet_socket_addr_is_unspecified(local_addr) && (wildcard)) || fnet_socket_addr_are_equal(&sock->local_addr, local_addr) )
-               && (((foreign_addr == 0) && (wildcard)) || fnet_socket_addr_are_equal(&sock->foreign_addr, foreign_addr))
+        if((sock->local_addr.sa_port == local_addr->sa_port)
+               && (((fnet_socket_addr_is_unspecified(local_addr)) && (wildcard)) || (fnet_socket_addr_are_equal(&sock->local_addr, local_addr)) )
+               && (((foreign_addr == 0) && (wildcard)) || (fnet_socket_addr_are_equal(&sock->foreign_addr, foreign_addr)))
                && (((foreign_addr == 0) && (wildcard)) || (foreign_addr && (sock->foreign_addr.sa_port == foreign_addr->sa_port))) )
+        {
             return (FNET_TRUE);
+        }
 
         sock = sock->next;
     }
@@ -244,24 +256,28 @@ int fnet_socket_conflict( fnet_socket_t *head,  const struct sockaddr *local_add
 * DESCRIPTION: This function looks for a socket with the best match 
 *              to the local and foreign address parameters.
 *************************************************************************/
-fnet_socket_t *fnet_socket_lookup( fnet_socket_t *head,  struct sockaddr *local_addr, struct sockaddr *foreign_addr, int protocol_number)
+fnet_socket_if_t *fnet_socket_lookup( fnet_socket_if_t *head,  struct sockaddr *local_addr, struct sockaddr *foreign_addr, fnet_uint32_t protocol_number)
 {
-    fnet_socket_t   *sock;
-    fnet_socket_t   *match_sock = 0;
-    int             match_wildcard = 3;
-    int             wildcard;
+    fnet_socket_if_t   *sock;
+    fnet_socket_if_t   *match_sock = 0;
+    fnet_index_t    match_wildcard = 3u;
+    fnet_index_t    wildcard;
 
     for (sock = head; sock != 0; sock = sock->next)
     {
         /* Compare local port number.*/
         if(sock->protocol_number != protocol_number)
+        {
             continue; /* Ignore. */
+        }
     
         /* Compare local port number.*/
         if(sock->local_addr.sa_port != local_addr->sa_port)
+        {
             continue; /* Ignore. */
+        }
 
-        wildcard = 0;
+        wildcard = 0u;
 
         /* Compare local address.*/
         if(!fnet_socket_addr_is_unspecified(&sock->local_addr))
@@ -280,7 +296,9 @@ fnet_socket_t *fnet_socket_lookup( fnet_socket_t *head,  struct sockaddr *local_
         else
         {
             if(!fnet_socket_addr_is_unspecified(local_addr))
+            {
                 wildcard++;
+            }
         }
 
         /* Compare foreign address and port number.*/
@@ -300,15 +318,19 @@ fnet_socket_t *fnet_socket_lookup( fnet_socket_t *head,  struct sockaddr *local_
         else
         {
             if(!fnet_socket_addr_is_unspecified(foreign_addr))
+            {
                 wildcard++;
+            }
         }
 
         if(wildcard < match_wildcard)
         {
             match_sock = sock;
 
-            if((match_wildcard = wildcard) == 0)
+            if((match_wildcard = wildcard) == 0u)
+            {
                 break; /* Exact match is found.*/
+            }
         }
     }
 
@@ -323,9 +345,9 @@ fnet_socket_t *fnet_socket_lookup( fnet_socket_t *head,  struct sockaddr *local_
 *	           FNET_SOCKET_PORT_RESERVED < local_port <= FNET_SOCKET_PORT_USERRESERVED (ephemeral port).
 *              In network byte order.
 *************************************************************************/
-unsigned short fnet_socket_get_uniqueport( fnet_socket_t *head, struct sockaddr *local_addr )
+fnet_uint16_t fnet_socket_get_uniqueport( fnet_socket_if_t *head, struct sockaddr *local_addr )
 {
-    unsigned short local_port = fnet_port_last; 
+    fnet_uint16_t   local_port = fnet_port_last; 
     struct sockaddr local_addr_tmp = *local_addr;
 
     fnet_isr_lock();
@@ -333,11 +355,13 @@ unsigned short fnet_socket_get_uniqueport( fnet_socket_t *head, struct sockaddr 
     do
     {
         if((++local_port <= FNET_SOCKET_PORT_RESERVED) || (local_port > FNET_SOCKET_PORT_USERRESERVED))
-            local_port = FNET_SOCKET_PORT_RESERVED + 1;
+        {
+            local_port = (fnet_uint16_t)FNET_SOCKET_PORT_RESERVED + 1u;
+        }
         
         local_addr_tmp.sa_port = fnet_htons(local_port);    
     } 
-    while (fnet_socket_conflict(head, &local_addr_tmp, FNET_NULL, 1));
+    while (fnet_socket_conflict(head, &local_addr_tmp, FNET_NULL, FNET_TRUE));
     
     fnet_port_last = local_port;
     
@@ -346,20 +370,19 @@ unsigned short fnet_socket_get_uniqueport( fnet_socket_t *head, struct sockaddr 
     return local_addr_tmp.sa_port;
 }
 
-
 /************************************************************************
 * NAME: fnet_socket_copy
 *
 * DESCRIPTION: This function creates new socket structure and fills 
 *              its proper fields by values from existing socket 
 *************************************************************************/
-fnet_socket_t *fnet_socket_copy( fnet_socket_t *sock )
+fnet_socket_if_t *fnet_socket_copy( fnet_socket_if_t *sock )
 {
-    fnet_socket_t *sock_cp;
+    fnet_socket_if_t *sock_cp;
 
-    if((sock_cp = (fnet_socket_t *)fnet_malloc(sizeof(fnet_socket_t))) != 0)
+    if((sock_cp = (fnet_socket_if_t *)fnet_malloc(sizeof(fnet_socket_if_t))) != 0)
     {
-        fnet_memcpy(sock_cp, sock, sizeof(fnet_socket_t));
+        fnet_memcpy(sock_cp, sock, sizeof(fnet_socket_if_t));
 
         sock_cp->next = 0;
         sock_cp->prev = 0;
@@ -369,16 +392,18 @@ fnet_socket_t *fnet_socket_copy( fnet_socket_t *sock )
         sock_cp->head_con = 0;
         sock_cp->partial_con = 0;
         sock_cp->incoming_con = 0;
-        sock_cp->receive_buffer.count = 0;
+        sock_cp->receive_buffer.count = 0u;
         sock_cp->receive_buffer.net_buf_chain = 0;
-        sock_cp->send_buffer.count = 0;
+        sock_cp->send_buffer.count = 0u;
         sock_cp->send_buffer.net_buf_chain = 0;
-        sock_cp->options.error = FNET_OK;
-        sock_cp->options.local_error = FNET_OK;
+        sock_cp->options.error = FNET_ERR_OK;
+        sock_cp->options.local_error = FNET_ERR_OK;
         return (sock_cp);
     }
     else
+    {
         return (0);
+    }
 }
 /************************************************************************
 * NAME: socket
@@ -386,16 +411,16 @@ fnet_socket_t *fnet_socket_copy( fnet_socket_t *sock )
 * DESCRIPTION: This function creates a socket and returns 
 *              the descriptor to the application.
 *************************************************************************/
-SOCKET socket( fnet_address_family_t family, fnet_socket_type_t type, int protocol )
+fnet_socket_t fnet_socket( fnet_address_family_t family, fnet_socket_type_t type, fnet_uint32_t protocol )
 {
     fnet_prot_if_t  *prot;
-    fnet_socket_t   *sock;
-    SOCKET          res;
-    int             error = FNET_OK;
+    fnet_socket_if_t   *sock;
+    fnet_socket_t          res;
+    fnet_error_t    error = FNET_ERR_OK;
 
     fnet_os_mutex_lock();
 
-    if(fnet_enabled == 0) /* Stack is disabled */
+    if(_fnet_enabled == FNET_FALSE) /* Stack is disabled */
     {
         error = FNET_ERR_SYSNOTREADY;
         goto ERROR_1;
@@ -409,13 +434,13 @@ SOCKET socket( fnet_address_family_t family, fnet_socket_type_t type, int protoc
         goto ERROR_1;
     }
 
-    if((prot = fnet_prot_find(family, type, protocol)) == 0)
+    if((prot = fnet_prot_find(family, type, (fnet_uint32_t) protocol)) == 0)
     {
         error = FNET_ERR_PROTONOSUPPORT; /* Protocol not supported.*/
         goto ERROR_2;
     }
 
-    if((sock = (fnet_socket_t *)fnet_malloc_zero(sizeof(fnet_socket_t))) == 0)
+    if((sock = (fnet_socket_if_t *)fnet_malloc_zero(sizeof(fnet_socket_if_t))) == 0)
     {
         error = FNET_ERR_NOMEM; /* Cannot allocate memory.*/
         goto ERROR_2;
@@ -429,13 +454,15 @@ SOCKET socket( fnet_address_family_t family, fnet_socket_type_t type, int protoc
     /* Save protocol number.*/
     sock->protocol_number = protocol;
     if(!sock->protocol_number)
+    {
         sock->protocol_number = prot->protocol;
+    }
     
     sock->foreign_addr.sa_family = family;
     
     fnet_socket_list_add(&prot->head, sock);
 
-    if(prot->socket_api->prot_attach && (prot->socket_api->prot_attach(sock) == SOCKET_ERROR))
+    if((prot->socket_api->prot_attach) && (prot->socket_api->prot_attach(sock) == FNET_ERR))
     {
         fnet_socket_release(&sock->protocol_interface->head, sock);
         error = fnet_error_get();
@@ -445,14 +472,14 @@ SOCKET socket( fnet_address_family_t family, fnet_socket_type_t type, int protoc
     fnet_os_mutex_unlock();
     return (res);
 
-    ERROR_2:
+ERROR_2:
     fnet_socket_desc_free(res);
 
-    ERROR_1:
+ERROR_1:
     fnet_error_set(error);
 
     fnet_os_mutex_unlock();
-    return (SOCKET_INVALID);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -461,13 +488,13 @@ SOCKET socket( fnet_address_family_t family, fnet_socket_type_t type, int protoc
 * DESCRIPTION: This function establishes a connection to 
 *              a specified socket.
 *************************************************************************/
-int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
+fnet_return_t fnet_socket_connect( fnet_socket_t s, struct sockaddr *name, fnet_size_t namelen )
 {
-    fnet_socket_t       *sock;
-    int                 error = FNET_OK;
+    fnet_socket_if_t       *sock;
+    fnet_error_t        error = FNET_ERR_OK;
     struct sockaddr     foreign_addr;
     struct sockaddr     local_addr_tmp;
-    int                 result;
+    fnet_return_t       result;
 
     fnet_os_mutex_lock();
 
@@ -475,7 +502,7 @@ int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
     {
         if(sock->state == SS_LISTENING) /* The socket is marked to accept connections (listen).*/
         {
-            error = (int)FNET_ERR_OPNOTSUPP; /*  Operation not supported.*/
+            error = FNET_ERR_OPNOTSUPP; /*  Operation not supported.*/
             goto ERROR_SOCK;
         }
         
@@ -485,19 +512,19 @@ int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
             /* A connection has already been initiated.*/
             if(sock->state == SS_CONNECTED)
             {
-                error = (int)FNET_ERR_ISCONN; /* Socket is already connected.*/
+                error = FNET_ERR_ISCONN; /* Socket is already connected.*/
                 goto ERROR_SOCK;
             }
 
             if(sock->state == SS_CONNECTING)
             {
-                error = (int)FNET_ERR_INPROGRESS; /* The action is in progress. */
+                error = FNET_ERR_INPROGRESS; /* The action is in progress. */
                 goto ERROR_SOCK;
             }
         }
 
 
-        if((error = fnet_socket_addr_check_len(name, (unsigned int)namelen)) != FNET_OK)
+        if((error = fnet_socket_addr_check_len(name, namelen)) != FNET_ERR_OK)
         {
             goto ERROR_SOCK;
         }
@@ -506,13 +533,13 @@ int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
 
         if (fnet_socket_addr_is_unspecified(&foreign_addr))
         {
-            error = (int)FNET_ERR_DESTADDRREQ; /* Destination address required.*/
+            error = FNET_ERR_DESTADDRREQ; /* Destination address required.*/
             goto ERROR_SOCK;
         }
 
         if((foreign_addr.sa_port == 0U) && (sock->protocol_interface->type != SOCK_RAW))
         {
-            error = (int)FNET_ERR_ADDRNOTAVAIL; /* Can't assign requested port.*/
+            error = FNET_ERR_ADDRNOTAVAIL; /* Can't assign requested port.*/
             goto ERROR_SOCK;
         }
         
@@ -543,7 +570,7 @@ int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
                     {
                         const fnet_ip6_addr_t *local_ip6_addr;
                         /* Check if can find a route to the destination.*/
-                        if((local_ip6_addr = fnet_ip6_select_src_addr(fnet_netif_get_by_scope_id(((struct sockaddr_in6 *)(&foreign_addr))->sin6_scope_id), 
+                        if((local_ip6_addr = fnet_ip6_select_src_addr((fnet_netif_t *)fnet_netif_get_by_scope_id(((struct sockaddr_in6 *)(&foreign_addr))->sin6_scope_id), 
                                                                     &((struct sockaddr_in6 *)(&foreign_addr))->sin6_addr.s6_addr))== FNET_NULL)
                         {
                             error = FNET_ERR_NETUNREACH; /* No route. */
@@ -561,14 +588,14 @@ int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
             }            
         }
 
-        if(local_addr_tmp.sa_port == 0)
+        if(local_addr_tmp.sa_port == 0u)
         {
             local_addr_tmp.sa_port = fnet_socket_get_uniqueport(sock->protocol_interface->head,
                                                 &local_addr_tmp); /* Get ephemeral port.*/
         }
   
             
-        if(fnet_socket_conflict(sock->protocol_interface->head, &local_addr_tmp, &foreign_addr, 1))
+        if(fnet_socket_conflict(sock->protocol_interface->head, &local_addr_tmp, &foreign_addr, FNET_TRUE))
         {
             error = FNET_ERR_ADDRINUSE; /* Address already in use. */
             goto ERROR_SOCK;
@@ -578,9 +605,13 @@ int connect( SOCKET s, struct sockaddr *name, unsigned int namelen )
         
         /* Start the appropriate protocol connection.*/
         if(sock->protocol_interface->socket_api->prot_connect)
+        {
             result = sock->protocol_interface->socket_api->prot_connect(sock, &foreign_addr);
+        }
         else
+        {
             result = FNET_OK;
+        }
     }
     else
     {
@@ -598,7 +629,7 @@ ERROR:
     fnet_error_set(error);
 
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -606,34 +637,34 @@ ERROR:
 *
 * DESCRIPTION: This function associates a local address with a socket.
 *************************************************************************/
-int bind( SOCKET s, const struct sockaddr *name, unsigned int namelen )
+fnet_return_t fnet_socket_bind( fnet_socket_t s, const struct sockaddr *name, fnet_size_t namelen )
 {
-    fnet_socket_t   *sock;
-    int             error = FNET_OK;
+    fnet_socket_if_t   *sock;
+    fnet_error_t    error = FNET_ERR_OK;
 
     fnet_os_mutex_lock();
 
     if((sock = fnet_socket_desc_find(s)) != 0)
     {
 
-        if((error = fnet_socket_addr_check_len(name, (unsigned int)namelen)) != FNET_OK)
+        if((error = fnet_socket_addr_check_len(name, namelen)) != FNET_ERR_OK)
         {
             goto ERROR_SOCK;
         }
 
-        if((sock->local_addr.sa_port == 0) && fnet_socket_addr_is_unspecified(&sock->local_addr))
+        if((sock->local_addr.sa_port == 0u) && (fnet_socket_addr_is_unspecified(&sock->local_addr)))
         {
             if(!fnet_socket_addr_is_multicast(name)) /* Is not multicast.*/
             {
-                if(!fnet_socket_addr_is_unspecified(name) && !fnet_socket_addr_is_broadcast(&sock->local_addr, FNET_NULL) && (fnet_netif_get_by_sockaddr(name) == FNET_NULL))
+                if((!fnet_socket_addr_is_unspecified(name)) && (!fnet_socket_addr_is_broadcast(&sock->local_addr, FNET_NULL)) && (fnet_netif_get_by_sockaddr(name) == FNET_NULL))
                 {
                     /* The specified address is not a valid address for this system.*/
                     error = FNET_ERR_ADDRNOTAVAIL; 
                     goto ERROR_SOCK;
                 }
                 
-                if((name->sa_port != 0)
-                     && fnet_socket_conflict(sock->protocol_interface->head, name, FNET_NULL, 0))
+                if((name->sa_port != 0u)
+                     && (fnet_socket_conflict(sock->protocol_interface->head, name, FNET_NULL, FNET_FALSE)))
                 {
                     error = FNET_ERR_ADDRINUSE; /* Address already in use. */
                     goto ERROR_SOCK;
@@ -642,13 +673,14 @@ int bind( SOCKET s, const struct sockaddr *name, unsigned int namelen )
 
             fnet_socket_ip_addr_copy(name , &sock->local_addr);
 
-            if((name->sa_port == 0) && (sock->protocol_interface->type != SOCK_RAW))
+            if((name->sa_port == 0u) && (sock->protocol_interface->type != SOCK_RAW))
             {
                 sock->local_addr.sa_port = fnet_socket_get_uniqueport(sock->protocol_interface->head, &sock->local_addr); /* Get ephemeral port.*/
             }
             else
+            {
                 sock->local_addr.sa_port = name->sa_port;
-                
+            }
 
             fnet_socket_buffer_release(&sock->receive_buffer);
             fnet_socket_buffer_release(&sock->send_buffer);
@@ -674,7 +706,7 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -682,11 +714,11 @@ ERROR:
 *
 * DESCRIPTION: This function closes an existing socket.
 *************************************************************************/
-int closesocket( SOCKET s )
+fnet_return_t fnet_socket_close( fnet_socket_t s )
 {
-    fnet_socket_t *sock;
-    int result = FNET_OK;
-    int error;
+    fnet_socket_if_t   *sock;
+    fnet_return_t   result = FNET_OK;
+    fnet_error_t    error;
 
     fnet_os_mutex_lock();
 
@@ -696,8 +728,8 @@ int closesocket( SOCKET s )
 #if FNET_CFG_MULTICAST && FNET_CFG_IP4
         /* Leave all IPv4 multicast groups.*/
         {
-            int i;
-            for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+            fnet_index_t i;
+            for(i = 0u; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
             {
                 if (sock->ip4_multicast_entry[i]!= FNET_NULL) 
                 {
@@ -710,8 +742,8 @@ int closesocket( SOCKET s )
 #if FNET_CFG_MULTICAST && FNET_CFG_IP6
         /* Leave all IPv6 multicast groups.*/
         {
-            int i;
-            for(i = 0; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
+            fnet_index_t i;
+            for(i = 0u; i < FNET_CFG_MULTICAST_SOCKET_MAX; i++)
             {
                 if (sock->ip6_multicast_entry[i]!= FNET_NULL) 
                 {
@@ -722,43 +754,14 @@ int closesocket( SOCKET s )
 #endif
 
         if(sock->protocol_interface->socket_api->prot_detach)
+        {
             result = sock->protocol_interface->socket_api->prot_detach(sock);
+        }
 
         if(result == FNET_OK)
+        {
             fnet_socket_desc_free(s);
-    }
-    else
-    {
-        error = FNET_ERR_BAD_DESC; /* Bad descriptor.*/
-        goto ERROR;
-    }
-
-    fnet_os_mutex_unlock();
-    return (result);
-    ERROR:
-    fnet_error_set(error);
-
-    fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
-}
-
-/************************************************************************
-* NAME: shutdown
-*
-* DESCRIPTION: This function to disable reception, transmission, or both.
-*************************************************************************/
-int shutdown( SOCKET s, unsigned int how )
-{
-    fnet_socket_t *sock;
-    int result = FNET_OK;
-    int error;
-
-    fnet_os_mutex_lock();
-
-    if((sock = fnet_socket_desc_find(s)) != 0)
-    {
-        if(sock->protocol_interface && sock->protocol_interface->socket_api->prot_shutdown)
-            result = sock->protocol_interface->socket_api->prot_shutdown(sock, how);
+        }
     }
     else
     {
@@ -772,7 +775,42 @@ ERROR:
     fnet_error_set(error);
 
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
+}
+
+/************************************************************************
+* NAME: shutdown
+*
+* DESCRIPTION: This function to disable reception, transmission, or both.
+*************************************************************************/
+fnet_return_t fnet_socket_shutdown( fnet_socket_t s, fnet_sd_flags_t how )
+{
+    fnet_socket_if_t   *sock;
+    fnet_return_t   result = FNET_OK;
+    fnet_error_t    error;
+
+    fnet_os_mutex_lock();
+
+    if((sock = fnet_socket_desc_find(s)) != 0)
+    {
+        if((sock->protocol_interface) && (sock->protocol_interface->socket_api->prot_shutdown))
+        {
+            result = sock->protocol_interface->socket_api->prot_shutdown(sock, how);
+        }
+    }
+    else
+    {
+        error = FNET_ERR_BAD_DESC; /* Bad descriptor.*/
+        goto ERROR;
+    }
+
+    fnet_os_mutex_unlock();
+    return (result);
+ERROR:
+    fnet_error_set(error);
+
+    fnet_os_mutex_unlock();
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -781,12 +819,11 @@ ERROR:
 * DESCRIPTION: This function places the socket into the state where 
 *              it is listening for an incoming connection.
 *************************************************************************/
-int listen( SOCKET s, int backlog )
+fnet_return_t fnet_socket_listen( fnet_socket_t s, fnet_size_t backlog )
 {
-    fnet_socket_t *sock;
-
-    int error;
-    int result = FNET_OK;
+    fnet_socket_if_t   *sock;
+    fnet_error_t    error;
+    fnet_return_t   result = FNET_OK;
 
     fnet_os_mutex_lock();
 
@@ -798,19 +835,13 @@ int listen( SOCKET s, int backlog )
             goto ERROR_SOCK;
         }
 
-        if(sock->local_addr.sa_port == 0)
+        if(sock->local_addr.sa_port == 0u)
         {
             error = FNET_ERR_BOUNDREQ; /* The socket has not been bound.*/
             goto ERROR_SOCK;
         }
 
-        if(backlog < 0)
-        {
-            error = FNET_ERR_INVAL; /* Invalid argument.*/
-            goto ERROR_SOCK;
-        }
-
-        if(sock->protocol_interface && sock->protocol_interface->socket_api->prot_listen)
+        if((sock->protocol_interface) && (sock->protocol_interface->socket_api->prot_listen))
         {
             result = sock->protocol_interface->socket_api->prot_listen(sock, backlog);
         }
@@ -834,7 +865,7 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -842,18 +873,18 @@ ERROR:
 *
 * DESCRIPTION: This function accepts a connection on a specified socket.
 *************************************************************************/
-SOCKET accept( SOCKET s, struct sockaddr *addr, unsigned int *addrlen )
+fnet_socket_t fnet_socket_accept( fnet_socket_t s, struct sockaddr *addr, fnet_size_t *addrlen )
 {
-    fnet_socket_t   *sock;
-    fnet_socket_t   *sock_new;
-    SOCKET          desc;
-    int             error;
+    fnet_socket_if_t   *sock;
+    fnet_socket_if_t   *sock_new;
+    fnet_socket_t          desc;
+    fnet_error_t    error;
 
     fnet_os_mutex_lock();
 
     if((sock = fnet_socket_desc_find(s)) != 0)
     {
-        if(sock->protocol_interface && sock->protocol_interface->socket_api->prot_accept)
+        if((sock->protocol_interface) && (sock->protocol_interface->socket_api->prot_accept))
         {
             if(sock->state != SS_LISTENING)
             {
@@ -863,7 +894,7 @@ SOCKET accept( SOCKET s, struct sockaddr *addr, unsigned int *addrlen )
 
             if(addr && addrlen)
             {
-                if((error = fnet_socket_addr_check_len(&sock->local_addr, (unsigned int)(*addrlen) )) != FNET_OK )
+                if((error = fnet_socket_addr_check_len(&sock->local_addr, (*addrlen) )) != FNET_ERR_OK )
                 {
                     goto ERROR_SOCK;
                 }
@@ -917,17 +948,7 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_INVALID);
-}
-
-/************************************************************************
-* NAME: send
-*
-* DESCRIPTION: This function sends data on a connected socket. 
-*************************************************************************/
-int send( SOCKET s, char *buf, unsigned int len, unsigned int flags )
-{
-    return sendto(s, buf, len, flags, FNET_NULL, 0);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -935,18 +956,17 @@ int send( SOCKET s, char *buf, unsigned int len, unsigned int flags )
 *
 * DESCRIPTION: This function sends data to a specific destination. 
 *************************************************************************/
-int sendto( SOCKET s, char *buf, unsigned int len, int flags, const struct sockaddr *to, unsigned int tolen )
+fnet_int32_t fnet_socket_sendto( fnet_socket_t s, fnet_uint8_t *buf, fnet_size_t len, fnet_flag_t flags, const struct sockaddr *to, fnet_size_t tolen )
 {
-    fnet_socket_t   *sock;
-    int             error;
-    int             result = FNET_OK;
+    fnet_socket_if_t   *sock;
+    fnet_error_t    error;
+    fnet_int32_t    result = 0;
 
     fnet_os_mutex_lock();
 
     if((sock = fnet_socket_desc_find(s)) != 0)
     {
-        
-        if((to == FNET_NULL) || (tolen == 0))
+        if((to == FNET_NULL) || (tolen == 0u))
         {
             if(fnet_socket_addr_is_unspecified(&sock->foreign_addr))
             {
@@ -958,7 +978,7 @@ int sendto( SOCKET s, char *buf, unsigned int len, int flags, const struct socka
         }
         else
         {
-            if((error = fnet_socket_addr_check_len(to, (unsigned int)tolen)) != FNET_OK)
+            if((error = fnet_socket_addr_check_len(to, tolen)) != FNET_ERR_OK)
             {
                 goto ERROR_SOCK;
             }     
@@ -1010,18 +1030,17 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
-
 /************************************************************************
-* NAME: recv
+* NAME: send
 *
-* DESCRIPTION: This function receives data from a connected socket. 
+* DESCRIPTION: This function sends data on a connected socket. 
 *************************************************************************/
-int recv( SOCKET s, char *buf, unsigned int len, unsigned int flags )
+fnet_int32_t fnet_socket_send( fnet_socket_t s, fnet_uint8_t *buf, fnet_size_t len, fnet_flag_t flags )
 {
-    return recvfrom(s, buf, len, flags, FNET_NULL, FNET_NULL);
+    return fnet_socket_sendto(s, buf, len, flags, FNET_NULL, 0u);
 }
 
 /************************************************************************
@@ -1030,11 +1049,11 @@ int recv( SOCKET s, char *buf, unsigned int len, unsigned int flags )
 * DESCRIPTION: This function reads incoming data of socket and captures 
 *              the address from which the data was sent.  
 *************************************************************************/
-int recvfrom( SOCKET s, char *buf, unsigned int len, unsigned int flags, struct sockaddr *from, unsigned int *fromlen )
+fnet_int32_t fnet_socket_recvfrom( fnet_socket_t s, fnet_uint8_t *buf, fnet_size_t len, fnet_flag_t flags, struct sockaddr *from, fnet_size_t *fromlen )
 {
-    fnet_socket_t   *sock;
-    int             error;
-    int             result = FNET_OK;
+    fnet_socket_if_t   *sock;
+    fnet_error_t    error;
+    fnet_int32_t    result = 0;
 
     fnet_os_mutex_lock();
 
@@ -1044,15 +1063,15 @@ int recvfrom( SOCKET s, char *buf, unsigned int len, unsigned int flags, struct 
         {
 
             /* The sockets must be bound before calling recv.*/
-            if((sock->local_addr.sa_port == 0) && (sock->protocol_interface->type != SOCK_RAW))
+            if((sock->local_addr.sa_port == 0u) && (sock->protocol_interface->type != SOCK_RAW))
             {
-                error = FNET_ERR_BOUNDREQ; /* The socket has not been bound with bind().*/
+                error = FNET_ERR_BOUNDREQ; /* The socket has not been bound with fnet_socket_bind().*/
                 goto ERROR_SOCK;
             }
 
             if(from && fromlen)
             {
-                if((error = fnet_socket_addr_check_len(&sock->local_addr, (unsigned int)(*fromlen) )) != FNET_OK )
+                if((error = fnet_socket_addr_check_len(&sock->local_addr, (*fromlen) )) != FNET_ERR_OK )
                 {
                     goto ERROR_SOCK;
                 }
@@ -1095,7 +1114,17 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
+}
+
+/************************************************************************
+* NAME: recv
+*
+* DESCRIPTION: This function receives data from a connected socket. 
+*************************************************************************/
+fnet_int32_t fnet_socket_recv( fnet_socket_t s, fnet_uint8_t *buf, fnet_size_t len, fnet_flag_t flags )
+{
+    return fnet_socket_recvfrom(s, buf, len, flags, FNET_NULL, FNET_NULL);
 }
 
 /************************************************************************
@@ -1104,10 +1133,10 @@ ERROR:
 * DESCRIPTION: This function retrieves the current name 
 *              for the specified socket. 
 *************************************************************************/
-int getsockname( SOCKET s, struct sockaddr *name, unsigned int *namelen )
+fnet_return_t fnet_socket_getname( fnet_socket_t s, struct sockaddr *name, fnet_size_t *namelen )
 {
-    fnet_socket_t   *sock;
-    int             error;
+    fnet_socket_if_t   *sock;
+    fnet_error_t    error;
 
     fnet_os_mutex_lock();
 
@@ -1115,18 +1144,18 @@ int getsockname( SOCKET s, struct sockaddr *name, unsigned int *namelen )
     {
         if((name == 0) || (namelen == 0))
         {
-            error = (int)FNET_ERR_INVAL;
+            error = FNET_ERR_INVAL;
             goto ERROR_SOCK;
         }
         
-        if((error = fnet_socket_addr_check_len(&sock->local_addr, (unsigned int)(*namelen) )) != FNET_OK )
+        if((error = fnet_socket_addr_check_len(&sock->local_addr, (*namelen) )) != FNET_ERR_OK )
         {
             goto ERROR_SOCK;
         }
 
         if((sock->local_addr.sa_port == 0U) && (sock->protocol_interface->type != SOCK_RAW))
         {
-            error = (int)FNET_ERR_BOUNDREQ; /* The socket has not been bound with bind().*/
+            error = FNET_ERR_BOUNDREQ; /* The socket has not been bound with fnet_socket_bind().*/
             goto ERROR_SOCK;
         }
         
@@ -1134,7 +1163,7 @@ int getsockname( SOCKET s, struct sockaddr *name, unsigned int *namelen )
     }
     else
     {
-        fnet_error_set((int)FNET_ERR_BAD_DESC);/* Bad descriptor.*/
+        fnet_error_set(FNET_ERR_BAD_DESC);/* Bad descriptor.*/
         goto ERROR;
     }
 
@@ -1146,7 +1175,7 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -1155,10 +1184,10 @@ ERROR:
 * DESCRIPTION: This function retrieves the name of the peer 
 *              connected to the socket
 *************************************************************************/
-int getpeername( SOCKET s, struct sockaddr *name, unsigned int *namelen )
+fnet_return_t fnet_socket_getpeername( fnet_socket_t s, struct sockaddr *name, fnet_size_t *namelen )
 {
-    fnet_socket_t   *sock;
-    int             error;
+    fnet_socket_if_t   *sock;
+    fnet_error_t    error;
 
     fnet_os_mutex_lock();
 
@@ -1170,7 +1199,7 @@ int getpeername( SOCKET s, struct sockaddr *name, unsigned int *namelen )
             goto ERROR_SOCK;
         }
 
-        if((error = fnet_socket_addr_check_len(&sock->local_addr, (unsigned int)(*namelen) )) != FNET_OK )
+        if((error = fnet_socket_addr_check_len(&sock->local_addr, (*namelen) )) != FNET_ERR_OK )
         {
             goto ERROR_SOCK;
         }        
@@ -1197,7 +1226,7 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -1206,22 +1235,24 @@ ERROR:
 * DESCRIPTION: This function sets the current value for a socket option 
 *              associated with a socket
 *************************************************************************/
-int setsockopt( SOCKET s, int level, int optname, const void *optval, unsigned int optlen )
+fnet_return_t fnet_socket_setopt( fnet_socket_t s, fnet_protocol_t level, fnet_socket_options_t optname, const void *optval, fnet_size_t optvallen )
 {
-    fnet_socket_t   *sock;
-    int             error;
-    int             result = FNET_OK;
+    fnet_socket_if_t   *sock;
+    fnet_error_t    error;
+    fnet_return_t   result = FNET_OK;
 
     fnet_os_mutex_lock();
 
     if((sock = fnet_socket_desc_find(s)) != 0)
     {
-        if(optval && optlen)
+        if(optval && optvallen)
         {
             if(level != SOL_SOCKET)
             {
-                if(sock->protocol_interface && sock->protocol_interface->socket_api->prot_setsockopt)
-                    result = sock->protocol_interface->socket_api->prot_setsockopt(sock, level, optname, optval, optlen);
+                if((sock->protocol_interface) && (sock->protocol_interface->socket_api->prot_setsockopt))
+                {
+                    result = sock->protocol_interface->socket_api->prot_setsockopt(sock, level, optname, optval, optvallen);
+                }
                 else
                 {
                     error = FNET_ERR_INVAL; /* Invalid argument.*/
@@ -1233,57 +1264,62 @@ int setsockopt( SOCKET s, int level, int optname, const void *optval, unsigned i
                 switch(optname)     /* Socket options processing.*/
                 {
                     case SO_LINGER: /* Linger on close if data present.*/
-                      if(optlen != sizeof(struct linger))
-                      {
-                          error = FNET_ERR_INVAL;
-                          goto ERROR_SOCK;
-                      }
+                        if(optvallen < sizeof(struct linger))
+                        {
+                            error = FNET_ERR_INVAL;
+                            goto ERROR_SOCK;
+                        }
 
-                      sock->options.linger_ticks = ((const struct linger *)optval)->l_linger
-                                                    * (1000 / FNET_TIMER_PERIOD_MS);
-
-                      if(((const struct linger *)optval)->l_onoff)
-                          sock->options.flags |= optname;
-                      else
-                          sock->options.flags &= ~optname;
-
+                        sock->options.linger_ticks = (fnet_time_t)(((const struct linger *)optval)->l_linger * (1000u / FNET_TIMER_PERIOD_MS));
+                        sock->options.so_linger = (((const struct linger *)optval)->l_onoff)?FNET_TRUE: FNET_FALSE;
                       break;
-
                     case SO_KEEPALIVE: /* Keep connections alive.*/
+                        if(optvallen < sizeof(fnet_uint32_t))
+                        {
+                            error = FNET_ERR_INVAL;
+                            goto ERROR_SOCK;
+                        }
+                        sock->options.so_keepalive = (*((const fnet_uint32_t *)optval))?FNET_TRUE: FNET_FALSE;
+                        break;
                     case SO_DONTROUTE: /* Just use interface addresses.*/
+                        if(optvallen < sizeof(fnet_uint32_t))
+                        {
+                            error = FNET_ERR_INVAL;
+                            goto ERROR_SOCK;
+                        }
+                        sock->options.so_dontroute = (*((const fnet_uint32_t *)optval))?FNET_TRUE: FNET_FALSE;
+                        break;
                 #if FNET_CFG_TCP_URGENT                    
                     case SO_OOBINLINE: /* Leave received OOB data in line.*/
-                #endif                    
-                      if(optlen < sizeof(int))
-                      {
-                          error = FNET_ERR_INVAL;
-                          goto ERROR_SOCK;
-                      }
-
-                      if(*((const int *)optval))
-                          sock->options.flags |= optname;
-                      else
-                          sock->options.flags &= ~optname;
-
-                      break;
-
+                        if(optvallen < sizeof(fnet_uint32_t))
+                        {
+                            error = FNET_ERR_INVAL;
+                            goto ERROR_SOCK;
+                        }
+                        sock->options.so_oobinline = (*((const fnet_uint32_t *)optval))?FNET_TERUE: FNET_FALSE;
+                        break;
+                #endif 
                     case SO_SNDBUF: /* Send buffer size.*/
                     case SO_RCVBUF: /* Receive buffer size.*/
-                      if((optlen < sizeof(unsigned long)))
-                      {
-                          error = FNET_ERR_INVAL;
-                          goto ERROR_SOCK;
-                      }
+                        if((optvallen < sizeof(fnet_uint32_t)))
+                        {
+                            error = FNET_ERR_INVAL;
+                            goto ERROR_SOCK;
+                        }
 
-                      if(optname == SO_SNDBUF)
-                          sock->send_buffer.count_max = *((const unsigned long *)optval);
-                      else
-                          sock->receive_buffer.count_max = *((const unsigned long *)optval);
+                        if(optname == SO_SNDBUF)
+                        {
+                            sock->send_buffer.count_max = *((const fnet_uint32_t *)optval);
+                        }
+                        else
+                        {
+                            sock->receive_buffer.count_max = *((const fnet_uint32_t *)optval);
+                        }
 
-                      break;
+                        break;
                     default:
-                      error = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported. */
-                      goto ERROR_SOCK;
+                        error = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported. */
+                        goto ERROR_SOCK;
                 }
             }
         }
@@ -1307,31 +1343,33 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
 /************************************************************************
-* NAME: getsockopt
+* NAME: fnet_socket_getopt
 *
 * DESCRIPTION: This function retrieves the current value for 
 *              a socket option associated with a socket 
 *************************************************************************/
-int getsockopt( SOCKET s, int level, int optname, void *optval, unsigned int *optlen )
+fnet_return_t fnet_socket_getopt( fnet_socket_t s, fnet_protocol_t level, fnet_socket_options_t optname, void *optval, fnet_size_t *optvallen )
 {
-    fnet_socket_t   *sock;
-    int             error;
-    int             result = FNET_OK;
+    fnet_socket_if_t   *sock;
+    fnet_error_t    error;
+    fnet_return_t   result = FNET_OK;
 
     fnet_os_mutex_lock();
 
     if((sock = fnet_socket_desc_find(s)) != 0)
     {
-        if(optval && optlen)
+        if(optval && optvallen)
         {
             if(level != SOL_SOCKET)
             {
-                if(sock->protocol_interface && sock->protocol_interface->socket_api->prot_getsockopt)
-                    result = sock->protocol_interface->socket_api->prot_getsockopt(sock, level, optname, optval, optlen);
+                if((sock->protocol_interface) && (sock->protocol_interface->socket_api->prot_getsockopt))
+                {
+                    result = sock->protocol_interface->socket_api->prot_getsockopt(sock, level, optname, optval, optvallen);
+                }
                 else
                 {
                     error = FNET_ERR_INVAL; /* Invalid argument.*/
@@ -1343,110 +1381,128 @@ int getsockopt( SOCKET s, int level, int optname, void *optval, unsigned int *op
                 switch(optname)     /* Socket options processing.*/
                 {
                     case SO_LINGER: /* Linger on close if data present.*/
-                        if(*optlen < sizeof(struct linger))
+                        if(*optvallen < sizeof(struct linger))
                         {
                             error = FNET_ERR_INVAL;
                             goto ERROR_SOCK;
                         }
 
-                        *optlen = sizeof(struct linger);
-                        ((struct linger *)optval)->l_onoff
-                                = (unsigned short)((sock->options.flags & SO_LINGER) > 0);
-                        ((struct linger *)optval)->l_linger
-                            = (unsigned short)((sock->options.linger_ticks * FNET_TIMER_PERIOD_MS) / 1000);
-                        sock->options.linger_ticks = ((struct linger *)optval)->l_linger;
+                        *optvallen = sizeof(struct linger);
+                        ((struct linger *)optval)->l_onoff = sock->options.so_linger;
+                        ((struct linger *)optval)->l_linger= (fnet_uint16_t)(((fnet_uint32_t)sock->options.linger_ticks * FNET_TIMER_PERIOD_MS) / 1000u);
+                        sock->options.linger_ticks = (fnet_time_t)(((struct linger *)optval)->l_linger);
                         break;
 
                     case SO_KEEPALIVE: /* Keep connections alive.*/
+                        if(*optvallen < sizeof(fnet_uint32_t))
+                        {
+                            error = FNET_ERR_INVAL;
+                            goto ERROR_SOCK;
+                        }
+                        *optvallen = sizeof(fnet_uint32_t);
+                        *((fnet_uint32_t*)optval) = (fnet_uint32_t)(sock->options.so_keepalive);
+                        break;
                     case SO_DONTROUTE: /* Just use interface addresses.*/
+                        if(*optvallen < sizeof(fnet_uint32_t))
+                        {
+                            error = FNET_ERR_INVAL;
+                            goto ERROR_SOCK;
+                        }
+                        *optvallen = sizeof(fnet_uint32_t);
+                        *((fnet_uint32_t*)optval) = (fnet_uint32_t)(sock->options.so_dontroute);
+                        break;
                 #if FNET_CFG_TCP_URGENT                    
                     case SO_OOBINLINE: /* Leave received OOB data in line.*/
-                #endif                    
-                        if(*optlen < sizeof(int))
+                        if(*optvallen < sizeof(fnet_uint32_t))
                         {
                             error = FNET_ERR_INVAL;
                             goto ERROR_SOCK;
                         }
 
-                        *optlen = sizeof(int);
-                        *((int*)optval) = (int)((sock->options.flags & optname) > 0);
+                        *optvallen = sizeof(fnet_uint32_t);
+                        *((fnet_uint32_t*)optval) = (fnet_uint32_t)(sock->options.so_oobinline);
                         break;
-
+                #endif 
                     case SO_ACCEPTCONN: /* Socket is listening. */
-                        if(*optlen < sizeof(int))
+                        if(*optvallen < sizeof(fnet_uint32_t))
                         {
                             error = FNET_ERR_INVAL;
                             goto ERROR_SOCK;
                         }
 
-                        *optlen = sizeof(int);
-                        *((int*)optval) = (int)(sock->state == SS_LISTENING);
+                        *optvallen = sizeof(fnet_uint32_t);
+                        *((fnet_uint32_t*)optval) = (fnet_uint32_t)(sock->state == SS_LISTENING);
                         break;
-
                     case SO_SNDBUF: /* Send buffer size.*/
                     case SO_RCVBUF: /* Receive buffer size.*/
-                        if(*optlen < sizeof(unsigned long))
+                        if(*optvallen < sizeof(fnet_uint32_t))
                         {
                             error = FNET_ERR_INVAL;
                             goto ERROR_SOCK;
                         }
 
-                        *optlen = sizeof(unsigned long);
+                        *optvallen = sizeof(fnet_uint32_t);
 
                         if(optname == SO_SNDBUF)
-                            *((unsigned long*)optval)=sock->send_buffer.count_max;
+                        {
+                            *((fnet_uint32_t*)optval) = sock->send_buffer.count_max;
+                        }
                         else
-                            *((unsigned long *)optval) = sock->receive_buffer.count_max;
+                        {
+                            *((fnet_uint32_t *)optval) = sock->receive_buffer.count_max;
+                        }
                         break;
                     case SO_STATE: /* State of the socket.*/
-                        if(*optlen < sizeof(fnet_socket_state_t))
+                        if(*optvallen < sizeof(fnet_socket_state_t))
                         {
                             error = FNET_ERR_INVAL;
                             goto ERROR_SOCK;
                         }
 
-                        *optlen = sizeof(fnet_socket_state_t);
+                        *optvallen = sizeof(fnet_socket_state_t);
                         *((fnet_socket_state_t*)optval) = sock->state;
                         break;
 
                     case SO_RCVNUM:  /* Use to determine the amount of data pending in the network's input buffer that can be read from socket.*/
                     case SO_SNDNUM: /* Use to determine the amount of data in the network's output buffer.*/
-                        if(*optlen < sizeof(unsigned long))
+                        if(*optvallen < sizeof(fnet_uint32_t))
                         {
                             error = FNET_ERR_INVAL;
                             goto ERROR_SOCK;
                         }
 
-                        *optlen = sizeof(unsigned long);
+                        *optvallen = sizeof(fnet_uint32_t);
 
                         if(optname == SO_RCVNUM)
-                            *((unsigned long*)optval) = sock->receive_buffer.count;
+                        {
+                            *((fnet_uint32_t*)optval) = sock->receive_buffer.count;
+                        }
                         else
-                            *((unsigned long *)optval) = sock->send_buffer.count;
+                        {
+                            *((fnet_uint32_t *)optval) = sock->send_buffer.count;
+                        }
                         break;
                     case SO_ERROR: /* Socket error.*/
-                        if(*optlen < sizeof(int))
+                        if(*optvallen < sizeof(fnet_error_t))
                         {
                             error = FNET_ERR_INVAL;
                             goto ERROR_SOCK;
                         }
 
-                        *optlen = sizeof(int);
-                        *((int *)optval) = sock->options.error;
-                        sock->options.error = FNET_OK; /* Reset error.*/
+                        *optvallen = sizeof(fnet_error_t);
+                        *((fnet_error_t *)optval) = sock->options.error;
+                        sock->options.error = FNET_ERR_OK; /* Reset error.*/
                         break;
-
                     case SO_TYPE:
-                        if(*optlen < sizeof(int))
+                        if(*optvallen < sizeof(fnet_socket_type_t))
                         {
                             error = FNET_ERR_INVAL;
                             goto ERROR_SOCK;
                         }
 
-                        *optlen = sizeof(int);
-                        *((int *)optval) = (sock->protocol_interface ? sock->protocol_interface->type : 0);
+                        *optvallen = sizeof(fnet_socket_type_t);
+                        *((fnet_socket_type_t *)optval) = (sock->protocol_interface ? sock->protocol_interface->type : SOCK_UNSPEC);
                         break;
-
                     default:
                         error = FNET_ERR_NOPROTOOPT; /* The option is unknown or unsupported. */
                         goto ERROR_SOCK;
@@ -1473,7 +1529,7 @@ ERROR_SOCK:
 
 ERROR:
     fnet_os_mutex_unlock();
-    return (SOCKET_ERROR);
+    return (FNET_ERR);
 }
 
 /************************************************************************
@@ -1488,7 +1544,7 @@ void fnet_socket_buffer_release( fnet_socket_buffer_t *sb )
 
     fnet_isr_lock();
 
-    if(sb && sb->net_buf_chain)
+    if(sb && (sb->net_buf_chain))
     {
         nb_ptr = sb->net_buf_chain;
 
@@ -1500,7 +1556,7 @@ void fnet_socket_buffer_release( fnet_socket_buffer_t *sb )
         }
 
         sb->net_buf_chain = 0;
-        sb->count = 0;
+        sb->count = 0u;
     }
 
     fnet_isr_unlock();
@@ -1511,7 +1567,7 @@ void fnet_socket_buffer_release( fnet_socket_buffer_t *sb )
 *
 * DESCRIPTION: Append the record to the end of the socket buffer.
 *************************************************************************/
-int fnet_socket_buffer_append_record( fnet_socket_buffer_t *sb, fnet_netbuf_t *nb )
+fnet_return_t fnet_socket_buffer_append_record( fnet_socket_buffer_t *sb, fnet_netbuf_t *nb )
 {
     fnet_isr_lock();
 
@@ -1536,7 +1592,7 @@ int fnet_socket_buffer_append_record( fnet_socket_buffer_t *sb, fnet_netbuf_t *n
 *              The chain contains the address of the message 
 *              and the message data.
 *************************************************************************/
-int fnet_socket_buffer_append_address( fnet_socket_buffer_t *sb, fnet_netbuf_t *nb, struct sockaddr *addr)
+fnet_return_t fnet_socket_buffer_append_address( fnet_socket_buffer_t *sb, fnet_netbuf_t *nb, struct sockaddr *addr)
 {
     fnet_socket_buffer_addr_t   *sb_address;
     fnet_netbuf_t               *nb_addr;
@@ -1548,7 +1604,7 @@ int fnet_socket_buffer_append_address( fnet_socket_buffer_t *sb, fnet_netbuf_t *
         goto ERROR;
     }
 
-    if((nb_addr = fnet_netbuf_new(sizeof(fnet_socket_buffer_addr_t), 0)) == 0)
+    if((nb_addr = fnet_netbuf_new(sizeof(fnet_socket_buffer_addr_t), FNET_FALSE)) == 0)
     {
         goto ERROR;
     }
@@ -1579,25 +1635,29 @@ ERROR:
 * DESCRIPTION: This function reads data from socket buffer and 
 *              put this data into application buffer. 
 *************************************************************************/
-int fnet_socket_buffer_read_record( fnet_socket_buffer_t *sb, char *buf, int len, int remove )
+fnet_size_t fnet_socket_buffer_read_record( fnet_socket_buffer_t *sb, fnet_uint8_t *buf, fnet_size_t len, fnet_bool_t remove )
 {
     if(sb->net_buf_chain)
     {
         if(len > sb->net_buf_chain->total_length)
-            len = (int)sb->net_buf_chain->total_length;
+        {
+            len = sb->net_buf_chain->total_length;
+        }
 
-        fnet_netbuf_to_buf(sb->net_buf_chain, 0, len, buf);
+        fnet_netbuf_to_buf(sb->net_buf_chain, 0u, len, buf);
 
-        if(remove)
+        if(remove == FNET_TRUE)
         {
             fnet_isr_lock();
-            fnet_netbuf_trim(&sb->net_buf_chain, len);
+            fnet_netbuf_trim(&sb->net_buf_chain, (fnet_int32_t)len);
             sb->count -= len;
             fnet_isr_unlock();
         }
     }
     else
-        len = 0;
+    {
+        len = 0u;
+    }
 
     return len;
 }
@@ -1609,7 +1669,7 @@ int fnet_socket_buffer_read_record( fnet_socket_buffer_t *sb, char *buf, int len
 *             put this data into application buffer. 
 *             And captures the address information from which the data was sent. 
 *************************************************************************/
-int fnet_socket_buffer_read_address( fnet_socket_buffer_t *sb, char *buf, int len, struct sockaddr *foreign_addr, int remove )
+fnet_int32_t fnet_socket_buffer_read_address( fnet_socket_buffer_t *sb, fnet_uint8_t *buf, fnet_size_t len, struct sockaddr *foreign_addr, fnet_bool_t remove )
 {
     fnet_netbuf_t   *nb;
     fnet_netbuf_t   *nb_addr;
@@ -1619,33 +1679,43 @@ int fnet_socket_buffer_read_address( fnet_socket_buffer_t *sb, char *buf, int le
         if((nb = nb_addr->next) != 0)
         {
             if(len > nb->total_length)
-                len = (int)nb->total_length;
+            {
+                len = nb->total_length;
+            }
 
-            fnet_netbuf_to_buf(nb, 0, len, buf);
+            fnet_netbuf_to_buf(nb, 0u, len, buf);
         }
         else
-            len = 0;
+        {
+            len = 0u;
+        }
         
         *foreign_addr = ((fnet_socket_buffer_addr_t *)(nb_addr->data_ptr))->addr_s;
         
         if(len < (nb_addr->total_length - sizeof(fnet_socket_buffer_addr_t)))
-            len = FNET_ERR;
+        {
+            len = (fnet_size_t)FNET_ERR;
+        }
 
         if(remove)
         {
             fnet_isr_lock();
 
             if(nb)
+            {
                 sb->count -= nb->total_length;
+            }
             fnet_netbuf_del_chain(&sb->net_buf_chain, nb_addr);
             
             fnet_isr_unlock();
         }
     }
     else
-        len = 0;
+    {
+        len = 0u;
+    }
  
-    return len;
+    return (fnet_int32_t)len;
 }
 
 /************************************************************************
@@ -1653,14 +1723,14 @@ int fnet_socket_buffer_read_address( fnet_socket_buffer_t *sb, char *buf, int le
 *
 * DESCRIPTION: This function check sockaddr structure and its size.
 *************************************************************************/
-static int fnet_socket_addr_check_len(const struct sockaddr *addr, unsigned int addr_len )
+static fnet_error_t fnet_socket_addr_check_len(const struct sockaddr *addr, fnet_size_t addr_len )
 {
-    int result = FNET_OK;
+    fnet_error_t result = FNET_ERR_OK;
     
     if(addr && addr_len)
     {
 #if FNET_CFG_IP6
-        if((addr->sa_family & AF_INET6) != 0)
+        if((addr->sa_family & AF_INET6) != 0u)
         {
             if(addr_len < sizeof(struct sockaddr_in6))
             {
@@ -1671,7 +1741,7 @@ static int fnet_socket_addr_check_len(const struct sockaddr *addr, unsigned int 
 #endif /* FNET_CFG_IP4 */
 
 #if FNET_CFG_IP4
-        if((addr->sa_family & AF_INET) !=0 )
+        if((addr->sa_family & AF_INET) !=0u )
         {
             if(addr_len < sizeof(struct sockaddr_in))
             {
@@ -1697,14 +1767,14 @@ static int fnet_socket_addr_check_len(const struct sockaddr *addr, unsigned int 
 *
 * DESCRIPTION: Returns FNET_FALSE if the address is not multicast.
 *************************************************************************/
-int fnet_socket_addr_is_multicast(const struct sockaddr *addr)
+fnet_bool_t fnet_socket_addr_is_multicast(const struct sockaddr *addr)
 {
-    int     result = FNET_FALSE;
+    fnet_bool_t     result = FNET_FALSE;
     
     if(addr)
     {
 #if FNET_CFG_IP6
-        if((addr->sa_family & AF_INET6) != 0)
+        if((addr->sa_family & AF_INET6) != 0u)
         {
             result = FNET_IP6_ADDR_IS_MULTICAST( &((const struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
         }
@@ -1712,7 +1782,7 @@ int fnet_socket_addr_is_multicast(const struct sockaddr *addr)
 #endif /* FNET_CFG_IP4 */
 
 #if FNET_CFG_IP4
-        if((addr->sa_family & AF_INET) != 0)
+        if((addr->sa_family & AF_INET) != 0u)
         {
             result = FNET_IP4_ADDR_IS_MULTICAST( ((const struct sockaddr_in *)addr)->sin_addr.s_addr);
         }
@@ -1729,14 +1799,14 @@ int fnet_socket_addr_is_multicast(const struct sockaddr *addr)
 *
 * DESCRIPTION: Returns FNET_FALSE if the address is not broadcast.
 *************************************************************************/
-int fnet_socket_addr_is_broadcast(const struct sockaddr *addr, fnet_netif_t *netif)
+fnet_bool_t fnet_socket_addr_is_broadcast(const struct sockaddr *addr, fnet_netif_t *netif)
 {
-    int result = FNET_FALSE;
+    fnet_bool_t result = FNET_FALSE;
     
 #if FNET_CFG_IP4
     if(addr)
     {
-        if((addr->sa_family & AF_INET) != 0)
+        if((addr->sa_family & AF_INET) != 0u)
         {
             result = fnet_ip_addr_is_broadcast( ((const struct sockaddr_in *)addr)->sin_addr.s_addr, netif );
         }
@@ -1754,21 +1824,21 @@ int fnet_socket_addr_is_broadcast(const struct sockaddr *addr, fnet_netif_t *net
 *
 * DESCRIPTION: Returns FNET_FALSE if the address is not specified.
 *************************************************************************/
-int fnet_socket_addr_is_unspecified(const struct sockaddr *addr)
+fnet_bool_t fnet_socket_addr_is_unspecified(const struct sockaddr *addr)
 {
-    int result = FNET_TRUE;
+    fnet_bool_t result = FNET_TRUE;
     
     if(addr)
     {
 #if FNET_CFG_IP6
-        if((addr->sa_family & AF_INET6) != 0)
+        if((addr->sa_family & AF_INET6) != 0u)
         {
             result = FNET_IP6_ADDR_IS_UNSPECIFIED( &((const struct sockaddr_in6 *)addr)->sin6_addr.s6_addr);
         }
         else
 #endif 
 #if FNET_CFG_IP4
-        if((addr->sa_family & AF_INET) != 0)
+        if((addr->sa_family & AF_INET) != 0u)
         {
             result = FNET_IP4_ADDR_IS_UNSPECIFIED( ((const struct sockaddr_in *)addr)->sin_addr.s_addr);
         }
@@ -1785,23 +1855,23 @@ int fnet_socket_addr_is_unspecified(const struct sockaddr *addr)
 *
 * DESCRIPTION: Returns FNET_FALSE if the addresses are not equal.
 *************************************************************************/
-int fnet_socket_addr_are_equal(const struct sockaddr *addr1, const struct sockaddr *addr2 )
+fnet_bool_t fnet_socket_addr_are_equal(const struct sockaddr *addr1, const struct sockaddr *addr2 )
 {
-    int result = FNET_FALSE;
+    fnet_bool_t result = FNET_FALSE;
     
     if(addr1 && addr2 && (addr1->sa_family == addr2->sa_family))
     {
 #if FNET_CFG_IP6
-        if((addr1->sa_family & AF_INET6) != 0)
+        if((addr1->sa_family & AF_INET6) != 0u)
         {
             result =  FNET_IP6_ADDR_EQUAL( &((const struct sockaddr_in6 *)addr1)->sin6_addr.s6_addr, &((const struct sockaddr_in6 *)addr2)->sin6_addr.s6_addr);
         }
         else
 #endif
 #if FNET_CFG_IP4
-        if((addr1->sa_family & AF_INET) != 0)
+        if((addr1->sa_family & AF_INET) != 0u)
         {
-            result = (((const struct sockaddr_in *)addr1)->sin_addr.s_addr == (((const struct sockaddr_in *)addr2)->sin_addr.s_addr));
+            result = (((const struct sockaddr_in *)addr1)->sin_addr.s_addr == (((const struct sockaddr_in *)addr2)->sin_addr.s_addr))?FNET_TRUE:FNET_FALSE;
         }
         else
 #endif
@@ -1822,14 +1892,14 @@ void fnet_socket_ip_addr_copy(const struct sockaddr *from_addr, struct sockaddr 
     if(from_addr && to_addr && (to_addr->sa_family == from_addr->sa_family))
     {
 #if FNET_CFG_IP6
-        if((from_addr->sa_family & AF_INET6) != 0)
+        if((from_addr->sa_family & AF_INET6) != 0u)
         {
             FNET_IP6_ADDR_COPY(&((const struct sockaddr_in6 *)from_addr)->sin6_addr.s6_addr, &((struct sockaddr_in6 *)to_addr)->sin6_addr.s6_addr);
         }
         else
 #endif 
 #if FNET_CFG_IP4
-        if((from_addr->sa_family & AF_INET) != 0)
+        if((from_addr->sa_family & AF_INET) != 0u)
         {
             ((struct sockaddr_in *)to_addr)->sin_addr.s_addr = ((const struct sockaddr_in *)from_addr)->sin_addr.s_addr;
         }
@@ -1849,14 +1919,14 @@ void fnet_socket_addr_copy(const struct sockaddr *from_addr, struct sockaddr *to
     if(from_addr && to_addr)
     {
 #if FNET_CFG_IP6
-        if((from_addr->sa_family & AF_INET6) != 0)
+        if((from_addr->sa_family & AF_INET6) != 0u)
         {
             fnet_memcpy(to_addr, from_addr, sizeof(struct sockaddr_in6));
         }
         else
 #endif
 #if FNET_CFG_IP4
-        if((from_addr->sa_family & AF_INET) != 0)
+        if((from_addr->sa_family & AF_INET) != 0u)
         {
             fnet_memcpy(to_addr, from_addr, sizeof(struct sockaddr_in));
         }
@@ -1888,7 +1958,7 @@ fnet_netif_t *fnet_socket_addr_route(const struct sockaddr *dest_addr)
             case AF_INET6:
 
                 /* Check Scope ID.*/
-                if((result = fnet_netif_get_by_scope_id( ((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id )) == FNET_NULL)
+                if((result = (fnet_netif_t *)fnet_netif_get_by_scope_id( ((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id )) == FNET_NULL)
                 {
                     const fnet_ip6_addr_t   *src_ip;
 
@@ -1896,7 +1966,7 @@ fnet_netif_t *fnet_socket_addr_route(const struct sockaddr *dest_addr)
                 
                     if(src_ip)
                     {
-                        result = fnet_netif_get_by_ip6_addr(src_ip);
+                        result = (fnet_netif_t *)fnet_netif_get_by_ip6_addr(src_ip);
                     } 
                 }
                 break;

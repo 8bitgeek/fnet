@@ -63,6 +63,51 @@
 */
 /*! @{ */
 
+/******************************************************************************
+* Escape sequences for termianl that suports vt100.
+*******************************************************************************/
+#define FNET_ATTR_RESET     0
+#define FNET_ATTR_BOLD      1
+#define FNET_ATTR_BLINK     5
+#define FNET_ATTR_UNDERLINE 4
+#define FNET_ATTR_REVERSE   7
+
+#define FNET_COLOR_BLACK    0
+#define FNET_COLOR_RED      1
+#define FNET_COLOR_GREEN    2
+#define FNET_COLOR_YELLOW   3
+#define FNET_COLOR_BLUE     4
+#define FNET_COLOR_MAGENTA  5
+#define FNET_COLOR_CYAN     6
+#define	FNET_COLOR_WHITE    7
+
+/* Foreground color.*/
+#define FNET_SERIAL_ESC_FG_BLACK    "\33[30m"
+#define FNET_SERIAL_ESC_FG_RED      "\33[31m"
+#define FNET_SERIAL_ESC_FG_GREEN    "\33[32m"
+#define FNET_SERIAL_ESC_FG_YELLOW   "\33[33m"
+#define FNET_SERIAL_ESC_FG_BLUE     "\33[34m"
+#define FNET_SERIAL_ESC_FG_MAGENTA  "\33[35m"
+#define FNET_SERIAL_ESC_FG_CYAN     "\33[36m"
+#define	FNET_SERIAL_ESC_FG_WHITE    "\33[37m"
+
+/* Background color.*/
+#define FNET_SERIAL_ESC_BG_BLACK    "\33[40m"
+#define FNET_SERIAL_ESC_BG_RED      "\33[41m"
+#define FNET_SERIAL_ESC_BG_GREEN    "\33[42m"
+#define FNET_SERIAL_ESC_BG_YELLOW   "\33[43m"
+#define FNET_SERIAL_ESC_BG_BLUE     "\33[44m"
+#define FNET_SERIAL_ESC_BG_MAGENTA  "\33[45m"
+#define FNET_SERIAL_ESC_BG_CYAN     "\33[46m"
+#define	FNET_SERIAL_ESC_BG_WHITE    "\33[47m"
+
+/* SGR -- Select Graphic Rendition.*/
+#define FNET_SERIAL_ESC_ATTR_RESET     "\33[0m"
+#define FNET_SERIAL_ESC_ATTR_BOLD      "\33[1m"
+#define FNET_SERIAL_ESC_ATTR_UNDERLINE "\33[4m"
+#define FNET_SERIAL_ESC_ATTR_BLINK     "\33[5m"
+#define FNET_SERIAL_ESC_ATTR_REVERSE   "\33[7m"
+
 /**************************************************************************/ /*!
  * @brief Stream control structure.
  *
@@ -74,7 +119,7 @@
  ******************************************************************************/
 struct fnet_serial_stream
 {
-    long id;                     /**< @brief  The @c id parameter provides a way for a stream 
+    fnet_index_t id;            /**< @brief  The @c id parameter provides a way for a stream 
                                  * driver to identify a particular device. @n
                                  * For example it can be used as serial port number 
                                  * or pointer to a stream private structure.@n
@@ -82,13 +127,13 @@ struct fnet_serial_stream
                                  * @c fnet_serial_stream.putchar() and to
                                  * @c fnet_serial_stream.getchar() as the first parameter.
                                  */
-    void (*putchar)(long stream_id, int character);/**< @brief Callback function used 
+    void (*putchar)(fnet_index_t stream_id, fnet_char_t character);/**< @brief Callback function used 
                                                     * for writing the @c character to the stream.
                                                     */
-    int  (*getchar)(long stream_id);   /**< @brief Callback function used for reading 
+    fnet_int32_t (*getchar)(fnet_index_t stream_id);   /**< @brief Callback function used for reading 
                                         * a character from the stream.
                                         */
-    void (*flush)(long stream_id);     /**< @brief Callback function used for 
+    void (*flush)(fnet_index_t stream_id);     /**< @brief Callback function used for 
                                         * immediate data sending from internal stream buffer
                                         * to the steam client.@n
                                         * This function is optional and can be set to zero.@n
@@ -154,21 +199,26 @@ extern const struct fnet_serial_stream fnet_serial_stream_port5;
  * serial port defined by @ref FNET_CFG_CPU_SERIAL_PORT_DEFAULT 
  * (usually the serial port 0).
  ******************************************************************************/
-#if (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 0)
+#if (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 0u)
     #define FNET_SERIAL_STREAM_DEFAULT     FNET_SERIAL_STREAM_PORT0
-#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 1)
+#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 1u)
     #define FNET_SERIAL_STREAM_DEFAULT     FNET_SERIAL_STREAM_PORT1
-#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 2)
+#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 2u)
     #define FNET_SERIAL_STREAM_DEFAULT     FNET_SERIAL_STREAM_PORT2    
-#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 3)
+#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 3u)
     #define FNET_SERIAL_STREAM_DEFAULT     FNET_SERIAL_STREAM_PORT3
-#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 4)
+#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 4u)
     #define FNET_SERIAL_STREAM_DEFAULT     FNET_SERIAL_STREAM_PORT4
-#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 5)
+#elif (FNET_CFG_CPU_SERIAL_PORT_DEFAULT == 5u)
     #define FNET_SERIAL_STREAM_DEFAULT     FNET_SERIAL_STREAM_PORT5            
 #else
     #error "The serial library defines only 6 ports."
 #endif
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 
 /***************************************************************************/ /*!
  *
@@ -185,7 +235,7 @@ extern const struct fnet_serial_stream fnet_serial_stream_port5;
  * This function writes a single @c character to the stream.
  *
  ******************************************************************************/
-void fnet_serial_putchar(fnet_serial_stream_t stream, int character);
+void fnet_serial_putchar(fnet_serial_stream_t stream, fnet_char_t character);
 
 /***************************************************************************/ /*!
  *
@@ -205,7 +255,7 @@ void fnet_serial_putchar(fnet_serial_stream_t stream, int character);
  * If no character is available in the stream the FNET_ERR is returned.
  *
  ******************************************************************************/
-int fnet_serial_getchar(fnet_serial_stream_t stream);
+fnet_int32_t fnet_serial_getchar(fnet_serial_stream_t stream);
 
 /***************************************************************************/ /*!
  *
@@ -239,7 +289,7 @@ void fnet_serial_flush(fnet_serial_stream_t stream);
  * This function writes a single @c character to the default stream.
  *
  ******************************************************************************/
-void fnet_putchar(int character);
+void fnet_putchar(fnet_char_t character);
 
 /***************************************************************************/ /*!
  *
@@ -257,7 +307,7 @@ void fnet_putchar(int character);
  * If no character is available in the stream the FNET_ERR is returned.
  *
  ******************************************************************************/
-int fnet_getchar(void);
+fnet_int32_t fnet_getchar(void);
 
 /***************************************************************************/ /*!
  *
@@ -312,7 +362,7 @@ int fnet_getchar(void);
  * This feature can be disable/enabled by the @ref FNET_CFG_SERIAL_PRINTF_N_TO_RN
  * configuration parameter.
  ******************************************************************************/
-int fnet_serial_printf(fnet_serial_stream_t stream, const char *format, ... );
+fnet_size_t fnet_serial_printf(fnet_serial_stream_t stream, const fnet_char_t *format, ... );
 
 /***************************************************************************/ /*!
  *
@@ -322,7 +372,7 @@ int fnet_serial_printf(fnet_serial_stream_t stream, const char *format, ... );
  *
  * @param format      Format string.
  *
- * @param arg         Variable arguments list. It shall have been initialized by @c fnet_va_start() macro 
+ * @param arg         Variable arguments list. It shall have been initialized by @c va_start() macro 
  *
  * @return This function returns the number of characters that were 
  *         successfully written, excluding the trailing null.
@@ -334,7 +384,7 @@ int fnet_serial_printf(fnet_serial_stream_t stream, const char *format, ... );
  * This function outputs formatted text to the @c stream, expanding the format 
  * placeholders with the value of the argument list @c arg. @n
  * This function behaves exactly as @c printf except that the variable argument 
- * list is passed as a @c fnet_va_list instead of a succession of arguments, 
+ * list is passed as a @c va_list instead of a succession of arguments, 
  * which becomes specially useful when the argument list to be passed comes 
  * itself from a variable argument list in the calling function. @n
  * @n
@@ -368,10 +418,9 @@ int fnet_serial_printf(fnet_serial_stream_t stream, const char *format, ... );
  * This feature can be disable/enabled by the @ref FNET_CFG_SERIAL_PRINTF_N_TO_RN
  * configuration parameter.
  ******************************************************************************/
-int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va_list arg );
+fnet_size_t fnet_serial_vprintf(fnet_serial_stream_t stream, const fnet_char_t *format, va_list arg );
 
 /***************************************************************************/ /*!
- * @fn int fnet_printf( const char *format, ... )
  *
  * @brief    Prints formatted text to the default stream.
  *
@@ -423,7 +472,7 @@ int fnet_serial_vprintf(fnet_serial_stream_t stream, const char *format, fnet_va
  * This feature can be disable/enabled by the @ref FNET_CFG_SERIAL_PRINTF_N_TO_RN
  * configuration parameter.
  ******************************************************************************/
-int fnet_printf( const char *format, ... );
+fnet_size_t fnet_printf( const fnet_char_t *format, ... );
 
 
 /***************************************************************************/ /*!
@@ -479,11 +528,9 @@ int fnet_printf( const char *format, ... );
  * This feature can be disable/enabled by the @ref FNET_CFG_SERIAL_PRINTF_N_TO_RN
  * configuration parameter.
  ******************************************************************************/
-int fnet_println(const char *format, ... );
+fnet_size_t fnet_println(const fnet_char_t *format, ... );
 
 /***************************************************************************/ /*!
- * @fn int fnet_sprintf( char *str, const char *format, ... )
- *
  * @brief    Prints formatted text to the buffer.
  *
  * @param str         Pointer to buffer where the resulting string is stored.
@@ -539,7 +586,7 @@ int fnet_println(const char *format, ... );
  * This feature can be disable/enabled by the @ref FNET_CFG_SERIAL_PRINTF_N_TO_RN
  * configuration parameter.
  ******************************************************************************/
- int fnet_sprintf( char *str, const char *format, ... );
+ fnet_size_t fnet_sprintf( fnet_char_t *str, const fnet_char_t *format, ... );
  
 /***************************************************************************/ /*!
  *
@@ -599,52 +646,11 @@ int fnet_println(const char *format, ... );
  * This feature can be disable/enabled by the @ref FNET_CFG_SERIAL_PRINTF_N_TO_RN
  * configuration parameter.
  ******************************************************************************/
-int fnet_snprintf( char *str, unsigned int size, const char *format, ... );
+fnet_size_t fnet_snprintf( fnet_char_t *str, fnet_size_t size, const fnet_char_t *format, ... );
 
-/******************************************************************************
-* Escape sequences for termianl that suports vt100.
-*******************************************************************************/
-#define FNET_ATTR_RESET     0
-#define FNET_ATTR_BOLD      1
-#define FNET_ATTR_BLINK     5
-#define FNET_ATTR_UNDERLINE 4
-#define FNET_ATTR_REVERSE   7
-
-#define FNET_COLOR_BLACK    0
-#define FNET_COLOR_RED      1
-#define FNET_COLOR_GREEN    2
-#define FNET_COLOR_YELLOW   3
-#define FNET_COLOR_BLUE     4
-#define FNET_COLOR_MAGENTA  5
-#define FNET_COLOR_CYAN     6
-#define	FNET_COLOR_WHITE    7
-
-/* Foreground color.*/
-#define FNET_SERIAL_ESC_FG_BLACK    "\33[30m"
-#define FNET_SERIAL_ESC_FG_RED      "\33[31m"
-#define FNET_SERIAL_ESC_FG_GREEN    "\33[32m"
-#define FNET_SERIAL_ESC_FG_YELLOW   "\33[33m"
-#define FNET_SERIAL_ESC_FG_BLUE     "\33[34m"
-#define FNET_SERIAL_ESC_FG_MAGENTA  "\33[35m"
-#define FNET_SERIAL_ESC_FG_CYAN     "\33[36m"
-#define	FNET_SERIAL_ESC_FG_WHITE    "\33[37m"
-
-/* Background color.*/
-#define FNET_SERIAL_ESC_BG_BLACK    "\33[40m"
-#define FNET_SERIAL_ESC_BG_RED      "\33[41m"
-#define FNET_SERIAL_ESC_BG_GREEN    "\33[42m"
-#define FNET_SERIAL_ESC_BG_YELLOW   "\33[43m"
-#define FNET_SERIAL_ESC_BG_BLUE     "\33[44m"
-#define FNET_SERIAL_ESC_BG_MAGENTA  "\33[45m"
-#define FNET_SERIAL_ESC_BG_CYAN     "\33[46m"
-#define	FNET_SERIAL_ESC_BG_WHITE    "\33[47m"
-
-/* SGR -- Select Graphic Rendition.*/
-#define FNET_SERIAL_ESC_ATTR_RESET     "\33[0m"
-#define FNET_SERIAL_ESC_ATTR_BOLD      "\33[1m"
-#define FNET_SERIAL_ESC_ATTR_UNDERLINE "\33[4m"
-#define FNET_SERIAL_ESC_ATTR_BLINK     "\33[5m"
-#define FNET_SERIAL_ESC_ATTR_REVERSE   "\33[7m"
+#if defined(__cplusplus)
+}
+#endif
 
 
 /*! @} */

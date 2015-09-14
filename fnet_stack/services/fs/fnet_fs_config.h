@@ -57,7 +57,11 @@
  *               - @b @c 0 = is disabled (Default value).
  ******************************************************************************/
 #ifndef FNET_CFG_FS
-    #define FNET_CFG_FS         (0) 
+    #if FNET_CFG_HTTP
+        #define FNET_CFG_FS         (1) 
+    #else
+        #define FNET_CFG_FS         (0) 
+    #endif
 #endif
 
 /**************************************************************************/ /*!

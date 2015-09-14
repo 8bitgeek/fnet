@@ -54,7 +54,15 @@
 #define FAPP_PING_DEFAULT_PATTERN   (0x00U) 
 #define FAPP_PING_DEFAULT_HOP_LIMIT (64U) 
 
-void fapp_ping_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+void fapp_ping_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* FNET_CFG_PING && (FAPP_CFG_PING_CMD || FAPP_CFG_PING6_CMD) */
 

@@ -71,6 +71,16 @@
  ******************************************************************************/
 #define FNET_TIMER_TICK_IN_SEC      (1000U/FNET_TIMER_PERIOD_MS)
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+/**************************************************************************/ /*!
+ * @brief Unsigned integer type representing time uinits. 
+ * It can be ticks, seconds or milliseconds.
+ ******************************************************************************/ 
+typedef fnet_uint32_t fnet_time_t;
+
 /***************************************************************************/ /*!
  *
  * @brief    Gets the timer counter value in ticks.
@@ -88,7 +98,7 @@
  * The period of one timer tick is defined by the @ref FNET_TIMER_PERIOD_MS.
  *
  ******************************************************************************/
-unsigned long fnet_timer_ticks( void );
+fnet_time_t fnet_timer_ticks( void );
 
 /***************************************************************************/ /*!
  *
@@ -107,7 +117,7 @@ unsigned long fnet_timer_ticks( void );
  * (it's done in the FNET stack initialization).
  *
  ******************************************************************************/
-unsigned long fnet_timer_seconds( void );
+fnet_time_t fnet_timer_seconds( void );
 
 /***************************************************************************/ /*!
  *
@@ -126,7 +136,7 @@ unsigned long fnet_timer_seconds( void );
  * (it's done in the FNET stack initialization).@n
  *
  ******************************************************************************/
-unsigned long fnet_timer_ms( void );
+fnet_time_t fnet_timer_ms( void );
 
 /***************************************************************************/ /*!
  *
@@ -143,7 +153,7 @@ unsigned long fnet_timer_ms( void );
  * The period of one timer tick is defined by the @ref FNET_TIMER_PERIOD_MS.
  *
  ******************************************************************************/
-unsigned long fnet_timer_ms2ticks( unsigned long time_ms );
+fnet_time_t fnet_timer_ms2ticks( fnet_time_t time_ms );
 
 /***************************************************************************/ /*!
  *
@@ -163,7 +173,7 @@ unsigned long fnet_timer_ms2ticks( unsigned long time_ms );
  * This function takes into account also a possible counter overrun @c (start>end).
  *
  ******************************************************************************/
-unsigned long fnet_timer_get_interval( unsigned long start, unsigned long end );
+fnet_time_t fnet_timer_get_interval( fnet_time_t start, fnet_time_t end );
 
 /***************************************************************************/ /*!
  *
@@ -177,7 +187,7 @@ unsigned long fnet_timer_get_interval( unsigned long start, unsigned long end );
  * The function is blocked, till the @c delay_ticks expires. 
  *
  ******************************************************************************/
-void fnet_timer_delay( unsigned long delay_ticks );
+void fnet_timer_delay( fnet_time_t delay_ticks );
 
 /*! @} */
 
@@ -189,5 +199,8 @@ void fnet_timer_delay( unsigned long delay_ticks );
     #define FNET_HW_TIMER_RELEASE fnet_cpu_timer_release
 #endif /* FNET_CFG_OS_TIMER */
 
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* _FNET_TIMER_H */

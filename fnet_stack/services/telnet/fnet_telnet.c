@@ -47,23 +47,18 @@
 *     Definitions
 ************************************************************************/
 
-#if FNET_CFG_DEBUG_TELNET    
+#if FNET_CFG_DEBUG_TELNET && FNET_CFG_DEBUG   
     #define FNET_DEBUG_TELNET   FNET_DEBUG
 #else
     #define FNET_DEBUG_TELNET(...)  do{}while(0)
 #endif
 
-#define FNET_TELNET_WAIT_SEND_MS        (2000)  /* ms*/
+#define FNET_TELNET_WAIT_SEND_MS        (2000u)  /* ms*/
 
 #define FNET_TELNET_TX_BUFFER_SIZE      FNET_CFG_TELNET_SOCKET_BUF_SIZE
-#define FNET_TELNET_RX_BUFFER_SIZE      (10)
+#define FNET_TELNET_RX_BUFFER_SIZE      (10u)
 
-#if FNET_TELNET_TX_BUFFER_SIZE > 90     /* Check maximum value for TX application/stream buffer (optional check).*/
-    #undef FNET_TELNET_TX_BUFFER_SIZE
-    #define FNET_TELNET_TX_BUFFER_SIZE  (90)
-#endif
-
-#if (FNET_TELNET_TX_BUFFER_SIZE  < 5)   /* Check minimum value for TX application/stream buffer.*/
+#if (FNET_TELNET_TX_BUFFER_SIZE  < 5u)   /* Check minimum value for TX application/stream buffer.*/
     error "FNET_TELNET_TX_BUFFER_SIZE must be > 4"
 #endif
 
@@ -98,15 +93,15 @@
 */
 
 
-#define FNET_TELNET_CMD_IAC   ((char)255) /* "Interpret as Command" (IAC) escape character followed by the code for the command. */
-#define FNET_TELNET_CMD_WILL  ((char)251) /* Indicates the desire to begin performing, or confirmation that
+#define FNET_TELNET_CMD_IAC   ((fnet_uint8_t)255) /* "Interpret as Command" (IAC) escape character followed by the code for the command. */
+#define FNET_TELNET_CMD_WILL  ((fnet_uint8_t)251) /* Indicates the desire to begin performing, or confirmation that
                                      * you are now performing, the indicated option.*/
-#define FNET_TELNET_CMD_WONT  ((char)252) /* Indicates the refusal to perform, or continue performing, the
+#define FNET_TELNET_CMD_WONT  ((fnet_uint8_t)252) /* Indicates the refusal to perform, or continue performing, the
                                      * indicated option. */
-#define FNET_TELNET_CMD_DO    ((char)253) /* Indicates the request that the other party perform, or
+#define FNET_TELNET_CMD_DO    ((fnet_uint8_t)253) /* Indicates the request that the other party perform, or
                                      * confirmation that you are expecting the other party to perform, the
                                      * indicated option. */
-#define FNET_TELNET_CMD_DONT  ((char)254) /* Indicates the demand that the other party stop performing,
+#define FNET_TELNET_CMD_DONT  ((fnet_uint8_t)254) /* Indicates the demand that the other party stop performing,
                                      * or confirmation that you are no longer expecting the other party
                                      * to perform, the indicated option. */
 
@@ -135,16 +130,16 @@ typedef enum
 struct fnet_telnet_session_if
 {
     fnet_telnet_state_t         state;              /* Current state.*/
-    SOCKET                      socket_foreign;     /* Foreign socket.*/
-    char                        tx_buffer[FNET_TELNET_TX_BUFFER_SIZE];  /* Transmit liner buffer. */
-    int                         tx_buffer_head_index;                   /* TX buffer index (write place).*/
-    char                        rx_buffer[FNET_TELNET_RX_BUFFER_SIZE];  /* RX circular buffer */    
-    char                        *rx_buffer_head;    /* The RX circular buffer write pointer. */
-    char                        *rx_buffer_tail;    /* The RX circular buffer read pointer. */
-    char                        *rx_buffer_end;     /* Pointer to the end of the Rx circular buffer. */
+    fnet_socket_t                      socket_foreign;     /* Foreign socket.*/
+    fnet_uint8_t                tx_buffer[FNET_TELNET_TX_BUFFER_SIZE];  /* Transmit liner buffer. */
+    fnet_index_t                tx_buffer_head_index;                   /* TX buffer index (write place).*/
+    fnet_uint8_t                rx_buffer[FNET_TELNET_RX_BUFFER_SIZE];  /* RX circular buffer */    
+    fnet_uint8_t                *rx_buffer_head;    /* The RX circular buffer write pointer. */
+    fnet_uint8_t                *rx_buffer_tail;    /* The RX circular buffer read pointer. */
+    fnet_uint8_t                *rx_buffer_end;     /* Pointer to the end of the Rx circular buffer. */
     fnet_shell_desc_t           shell_descriptor;
     struct fnet_shell_params    shell_params;
-    char                        cmd_line_buffer[FNET_CFG_TELNET_CMD_LINE_BUF_SIZE];
+    fnet_char_t                        cmd_line_buffer[FNET_CFG_TELNET_CMD_LINE_BUF_SIZE];
     struct fnet_serial_stream   stream;
 }; 
 
@@ -153,10 +148,10 @@ struct fnet_telnet_session_if
 *************************************************************************/
 struct fnet_telnet_if
 {
-    SOCKET                          socket_listen;      /* Listening socket.*/
+    fnet_socket_t                          socket_listen;      /* Listening socket.*/
     fnet_poll_desc_t                service_descriptor; /* Descriptor of polling service.*/    
-    int                             enabled;
-    int                             backlog;
+    fnet_bool_t                     enabled;
+    fnet_size_t                     backlog;
     struct fnet_telnet_session_if   *session_active;
     struct fnet_telnet_session_if   session[FNET_CFG_TELNET_SESSION_MAX];
 }; 
@@ -170,15 +165,15 @@ static struct fnet_telnet_if telnet_if_list[FNET_CFG_TELNET_MAX];
 *     Function Prototypes
 *************************************************************************/
 static void fnet_telnet_send(struct fnet_telnet_session_if *session);
-static void tx_buffer_write(struct fnet_telnet_session_if *session, char data);
-static int tx_buffer_free_space(struct fnet_telnet_session_if *session);
-static void rx_buffer_write (struct fnet_telnet_session_if *session, char data);
-static char rx_buffer_read(struct fnet_telnet_session_if *session);
-static int rx_buffer_free_space(struct fnet_telnet_session_if *session);
-static void fnet_telnet_putchar(long id, int character);
-static int fnet_telnet_getchar(long id);
-static void fnet_telnet_flush(long id);
-static void fnet_telnet_send_cmd(struct fnet_telnet_session_if *session, char command, char option);
+static void tx_buffer_write(struct fnet_telnet_session_if *session, fnet_uint8_t data);
+static fnet_size_t tx_buffer_free_space(struct fnet_telnet_session_if *session);
+static void rx_buffer_write (struct fnet_telnet_session_if *session, fnet_uint8_t data);
+static fnet_uint8_t rx_buffer_read(struct fnet_telnet_session_if *session);
+static fnet_size_t rx_buffer_free_space(struct fnet_telnet_session_if *session);
+static void fnet_telnet_putchar(fnet_index_t id, fnet_char_t character);
+static fnet_int32_t fnet_telnet_getchar(fnet_index_t id);
+static void fnet_telnet_flush(fnet_index_t id);
+static void fnet_telnet_send_cmd(struct fnet_telnet_session_if *session, fnet_uint8_t command, fnet_uint8_t option);
 static void fnet_telnet_state_machine(void *telnet_if_p);
 
 
@@ -187,14 +182,14 @@ static void fnet_telnet_state_machine(void *telnet_if_p);
 ************************************************************************/
 /* Write to Tx liner buffer. */
 /* It's posible to write FNET_TELNET_TX_BUFFER_SIZE-1 characters. */
-static void tx_buffer_write (struct fnet_telnet_session_if *session, char data)
+static void tx_buffer_write (struct fnet_telnet_session_if *session, fnet_uint8_t data)
 {
    session->tx_buffer[session->tx_buffer_head_index] = data;
    session->tx_buffer_head_index++;
 }
 
 /* Free space in Tx Liner buffer. */
-static int tx_buffer_free_space(struct fnet_telnet_session_if *session)
+static fnet_size_t tx_buffer_free_space(struct fnet_telnet_session_if *session)
 {
    return(FNET_TELNET_TX_BUFFER_SIZE  - session->tx_buffer_head_index);   
 }
@@ -202,30 +197,37 @@ static int tx_buffer_free_space(struct fnet_telnet_session_if *session)
 
 /* Write to Rx circular buffer. */
 /* It's posible to write FNET_TELNET_RX_BUFFER_SIZE-1 characters. */
-static void rx_buffer_write (struct fnet_telnet_session_if *session, char data)
+static void rx_buffer_write (struct fnet_telnet_session_if *session, fnet_uint8_t data)
 {
-   *session->rx_buffer_head = data;
-   if(++session->rx_buffer_head==session->rx_buffer_end)
-      session->rx_buffer_head=session->rx_buffer;
+    *session->rx_buffer_head = data;
+    if(++session->rx_buffer_head==session->rx_buffer_end)
+    {
+        session->rx_buffer_head=session->rx_buffer;
+    }
 }
 
 /* Read from Rx circular buffer. */
-static char rx_buffer_read (struct fnet_telnet_session_if *session)
+static fnet_uint8_t rx_buffer_read (struct fnet_telnet_session_if *session)
 {
-   char data = *session->rx_buffer_tail;
-   if(++session->rx_buffer_tail==session->rx_buffer_end)
-      session->rx_buffer_tail=session->rx_buffer;
-   return data;       
+    fnet_uint8_t data = *session->rx_buffer_tail;
+    if(++session->rx_buffer_tail==session->rx_buffer_end)
+    {
+        session->rx_buffer_tail=session->rx_buffer;
+    }
+    return data;       
 }
 
 /* Free space in Rx circular buffer. */
-static int rx_buffer_free_space(struct fnet_telnet_session_if *session)
+static fnet_size_t rx_buffer_free_space(struct fnet_telnet_session_if *session)
 {
-   int  space = session->rx_buffer_tail - session->rx_buffer_head;
-   if (space<=0)
-      space += FNET_TELNET_RX_BUFFER_SIZE;    
+    fnet_int32_t  space = session->rx_buffer_tail - session->rx_buffer_head;
+
+    if (space <= 0)
+    {
+        space += (fnet_int32_t)FNET_TELNET_RX_BUFFER_SIZE;    
+    }
    
-   return (space-1);   
+    return (fnet_size_t)(space-1);   
 }
 
 /************************************************************************
@@ -233,15 +235,15 @@ static int rx_buffer_free_space(struct fnet_telnet_session_if *session)
 *
 * DESCRIPTION: 
 ************************************************************************/
-static void fnet_telnet_putchar(long id, int character)
+static void fnet_telnet_putchar(fnet_index_t id, fnet_char_t character)
 {
     struct fnet_telnet_session_if *session = (struct fnet_telnet_session_if *)id;
     
     if(session->state != FNET_TELNET_STATE_CLOSING)
     {
-        tx_buffer_write(session, (char)character);         
+        tx_buffer_write(session, (fnet_uint8_t)character);         
 
-        if(tx_buffer_free_space(session) < 1) /* Buffer is full => flush. */
+        if(tx_buffer_free_space(session) < 1u) /* Buffer is full => flush. */
         {
             fnet_telnet_send(session);
         }
@@ -253,16 +255,18 @@ static void fnet_telnet_putchar(long id, int character)
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fnet_telnet_getchar(long id)
+static fnet_int32_t fnet_telnet_getchar(fnet_index_t id)
 {
     struct fnet_telnet_session_if *session = (struct fnet_telnet_session_if *)id;
     
     if(session->rx_buffer_tail != session->rx_buffer_head) /* If there is something. */
     {
-        return rx_buffer_read (session);
+        return (fnet_int32_t)rx_buffer_read(session);
     }
     else
+    {
         return FNET_ERR;
+    }
 }
 
 /************************************************************************
@@ -270,7 +274,7 @@ static int fnet_telnet_getchar(long id)
 *
 * DESCRIPTION: 
 ************************************************************************/
-static void fnet_telnet_flush(long id)
+static void fnet_telnet_flush(fnet_index_t id)
 {
     struct fnet_telnet_session_if *session = (struct fnet_telnet_session_if *)id;
     
@@ -284,19 +288,19 @@ static void fnet_telnet_flush(long id)
 ************************************************************************/
 static void fnet_telnet_send(struct fnet_telnet_session_if *session)
 {
-    int             res;
-    int             tx_buffer_tail_index = 0;
-    unsigned long   timeout = fnet_timer_ticks();
+    fnet_int32_t    res;
+    fnet_index_t    tx_buffer_tail_index = 0u;
+    fnet_time_t     timeout = fnet_timer_ticks();
     
     /* Send all data in the buffer.*/
-    while(tx_buffer_tail_index != session->tx_buffer_head_index)
+    while((tx_buffer_tail_index != session->tx_buffer_head_index) && (session->state != FNET_TELNET_STATE_CLOSING))
     {
-        if((res = send(session->socket_foreign, &session->tx_buffer[tx_buffer_tail_index], session->tx_buffer_head_index - tx_buffer_tail_index, 0)) != SOCKET_ERROR)
+        if((res = fnet_socket_send(session->socket_foreign, &session->tx_buffer[tx_buffer_tail_index], (fnet_size_t)session->tx_buffer_head_index - tx_buffer_tail_index, 0u)) != FNET_ERR)
         {
             if(res) /* >0 */
             {
                 /* Update buffer pointers. */
-                tx_buffer_tail_index += res;
+                tx_buffer_tail_index += (fnet_index_t)res;
 
                 /* Reset timeout. */
                 timeout = fnet_timer_ticks();           
@@ -314,12 +318,11 @@ static void fnet_telnet_send(struct fnet_telnet_session_if *session)
         {
             FNET_DEBUG_TELNET("TELNET:Send error.");
             session->state = FNET_TELNET_STATE_CLOSING; /*=> CLOSING */
-            break; 
         }
     }
     
     /* Reset TX buffer index. */ 
-    session->tx_buffer_head_index = 0;
+    session->tx_buffer_head_index = 0u;
 }
 
 /************************************************************************
@@ -327,9 +330,9 @@ static void fnet_telnet_send(struct fnet_telnet_session_if *session)
 *
 * DESCRIPTION: Wrie command to the TX buffer.
 ************************************************************************/
-static void fnet_telnet_send_cmd(struct fnet_telnet_session_if *session, char command, char option )
+static void fnet_telnet_send_cmd(struct fnet_telnet_session_if *session, fnet_uint8_t command, fnet_uint8_t option )
 {
-    tx_buffer_write(session, (char)FNET_TELNET_CMD_IAC);
+    tx_buffer_write(session, (fnet_uint8_t)FNET_TELNET_CMD_IAC);
     tx_buffer_write(session, command);
     tx_buffer_write(session, option);
     
@@ -347,14 +350,14 @@ static void fnet_telnet_send_cmd(struct fnet_telnet_session_if *session, char co
 static void fnet_telnet_state_machine( void *telnet_if_p )
 {
     struct sockaddr                 foreign_addr;
-    int                             res;
+    fnet_int32_t                    res;
     struct fnet_telnet_if           *telnet = (struct fnet_telnet_if *)telnet_if_p;
-    char                            rx_data[1];
-    unsigned int                    len;
-    int                             i;
+    fnet_uint8_t                    rx_data[1];
+    fnet_size_t                     len;
+    fnet_index_t                    i;
     struct fnet_telnet_session_if   *session;
     
-    for(i=0; i<FNET_CFG_TELNET_SESSION_MAX; i++) 
+    for( i=0u; i<FNET_CFG_TELNET_SESSION_MAX; i++) 
     { 
         session = &telnet->session[i];
         telnet->session_active = session;
@@ -366,13 +369,13 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                 /*---- LISTENING ------------------------------------------------*/
                 case FNET_TELNET_STATE_LISTENING:
                      len = sizeof(foreign_addr);
-                    session->socket_foreign = accept(telnet->socket_listen, (struct sockaddr *) &foreign_addr, &len);
+                    session->socket_foreign = fnet_socket_accept(telnet->socket_listen, (struct sockaddr *) &foreign_addr, &len);
                     
-                    if(session->socket_foreign != SOCKET_INVALID)
+                    if(session->socket_foreign != FNET_ERR)
                     {
-                        #if FNET_CFG_DEBUG_TELNET
+                        #if FNET_CFG_DEBUG_TELNET && FNET_CFG_DEBUG
                         {
-                            char ip_str[FNET_IP_ADDR_STR_SIZE];
+                            fnet_uint8_t ip_str[FNET_IP_ADDR_STR_SIZE];
                             fnet_inet_ntop(foreign_addr.sa_family, foreign_addr.sa_data, ip_str, sizeof(ip_str)); 
                             FNET_DEBUG_TELNET("\nTELNET: New connection: %s; Port: %d.", ip_str, fnet_ntohs(foreign_addr.sa_port));
                         }
@@ -390,7 +393,7 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                         }
                         else
                         {    
-                            listen(telnet->socket_listen, --telnet->backlog); /* Ignor other connections.*/
+                            fnet_socket_listen(telnet->socket_listen, --telnet->backlog); /* Ignor other connections.*/
                             
                             /* Reset TX timeout. */
                             session->state = FNET_TELNET_STATE_RECEIVING; /* => WAITING data */
@@ -399,9 +402,9 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                     break;
                 /*---- NORMAL -----------------------------------------------*/
                 case FNET_TELNET_STATE_RECEIVING:
-                    if(rx_buffer_free_space(session)>0) 
+                    if(rx_buffer_free_space(session) > 0u) 
                     {                
-                        res = recv(session->socket_foreign, rx_data, 1, 0);
+                        res = fnet_socket_recv(session->socket_foreign, rx_data, 1u, 0u);
                         if(res == 1)
                         {
                             if(rx_data[0] == FNET_TELNET_CMD_IAC )
@@ -413,7 +416,7 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                                 rx_buffer_write (session, rx_data[0]);
                             }
                         }
-                        else if (res == SOCKET_ERROR)
+                        else if (res == FNET_ERR)
                         {              
                             session->state = FNET_TELNET_STATE_CLOSING; /*=> CLOSING */
                         }
@@ -425,7 +428,7 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                 case FNET_TELNET_STATE_IAC:
                     FNET_DEBUG_TELNET("TELNET: STATE_IAC");
                     
-                    if((res = recv(session->socket_foreign, rx_data, 1, 0) )!= SOCKET_ERROR)
+                    if((res = fnet_socket_recv(session->socket_foreign, rx_data, 1u, 0u) )!= FNET_ERR)
                     {
                         if(res)
                         {
@@ -464,7 +467,7 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                 case FNET_TELNET_STATE_DONT:
                 case FNET_TELNET_STATE_WONT:
                     {
-                        char command;
+                        fnet_uint8_t command;
                         
                         if(session->state == FNET_TELNET_STATE_DONT)
                         {
@@ -477,9 +480,9 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                             command =  FNET_TELNET_CMD_WONT;
                         }
                          
-                        if(tx_buffer_free_space(session) >= 3)
+                        if(tx_buffer_free_space(session) >= 3u)
         	            {
-                            res = recv(session->socket_foreign, rx_data, 1, 0);
+                            res = fnet_socket_recv(session->socket_foreign, rx_data, 1u, 0u);
                             
                             if(res == 1)
                             {
@@ -487,7 +490,7 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                                 fnet_telnet_send_cmd(session, command, rx_data[0]);
                                 session->state = FNET_TELNET_STATE_RECEIVING; 
                             }
-                            else if (res == SOCKET_ERROR)
+                            else if (res == FNET_ERR)
                             {              
                                 session->state = FNET_TELNET_STATE_CLOSING; /*=> CLOSING */
                             }
@@ -500,12 +503,12 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                 case FNET_TELNET_STATE_SKIP:
                     FNET_DEBUG_TELNET("TELNET: STATE_SKIP");
                      
-                    res = recv(session->socket_foreign, rx_data, 1, 0);
+                    res = fnet_socket_recv(session->socket_foreign, rx_data, 1u, 0u);
                     if(res == 1)
                     {
                         session->state = FNET_TELNET_STATE_RECEIVING; 
                     }
-                    else if (res == SOCKET_ERROR)
+                    else if (res == FNET_ERR)
                     {              
                         session->state = FNET_TELNET_STATE_CLOSING; /*=> CLOSING */
                     }
@@ -526,10 +529,10 @@ static void fnet_telnet_state_machine( void *telnet_if_p )
                     session->rx_buffer_head = session->rx_buffer;
                     session->rx_buffer_tail = session->rx_buffer; 
                   
-                    closesocket(session->socket_foreign);
-                    session->socket_foreign = SOCKET_INVALID;
+                    fnet_socket_close(session->socket_foreign);
+                    session->socket_foreign = FNET_ERR;
                     
-                    listen(telnet->socket_listen, ++telnet->backlog); /* Allow connection.*/
+                    fnet_socket_listen(telnet->socket_listen, ++telnet->backlog); /* Allow connection.*/
                     
                     session->state = FNET_TELNET_STATE_LISTENING; /*=> LISTENING */
                     break;
@@ -554,14 +557,14 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
     struct fnet_telnet_if   *telnet_if = 0;
     
     /* Socket options. */
-    const struct linger     linger_option ={1, /*l_onoff*/
+    const struct linger     linger_option ={FNET_TRUE, /*l_onoff*/
                                         4  /*l_linger*/};
-    const unsigned long     bufsize_option = FNET_CFG_TELNET_SOCKET_BUF_SIZE;
-    const int               keepalive_option = 1;
-    const int               keepcnt_option = FNET_TELNET_TCP_KEEPCNT;
-    const int               keepintvl_option = FNET_TELNET_TCP_KEEPINTVL;
-    const int               keepidle_option = FNET_TELNET_TCP_KEEPIDLE;
-    int                     i;
+    const fnet_size_t       bufsize_option = FNET_CFG_TELNET_SOCKET_BUF_SIZE;
+    const fnet_int32_t      keepalive_option = 1;
+    const fnet_int32_t      keepcnt_option = FNET_TELNET_TCP_KEEPCNT;
+    const fnet_int32_t      keepintvl_option = FNET_TELNET_TCP_KEEPINTVL;
+    const fnet_int32_t      keepidle_option = FNET_TELNET_TCP_KEEPIDLE;
+    fnet_index_t            i;
     
     if(params == 0 )
     {
@@ -570,9 +573,8 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
     }
 
     /* Try to find free Telnet server descriptor. */
-#if (FNET_CFG_TELNET_MAX > 1)
+#if (FNET_CFG_TELNET_MAX > 1u)
     {
-        int i;
         for(i=0; i<FNET_CFG_TELNET_MAX; i++)
         {
             if(telnet_if_list[i].enabled == FNET_FALSE)
@@ -584,7 +586,9 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
     }
 #else
     if(telnet_if_list[0].enabled == FNET_FALSE)
+    {
         telnet_if = &telnet_if_list[0];
+    }
 #endif
 
     /* No free Telnet server descriptor. */
@@ -596,20 +600,24 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
    
     local_addr = params->address;
     
-    if(local_addr.sa_port == 0)
+    if(local_addr.sa_port == 0u)
+    {
         local_addr.sa_port = FNET_CFG_TELNET_PORT;  /* Aply the default port. */
+    }
     
     if(local_addr.sa_family == AF_UNSPEC)
+    {
         local_addr.sa_family = AF_SUPPORTED;   /* Asign supported families.*/
+    }
     
      /* Create listen socket */
-    if((telnet_if->socket_listen = socket(local_addr.sa_family, SOCK_STREAM, 0)) == SOCKET_INVALID)
+    if((telnet_if->socket_listen = fnet_socket(local_addr.sa_family, SOCK_STREAM, 0u)) == FNET_ERR)
     {
         FNET_DEBUG_TELNET("TELNET: Socket creation error.");
         goto ERROR_1;
     }   
 
-    if(bind(telnet_if->socket_listen, (struct sockaddr *)(&local_addr), sizeof(local_addr)) == SOCKET_ERROR)
+    if(fnet_socket_bind(telnet_if->socket_listen, (struct sockaddr *)(&local_addr), sizeof(local_addr)) == FNET_ERR)
     {
         FNET_DEBUG_TELNET("TELNET: Socket bind error.");
         goto ERROR_2;
@@ -617,18 +625,18 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
     
     /* Set socket options. */    
     if( /* Setup linger option. */
-        (setsockopt (telnet_if->socket_listen, SOL_SOCKET, SO_LINGER, &linger_option, sizeof(linger_option)) == SOCKET_ERROR) ||
+        (fnet_socket_setopt (telnet_if->socket_listen, SOL_SOCKET, SO_LINGER, &linger_option, sizeof(linger_option)) == FNET_ERR) ||
          /* Set socket buffer size. */
-        (setsockopt(telnet_if->socket_listen, SOL_SOCKET, SO_RCVBUF, &bufsize_option, sizeof(bufsize_option))== SOCKET_ERROR) ||
-        (setsockopt(telnet_if->socket_listen, SOL_SOCKET, SO_SNDBUF, &bufsize_option, sizeof(bufsize_option))== SOCKET_ERROR) ||
+        (fnet_socket_setopt(telnet_if->socket_listen, SOL_SOCKET, SO_RCVBUF, &bufsize_option, sizeof(bufsize_option))== FNET_ERR) ||
+        (fnet_socket_setopt(telnet_if->socket_listen, SOL_SOCKET, SO_SNDBUF, &bufsize_option, sizeof(bufsize_option))== FNET_ERR) ||
         /* Enable keepalive_option option. */
-        (setsockopt (telnet_if->socket_listen, SOL_SOCKET, SO_KEEPALIVE, &keepalive_option, sizeof(keepalive_option)) == SOCKET_ERROR) ||
+        (fnet_socket_setopt (telnet_if->socket_listen, SOL_SOCKET, SO_KEEPALIVE, &keepalive_option, sizeof(keepalive_option)) == FNET_ERR) ||
         /* Keepalive probe retransmit limit. */
-        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt_option, sizeof(keepcnt_option)) == SOCKET_ERROR) ||
+        (fnet_socket_setopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt_option, sizeof(keepcnt_option)) == FNET_ERR) ||
         /* Keepalive retransmit interval.*/
-        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl_option, sizeof(keepintvl_option)) == SOCKET_ERROR) ||
+        (fnet_socket_setopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl_option, sizeof(keepintvl_option)) == FNET_ERR) ||
         /* Time between keepalive probes.*/
-        (setsockopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle_option, sizeof(keepidle_option)) == SOCKET_ERROR)
+        (fnet_socket_setopt (telnet_if->socket_listen, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle_option, sizeof(keepidle_option)) == FNET_ERR)
     )
     {
         FNET_DEBUG_TELNET("TELNET: Socket setsockopt() error.");
@@ -637,7 +645,7 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
 
     telnet_if->backlog = FNET_CFG_TELNET_SESSION_MAX;
         
-    if(listen(telnet_if->socket_listen, telnet_if->backlog) == SOCKET_ERROR)
+    if(fnet_socket_listen(telnet_if->socket_listen, telnet_if->backlog) == FNET_ERR)
     {
         FNET_DEBUG_TELNET("TELNET: Socket listen error.");
         goto ERROR_2;
@@ -652,18 +660,18 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
         goto ERROR_2;
     }
   
-    for(i=0; i<FNET_CFG_TELNET_SESSION_MAX; i++) 
+    for(i = 0u; i<FNET_CFG_TELNET_SESSION_MAX; i++) 
     {
         struct fnet_telnet_session_if   *session = &telnet_if->session[i];
          
         /* Reset buffer pointers. Move it to init state. */ 
-        session->tx_buffer_head_index = 0;
+        session->tx_buffer_head_index = 0u;
         session->rx_buffer_head = session->rx_buffer;
         session->rx_buffer_tail = session->rx_buffer; 
         session->rx_buffer_end = &session->rx_buffer[FNET_TELNET_RX_BUFFER_SIZE]; 
 
         /* Setup stream. */
-        session->stream.id = (long)(session);
+        session->stream.id = (fnet_index_t)(session);
         session->stream.putchar = fnet_telnet_putchar;
         session->stream.getchar = fnet_telnet_getchar;
         session->stream.flush = fnet_telnet_flush;
@@ -673,9 +681,9 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
         session->shell_params.cmd_line_buffer = session->cmd_line_buffer;
         session->shell_params.cmd_line_buffer_size = sizeof(session->cmd_line_buffer);
         session->shell_params.stream = &session->stream;
-        session->shell_params.echo = FNET_CFG_TELNET_SHELL_ECHO;
+        session->shell_params.echo = FNET_CFG_TELNET_SHELL_ECHO?FNET_TRUE:FNET_FALSE;
 
-        session->socket_foreign = SOCKET_INVALID;
+        session->socket_foreign = FNET_ERR;
                 
         session->state = FNET_TELNET_STATE_LISTENING;
     }
@@ -687,7 +695,7 @@ fnet_telnet_desc_t fnet_telnet_init( struct fnet_telnet_params *params )
     return (fnet_telnet_desc_t)telnet_if;
 
 ERROR_2:
-    closesocket(telnet_if->socket_listen);
+    fnet_socket_close(telnet_if->socket_listen);
 
 ERROR_1:
     return (fnet_telnet_desc_t)FNET_ERR;
@@ -701,16 +709,16 @@ ERROR_1:
 void fnet_telnet_release(fnet_telnet_desc_t desc)
 {
     struct fnet_telnet_if   *telnet_if = (struct fnet_telnet_if *) desc;
-    int                     i;
+    fnet_index_t            i;
     
     if(telnet_if && (telnet_if->enabled == FNET_TRUE))
     {
-        for(i=0; i<FNET_CFG_TELNET_SESSION_MAX; i++) 
+        for(i = 0u; i<FNET_CFG_TELNET_SESSION_MAX; i++) 
         {
             struct fnet_telnet_session_if   *session = &telnet_if->session[i];
             
-            closesocket(session->socket_foreign);        
-            session->socket_foreign = SOCKET_INVALID;
+            fnet_socket_close(session->socket_foreign);        
+            session->socket_foreign = FNET_ERR;
             
             if(session->shell_descriptor)
             {
@@ -719,7 +727,7 @@ void fnet_telnet_release(fnet_telnet_desc_t desc)
             }
             session->state = FNET_TELNET_STATE_DISABLED;
         }
-        closesocket(telnet_if->socket_listen);
+        fnet_socket_close(telnet_if->socket_listen);
         fnet_poll_service_unregister(telnet_if->service_descriptor); /* Delete service.*/
 
         
@@ -736,7 +744,7 @@ void fnet_telnet_close_session(fnet_telnet_desc_t desc)
 {
     struct fnet_telnet_if *telnet_if = (struct fnet_telnet_if *) desc;
     
-    if(telnet_if && (telnet_if->enabled == FNET_TRUE) && telnet_if->session_active)
+    if(telnet_if && (telnet_if->enabled == FNET_TRUE) && (telnet_if->session_active))
     {
         telnet_if->session_active->state = FNET_TELNET_STATE_CLOSING;
     }
@@ -748,15 +756,19 @@ void fnet_telnet_close_session(fnet_telnet_desc_t desc)
 * DESCRIPTION: This function returns FNET_TRUE if the Telnet server 
 *              is enabled/initialised.
 ************************************************************************/
-int fnet_telnet_enabled(fnet_telnet_desc_t desc)
+fnet_bool_t fnet_telnet_enabled(fnet_telnet_desc_t desc)
 {
     struct fnet_telnet_if   *telnet_if = (struct fnet_telnet_if *) desc;
-    int                     result;
+    fnet_bool_t             result;
     
     if(telnet_if)
+    {
         result = telnet_if->enabled;
+    }
     else
+    {
         result = FNET_FALSE;    
+    }
     
     return result;
 }

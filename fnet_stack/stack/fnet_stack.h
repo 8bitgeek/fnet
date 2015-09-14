@@ -42,20 +42,18 @@
 #ifndef _FNET_STACK_H_
 
 #define _FNET_STACK_H_
-
+#include "fnet_error.h"
+#include "fnet_stdlib.h"
 #include "fnet_socket.h"
 #include "fnet_inet.h"
 #include "fnet_ip.h"
 #include "fnet_ip6.h"
 #include "fnet_netif.h"
 #include "fnet_timer.h"
-#include "fnet_error.h"
-#include "fnet_stdlib.h"
 #include "fnet_debug.h"
 #include "fnet_eth.h"
 #include "fnet_isr.h"
 #include "fnet_netbuf.h"
-
 
 /*! @addtogroup fnet_stack_init
 * - The @ref fnet.h file includes all the other header files needed to use the FNET TCP/IP stack
@@ -71,7 +69,7 @@
 * For example:
 * @code
 * ...
-*    static unsigned char stack_heap[FNET_CFG_HEAP_SIZE];
+*    static fnet_uint8_t stack_heap[FNET_CFG_HEAP_SIZE];
 *    struct fnet_init_params init_params;
 *
 *    // Input parameters for FNET stack initialization.
@@ -95,21 +93,24 @@
  ******************************************************************************/
 struct fnet_init_params
 {
-    void *netheap_ptr; /**< @brief Pointer to the FNET heap buffer. @n 
-                        * @n 
-                        * The FNET uses this heap buffer for the internal
-                        * dynamic data allocation as:
-                        *  - Ethernet Tx/Rx frame buffers.
-                        *  - Sockets Input/Output buffers.
-                        *  - Protocol headers and service information.
-                        *  - Various control structures.
-                        *  - Temporary data.@n
-                        * @n
-                        * An application can allocate this buffer statically, 
-                        * dynamically, or use a special memory region (for example SRAM).
-                        */
-    unsigned long netheap_size;/**< @brief Size of the FNET heap buffer. */
+    void        *netheap_ptr;   /**< @brief Pointer to the FNET heap buffer. @n 
+                                * @n 
+                                * The FNET uses this heap buffer for the internal
+                                * dynamic data allocation as:
+                                *  - Ethernet Tx/Rx frame buffers.
+                                *  - Sockets Input/Output buffers.
+                                *  - Protocol headers and service information.
+                                *  - Various control structures.
+                                *  - Temporary data.@n
+                                * @n
+                                * An application can allocate this buffer statically, 
+                                * dynamically, or use a special memory region (for example SRAM).*/
+    fnet_size_t netheap_size;   /**< @brief Size of the FNET heap buffer. */
 };
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
  
 /***************************************************************************/ /*!
  *
@@ -131,7 +132,7 @@ struct fnet_init_params
  * functions and services.
  *
  ******************************************************************************/ 
-int fnet_init( struct fnet_init_params *init_params );
+fnet_return_t fnet_init( struct fnet_init_params *init_params );
 
 /***************************************************************************/ /*!
  *
@@ -154,7 +155,7 @@ int fnet_init( struct fnet_init_params *init_params );
  * functions and services.
  *
  ******************************************************************************/  
-int fnet_init_static(void);
+fnet_return_t fnet_init_static(void);
 
 /***************************************************************************/ /*!
  *
@@ -170,6 +171,9 @@ int fnet_init_static(void);
  ******************************************************************************/  
 void fnet_release(void);
 
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

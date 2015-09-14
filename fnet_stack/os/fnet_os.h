@@ -42,10 +42,14 @@
 
 #define _FNET_OS_H_
 
-#include "fnet_config.h"
+#include "fnet.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #if FNET_CFG_OS_MUTEX
-    int fnet_os_mutex_init(void);
+    fnet_return_t fnet_os_mutex_init(void);
     void fnet_os_mutex_lock(void);
     void fnet_os_mutex_unlock(void);
     void fnet_os_mutex_release(void);
@@ -63,7 +67,7 @@
 #endif
 
 #if FNET_CFG_OS_EVENT
-    int fnet_os_event_init(void);
+    fnet_return_t fnet_os_event_init(void);
     void fnet_os_event_wait(void);
     void fnet_os_event_raise(void);
 #else
@@ -72,8 +76,11 @@
     #define fnet_os_event_raise()       do{}while(0)
 #endif
 
-
-int fnet_os_timer_init(unsigned int period_ms);
+fnet_return_t fnet_os_timer_init(fnet_time_t period_ms);
 void fnet_os_timer_release(void);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* _FNET_OS_H_ */

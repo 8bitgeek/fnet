@@ -51,7 +51,7 @@
 /**************************************************************************/ /*!
  * @brief 32-bit IPv4 address type.
  ******************************************************************************/
-typedef unsigned long fnet_ip4_addr_t; 
+typedef fnet_uint32_t fnet_ip4_addr_t; 
 
 /**************************************************************************/ /*!
  * @def FNET_IP4_ADDR_INIT
@@ -63,7 +63,7 @@ typedef unsigned long fnet_ip4_addr_t;
  * @brief Converts the standard dotted-decimal notation @c a.b.c.d 
  *        to an integer value, suitable for use as an Internet address (in network byte order).
  ******************************************************************************/
-#define FNET_IP4_ADDR_INIT(a, b, c, d)   (fnet_ip4_addr_t)(FNET_NTOHL(((unsigned long)((a)&0xFFUL)<< 24U) + ((unsigned long)((b)&0xFFUL)<< 16U) + ((unsigned long)((c)&0xFFUL)<< 8U ) + (unsigned long)((d)&0xFFUL)))
+#define FNET_IP4_ADDR_INIT(a, b, c, d)   (fnet_ip4_addr_t)(FNET_NTOHL(((fnet_uint32_t)((a)&0xFFUL)<< 24U) + ((fnet_uint32_t)((b)&0xFFUL)<< 16U) + ((fnet_uint32_t)((c)&0xFFUL)<< 8U ) + (fnet_uint32_t)((d)&0xFFUL)))
 
 /**************************************************************************/ /*!
  * @def     FNET_IP4_ADDR_STR_SIZE
@@ -133,18 +133,18 @@ typedef unsigned long fnet_ip4_addr_t;
 #define FNET_IP4_CLASS_D(i)     (((fnet_ip4_addr_t)(i) & FNET_HTONL(0xf0000000U)) == FNET_HTONL(0xe0000000U))
 #define FNET_IP4_CLASS_D_NET    FNET_HTONL(0xf0000000U)
 /* Host groups are identified by class D IP addresses.*/
-#define FNET_IP4_ADDR_IS_MULTICAST(addr)   FNET_IP4_CLASS_D(addr)
+#define FNET_IP4_ADDR_IS_MULTICAST(addr)   (FNET_IP4_CLASS_D(addr)?FNET_TRUE:FNET_FALSE)
 
-#define FNET_IP4_ADDR_IS_UNSPECIFIED(addr) ((addr) == INADDR_ANY)
+#define FNET_IP4_ADDR_IS_UNSPECIFIED(addr) (((addr) == INADDR_ANY)?FNET_TRUE:FNET_FALSE)
 
 #define FNET_IP4_CLASS_E(i)     (((fnet_ip4_addr_t)(i) & FNET_HTONL(0xf0000000U)) == FNET_HTONL(0xf0000000U))
 #define FNET_IP4_EXPERIMENTAL(i) FNET_IP4_CLASS_E(i)
 #define FNET_IP4_BADCLASS(i)     FNET_IP4_CLASS_E(i)
 
-#define FNET_IP4_ADDR1(ipaddr)   ((unsigned char)(fnet_ntohl(ipaddr) >> 24U) & 0xffU)
-#define FNET_IP4_ADDR2(ipaddr)   ((unsigned char)(fnet_ntohl(ipaddr) >> 16U) & 0xffU)
-#define FNET_IP4_ADDR3(ipaddr)   ((unsigned char)(fnet_ntohl(ipaddr) >> 8U) & 0xffU)
-#define FNET_IP4_ADDR4(ipaddr)   ((unsigned char)(fnet_ntohl(ipaddr)) & 0xffU)
+#define FNET_IP4_ADDR1(ipaddr)   ((fnet_uint8_t)(fnet_ntohl(ipaddr) >> 24U) & 0xffU)
+#define FNET_IP4_ADDR2(ipaddr)   ((fnet_uint8_t)(fnet_ntohl(ipaddr) >> 16U) & 0xffU)
+#define FNET_IP4_ADDR3(ipaddr)   ((fnet_uint8_t)(fnet_ntohl(ipaddr) >> 8U) & 0xffU)
+#define FNET_IP4_ADDR4(ipaddr)   ((fnet_uint8_t)(fnet_ntohl(ipaddr)) & 0xffU)
 
 
 /*! @} */

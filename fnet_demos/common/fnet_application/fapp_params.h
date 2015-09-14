@@ -48,7 +48,7 @@
  * @brief Parameters-version string.@n
  * It defines version of the parameter structure saved in a persistent storage.
  ******************************************************************************/
-#define FAPP_PARAMS_VERSION                 "05" /* Changed on any change in the param. structures.*/
+#define FAPP_PARAMS_VERSION                 "06" /* Changed on any change in the param. structures.*/
 
 /**************************************************************************/ /*!
  * @brief Signature string value.@n
@@ -117,13 +117,13 @@ fapp_params_tftp_file_type_t;
  ******************************************************************************/
 struct fapp_params_fnet
 {
-    unsigned long address;	                        /**< @brief Application IPv4 address.*/
-    unsigned long netmask;	                        /**< @brief IPv4 Netmask.*/
-    unsigned long gateway;	                        /**< @brief Gateway IPv4 address.*/
-    unsigned long dns;		                        /**< @brief DNS IPv4 server address. */                            
-    unsigned char mac[6];                           /**< @brief Ethernet MAC address.*/
-    char host_name[FAPP_PARAMS_HOST_NAME_SIZE];     /**< @brief Host Name string, used by LLMNR.
-                                                     * The string must be null-terminated.*/
+    fnet_ip4_addr_t address;	                        /**< @brief Application IPv4 address.*/
+    fnet_ip4_addr_t netmask;	                        /**< @brief IPv4 Netmask.*/
+    fnet_ip4_addr_t gateway;	                        /**< @brief Gateway IPv4 address.*/
+    fnet_ip4_addr_t dns;		                        /**< @brief DNS IPv4 server address. */                            
+    fnet_mac_addr_t mac;                                /**< @brief Ethernet MAC address.*/
+    fnet_char_t host_name[FAPP_PARAMS_HOST_NAME_SIZE];  /**< @brief Host Name string, used by LLMNR.
+                                                        * The string must be null-terminated.*/
 };
 
 /**************************************************************************/ /*!
@@ -132,9 +132,9 @@ struct fapp_params_fnet
  ******************************************************************************/
 struct fapp_params_boot
 {
-    unsigned long mode;                         /**< @brief Boot mode defined by the 
+    fapp_params_boot_mode_t mode;               /**< @brief Boot mode defined by the 
                                                  * @ref fapp_params_boot_mode_t.*/
-    unsigned long delay;                        /**< @brief Boot delay.@n
+    fnet_time_t  delay;                        /**< @brief Boot delay.@n
 											     * After bootup, the bootloader will wait 
 											     * this number of seconds before it executes 
 											     * the boot-mode defined by @c mode field.
@@ -143,13 +143,13 @@ struct fapp_params_boot
 											     * Set this variable to 0, to boot without delay. @n
 											     * It's ignored for the @ref FAPP_PARAMS_BOOT_MODE_STOP
 											     * mode.*/
-    unsigned long go_address;                   /**< @brief Default entry point address
+    fnet_uint32_t go_address;                   /**< @brief Default entry point address
                                                  * to start execution at. @n
                                                  * It is used by bootloader in @ref FAPP_PARAMS_BOOT_MODE_GO
                                                  * mode as the default entry point. Also it is used 
                                                  * as the default address for the "go" shell command 
                                                  * if no address is provided to.*/                                      
-    char script[FAPP_PARAMS_BOOT_SCRIPT_SIZE];	/**< @brief Command script string. @n
+    fnet_char_t script[FAPP_PARAMS_BOOT_SCRIPT_SIZE];	/**< @brief Command script string. @n
                              	                 * It is automatically executed when the 
                              	 	 	 	     * @ref FAPP_PARAMS_BOOT_MODE_SCRIPT mode
                                                  * is set and the initial countdown is not interrupted. @n
@@ -165,20 +165,20 @@ struct fapp_params_boot
  ******************************************************************************/
 struct fapp_params_tftp
 {
-    struct sockaddr server_addr;                     /**< @brief This is the default TFTP server 
+    struct sockaddr                 server_addr;        /**< @brief This is the default TFTP server 
                                                       * socket address to be used for network download 
                                                       * if no address is provided to the "tftp" 
                                                       * shell command.*/
-    unsigned long file_type;                         /**< @brief This is the default file type, defined 
+    fapp_params_tftp_file_type_t    file_type;          /**< @brief This is the default file type, defined 
                                                       * by the @ref fapp_params_tftp_file_type_t, 
                                                       * to be used for network download if no 
                                                       * type is provided to the "tftp" shell command. */                            
-    unsigned long file_raw_address;                  /**< @brief Load address for raw-binary file 
+    fnet_uint32_t                   file_raw_address;   /**< @brief Load address for raw-binary file 
                                                       * for the TFTP loader. @n
                                                       * It's used only if @c file_type is set to 
                                                       * @ref FAPP_PARAMS_TFTP_FILE_TYPE_RAW.
                                                       */                
-    char file_name[FAPP_PARAMS_TFTP_FILE_NAME_SIZE]; /**< @brief This is the default file name
+    fnet_char_t file_name[FAPP_PARAMS_TFTP_FILE_NAME_SIZE]; /**< @brief This is the default file name
                                                       * to be loaded by TFTP loader if no 
                                                       * file name is provided to the "tftp" shell command. @n
                                                       * The string must be null-terminated.*/
@@ -190,7 +190,7 @@ struct fapp_params_tftp
  ******************************************************************************/
 struct fapp_params_flash
 {
-    char signature[FAPP_PARAMS_SIGNATURE_SIZE]; /**< @brief Signature string.@n
+    fnet_char_t signature[FAPP_PARAMS_SIGNATURE_SIZE]; /**< @brief Signature string.@n
                                                  * It's used for simple check if configuration 
                                                  * structure is present in a persistent storage.*/
     struct fapp_params_fnet fnet_params;        /**< @brief FNET TCP/IP stack specific 

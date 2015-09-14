@@ -39,10 +39,9 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_IP6
-#include "fnet.h"
 #include "fnet_nd6.h"
 #include "fnet_icmp6.h"
 #include "fnet_netif_prv.h"
@@ -51,7 +50,23 @@
 #include "fnet_checksum.h"
 #include "fnet_mld.h"
 
-static void fnet_nd6_timer( void *cookie );
+/* Check minimum values.*/
+#if FNET_CFG_ND6_ROUTER_LIST_SIZE < 1u 
+    #error "FNET_CFG_ND6_ROUTER_LIST_SIZE must be > 0"
+#endif
+#if FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE  < 1u
+    #error "FNET_CFG_ND6_NEIGHBOR_CACHE_SIZE must be > 0"
+#endif
+#if FNET_CFG_ND6_PREFIX_LIST_SIZE < 1u 
+    #error "FNET_CFG_ND6_PREFIX_LIST_SIZE must be > 0"
+#endif
+
+/* Control FNET_CFG_ND6_RDNSS_LIST_SIZE minimum value.*/
+#if FNET_CFG_ND6_RDNSS_LIST_SIZE < 1u
+    #error "FNET_CFG_ND6_RDNSS_LIST_SIZE must be > 0"
+#endif
+
+static void fnet_nd6_timer( fnet_uint32_t cookie );
 static void fnet_nd6_dad_timer( fnet_netif_t *netif );
 static void fnet_nd6_dad_failed(fnet_netif_t *netif, fnet_netif_ip6_addr_t *addr_info);
 static void fnet_nd6_rd_timer(fnet_netif_t *netif);
@@ -60,10 +75,10 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif);
 static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif);
 static void fnet_nd6_redirect_table_del(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *target_addr);
 static fnet_nd6_redirect_entry_t *fnet_nd6_redirect_table_add(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *destination_addr, const fnet_ip6_addr_t *target_addr);
-static int fnet_nd6_is_firsthop_router(fnet_netif_t *netif, fnet_ip6_addr_t *router_ip);
+static fnet_bool_t fnet_nd6_is_firsthop_router(fnet_netif_t *netif, fnet_ip6_addr_t *router_ip);
 
 #if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
-static void fnet_nd6_rdnss_list_update(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *rdnss_addr, unsigned long lifetime);
+static void fnet_nd6_rdnss_list_update(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *rdnss_addr, fnet_time_t lifetime);
 static void fnet_nd6_rdnss_list_del(fnet_nd6_rdnss_entry_t *rdnss_entry);
 static void fnet_nd6_rdnss_timer(fnet_netif_t *netif);
 #endif
@@ -73,9 +88,9 @@ static void fnet_nd6_rdnss_timer(fnet_netif_t *netif);
 * RETURNS: FNET_OK or FNET_ERR.
 * DESCRIPTION: Initializes the Neighbor Disscovery on an interface.
 *************************************************************************/
-int fnet_nd6_init (fnet_netif_t *netif, fnet_nd6_if_t *nd6_if_ptr)
+fnet_return_t fnet_nd6_init (fnet_netif_t *netif, fnet_nd6_if_t *nd6_if_ptr)
 {
-    int result = FNET_ERR;
+    fnet_return_t result = FNET_ERR;
     
     if(netif && nd6_if_ptr)
     {
@@ -97,7 +112,9 @@ int fnet_nd6_init (fnet_netif_t *netif, fnet_nd6_if_t *nd6_if_ptr)
         /* The recommended MTU for the link. */
         nd6_if_ptr->mtu = netif->mtu;  
         if(nd6_if_ptr->mtu < FNET_IP6_DEFAULT_MTU)
+        {
             nd6_if_ptr->mtu = FNET_IP6_DEFAULT_MTU;
+        }
 
         /* Cur Hop Limit value */
         nd6_if_ptr->cur_hop_limit = FNET_IP6_HOPLIMIT_DEFAULT;            
@@ -109,10 +126,12 @@ int fnet_nd6_init (fnet_netif_t *netif, fnet_nd6_if_t *nd6_if_ptr)
         nd6_if_ptr->retrans_timer = FNET_ND6_RETRANS_TIMER;                   
         
         /* --- Register timer to check ND lists and N cache. ---*/       
-        nd6_if_ptr->timer = fnet_timer_new((FNET_ND6_TIMER_PERIOD / FNET_TIMER_PERIOD_MS)+1, fnet_nd6_timer, netif);
+        nd6_if_ptr->timer = fnet_timer_new((FNET_ND6_TIMER_PERIOD / FNET_TIMER_PERIOD_MS) + 1u, fnet_nd6_timer, (fnet_uint32_t)netif);
         
         if(nd6_if_ptr->timer != FNET_NULL)
+        {
             result = FNET_OK;
+        }
     }
     return result;
 }
@@ -124,7 +143,7 @@ int fnet_nd6_init (fnet_netif_t *netif, fnet_nd6_if_t *nd6_if_ptr)
 *************************************************************************/
 void fnet_nd6_release (fnet_netif_t *netif)
 {
-    if(netif && netif->nd6_if_ptr)
+    if(netif && (netif->nd6_if_ptr))
     {
         fnet_timer_free(netif->nd6_if_ptr->timer);  
         netif->nd6_if_ptr = 0;     
@@ -136,7 +155,7 @@ void fnet_nd6_release (fnet_netif_t *netif)
 *
 * DESCRIPTION: ND6 timer.
 *************************************************************************/
-static void fnet_nd6_timer( void *cookie )
+static void fnet_nd6_timer( fnet_uint32_t cookie )
 {
     fnet_netif_t    *netif = (fnet_netif_t *)cookie;
     
@@ -170,13 +189,13 @@ static void fnet_nd6_timer( void *cookie )
 fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_get(fnet_netif_t *netif, const fnet_ip6_addr_t *ip_addr)
 {
     fnet_nd6_if_t               *nd6_if = netif->nd6_if_ptr;
-    int                         i;
+    fnet_index_t                i;
     fnet_nd6_neighbor_entry_t   *result = FNET_NULL;
 
     if (nd6_if)
     {
         /* Find the entry in the cache. */
-        for(i=0; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
+        for(i=0u; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
         {
             if( (nd6_if->neighbor_cache[i].state != FNET_ND6_NEIGHBOR_STATE_NOTUSED) &&
                 FNET_IP6_ADDR_EQUAL(&nd6_if->neighbor_cache[i].ip_addr, ip_addr))
@@ -220,13 +239,13 @@ void fnet_nd6_neighbor_cache_del(fnet_netif_t *netif, fnet_nd6_neighbor_entry_t 
 fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(fnet_netif_t *netif, const fnet_ip6_addr_t *ip_addr, fnet_netif_ll_addr_t ll_addr, fnet_nd6_neighbor_state_t state)
 {
     fnet_nd6_if_t               *nd6_if = netif->nd6_if_ptr;
-    int                         i;
+    fnet_index_t                i;
     fnet_nd6_neighbor_entry_t   *entry = FNET_NULL;
 
     if (nd6_if)
     {
         /* Find not used entry.*/
-        for(i=0; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
+        for(i=0u; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
         {
             if( (nd6_if->neighbor_cache[i].state == FNET_ND6_NEIGHBOR_STATE_NOTUSED))
             {
@@ -240,7 +259,7 @@ fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(fnet_netif_t *netif, cons
         { 
             entry = &nd6_if->neighbor_cache[0];
             /* Try to find the oldest entry.*/
-            for(i=0; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
+            for(i=0u; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
             {
                 if(nd6_if->neighbor_cache[i].creation_time < entry->creation_time)
                 {
@@ -256,10 +275,12 @@ fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(fnet_netif_t *netif, cons
         
         FNET_IP6_ADDR_COPY(ip_addr, &entry->ip_addr);
         if(ll_addr != FNET_NULL)
+        {
             FNET_NETIF_LL_ADDR_COPY(ll_addr, entry->ll_addr, netif->api->hw_addr_size);
+        }
         entry->creation_time = fnet_timer_seconds();
-        entry->is_router = 0;
-        entry->router_lifetime = 0;
+        entry->is_router = FNET_FALSE;
+        entry->router_lifetime = 0u;
         entry->state = state;
         
         /* TBD Init timers reachable; last send*/
@@ -274,22 +295,24 @@ fnet_nd6_neighbor_entry_t *fnet_nd6_neighbor_cache_add(fnet_netif_t *netif, cons
 static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif)
 {
     fnet_nd6_if_t               *nd6_if = netif->nd6_if_ptr;
-    int                         i;
+    fnet_index_t                i;
     fnet_nd6_neighbor_entry_t   *neighbor_entry;
 
     /* Neighbor Cache processing.*/
-    for(i=0; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
+    for(i = 0u; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
     {
         neighbor_entry = &nd6_if->neighbor_cache[i];
         
         /* Check router expiration */
         if((neighbor_entry->state != FNET_ND6_NEIGHBOR_STATE_NOTUSED)
-           && (neighbor_entry->is_router == 1) 
+           && (neighbor_entry->is_router == FNET_TRUE) 
            && (fnet_timer_get_interval(neighbor_entry->creation_time, fnet_timer_seconds()) > neighbor_entry->router_lifetime) 
             )
         {
             if(neighbor_entry->router_lifetime)
+            {
                 fnet_nd6_router_list_del(neighbor_entry);
+            }
         }
         
         switch(neighbor_entry->state)
@@ -352,7 +375,7 @@ static void fnet_nd6_neighbor_cache_timer(fnet_netif_t *netif)
 
                     
                     neighbor_entry->state = FNET_ND6_NEIGHBOR_STATE_PROBE;
-                    neighbor_entry->solicitation_send_counter = 0;
+                    neighbor_entry->solicitation_send_counter = 0u;
                     /* 
                      * Upon entering the PROBE state, a node sends a unicast Neighbor
                      * Solicitation message to the neighbor using the cached link-layer
@@ -458,13 +481,13 @@ void fnet_nd6_neighbor_send_waiting_netbuf(fnet_netif_t *netif, fnet_nd6_neighbo
 *
 * DESCRIPTION: Adds entry into the Router List.
 *************************************************************************/
-void fnet_nd6_router_list_add( fnet_nd6_neighbor_entry_t *neighbor_entry, unsigned long lifetime )
+void fnet_nd6_router_list_add( fnet_nd6_neighbor_entry_t *neighbor_entry, fnet_time_t lifetime )
 {
     if (neighbor_entry)
     {
         if(lifetime) 
         {
-            neighbor_entry->is_router = 1;
+            neighbor_entry->is_router = FNET_TRUE;
             neighbor_entry->router_lifetime = lifetime;
             neighbor_entry->creation_time = fnet_timer_seconds();
         }
@@ -488,8 +511,8 @@ void fnet_nd6_router_list_del( fnet_nd6_neighbor_entry_t *neighbor_entry )
 {
     if (neighbor_entry)
     {
-        neighbor_entry->is_router = 0;
-        neighbor_entry->router_lifetime = 0;
+        neighbor_entry->is_router = FNET_FALSE;
+        neighbor_entry->router_lifetime = 0u;
     }
 }
 
@@ -501,15 +524,17 @@ void fnet_nd6_router_list_del( fnet_nd6_neighbor_entry_t *neighbor_entry )
 fnet_nd6_neighbor_entry_t *fnet_nd6_default_router_get(fnet_netif_t *netif)
 {
     fnet_nd6_if_t               *nd6_if = netif->nd6_if_ptr;
-    int                         i;
+    fnet_index_t                i;
     fnet_nd6_neighbor_entry_t   *result = FNET_NULL;
 
     if(nd6_if)
     {
         /* Find the first router. */
-        for(i=0; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
+        for(i=0u; i < FNET_ND6_NEIGHBOR_CACHE_SIZE; i++)
         {
-            if( (nd6_if->neighbor_cache[i].state != FNET_ND6_NEIGHBOR_STATE_NOTUSED) && (nd6_if->neighbor_cache[i].is_router == 1) && (nd6_if->neighbor_cache[i].router_lifetime != 0) )
+            if( (nd6_if->neighbor_cache[i].state != FNET_ND6_NEIGHBOR_STATE_NOTUSED) 
+                && (nd6_if->neighbor_cache[i].is_router == FNET_TRUE) 
+                && (nd6_if->neighbor_cache[i].router_lifetime != 0u) )
             {
                 result = &nd6_if->neighbor_cache[i];
                 /* Routers that are reachable or probably reachable (i.e., in any
@@ -548,12 +573,12 @@ fnet_nd6_neighbor_entry_t *fnet_nd6_default_router_get(fnet_netif_t *netif)
 * DESCRIPTION: The IP source address of the Redirect is the same as the current
 *                 first-hop router for the specified ICMP Destination Address.
 *************************************************************************/
-static int fnet_nd6_is_firsthop_router(fnet_netif_t *netif, fnet_ip6_addr_t *router_ip)
+static fnet_bool_t fnet_nd6_is_firsthop_router(fnet_netif_t *netif, fnet_ip6_addr_t *router_ip)
 {
     fnet_nd6_if_t               *nd6_if = netif->nd6_if_ptr;
-    int                         i;
+    fnet_index_t                i;
     fnet_nd6_neighbor_entry_t   *neighbor_cache_entry;
-    int                         result = FNET_FALSE;
+    fnet_bool_t                 result = FNET_FALSE;
 
     /* The IP source address of the Redirect is the same as the current
      * first-hop router for the specified ICMP Destination Address.*/ 
@@ -562,9 +587,9 @@ static int fnet_nd6_is_firsthop_router(fnet_netif_t *netif, fnet_ip6_addr_t *rou
     { 		
         if(neighbor_cache_entry->is_router == FNET_TRUE)
         {
-            if(neighbor_cache_entry->router_lifetime == 0) 
+            if(neighbor_cache_entry->router_lifetime == 0u) 
             {
-                for(i=0; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
+                for(i=0u; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
                 {
                     if(FNET_IP6_ADDR_EQUAL(&nd6_if->redirect_table[i].target_addr, router_ip))
                     {
@@ -574,7 +599,9 @@ static int fnet_nd6_is_firsthop_router(fnet_netif_t *netif, fnet_ip6_addr_t *rou
                 }
             }
             else
+            {
                 result = FNET_TRUE;
+            }
         }
     }
     return result;
@@ -589,14 +616,14 @@ static int fnet_nd6_is_firsthop_router(fnet_netif_t *netif, fnet_ip6_addr_t *rou
 fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_get(fnet_netif_t *netif, fnet_ip6_addr_t *prefix)
 {
     fnet_nd6_if_t           *nd6_if = netif->nd6_if_ptr;
-    int                     i;
+    fnet_index_t            i;
     fnet_nd6_prefix_entry_t *result = FNET_NULL;
     
     if (nd6_if)
     {
         /* Find the entry in the list.
         */
-        for(i=0; i<FNET_ND6_PREFIX_LIST_SIZE; i++)
+        for(i=0u; i<FNET_ND6_PREFIX_LIST_SIZE; i++)
         {
             if( (nd6_if->prefix_list[i].state != FNET_ND6_PREFIX_STATE_NOTUSED) &&
                 FNET_IP6_ADDR_EQUAL(&nd6_if->prefix_list[i].prefix, prefix))
@@ -627,17 +654,17 @@ void fnet_nd6_prefix_list_del(fnet_nd6_prefix_entry_t *prefix_entry)
 *
 * DESCRIPTION: Adds (TBD update) entry into the Prefix List.
 *************************************************************************/
-fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_add(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *prefix, unsigned long prefix_length, unsigned long lifetime)
+fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_add(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *prefix, fnet_size_t prefix_length, fnet_time_t lifetime)
 {
     struct fnet_nd6_if      *nd6_if = if_ptr->nd6_if_ptr;
-    int                     i;
+    fnet_index_t            i;
     fnet_nd6_prefix_entry_t *entry = FNET_NULL;
     
     if (nd6_if)
     {
         /* Find an unused entry in the cache. Skip 1st Link_locak prefix.
          */
-        for(i=1; i < FNET_ND6_PREFIX_LIST_SIZE; i++)
+        for(i = 1u; i < FNET_ND6_PREFIX_LIST_SIZE; i++)
         {
             if(nd6_if->prefix_list[i].state == FNET_ND6_PREFIX_STATE_NOTUSED)
             {
@@ -654,7 +681,7 @@ fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_add(fnet_netif_t *if_ptr, const fn
             entry = &nd6_if->prefix_list[1];
             /* Try to find the oldest entry.
              */
-            for(i=1; i < FNET_ND6_PREFIX_LIST_SIZE; i++)
+            for(i = 1u; i < FNET_ND6_PREFIX_LIST_SIZE; i++)
             {
                 if(nd6_if->prefix_list[i].creation_time < entry->creation_time)
                 {
@@ -682,10 +709,10 @@ fnet_nd6_prefix_entry_t *fnet_nd6_prefix_list_add(fnet_netif_t *if_ptr, const fn
 static void fnet_nd6_prefix_timer(fnet_netif_t *netif)
 {
     fnet_nd6_if_t   *nd6_if = netif->nd6_if_ptr;
-    int             i;
+    fnet_index_t    i;
     
     /* Check lifetime for prefixes.*/
-    for(i=1; i<FNET_ND6_PREFIX_LIST_SIZE; i++)
+    for(i=1u; i<FNET_ND6_PREFIX_LIST_SIZE; i++)
     {
         if((nd6_if->prefix_list[i].state != FNET_ND6_PREFIX_STATE_NOTUSED)
             && (nd6_if->prefix_list[i].lifetime != FNET_ND6_PREFIX_LIFETIME_INFINITE)
@@ -704,14 +731,14 @@ static void fnet_nd6_prefix_timer(fnet_netif_t *netif)
 static fnet_nd6_redirect_entry_t *fnet_nd6_redirect_table_add(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *destination_addr, const fnet_ip6_addr_t *target_addr)
 {
     struct fnet_nd6_if          *nd6_if = if_ptr->nd6_if_ptr;
-    int                         i;
+    fnet_index_t                i;
     fnet_nd6_redirect_entry_t   *entry = FNET_NULL;
     
     if (nd6_if)
     {
 
         /* Check if the destination address exists.*/
-        for(i=0; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
+        for(i=0u; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
         {
             if(FNET_IP6_ADDR_EQUAL(&nd6_if->redirect_table[i].destination_addr, destination_addr))
             {
@@ -725,7 +752,7 @@ static fnet_nd6_redirect_entry_t *fnet_nd6_redirect_table_add(fnet_netif_t *if_p
         {
             /* Find an unused entry in the table.
              */
-            for(i=0; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
+            for(i=0u; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
             {
                 /* Check if it is free.*/
                 if(FNET_IP6_ADDR_IS_UNSPECIFIED(&nd6_if->redirect_table[i].destination_addr))
@@ -742,7 +769,7 @@ static fnet_nd6_redirect_entry_t *fnet_nd6_redirect_table_add(fnet_netif_t *if_p
                 entry = &nd6_if->redirect_table[0];
                 /* Try to find the oldest entry.
                  */
-                for(i=1; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
+                for(i=1u; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
                 {
                     if(nd6_if->redirect_table[i].creation_time < entry->creation_time)
                     {
@@ -769,11 +796,11 @@ static fnet_nd6_redirect_entry_t *fnet_nd6_redirect_table_add(fnet_netif_t *if_p
 static void fnet_nd6_redirect_table_del(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *target_addr)
 {
     struct fnet_nd6_if          *nd6_if = if_ptr->nd6_if_ptr;
-    int                         i;
+    fnet_index_t                i;
     
     if (nd6_if)
     {
-        for(i=0; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
+        for(i=0u; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
         {
             if(FNET_IP6_ADDR_EQUAL(&nd6_if->redirect_table[i].target_addr, target_addr))
             {
@@ -792,11 +819,11 @@ static void fnet_nd6_redirect_table_del(fnet_netif_t *if_ptr, const fnet_ip6_add
 void fnet_nd6_redirect_addr(fnet_netif_t *if_ptr, const fnet_ip6_addr_t **destination_addr_p)
 {
     struct fnet_nd6_if          *nd6_if = if_ptr->nd6_if_ptr;
-    int                         i;
+    fnet_index_t                i;
     
     if (nd6_if)
     {
-        for(i=0; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
+        for(i=0u; i < FNET_ND6_REDIRECT_TABLE_SIZE; i++)
         {
             if(FNET_IP6_ADDR_EQUAL(&nd6_if->redirect_table[i].destination_addr, *destination_addr_p))
             {
@@ -814,16 +841,16 @@ void fnet_nd6_redirect_addr(fnet_netif_t *if_ptr, const fnet_ip6_addr_t **destin
 * DESCRIPTION: Checks if the address is on-link. 
 *              Returns FNET_TRUE if it is on-line, FNET_FALSE otherwise.
 *************************************************************************/
-int fnet_nd6_addr_is_onlink(fnet_netif_t *netif, const fnet_ip6_addr_t *addr)
+fnet_bool_t fnet_nd6_addr_is_onlink(fnet_netif_t *netif, const fnet_ip6_addr_t *addr)
 {
     fnet_nd6_if_t   *nd6_if = netif->nd6_if_ptr;
-    int             i;
-    int             result = FNET_FALSE;
+    fnet_index_t    i;
+    fnet_bool_t     result = FNET_FALSE;
 
     if (nd6_if)
     {
         /* Find the entry in the list. */
-        for(i=0; i<FNET_ND6_PREFIX_LIST_SIZE; i++)
+        for(i=0u; i<FNET_ND6_PREFIX_LIST_SIZE; i++)
         {
             if( (nd6_if->prefix_list[i].state != FNET_ND6_PREFIX_STATE_NOTUSED) &&
                 (fnet_ip6_addr_pefix_cmp(&nd6_if->prefix_list[i].prefix, addr, nd6_if->prefix_list[i].prefix_length) == FNET_TRUE) )
@@ -845,7 +872,7 @@ int fnet_nd6_addr_is_onlink(fnet_netif_t *netif, const fnet_ip6_addr_t *addr)
 *************************************************************************/
 void fnet_nd6_neighbor_solicitation_send(fnet_netif_t *netif /*MUST*/, const fnet_ip6_addr_t *ipsrc /* NULL for, DAD */, const fnet_ip6_addr_t *ipdest /*set for NUD,  NULL for DAD & AR */, const fnet_ip6_addr_t *target_addr)
 {
-    unsigned long                   ns_packet_size;
+    fnet_size_t                     ns_packet_size;
     fnet_netbuf_t                   *ns_nb;
     fnet_nd6_ns_header_t            *ns_packet;
     fnet_nd6_option_lla_header_t    *nd_option_slla; 
@@ -855,8 +882,8 @@ void fnet_nd6_neighbor_solicitation_send(fnet_netif_t *netif /*MUST*/, const fne
      * Duplicate Address Detection sends Neighbor Solicitation
      * messages with an unspecified source address targeting its own
      * "tentative" address and without SLLAO.*/
-    ns_packet_size = sizeof(fnet_nd6_ns_header_t) + ((ipsrc == FNET_NULL /* DAD */) ? 0:(sizeof(fnet_nd6_option_header_t) + netif->api->hw_addr_size));
-    if((ns_nb = fnet_netbuf_new((int)ns_packet_size, FNET_TRUE)) != 0)
+    ns_packet_size = sizeof(fnet_nd6_ns_header_t) + ((ipsrc == FNET_NULL /* DAD */) ? 0u:(sizeof(fnet_nd6_option_header_t) + netif->api->hw_addr_size));
+    if((ns_nb = fnet_netbuf_new(ns_packet_size, FNET_TRUE)) != 0u)
     {
         /*
          * Neighbor Solicitations are multicast when the node needs
@@ -872,9 +899,9 @@ void fnet_nd6_neighbor_solicitation_send(fnet_netif_t *netif /*MUST*/, const fne
         /* else  NUD */
 
         /* Fill ICMP Header */
-        ns_packet = ns_nb->data_ptr;
+        ns_packet = (fnet_nd6_ns_header_t *)ns_nb->data_ptr;
         ns_packet->icmp6_header.type = FNET_ICMP6_TYPE_NEIGHBOR_SOLICITATION;
-        ns_packet->icmp6_header.code = 0;
+        ns_packet->icmp6_header.code = 0u;
         
         /* Fill NS Header.*/
         fnet_memset_zero( ns_packet->_reserved, sizeof(ns_packet->_reserved));   /* Set to zeros the reserved field.*/
@@ -901,16 +928,20 @@ void fnet_nd6_neighbor_solicitation_send(fnet_netif_t *netif /*MUST*/, const fne
                 ipsrc = fnet_ip6_select_src_addr(netif, ipdest);
                     
                 if(ipsrc == FNET_NULL)
+                {
                     goto DROP; /* Just in case. Should never happen.*/
+                }
             }
                                             
             /* Fill Source link-layer address option.*/
-            nd_option_slla = (fnet_nd6_option_lla_header_t *)((unsigned long)ns_packet + sizeof(fnet_nd6_ns_header_t));
+            nd_option_slla = (fnet_nd6_option_lla_header_t *)((fnet_uint32_t)ns_packet + sizeof(fnet_nd6_ns_header_t));
             nd_option_slla->option_header.type = FNET_ND6_OPTION_SOURCE_LLA; /* Type. */
-            nd_option_slla->option_header.length = (unsigned char)((netif->api->hw_addr_size + sizeof(fnet_nd6_option_header_t))>>3); /* Option size devided by 8,*/
+            nd_option_slla->option_header.length = (fnet_uint8_t)((netif->api->hw_addr_size + sizeof(fnet_nd6_option_header_t))>>3); /* Option size devided by 8,*/
             
             if( fnet_netif_get_hw_addr(netif, nd_option_slla->addr, netif->api->hw_addr_size) != FNET_OK)
+            {
                 goto DROP;    
+            }
    
             /*TBD Padd if needed.%8*/
         }
@@ -938,14 +969,13 @@ DROP:
 *************************************************************************/
 void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
 {
-    fnet_icmp6_header_t             *icmp6_packet = nb->data_ptr;
-    unsigned long                   icmp6_packet_size = nb->total_length;
+    fnet_icmp6_header_t             *icmp6_packet = (fnet_icmp6_header_t *)nb->data_ptr;
+    fnet_size_t                     icmp6_packet_size = nb->total_length;
     fnet_nd6_ns_header_t            *ns_packet = (fnet_nd6_ns_header_t *)icmp6_packet;
     fnet_nd6_option_lla_header_t    *nd_option_slla = FNET_NULL;
-    unsigned long                   nd_option_offset;
-    
+    fnet_size_t                     nd_option_offset;
     fnet_netif_ip6_addr_t           *target_if_addr_info;
-    fnet_ip6_header_t               *ip6_packet = ip6_nb->data_ptr;
+    fnet_ip6_header_t               *ip6_packet = (fnet_ip6_header_t *)ip6_nb->data_ptr;
 
 	
     /************************************************************
@@ -955,9 +985,9 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
         (icmp6_packet_size < sizeof(fnet_nd6_ns_header_t))      
         /* Validation RFC4861 (7.1.1).*/
         ||(ip6_packet->hop_limit != FNET_ND6_HOP_LIMIT)         /* The IP Hop Limit field has a value of 255.*/
-        ||(icmp6_packet->code != 0)                             /* ICMP Code is 0.*/ 
+        ||(icmp6_packet->code != 0u)                            /* ICMP Code is 0.*/ 
         ||FNET_IP6_ADDR_IS_MULTICAST(&ns_packet->target_addr)   /* Target Address is not a multicast address. */
-        ||fnet_netif_is_my_ip6_addr(netif, src_ip)              /* Duplicate IP address check. */ /*TBD???*/
+        ||(fnet_netif_is_my_ip6_addr(netif, src_ip))            /* Duplicate IP address check. */ /*TBD???*/
         )
     { 		
         goto DROP;
@@ -975,10 +1005,10 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
         {
             fnet_nd6_option_header_t *nd_option;
     				    
-            nd_option =  (fnet_nd6_option_header_t *) ((unsigned char *)icmp6_packet + nd_option_offset) ;
+            nd_option =  (fnet_nd6_option_header_t *) ((fnet_uint8_t *)icmp6_packet + nd_option_offset) ;
             /* Validation RFC4861 (7.1.1). All included options have a length that is greater than zero.
              */
-            if(nd_option->length == 0)
+            if(nd_option->length == 0u)
             { 		
                 goto DROP;
             }
@@ -986,7 +1016,7 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
             /* Handle Source link-layer address option only.
              */
             if((nd_option->type == FNET_ND6_OPTION_SOURCE_LLA)
-    			   && ( (((unsigned long)nd_option->length << 3) - sizeof(fnet_nd6_option_header_t)) >= netif->api->hw_addr_size) )
+    			   && ( (((fnet_size_t)nd_option->length << 3) - sizeof(fnet_nd6_option_header_t)) >= netif->api->hw_addr_size) )
             {
                 nd_option_slla = (fnet_nd6_option_lla_header_t *)nd_option; /* Source Link-layer Address option is found.*/
             }
@@ -994,7 +1024,7 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
              * and continue processing the message.
              */
     				    
-            nd_option_offset += ((unsigned long)nd_option->length << 3);
+            nd_option_offset += ((fnet_size_t)nd_option->length << 3);
         }
 
         if(nd_option_slla  != FNET_NULL)
@@ -1056,9 +1086,10 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
                         /* RFC4861: Appendix C 
                          */ /*TBD ??*/
                         if(neighbor_cache_entry->state == FNET_ND6_NEIGHBOR_STATE_INCOMPLETE)
+                        {
                             neighbor_cache_entry->state = FNET_ND6_NEIGHBOR_STATE_STALE;
+                        }
                     }
-                    
                     
                     /* - It sends any packets queued for the neighbor awaiting address
                      *   resolution.*/
@@ -1106,7 +1137,7 @@ void fnet_nd6_neighbor_solicitation_receive(fnet_netif_t *netif, fnet_ip6_addr_t
                  */
             }
             else if(    /* === Address Resolution === */
-                    fnet_netif_is_my_ip6_solicited_multicast_addr(netif, dest_ip) 
+                    (fnet_netif_is_my_ip6_solicited_multicast_addr(netif, dest_ip)) 
                     ||  /* === Neighbor Unreachability Detection === */
                     ((FNET_IP6_ADDR_EQUAL(&ns_packet->target_addr, dest_ip))) )
             { 
@@ -1132,21 +1163,21 @@ DROP:
 * NAME: fnet_nd6_neighbor_advertisement_send
 * DESCRIPTION: Sends an Neighbor Advertisement message.
 *************************************************************************/
-void fnet_nd6_neighbor_advertisement_send(fnet_netif_t *netif, const fnet_ip6_addr_t *ipsrc, const fnet_ip6_addr_t *ipdest, unsigned char na_flags)
+void fnet_nd6_neighbor_advertisement_send(fnet_netif_t *netif, const fnet_ip6_addr_t *ipsrc, const fnet_ip6_addr_t *ipdest, fnet_uint8_t na_flags)
 {
-    unsigned long                   na_packet_size;
+    fnet_size_t                     na_packet_size;
     fnet_netbuf_t                   *na_nb;
     fnet_nd6_na_header_t            *na_packet;
     fnet_nd6_option_lla_header_t    *nd_option_tlla;
 
     na_packet_size = sizeof(fnet_nd6_na_header_t) + sizeof(fnet_nd6_option_header_t) + netif->api->hw_addr_size;
     
-    if((na_nb = fnet_netbuf_new((int)na_packet_size, FNET_TRUE)) != 0)
+    if((na_nb = fnet_netbuf_new(na_packet_size, FNET_TRUE)) != 0)
     {
         /* Fill ICMP Header */
-        na_packet = na_nb->data_ptr;
+        na_packet = (fnet_nd6_na_header_t *)na_nb->data_ptr;
         na_packet->icmp6_header.type = FNET_ICMP6_TYPE_NEIGHBOR_ADVERTISEMENT;
-        na_packet->icmp6_header.code = 0;
+        na_packet->icmp6_header.code = 0u;
                                               
         /* NA header.*/
         na_packet->flag = na_flags;    /* Flag parameter.*/
@@ -1154,12 +1185,14 @@ void fnet_nd6_neighbor_advertisement_send(fnet_netif_t *netif, const fnet_ip6_ad
         FNET_IP6_ADDR_COPY(ipsrc, &na_packet->target_addr);                     /* Set NA target address, the same as for NS.*/
                                                 
         /* Fill Target Link-Layer Address option.*/
-        nd_option_tlla = (fnet_nd6_option_lla_header_t *)((unsigned long)na_packet + sizeof(fnet_nd6_na_header_t));
+        nd_option_tlla = (fnet_nd6_option_lla_header_t *)((fnet_uint32_t)na_packet + sizeof(fnet_nd6_na_header_t));
         nd_option_tlla->option_header.type = FNET_ND6_OPTION_TARGET_LLA; /* Type. */
-        nd_option_tlla->option_header.length = (unsigned char)((netif->api->hw_addr_size + sizeof(fnet_nd6_option_header_t))>>3); /* Option size devided by 8,*/
+        nd_option_tlla->option_header.length = (fnet_uint8_t)((netif->api->hw_addr_size + sizeof(fnet_nd6_option_header_t))>>3); /* Option size devided by 8,*/
             
         if(fnet_netif_get_hw_addr(netif, nd_option_tlla->addr, netif->api->hw_addr_size) != FNET_OK)    /* Link-Layer Target address.*/
+        {
             goto DROP;    
+        }
         
         /* Send ICMPv6 message.*/
         fnet_icmp6_output( netif, ipsrc, ipdest, FNET_ND6_HOP_LIMIT, na_nb);
@@ -1180,7 +1213,7 @@ DROP:
 *************************************************************************/
 void fnet_nd6_router_solicitation_send(fnet_netif_t *netif) 
 {
-    unsigned long                   rs_packet_size;
+    fnet_size_t                     rs_packet_size;
     fnet_netbuf_t                   *rs_nb;
     fnet_nd6_rs_header_t            *rs_packet;
     fnet_nd6_option_lla_header_t    *nd_option_slla;
@@ -1192,14 +1225,14 @@ void fnet_nd6_router_solicitation_send(fnet_netif_t *netif)
     /* Choose source address.*/
     ip_src = fnet_ip6_select_src_addr(netif, ip_dest);
 
-    rs_packet_size = sizeof(fnet_nd6_rs_header_t) + ((ip_src == FNET_NULL /* no address */) ? 0:(sizeof(fnet_nd6_option_header_t) + netif->api->hw_addr_size));
+    rs_packet_size = sizeof(fnet_nd6_rs_header_t) + ((ip_src == FNET_NULL /* no address */) ? 0u:(sizeof(fnet_nd6_option_header_t) + netif->api->hw_addr_size));
  
-    if((rs_nb = fnet_netbuf_new((int)rs_packet_size, FNET_TRUE)) != 0)
+    if((rs_nb = fnet_netbuf_new(rs_packet_size, FNET_TRUE)) != 0)
     {   
         /* Fill ICMP Header */
-        rs_packet = rs_nb->data_ptr;
+        rs_packet = (fnet_nd6_rs_header_t *)rs_nb->data_ptr;
         rs_packet->icmp6_header.type = FNET_ICMP6_TYPE_ROUTER_SOLICITATION;
-        rs_packet->icmp6_header.code = 0;
+        rs_packet->icmp6_header.code = 0u;
              
         /* Fill RS Header.*/
         fnet_memset_zero( rs_packet->_reserved, sizeof(rs_packet->_reserved));    /* Set to zeros the reserved field.*/
@@ -1214,12 +1247,14 @@ void fnet_nd6_router_solicitation_send(fnet_netif_t *netif)
         {
                                            
             /* Fill Source link-layer address option.*/
-            nd_option_slla = (fnet_nd6_option_lla_header_t *)((unsigned long)rs_packet + sizeof(fnet_nd6_rs_header_t));
+            nd_option_slla = (fnet_nd6_option_lla_header_t *)((fnet_uint32_t)rs_packet + sizeof(fnet_nd6_rs_header_t));
             nd_option_slla->option_header.type = FNET_ND6_OPTION_SOURCE_LLA;    /* Type. */
-            nd_option_slla->option_header.length = (unsigned char)((netif->api->hw_addr_size + sizeof(fnet_nd6_option_header_t))>>3); /* Option size devided by 8,*/
+            nd_option_slla->option_header.length = (fnet_uint8_t)((netif->api->hw_addr_size + sizeof(fnet_nd6_option_header_t))>>3); /* Option size devided by 8,*/
             
             if(fnet_netif_get_hw_addr(netif, nd_option_slla->addr, netif->api->hw_addr_size) != FNET_OK)    /* Link-Layer Target address.*/
+            {
                 goto DROP;
+            }
 
             /* TBD Padd if needed.%8 */
         }
@@ -1247,19 +1282,18 @@ DROP:
 *************************************************************************/
 void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
 {
-    fnet_icmp6_header_t             *icmp6_packet = nb->data_ptr;
-    unsigned long                   icmp6_packet_size = nb->total_length;
+    fnet_icmp6_header_t             *icmp6_packet = (fnet_icmp6_header_t *)nb->data_ptr;
+    fnet_size_t                     icmp6_packet_size = nb->total_length;
     fnet_nd6_na_header_t            *na_packet = (fnet_nd6_na_header_t *)icmp6_packet;
     fnet_nd6_option_lla_header_t    *nd_option_tlla = FNET_NULL;
-    unsigned long                   nd_option_offset;
+    fnet_size_t                     nd_option_offset;
     fnet_netif_ip6_addr_t           *target_if_addr_info;
-    fnet_ip6_header_t               *ip6_packet = ip6_nb->data_ptr;
-
+    fnet_ip6_header_t               *ip6_packet = (fnet_ip6_header_t *)ip6_nb->data_ptr;
     fnet_nd6_neighbor_entry_t       *neighbor_cache_entry;
-    int                             is_solicited;
-    int                             is_router;
-    int                             is_override;
-    int                             is_ll_addr_changed;
+    fnet_bool_t                     is_solicited;
+    fnet_bool_t                     is_router;
+    fnet_bool_t                     is_override;
+    fnet_bool_t                     is_ll_addr_changed;
 
 	FNET_COMP_UNUSED_ARG(src_ip);
 	
@@ -1270,9 +1304,9 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
         (icmp6_packet_size < sizeof(fnet_nd6_na_header_t))          /* Check mi. size of packet*/
         /* Validation RFC4861 (7.1.2).*/
         ||(ip6_packet->hop_limit != FNET_ND6_HOP_LIMIT)             /* The IP Hop Limit field has a value of 255.*/
-        ||(icmp6_packet->code != 0)                                 /* ICMP Code is 0.*/ 
+        ||(icmp6_packet->code != 0u)                                 /* ICMP Code is 0.*/ 
         ||FNET_IP6_ADDR_IS_MULTICAST(&na_packet->target_addr)       /* Target Address is not a multicast address. */
-        ||( ((is_solicited=(na_packet->flag & FNET_ND6_NA_FLAG_SOLICITED)) != 0)
+        ||( (  (is_solicited = (((na_packet->flag & FNET_ND6_NA_FLAG_SOLICITED)!=0u)?FNET_TRUE:FNET_FALSE)) != FNET_FALSE)
             && FNET_IP6_ADDR_IS_MULTICAST(dest_ip) )                /* If the IP Destination Address is a multicast 
                                                                      * address the Solicited flag is zero.*/
         )
@@ -1290,10 +1324,10 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
         {
             fnet_nd6_option_header_t *nd_option;
     				    
-            nd_option =  (fnet_nd6_option_header_t *) ((unsigned char *)icmp6_packet + nd_option_offset) ;
+            nd_option =  (fnet_nd6_option_header_t *) ((fnet_uint8_t *)icmp6_packet + nd_option_offset) ;
             /* Validation RFC4861 (7.1.2). All included options have a length that is greater than zero.
              */
-            if(nd_option->length == 0)
+            if(nd_option->length == 0u)
             { 		
                 goto DROP;
             }
@@ -1301,7 +1335,7 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
             /* Handle Target Link-Layer Address option only.
              */
             if((nd_option->type == FNET_ND6_OPTION_TARGET_LLA)
-    			   && ( (((unsigned long)nd_option->length << 3) - sizeof(fnet_nd6_option_header_t)) >= netif->api->hw_addr_size) )
+    			   && ( (((fnet_size_t)nd_option->length << 3) - sizeof(fnet_nd6_option_header_t)) >= netif->api->hw_addr_size) )
             {
                 nd_option_tlla = (fnet_nd6_option_lla_header_t *)nd_option; /* Target Link-layer Address option is found.*/
             }
@@ -1309,7 +1343,7 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
              * and continue processing the message.
              */
     				    
-            nd_option_offset += ((unsigned long)nd_option->length << 3);
+            nd_option_offset += ((fnet_size_t)nd_option->length << 3);
         }
         
         /* Get Target Address Info, according to Target Address of NA message.
@@ -1319,7 +1353,9 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
         {
             /* Duplicated address!!!!! */
             if(target_if_addr_info->state == FNET_NETIF_IP6_ADDR_STATE_TENTATIVE) 
+            {
                 fnet_nd6_dad_failed(netif, target_if_addr_info); /* => DAD is failed. */
+            }
             
             goto DROP;
         }
@@ -1329,8 +1365,8 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
          */
         
         /* Extract flag values.*/
-        is_router = ((na_packet->flag & FNET_ND6_NA_FLAG_ROUTER) != 0)? 1:0;
-        is_override = na_packet->flag & FNET_ND6_NA_FLAG_OVERRIDE;
+        is_router = ((na_packet->flag & FNET_ND6_NA_FLAG_ROUTER) != 0u)? FNET_TRUE:FNET_FALSE;
+        is_override = ((na_packet->flag & FNET_ND6_NA_FLAG_OVERRIDE)!= 0u)?FNET_TRUE:FNET_FALSE;
         
         
         /************************************************************
@@ -1395,17 +1431,17 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
              if( nd_option_tlla )
              {
                 /* If supplied link-layer address differs. */
-                is_ll_addr_changed = !FNET_NETIF_LL_ADDR_ARE_EQUAL(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
+                is_ll_addr_changed = (!FNET_NETIF_LL_ADDR_ARE_EQUAL(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size))?FNET_TRUE:FNET_FALSE;
              }
              else
              {
-                is_ll_addr_changed = 0;  
+                is_ll_addr_changed = FNET_FALSE;  
              }
              
              /* I. If the Override flag is clear and the supplied link-layer address
               *     differs from that in the cache.
               */
-             if((is_override == 0) && is_ll_addr_changed)
+             if((is_override == FNET_FALSE) && is_ll_addr_changed)
              {
                 /* a. If the state of the entry is REACHABLE, set it to STALE, but
                  *    do not update the entry in any other way.
@@ -1431,7 +1467,9 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
                  *   from the already recorded address).
                  */
                 if(nd_option_tlla)
+                {
                     FNET_NETIF_LL_ADDR_COPY(nd_option_tlla->addr, neighbor_cache_entry->ll_addr, netif->api->hw_addr_size);
+                }
                 
                 /* - If the Solicited flag is set, the state of the entry MUST be
                  *   set to REACHABLE. 
@@ -1461,7 +1499,7 @@ void fnet_nd6_neighbor_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_
                  *   for all destinations using that neighbor as a router as
                  *   specified in Section 7.3.3.
                  */
-                if((neighbor_cache_entry->is_router) && (is_router == 0))
+                if((neighbor_cache_entry->is_router) && (is_router == FNET_FALSE))
                 {
                     fnet_nd6_router_list_del(neighbor_cache_entry);
                 }                 
@@ -1480,16 +1518,16 @@ DROP:
 *************************************************************************/
 void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
 {
-    fnet_icmp6_header_t             *icmp6_packet = nb->data_ptr;
-    unsigned long                   icmp6_packet_size = nb->total_length;
+    fnet_icmp6_header_t             *icmp6_packet = (fnet_icmp6_header_t *)nb->data_ptr;
+    fnet_size_t                     icmp6_packet_size = nb->total_length;
     fnet_nd6_ra_header_t            *ra_packet = (fnet_nd6_ra_header_t *)icmp6_packet;
     fnet_nd6_option_lla_header_t    *nd_option_slla = FNET_NULL;
     fnet_nd6_option_mtu_header_t    *nd_option_mtu = FNET_NULL;
     fnet_nd6_option_prefix_header_t *nd_option_prefix[FNET_CFG_ND6_PREFIX_LIST_SIZE];
-    int                             prefix_index;
-    unsigned long                   nd_option_offset;
+    fnet_index_t                    prefix_index;
+    fnet_size_t                     nd_option_offset;
     fnet_ip6_header_t               *ip6_packet = (fnet_ip6_header_t *)ip6_nb->data_ptr;
-    int                             i;
+    fnet_index_t                    i;
     fnet_nd6_neighbor_entry_t       *neighbor_cache_entry;
 
     
@@ -1502,8 +1540,8 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
         (icmp6_packet_size < sizeof(fnet_nd6_ra_header_t))  
         /* Validation RFC4861 (6.1.2).*/
         ||(ip6_packet->hop_limit != FNET_ND6_HOP_LIMIT)     /* The IP Hop Limit field has a value of 255.*/
-        ||(icmp6_packet->code != 0)                         /* ICMP Code is 0.*/ 
-        || !FNET_IP6_ADDR_IS_LINKLOCAL(src_ip)              /* MUST be the link-local address.*/  
+        ||(icmp6_packet->code != 0u)                         /* ICMP Code is 0.*/ 
+        || (!FNET_IP6_ADDR_IS_LINKLOCAL(src_ip))              /* MUST be the link-local address.*/  
         )
     { 		
         goto DROP;
@@ -1520,15 +1558,15 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
          * Prefix Information and MTU options.
          ************************************************************/
         nd_option_offset = sizeof(fnet_nd6_ra_header_t);
-        prefix_index = 0;
+        prefix_index = 0u;
         while(icmp6_packet_size > nd_option_offset + sizeof(fnet_nd6_option_header_t)) 
         {
             fnet_nd6_option_header_t *nd_option;
     				    
-            nd_option =  (fnet_nd6_option_header_t *) ((unsigned char *)icmp6_packet + nd_option_offset) ;
+            nd_option =  (fnet_nd6_option_header_t *) ((fnet_uint8_t *)icmp6_packet + nd_option_offset) ;
             /* Validation RFC4861 (6.1.2). All included options have a length that is greater than zero.
              */
-            if(nd_option->length == 0)
+            if(nd_option->length == 0u)
             { 		
                 goto DROP;
             }
@@ -1538,19 +1576,19 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
             
             /* Source Link-Layer Address option.*/
             if( (nd_option->type == FNET_ND6_OPTION_SOURCE_LLA)
-    			   && ( (((int)nd_option->length << 3) - sizeof(fnet_nd6_option_header_t)) >= netif->api->hw_addr_size) )
+    			   && ( ((fnet_size_t)nd_option->length << 3) >= (netif->api->hw_addr_size) + sizeof(fnet_nd6_option_header_t)) )
             {
                 nd_option_slla = (fnet_nd6_option_lla_header_t *)nd_option; /* Target Link-layer Address option is found.*/
             }
             /* MTU option */
             else if( (nd_option->type == FNET_ND6_OPTION_MTU)
-    			   && (((unsigned int)nd_option->length << 3) >= sizeof(fnet_nd6_option_mtu_header_t)) )
+    			   && (((fnet_size_t)nd_option->length << 3) >= sizeof(fnet_nd6_option_mtu_header_t)) )
             {
                  nd_option_mtu = (fnet_nd6_option_mtu_header_t *)nd_option; /* MTU option is found.*/
             }
             /* Prefix option */
             else if( (nd_option->type == FNET_ND6_OPTION_PREFIX)
-    			   && (((unsigned int)nd_option->length << 3) >= sizeof(fnet_nd6_option_prefix_header_t)) )
+    			   && (((fnet_size_t)nd_option->length << 3) >= sizeof(fnet_nd6_option_prefix_header_t)) )
             {
                  /* Note that there can be multiple "Prefix information" options included in a router advertisement.*/ 
                  if(prefix_index < FNET_CFG_ND6_PREFIX_LIST_SIZE)
@@ -1562,16 +1600,16 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
     #if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
             /* RDNSS option */
             else if( (nd_option->type == FNET_ND6_OPTION_RDNSS)
-    			   && (((unsigned int)nd_option->length << 3) >= sizeof(fnet_nd6_option_rdnss_header_t)) )
+    			   && (((fnet_size_t)nd_option->length << 3) >= sizeof(fnet_nd6_option_rdnss_header_t)) )
             {
                 /*************************************************************
                 * Process RDNSS options.
                 *************************************************************/
                 fnet_nd6_option_rdnss_header_t  *nd_option_rdnss = (fnet_nd6_option_rdnss_header_t *)nd_option;
                 /* The number of addresses is equal to (Length - 1) / 2.*/
-                int                             rdnss_number = (nd_option->length - 1)/2;
+                fnet_index_t                     rdnss_number = (fnet_index_t)(nd_option->length - 1u)/2u;
                 
-                for(i=0; i< rdnss_number; i++)
+                for(i=0u; i < rdnss_number; i++)
                 {
                     fnet_nd6_rdnss_list_update(netif, &nd_option_rdnss->address[i], fnet_ntohl(nd_option_rdnss->lifetime));
                 }
@@ -1581,7 +1619,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
             {}  /* else, silently ignore any options they do not recognize
                 * and continue processing the message. */
     				    
-            nd_option_offset += ((unsigned long)nd_option->length << 3);
+            nd_option_offset += ((fnet_size_t)nd_option->length << 3);
         }
         
         /************************************************************
@@ -1591,7 +1629,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
         /* RFC4861 6.3.4: If the received Cur Hop Limit value is non-zero, the host SHOULD set
          * its CurHopLimit variable to the received value.
          */
-        if(ra_packet->cur_hop_limit != 0)
+        if(ra_packet->cur_hop_limit != 0u)
         {
             netif->nd6_if_ptr->cur_hop_limit = ra_packet->cur_hop_limit;
         }
@@ -1599,7 +1637,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
         /* RFC4861 6.3.4: If the received Reachable Time value is non-zero, the host SHOULD set
          * its BaseReachableTime variable to the received value.
          */
-        if(ra_packet->reachable_time != 0)
+        if(ra_packet->reachable_time != 0u)
         {
             netif->nd6_if_ptr->reachable_time = fnet_ntohl(ra_packet->reachable_time);
         }        
@@ -1607,7 +1645,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
         /* RFC4861 6.3.4:The RetransTimer variable SHOULD be copied from the Retrans Timer
          * field, if the received value is non-zero.
          */
-        if(fnet_ntohl(ra_packet->retrans_timer) != 0)
+        if(fnet_ntohl(ra_packet->retrans_timer) != 0u)
         {
             netif->nd6_if_ptr->retrans_timer = fnet_ntohl(ra_packet->retrans_timer);
         } 
@@ -1619,17 +1657,21 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
          */
         if(nd_option_mtu) 
         {
-            unsigned long mtu = fnet_ntohl(nd_option_mtu->mtu);
+            fnet_size_t mtu = fnet_ntohl(nd_option_mtu->mtu);
             
             if(mtu < netif->mtu)
             { 
                 if(mtu < FNET_IP6_DEFAULT_MTU)
+                {            
                     netif->nd6_if_ptr->mtu = FNET_IP6_DEFAULT_MTU;
+                }
                 else
+                {
                     netif->nd6_if_ptr->mtu =  mtu; 
+                }
                       
             #if FNET_CFG_IP6_PMTU_DISCOVERY 
-                if(netif->pmtu /* If PMTU is enabled.*/ &&
+                if((netif->pmtu) /* If PMTU is enabled.*/ &&
                    (netif->pmtu > netif->nd6_if_ptr->mtu))
                 {
                     fnet_netif_set_pmtu(netif, netif->nd6_if_ptr->mtu);
@@ -1683,20 +1725,20 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
          * List and the received Router Lifetime value is zero, immediately
          * time-out the entry.
          */
-        fnet_nd6_router_list_add( neighbor_cache_entry, fnet_ntohs(ra_packet->router_lifetime));
+        fnet_nd6_router_list_add( neighbor_cache_entry, (fnet_time_t)fnet_ntohs(ra_packet->router_lifetime));
         
         /*************************************************************
          * Prcess Prefix options.
          *************************************************************/
-        if(prefix_index > 0)
+        if(prefix_index > 0u)
         {
-            for(i=0; i<prefix_index; i++)
+            for(i=0u; i<prefix_index; i++)
             {
                 fnet_nd6_prefix_entry_t *prefix_entry;
 
-            #if FNET_CFG_DEBUG_IP6
-                char numaddr[FNET_IP6_ADDR_STR_SIZE]={0};
-                fnet_inet_ntop(AF_INET6, (char*)&nd_option_prefix[i]->prefix, numaddr, sizeof(numaddr));  
+            #if FNET_CFG_DEBUG_IP6 && FNET_CFG_DEBUG
+                fnet_uint8_t numaddr[FNET_IP6_ADDR_STR_SIZE]={0};
+                fnet_inet_ntop(AF_INET6, (fnet_uint8_t*)&nd_option_prefix[i]->prefix, numaddr, sizeof(numaddr));  
                 
                 fnet_println("Prefix[%d]= %s \n", i, numaddr);
             #endif /* FNET_CFG_DEBUG_IP6 */
@@ -1705,7 +1747,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                 /* RFC4861: A router SHOULD NOT send a prefix
                  * option for the link-local prefix and a host SHOULD
                  * ignore such a prefix option.*/
-                if( !FNET_IP6_ADDR_IS_LINKLOCAL(&nd_option_prefix[i]->prefix)
+                if( (!FNET_IP6_ADDR_IS_LINKLOCAL(&nd_option_prefix[i]->prefix))
                 /* RFC4861: The value of Prefered Lifetime field MUST NOT exceed
                  * the Valid Lifetime field to avoid preferring
                  * addresses that are no longer valid.*/
@@ -1725,11 +1767,11 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                          * Information option.*/
                         if(prefix_entry == FNET_NULL)
                         {
-                            if(fnet_ntohl(nd_option_prefix[i]->valid_lifetime) != 0)
+                            if(fnet_ntohl(nd_option_prefix[i]->valid_lifetime) != 0u)
                             {
                                 /* Create a new entry for the prefix.*/
                                 fnet_nd6_prefix_list_add(netif, &nd_option_prefix[i]->prefix, 
-                                                             nd_option_prefix[i]->prefix_length, 
+                                                             (fnet_size_t)nd_option_prefix[i]->prefix_length, 
                                                              fnet_ntohl(nd_option_prefix[i]->valid_lifetime));
                             }
                         }
@@ -1740,7 +1782,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                              * invalidation timer to the Valid Lifetime value in the Prefix
                              * Information option. If the new Lifetime value is zero, time-out
                              * the prefix immediately.*/
-                            if(fnet_ntohl(nd_option_prefix[i]->valid_lifetime) != 0)
+                            if(fnet_ntohl(nd_option_prefix[i]->valid_lifetime) != 0u)
                             {
                                 /* Reset Timer. */
                                 prefix_entry->lifetime = fnet_ntohl(nd_option_prefix[i]->valid_lifetime);
@@ -1760,10 +1802,10 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                      
                     /* For each Prefix-Information option in the Router Advertisement:*/
                     if( ((nd_option_prefix[i]->flag & FNET_ND6_OPTION_FLAG_A) == FNET_ND6_OPTION_FLAG_A )
-                        && (fnet_ntohl(nd_option_prefix[i]->valid_lifetime) != 0) )
+                        && (fnet_ntohl(nd_option_prefix[i]->valid_lifetime) != 0u) )
                     {
-                        int j;
-                        fnet_netif_ip6_addr_t *addr_info = FNET_NULL;
+                        fnet_index_t            j;
+                        fnet_netif_ip6_addr_t   *addr_info = FNET_NULL;
                         
                         /* RFC4862 5.5.3:If the advertised prefix is equal to the prefix of an address
                          * configured by stateless autoconfiguration in the list, the
@@ -1771,11 +1813,11 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                          * Lifetime in the received advertisement. */
                          
                         /* Lookup the address */
-                        for(j = 0; j < FNET_NETIF_IP6_ADDR_MAX; j++)
+                        for(j = 0u; j < FNET_NETIF_IP6_ADDR_MAX; j++)
                         {
                             if((netif->ip6_addr[j].state != FNET_NETIF_IP6_ADDR_STATE_NOT_USED)
                                 && (netif->ip6_addr[j].type == FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE)
-                                && (fnet_ip6_addr_pefix_cmp(&nd_option_prefix[i]->prefix, &netif->ip6_addr[j].address, nd_option_prefix[i]->prefix_length) == FNET_TRUE) )
+                                && (fnet_ip6_addr_pefix_cmp(&nd_option_prefix[i]->prefix, &netif->ip6_addr[j].address, (fnet_size_t)nd_option_prefix[i]->prefix_length) == FNET_TRUE) )
                             {
                                 addr_info = &netif->ip6_addr[j];
                                 break;
@@ -1790,7 +1832,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                              * the valid lifetime expiration of the previously autoconfigured
                              * address. We call the remaining time "RemainingLifetime" in the
                              * following discussion:*/
-                            if( (fnet_ntohl(nd_option_prefix[i]->valid_lifetime) > (60*60*2) /* 2 hours */)
+                            if( (fnet_ntohl(nd_option_prefix[i]->valid_lifetime) > (60u*60u*2u) /* 2 hours */)
                                 ||( fnet_ntohl(nd_option_prefix[i]->valid_lifetime /*sec*/) >  fnet_timer_get_interval(fnet_timer_seconds(), (addr_info->creation_time + addr_info->lifetime /*sec*/)) ) ) 
                             {
                                /* 1. If the received Valid Lifetime is greater than 2 hours or
@@ -1811,7 +1853,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                                 *    option.
                                 * 3. Otherwise, reset the valid lifetime of the corresponding
                                 *    address to 2 hours. */
-                                addr_info->lifetime = (60*60*2) /* 2 hours */;
+                                addr_info->lifetime = (60u*60u*2u) /* 2 hours */;
                             }
                             addr_info->creation_time = fnet_timer_seconds();
                         }
@@ -1825,7 +1867,7 @@ void fnet_nd6_router_advertisement_receive(fnet_netif_t *netif, fnet_ip6_addr_t 
                              * Lifetime is not 0, form an address (and add it to the list) by
                              * combining the advertised prefix with an interface identifier. */
                         	fnet_netif_bind_ip6_addr_prv (netif, &nd_option_prefix[i]->prefix, FNET_NETIF_IP6_ADDR_TYPE_AUTOCONFIGURABLE, 
-                        	                                fnet_ntohl(nd_option_prefix[i]->valid_lifetime), nd_option_prefix[i]->prefix_length);
+                        	                                fnet_ntohl(nd_option_prefix[i]->valid_lifetime), (fnet_size_t)nd_option_prefix[i]->prefix_length);
                         }
                     }
                     /* else. RFC4862: If the Autonomous flag is not set, silently ignore the Prefix Information option.*/
@@ -1847,11 +1889,11 @@ DROP:
 *************************************************************************/
 void fnet_nd6_redirect_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_ip6_addr_t *dest_ip, fnet_netbuf_t *nb, fnet_netbuf_t *ip6_nb)
 {
-    fnet_icmp6_header_t             *icmp6_packet = nb->data_ptr;
-    unsigned long                   icmp6_packet_size = nb->total_length;
+    fnet_icmp6_header_t             *icmp6_packet = (fnet_icmp6_header_t *)nb->data_ptr;
+    fnet_size_t                     icmp6_packet_size = nb->total_length;
     fnet_nd6_rd_header_t            *rd_packet = (fnet_nd6_rd_header_t *)icmp6_packet;
     fnet_nd6_option_lla_header_t    *nd_option_tlla = FNET_NULL;
-    unsigned long                   nd_option_offset;
+    fnet_size_t                     nd_option_offset;
     fnet_ip6_header_t               *ip6_packet = (fnet_ip6_header_t *)ip6_nb->data_ptr;
     fnet_nd6_neighbor_entry_t       *neighbor_cache_entry;
     fnet_ip6_addr_t *               target_addr = &rd_packet->target_addr;
@@ -1865,17 +1907,17 @@ void fnet_nd6_redirect_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fne
     *************************************************************/	
     if(
         (icmp6_packet_size < sizeof(fnet_nd6_rd_header_t))  
-        ||(ip6_packet->hop_limit != FNET_ND6_HOP_LIMIT)     /* The IP Hop Limit field has a value of 255.*/
-        ||(icmp6_packet->code != 0)                         /* ICMP Code is 0.*/ 
-        ||!FNET_IP6_ADDR_IS_LINKLOCAL(src_ip)               /* IP Source Address is a link-local address.*/ 
+        ||(ip6_packet->hop_limit != FNET_ND6_HOP_LIMIT)      /* The IP Hop Limit field has a value of 255.*/
+        ||(icmp6_packet->code != 0u)                         /* ICMP Code is 0.*/ 
+        ||(!FNET_IP6_ADDR_IS_LINKLOCAL(src_ip))              /* IP Source Address is a link-local address.*/ 
         /* The ICMP Destination Address field in the redirect message does
          * not contain a multicast address.*/
         ||(FNET_IP6_ADDR_IS_MULTICAST(destination_addr))   
         /* The ICMP Target Address is either a link-local address (when
          * redirected to a router) or the same as the ICMP Destination
          * Address (when redirected to the on-link destination). */        
-        ||(!FNET_IP6_ADDR_IS_LINKLOCAL(target_addr) 
-           && !FNET_IP6_ADDR_EQUAL(destination_addr, target_addr))
+        ||((!FNET_IP6_ADDR_IS_LINKLOCAL(target_addr)) 
+           && (!FNET_IP6_ADDR_EQUAL(destination_addr, target_addr)))
         /* The IP source address of the Redirect is the same as the current
          * first-hop router for the specified ICMP Destination Address.*/   
         ||(fnet_nd6_is_firsthop_router(netif, src_ip) == FNET_FALSE)   
@@ -1899,10 +1941,10 @@ void fnet_nd6_redirect_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fne
     {
         fnet_nd6_option_header_t *nd_option;
     				    
-        nd_option =  (fnet_nd6_option_header_t *) ((unsigned char *)icmp6_packet + nd_option_offset) ;
+        nd_option =  (fnet_nd6_option_header_t *) ((fnet_uint8_t *)icmp6_packet + nd_option_offset) ;
         /* Validation RFC4861 (8.1). All included options have a length that is greater than zero.
          */
-        if(nd_option->length == 0)
+        if(nd_option->length == 0u)
         { 		
             goto DROP;
         }
@@ -1912,7 +1954,7 @@ void fnet_nd6_redirect_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fne
             
         /* Target Link-Layer Address option.*/
         if( (nd_option->type == FNET_ND6_OPTION_TARGET_LLA)
-            && ( (((int)nd_option->length << 3) - sizeof(fnet_nd6_option_header_t)) >= netif->api->hw_addr_size) )
+            && ( ((fnet_size_t)nd_option->length << 3) >= (netif->api->hw_addr_size + sizeof(fnet_nd6_option_header_t))) )
         {
             nd_option_tlla = (fnet_nd6_option_lla_header_t *)nd_option; /* Target Link-layer Address option is found.*/
         }
@@ -1920,7 +1962,7 @@ void fnet_nd6_redirect_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fne
          * and continue processing the message.
          */
     				    
-        nd_option_offset += ((unsigned long)nd_option->length << 3);
+        nd_option_offset += ((fnet_size_t)nd_option->length << 3);
     }
         
     /* RFC4861: If the redirect contains a Target Link-Layer Address option, the host
@@ -1988,7 +2030,7 @@ DROP:
 *************************************************************************/
 void fnet_nd6_rd_start(fnet_netif_t *netif)
 {
-    netif->nd6_if_ptr->rd_transmit_counter = FNET_ND6_MAX_RTR_SOLICITATIONS-1;
+    netif->nd6_if_ptr->rd_transmit_counter = FNET_ND6_MAX_RTR_SOLICITATIONS-1u;
     netif->nd6_if_ptr->rd_time = fnet_timer_ms();  /* Save send time.*/
     fnet_nd6_router_solicitation_send(netif);
     
@@ -2001,7 +2043,7 @@ void fnet_nd6_rd_start(fnet_netif_t *netif)
 *************************************************************************/
 static void fnet_nd6_rd_timer(fnet_netif_t *netif)
 {
-    if(netif->nd6_if_ptr->rd_transmit_counter > 0)
+    if(netif->nd6_if_ptr->rd_transmit_counter > 0u)
     {
         if(fnet_nd6_default_router_get(netif) == FNET_NULL)
         /* Router is not found yet.*/
@@ -2016,10 +2058,10 @@ static void fnet_nd6_rd_timer(fnet_netif_t *netif)
         else
         /* Router is found.*/
         {
-        #if FNET_CFG_DEBUG_IP6
+        #if FNET_CFG_DEBUG_IP6 && FNET_CFG_DEBUG
             fnet_println("RD: ROUTER is FOUND!!\n");
-        #endif /* FNET_CFG_DEBUG_IP6 */
-            netif->nd6_if_ptr->rd_transmit_counter = 0; /* Stop timer.*/
+        #endif 
+            netif->nd6_if_ptr->rd_transmit_counter = 0u; /* Stop timer.*/
         }
     }
 }
@@ -2031,7 +2073,7 @@ static void fnet_nd6_rd_timer(fnet_netif_t *netif)
 *************************************************************************/
 void fnet_nd6_dad_start(fnet_netif_t *netif , fnet_netif_ip6_addr_t *addr_info)
 {
-#if FNET_CFG_ND6_DAD_TRANSMITS > 0 
+#if FNET_CFG_ND6_DAD_TRANSMITS > 0u 
     if(addr_info && (addr_info->state == FNET_NETIF_IP6_ADDR_STATE_TENTATIVE))
     {
         /* To check an address, a node sends DAD Neighbor
@@ -2051,11 +2093,11 @@ void fnet_nd6_dad_start(fnet_netif_t *netif , fnet_netif_ip6_addr_t *addr_info)
 *************************************************************************/
 static void fnet_nd6_dad_timer(fnet_netif_t *netif )
 {
-#if FNET_CFG_ND6_DAD_TRANSMITS > 0 
-    int i;
-    fnet_netif_ip6_addr_t *addr_info;
+#if FNET_CFG_ND6_DAD_TRANSMITS > 0u 
+    fnet_index_t            i;
+    fnet_netif_ip6_addr_t   *addr_info;
     
-    for(i=0; i<FNET_NETIF_IP6_ADDR_MAX; i++)
+    for(i=0u; i<FNET_NETIF_IP6_ADDR_MAX; i++)
     {
         addr_info = &netif->ip6_addr[i];
        
@@ -2064,7 +2106,7 @@ static void fnet_nd6_dad_timer(fnet_netif_t *netif )
             if( fnet_timer_get_interval(addr_info->state_time, fnet_timer_ms()) > netif->nd6_if_ptr->retrans_timer )
             {
                 addr_info->dad_transmit_counter--;
-                if(addr_info->dad_transmit_counter == 0)
+                if(addr_info->dad_transmit_counter == 0u)
                 {
                     /* DAD succeeded, for this address.
                      * Once an address is determined to be unique,
@@ -2078,13 +2120,13 @@ static void fnet_nd6_dad_timer(fnet_netif_t *netif )
                         fnet_mld_report_all(netif);
                 #endif
                     
-                #if FNET_CFG_DEBUG_IP6
+                #if FNET_CFG_DEBUG_IP6 && FNET_CFG_DEBUG
                     {
-                        char numaddr[FNET_IP6_ADDR_STR_SIZE]={0};
-                        fnet_inet_ntop(AF_INET6, (char*)&addr_info->address, numaddr, sizeof(numaddr));
+                        fnet_uint8_t numaddr[FNET_IP6_ADDR_STR_SIZE]={0};
+                        fnet_inet_ntop(AF_INET6, (fnet_uint8_t*)&addr_info->address, numaddr, sizeof(numaddr));
                         fnet_println("%s is PREFERED NOW\n", numaddr);
                     }
-                #endif /* FNET_CFG_DEBUG_IP6 */
+                #endif 
                 }
                 else
                 {
@@ -2106,13 +2148,13 @@ static void fnet_nd6_dad_failed(fnet_netif_t *netif , fnet_netif_ip6_addr_t *add
 {
     fnet_ip6_addr_t             if_ip6_address;
 
-#if FNET_CFG_DEBUG_IP6
+#if FNET_CFG_DEBUG_IP6 && FNET_CFG_DEBUG
     {
-        char numaddr[FNET_IP6_ADDR_STR_SIZE]={0};
-        fnet_inet_ntop(AF_INET6, (char*)&addr_info->address, numaddr, sizeof(numaddr));  
+        fnet_uint8_t numaddr[FNET_IP6_ADDR_STR_SIZE]={0};
+        fnet_inet_ntop(AF_INET6, (fnet_uint8_t*)&addr_info->address, numaddr, sizeof(numaddr));  
         fnet_println("%s DAD is FAILED!!!!\n", numaddr);
     } 
-#endif /* FNET_CFG_DEBUG_IP6 */
+#endif 
     /* RFC 4862: */
     /* 5.4.5. When Duplicate Address Detection Fails */
     /* Just remove address, or TBD mark it as dupicate.*/
@@ -2126,12 +2168,14 @@ static void fnet_nd6_dad_failed(fnet_netif_t *netif , fnet_netif_ip6_addr_t *add
      * hardware addresses are in use, and trying to recover from it by
      * configuring another IP address will not result in a usable network.*/
     fnet_memset_zero(&if_ip6_address.addr[0], sizeof(fnet_ip6_addr_t));
-    if_ip6_address.addr[0] = 0xFE;
-    if_ip6_address.addr[1] = 0x80;
+    if_ip6_address.addr[0] = 0xFEu;
+    if_ip6_address.addr[1] = 0x80u;
     fnet_netif_set_ip6_addr_autoconf(netif, &if_ip6_address);
         
     if(FNET_IP6_ADDR_EQUAL(&if_ip6_address, &addr_info->address))
+    {
         netif->nd6_if_ptr->ip6_disabled = FNET_TRUE;
+    }
 }
 
 #if FNET_CFG_ND6_RDNSS && FNET_CFG_DNS
@@ -2140,19 +2184,19 @@ static void fnet_nd6_dad_failed(fnet_netif_t *netif , fnet_netif_ip6_addr_t *add
 *
 * DESCRIPTION: Update entry in the RDNSS List.
 *************************************************************************/
-static void fnet_nd6_rdnss_list_update(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *rdnss_addr, unsigned long lifetime)
+static void fnet_nd6_rdnss_list_update(fnet_netif_t *if_ptr, const fnet_ip6_addr_t *rdnss_addr, fnet_time_t lifetime)
 {
     struct fnet_nd6_if      *nd6_if = if_ptr->nd6_if_ptr;
-    int                     i;
+    fnet_index_t            i;
     fnet_nd6_rdnss_entry_t  *entry = FNET_NULL;
     
     if (nd6_if)
     {
         /* RFC6106: For each RDNSS address, if it already exists in the DNS
         * Server List, then just update the value of the Expiration-time field.*/
-        for(i=0; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+        for(i=0u; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
         {
-            if( (nd6_if->rdnss_list[i].lifetime != 0) &&
+            if( (nd6_if->rdnss_list[i].lifetime != 0u) &&
                 FNET_IP6_ADDR_EQUAL(&nd6_if->rdnss_list[i].rdnss_addr, rdnss_addr))
             {
                 entry = &nd6_if->rdnss_list[i];
@@ -2164,9 +2208,9 @@ static void fnet_nd6_rdnss_list_update(fnet_netif_t *if_ptr, const fnet_ip6_addr
         if((entry == FNET_NULL) && lifetime)
         { 
             /* Find an unused entry in the RNDSS List. */
-            for(i=0; i < FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+            for(i=0u; i < FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
             {
-                if(nd6_if->rdnss_list[i].lifetime == 0)
+                if(nd6_if->rdnss_list[i].lifetime == 0u)
                 {
                     entry = &nd6_if->rdnss_list[i];
                     break;
@@ -2184,7 +2228,7 @@ static void fnet_nd6_rdnss_list_update(fnet_netif_t *if_ptr, const fnet_ip6_addr
 
                 entry = &nd6_if->rdnss_list[0];
 
-                for(i=1; i < FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+                for(i=1u; i < FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
                 {
                     if( (entry->lifetime == FNET_ND6_RDNSS_LIFETIME_INFINITE)
                         || ((nd6_if->rdnss_list[i].lifetime != FNET_ND6_RDNSS_LIFETIME_INFINITE)
@@ -2217,7 +2261,7 @@ static void fnet_nd6_rdnss_list_del(fnet_nd6_rdnss_entry_t *rdnss_entry)
 {
     if (rdnss_entry)
     {
-        rdnss_entry->lifetime = 0;
+        rdnss_entry->lifetime = 0u;
     }
 }
 
@@ -2226,20 +2270,20 @@ static void fnet_nd6_rdnss_list_del(fnet_nd6_rdnss_entry_t *rdnss_entry)
 *
 * DESCRIPTION: This function returns a RDNS Server address.
 *************************************************************************/
-int fnet_nd6_rdnss_get_addr(fnet_netif_t *netif, unsigned int n, fnet_ip6_addr_t *addr_dns )
+fnet_bool_t fnet_nd6_rdnss_get_addr(fnet_netif_t *netif, fnet_index_t n, fnet_ip6_addr_t *addr_dns )
 {
-    int                 result = FNET_FALSE;
+    fnet_bool_t         result = FNET_FALSE;
     struct fnet_nd6_if  *nd6_if = netif->nd6_if_ptr;
-    int                 i;
+    fnet_index_t        i;
 
     if(nd6_if)
     {
-        for(i=0; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+        for(i=0u; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
         {
             /* Skip NOT_USED addresses. */
-            if(nd6_if->rdnss_list[i].lifetime != 0)
+            if(nd6_if->rdnss_list[i].lifetime != 0u)
             {    
-                if(n == 0)
+                if(n == 0u)
                 {
                     FNET_IP6_ADDR_COPY(&nd6_if->rdnss_list[i].rdnss_addr, addr_dns);
                     result = FNET_TRUE;
@@ -2260,15 +2304,15 @@ int fnet_nd6_rdnss_get_addr(fnet_netif_t *netif, unsigned int n, fnet_ip6_addr_t
 static void fnet_nd6_rdnss_timer(fnet_netif_t *netif)
 {
     fnet_nd6_if_t   *nd6_if = netif->nd6_if_ptr;
-    int             i;
+    fnet_index_t    i;
     
     /* Check lifetime for prefixes.*/
-    for(i=0; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
+    for(i=0u; i<FNET_CFG_ND6_RDNSS_LIST_SIZE; i++)
     {
         /* RFC 6106: Whenever an entry
         * expires in the DNS Server List, the expired entry is deleted from the
         * DNS Server List */
-        if((nd6_if->rdnss_list[i].lifetime != 0)
+        if((nd6_if->rdnss_list[i].lifetime != 0u)
             && (nd6_if->rdnss_list[i].lifetime != FNET_ND6_RDNSS_LIFETIME_INFINITE)
             && (fnet_timer_get_interval(nd6_if->rdnss_list[i].creation_time, fnet_timer_seconds()) > nd6_if->rdnss_list[i].lifetime) )
         {
@@ -2290,25 +2334,27 @@ static void fnet_nd6_rdnss_timer(fnet_netif_t *netif)
 void fnet_nd6_debug_print_prefix_list( fnet_netif_t *netif )
 {
     fnet_nd6_if_t           *nd6_if;
-    int                     i;
+    fnet_index_t            i;
     fnet_nd6_prefix_entry_t *entry ;
     
     if(netif == FNET_NULL)
-        netif = fnet_netif_get_by_number(0); /* Get the first one.*/
+    {
+        netif = (fnet_netif_t *)fnet_netif_get_by_number(0u); /* Get the first one.*/
+    }
     
     nd6_if = netif->nd6_if_ptr;
     
     if (nd6_if)
     {
         fnet_println("Prefix List:");
-        for(i=0; i<FNET_ND6_PREFIX_LIST_SIZE; i++)
+        for(i = 0u; i<FNET_ND6_PREFIX_LIST_SIZE; i++)
         {
             if(nd6_if->prefix_list[i].state != FNET_ND6_PREFIX_STATE_NOTUSED)
             {
-                char numaddr[FNET_IP6_ADDR_STR_SIZE]={0};
+                fnet_char_t numaddr[FNET_IP6_ADDR_STR_SIZE]={0};
                 entry = &nd6_if->prefix_list[i];
                 
-                fnet_inet_ntop(AF_INET6, (char*)entry->prefix.addr, numaddr, sizeof(numaddr)); 
+                fnet_inet_ntop(AF_INET6, (fnet_uint8_t*)entry->prefix.addr, numaddr, sizeof(numaddr)); 
                 
                 /* Print entry.*/
                 fnet_println("[%d] %s /%d State(%d) LifeTime(%d)[%d]", i, numaddr, entry->prefix_length, entry->state,  entry->lifetime, entry->creation_time); 

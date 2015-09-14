@@ -42,14 +42,14 @@
 #include "fnet_config.h"
 #include "fnet_error.h"
 
-static int FNET_ERR_NUMBER = 0;
+static fnet_error_t FNET_ERR_NUMBER = FNET_ERR_OK;
 
 /************************************************************************
 * NAME: fnet_error_get
 *
 * DESCRIPTION: This function returns the last error that occurred. 
 *************************************************************************/
-int fnet_error_get( void )
+fnet_error_t fnet_error_get( void )
 {
     return (FNET_ERR_NUMBER);
 }
@@ -60,7 +60,7 @@ int fnet_error_get( void )
 * DESCRIPTION: This function sets the error code that can 
 *              be retrieved through the fnet_error_get(). 
 *************************************************************************/
-void fnet_error_set( int error )
+void fnet_error_set(fnet_error_t error )
 {
     FNET_ERR_NUMBER = error;
 }

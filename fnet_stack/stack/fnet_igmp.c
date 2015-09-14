@@ -39,7 +39,7 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h"
+#include "fnet.h"
 
 #if FNET_CFG_IGMP & FNET_CFG_IP4
 
@@ -47,6 +47,17 @@
 #include "fnet_timer.h"
 #include "fnet_prot.h"
 #include "fnet_checksum.h"
+
+
+ /* IGMP requires multicast support.*/
+#if FNET_CFG_MULTICAST == 0
+    #error "FNET_CFG_MULTICAST must be enabled for IGMP"
+#endif
+
+#if (FNET_CFG_IGMP_VERSION < 1) || (FNET_CFG_IGMP_VERSION > 2)
+    #error "FNET_CFG_IGMP_VERSION must be set to 1 or to 2"
+#endif
+
 
 /* TBD Random delay timers */
 
@@ -61,8 +72,8 @@
 *************************************************************************/
 static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
                         
-#if FNET_CFG_DEBUG_TRACE_IGMP
-    static void fnet_igmp_trace(char *str, fnet_igmp_header_t *icmpp_hdr);
+#if FNET_CFG_DEBUG_TRACE_IGMP && FNET_CFG_DEBUG_TRACE
+    static void fnet_igmp_trace(fnet_uint8_t *str, fnet_igmp_header_t *icmpp_hdr);
 #else
     #define fnet_igmp_trace(str, icmp_hdr)  do {}while(0)
 #endif
@@ -92,9 +103,8 @@ fnet_prot_if_t fnet_igmp_prot_if =
 *************************************************************************/
 static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb)
 {
-    fnet_igmp_header_t *hdr;
-    fnet_netbuf_t *tmp_nb;
-    int i;
+    fnet_igmp_header_t  *hdr;
+    fnet_index_t        i;
     
     FNET_COMP_UNUSED_ARG(src_addr);
     FNET_COMP_UNUSED_ARG(dest_addr);
@@ -104,12 +114,10 @@ static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
     if((netif != 0) && (nb != 0) )
     {
         /* The header must reside in contiguous area of memory. */
-        if((tmp_nb = fnet_netbuf_pullup(nb, sizeof(fnet_igmp_header_t))) == 0) 
+        if(fnet_netbuf_pullup(&nb, sizeof(fnet_igmp_header_t)) == FNET_ERR) 
         {
             goto DISCARD;
         }
-
-        nb = tmp_nb;
 
         hdr = nb->data_ptr;
         
@@ -117,7 +125,7 @@ static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
          * must be at least 8 octets long, have a correct IGMP
          * checksum.
          */
-        if(fnet_checksum(nb, (int)nb->total_length)  )
+        if(fnet_checksum(nb, nb->total_length)  )
         {
             goto DISCARD;
         }
@@ -141,7 +149,7 @@ static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
             /* General Query */
             {
                  /* Find all joined-groups for this interface.*/
-                for(i=0; i < FNET_CFG_MULTICAST_MAX; i++)
+                for(i=0u; i < FNET_CFG_MULTICAST_MAX; i++)
                 {
                     if((fnet_ip_multicast_list[i].user_counter > 0) && (fnet_ip_multicast_list[i].netif == netif))
                     {
@@ -155,7 +163,7 @@ static void fnet_igmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
             /* A Group-Specific Query.*/ 
             {
                 /* Find specific group.*/
-                for(i=0; i < FNET_CFG_MULTICAST_MAX; i++)
+                for(i=0u; i < FNET_CFG_MULTICAST_MAX; i++)
                 {
                     if((fnet_ip_multicast_list[i].user_counter > 0) && (fnet_ip_multicast_list[i].netif == netif) && (fnet_ip_multicast_list[i].group_addr == hdr->group_addr))
                     {
@@ -203,12 +211,12 @@ void fnet_igmp_join( fnet_netif_t *netif, fnet_ip4_addr_t  group_addr )
         
         
         igmp_header->checksum = 0;
-        igmp_header->checksum = fnet_checksum(nb_header, (int)nb_header->total_length);
+        igmp_header->checksum = fnet_checksum(nb_header, nb_header->total_length);
 
         /* RFC 1112: A Report is sent with an IP destination address equal to the
          * host group address being reported, and with an IP time-to-live of 1.
          */
-        fnet_ip_output(netif, INADDR_ANY, group_addr /*dest_addr*/, FNET_IP_PROTOCOL_IGMP, FNET_IGMP_TOS, FNET_IGMP_TTL, nb_header, 0, 0, 0);
+        fnet_ip_output(netif, INADDR_ANY, group_addr /*dest_addr*/, FNET_IP_PROTOCOL_IGMP, FNET_IGMP_TOS, FNET_IGMP_TTL, nb_header, FNET_FALSE, FNET_FALSE, 0);
     }
 }
 
@@ -242,13 +250,13 @@ void fnet_igmp_leave( fnet_netif_t *netif, fnet_ip4_addr_t  group_addr )
         
         
         igmp_header->checksum = 0;
-        igmp_header->checksum = fnet_checksum(nb_header, (int)nb_header->total_length);
+        igmp_header->checksum = fnet_checksum(nb_header, nb_header->total_length);
 
         /* RFC 1112: A Report is sent with an IP destination address equal to the
          * host group address being reported, and with an IP time-to-live of 1.
          */
         
-        fnet_ip_output(netif, INADDR_ANY, dest_ip /*dest_addr*/, FNET_IP_PROTOCOL_IGMP, FNET_IGMP_TOS, FNET_IGMP_TTL, nb_header, 0, 0, 0);
+        fnet_ip_output(netif, INADDR_ANY, dest_ip /*dest_addr*/, FNET_IP_PROTOCOL_IGMP, FNET_IGMP_TOS, FNET_IGMP_TTL, nb_header, FNET_FALSE, FNET_FALSE, 0);
     }
 #endif /* FNET_CFG_IGMP_VERSION */
 }
@@ -258,10 +266,10 @@ void fnet_igmp_leave( fnet_netif_t *netif, fnet_ip4_addr_t  group_addr )
 *
 * DESCRIPTION: Prints an IGMP header. For debug needs only.
 *************************************************************************/
-#if FNET_CFG_DEBUG_TRACE_IGMP
-static void fnet_igmp_trace(char *str, fnet_igmp_header_t *igmp_hdr)
+#if FNET_CFG_DEBUG_TRACE_IGMP && FNET_CFG_DEBUG_TRACE
+static void fnet_igmp_trace(fnet_uint8_t *str, fnet_igmp_header_t *igmp_hdr)
 {
-    char ip_str[FNET_IP4_ADDR_STR_SIZE];
+    fnet_uint8_t ip_str[FNET_IP4_ADDR_STR_SIZE];
 
     fnet_printf(FNET_SERIAL_ESC_FG_GREEN"%s", str); /* Print app-specific header.*/
     fnet_println("[IGMP header]"FNET_SERIAL_ESC_FG_BLACK);

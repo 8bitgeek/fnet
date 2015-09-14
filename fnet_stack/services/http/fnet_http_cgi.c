@@ -45,8 +45,8 @@
 
 #include "fnet_http_prv.h"
 
-static int fnet_http_cgi_handle (struct fnet_http_if * http, struct fnet_http_uri * uri);
-static unsigned long fnet_http_cgi_send (struct fnet_http_if * http);
+static fnet_return_t fnet_http_cgi_handle (struct fnet_http_if * http, struct fnet_http_uri * uri);
+static fnet_size_t fnet_http_cgi_send (struct fnet_http_if * http);
 
 /************************************************************************
 *     Definitions
@@ -65,17 +65,17 @@ const struct fnet_http_file_handler fnet_http_cgi_handler =
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fnet_http_cgi_handle (struct fnet_http_if * http, struct fnet_http_uri * uri)
+static fnet_return_t fnet_http_cgi_handle (struct fnet_http_if * http, struct fnet_http_uri * uri)
 {
-    int                         result = FNET_ERR;
-    const struct                fnet_http_cgi *cgi_ptr;
+    fnet_return_t               result = FNET_ERR;
+    const struct fnet_http_cgi  *cgi_ptr;
     struct fnet_http_session_if *session =  http->session_active;
     
     if(http->cgi_table)
     /* CGI table is initialized.*/
     {
         /* Skip first '/' and ' ' */
-        while(*uri->path == '/' || *uri->path == ' ')
+        while((*uri->path == '/') || (*uri->path == ' '))
         {
             uri->path++;
         }
@@ -91,9 +91,13 @@ static int fnet_http_cgi_handle (struct fnet_http_if * http, struct fnet_http_ur
     		{				 
     		    session->send_param.data_ptr = cgi_ptr;
     		    if(cgi_ptr->handle)
+                {
     		        result = cgi_ptr->handle(uri->query, &session->response.cookie);
+                }
     		    else
+                {
     		        result = FNET_OK;
+                }
     		        
     	        break;
     	    }
@@ -107,10 +111,10 @@ static int fnet_http_cgi_handle (struct fnet_http_if * http, struct fnet_http_ur
 *
 * DESCRIPTION: 
 ************************************************************************/
-static unsigned long fnet_http_cgi_send (struct fnet_http_if * http)
+static fnet_size_t fnet_http_cgi_send (struct fnet_http_if * http)
 {
     const struct fnet_http_cgi  *cgi_ptr;
-    unsigned long               result = 0;
+    fnet_size_t                 result = 0u;
     struct fnet_http_session_if *session =  http->session_active;
     
     if(session->send_param.data_ptr)
@@ -118,7 +122,9 @@ static unsigned long fnet_http_cgi_send (struct fnet_http_if * http)
         cgi_ptr = (const struct fnet_http_cgi *) session->send_param.data_ptr;
         
         if(cgi_ptr->send)
+        {
             result = cgi_ptr->send(session->buffer, sizeof(session->buffer), &session->response.send_eof, &session->response.cookie);
+        }
     }
         
     return result;

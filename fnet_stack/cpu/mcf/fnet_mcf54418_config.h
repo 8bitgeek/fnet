@@ -53,7 +53,7 @@
 /**************************************************************************
  *  Modelo has fixed Internal Peripheral System Base Address.
  **************************************************************************/
-#define FNET_CFG_MCF_IPSBAR					((unsigned char *)0xEC000000)
+#define FNET_CFG_MCF_IPSBAR					((fnet_uint8_t *)0xEC000000)
 
 /**************************************************************************
  *  Default system bus frequency in Hz.
@@ -110,13 +110,13 @@
 /**************************************************************************
  *  ENET0
  **************************************************************************/
-#define FNET_FEC0_BASE_ADDR                 ((fnet_vuint32*)(0xFC0D4004)) 
+#define FNET_FEC0_BASE_ADDR                 ((fnet_vuint32_t*)(0xFC0D4004)) 
 #define FNET_CFG_CPU_ETH0_VECTOR_NUMBER     (40+0x40)
 
 /**************************************************************************
  *  ENET1
  **************************************************************************/
-#define FNET_FEC1_BASE_ADDR                 ((fnet_vuint32*)(0xFC0D8004)) 
+#define FNET_FEC1_BASE_ADDR                 ((fnet_vuint32_t*)(0xFC0D8004)) 
 #define FNET_CFG_CPU_ETH1_VECTOR_NUMBER     (53+0x40)
 
 /**************************************************************************

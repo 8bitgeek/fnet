@@ -46,7 +46,7 @@
 #include "fnet_config.h"
 
 
-#if (FNET_CFG_HTTP && FNET_CFG_HTTP_AUTHENTICATION_BASIC) || defined(__DOXYGEN__)
+#if (FNET_CFG_HTTP && FNET_CFG_HTTP_AUTHENTICATION_BASIC && FNET_CFG_HTTP_VERSION_MAJOR) || defined(__DOXYGEN__)
 
 
 #include "fnet.h"
@@ -87,9 +87,9 @@ typedef enum
  ******************************************************************************/
 struct fnet_http_auth
 {
-	char *dir_name;	                /**< @brief Name of the directory to protect.*/
-	char *userid;                   /**< @brief Required user name to access this directory.*/
-    char *password;                 /**< @brief Required password to access this directory.*/
+	fnet_char_t *dir_name;	                /**< @brief Name of the directory to protect.*/
+	fnet_char_t *userid;                   /**< @brief Required user name to access this directory.*/
+    fnet_char_t *password;                 /**< @brief Required password to access this directory.*/
     fnet_http_auth_scheme_t scheme; /**< @brief Used Authentication Scheme.*/							
 };
 

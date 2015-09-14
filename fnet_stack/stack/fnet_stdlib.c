@@ -35,57 +35,63 @@
 *************************************************************************/
 #if 0 
 /* Slowest && Smallest */
-void fnet_memcpy( FNET_COMP_PACKED_VAR void *dest, FNET_COMP_PACKED_VAR const void *src, unsigned n )
+void fnet_memcpy( FNET_COMP_PACKED_VAR void *dest, FNET_COMP_PACKED_VAR const void *src, fnet_size_t n )
 {
-    const char *p = (char *)src;
-    char *q = (char *)dest;
+    const fnet_uint8_t  *p = (fnet_uint8_t *)src;
+    fnet_uint8_t        *q = (fnet_uint8_t *)dest;
 
     for (n++; --n; )
+    {
         *q++ = *p++;
+    }
 }
 #elif 0 /* Faster. */
-void fnet_memcpy (FNET_COMP_PACKED_VAR void *dest, FNET_COMP_PACKED_VAR const void *src, unsigned n)
+void fnet_memcpy (FNET_COMP_PACKED_VAR void *dest, FNET_COMP_PACKED_VAR const void *src, fnet_size_t n)
 {
-    int                                 longs;
-    int                                 bytes;
-    FNET_COMP_PACKED_VAR unsigned long  *dpl = (unsigned long *)dest;
-    FNET_COMP_PACKED_VAR unsigned long  *spl = (unsigned long *)src;
-	unsigned char   *dpb, *spb;
+    fnet_size_t                         longs;
+    fnet_size_t                         bytes;
+    FNET_COMP_PACKED_VAR fnet_uint32_t  *dpl = (fnet_uint32_t *)dest;
+    FNET_COMP_PACKED_VAR fnet_uint32_t  *spl = (fnet_uint32_t *)src;
+	fnet_uint8_t                        *dpb, *spb;
 
     bytes = (n & 0x3);
     longs = ((n - bytes) >> 2);
 
     for (longs++; --longs;)
+    {
         *dpl++ = *spl++;
+    }
 		
-    dpb = (unsigned char *)dpl;
-    spb = (unsigned char *)spl;
+    dpb = (fnet_uint8_t *)dpl;
+    spb = (fnet_uint8_t *)spl;
 
     for (bytes++; --bytes;)
+    {
         *dpb++ = *spb++;
+    }
 }
 #else /* Fastest & Biggest. */
-void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const void *from_ptr, unsigned number_of_bytes)
+void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const void *from_ptr, fnet_size_t number_of_bytes)
 {
-    const unsigned char                         *from8_ptr = (const unsigned char *) from_ptr;
-    unsigned char                               *to8_ptr = (unsigned char *) to_ptr;
-    FNET_COMP_PACKED_VAR const unsigned short   *from16_ptr = (const unsigned short *) from_ptr;
-    FNET_COMP_PACKED_VAR unsigned short         *to16_ptr = (unsigned short *) to_ptr;
-    FNET_COMP_PACKED_VAR const unsigned long    *from32_ptr = (const unsigned long *) from_ptr;
-    FNET_COMP_PACKED_VAR unsigned long          *to32_ptr = (unsigned long *) to_ptr;
-    unsigned long                               loops;
+    const fnet_uint8_t                          *from8_ptr = (const fnet_uint8_t *) from_ptr;
+    fnet_uint8_t                                *to8_ptr = (fnet_uint8_t *) to_ptr;
+    FNET_COMP_PACKED_VAR const fnet_uint16_t    *from16_ptr = (const fnet_uint16_t *) from_ptr;
+    FNET_COMP_PACKED_VAR fnet_uint16_t          *to16_ptr = (fnet_uint16_t *) to_ptr;
+    FNET_COMP_PACKED_VAR const fnet_uint32_t    *from32_ptr = (const fnet_uint32_t *) from_ptr;
+    FNET_COMP_PACKED_VAR fnet_uint32_t          *to32_ptr = (fnet_uint32_t *) to_ptr;
+    fnet_index_t                                loops;
 
     /*
     * The copying is optimized to avoid alignment problems, and attempts
     *               to copy 32bit numbers optimally.
     */
-    if (number_of_bytes > 3)
+    if (number_of_bytes > 3u)
     {
         /* Try to align source on word */
-        if (((unsigned long)from_ptr & 1) != 0) 
+        if (((fnet_uint32_t)from_ptr & 1u) != 0u) 
         {
-            from8_ptr = (const unsigned char *) from_ptr;
-            to8_ptr = (unsigned char *) to_ptr;
+            from8_ptr = (const fnet_uint8_t *) from_ptr;
+            to8_ptr = (fnet_uint8_t *) to_ptr;
 
             *to8_ptr++ = *from8_ptr++;
 
@@ -95,26 +101,26 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
         }
 
         /* Try to align source on longword */
-        if ((((unsigned long)from_ptr) & 2) != 0)
+        if ((((fnet_uint32_t)from_ptr) & 2u) != 0u)
         {
-            from16_ptr = (const unsigned short *) from_ptr;
-            to16_ptr = (unsigned short *) to_ptr;
+            from16_ptr = (const fnet_uint16_t *) from_ptr;
+            to16_ptr = (fnet_uint16_t *) to_ptr;
 
             *to16_ptr++ = *from16_ptr++;
 
             from_ptr = from16_ptr;
             to_ptr = to16_ptr;
-            number_of_bytes -= 2;
+            number_of_bytes -= 2u;
         }
 
-        from32_ptr = (const unsigned long *) from_ptr;
-        to32_ptr = (unsigned long *) to_ptr;
+        from32_ptr = (const fnet_uint32_t *) from_ptr;
+        to32_ptr = (fnet_uint32_t *) to_ptr;
 
         /* 
         ** To increase performance a bit, we will copy 64 bytes (16 * longwords) sequentially
         ** This gets less instruction cycles.
         */
-        for (loops = (number_of_bytes >> 6); loops > 0; loops--)
+        for (loops = (number_of_bytes >> 6u); loops > 0u; loops--)
         {
             /* copy 16 longwords */
             *to32_ptr++ = *from32_ptr++;
@@ -136,7 +142,7 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
         }
 
         /* Now, write the rest of bytes */
-        for (loops = ((number_of_bytes >> 2) & 0xF); loops > 0; loops--)
+        for (loops = ((number_of_bytes >> 2) & 0xFu); loops > 0u; loops--)
         {
             *to32_ptr++ = *from32_ptr++;
         }
@@ -146,10 +152,10 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
     } 
 
     /* Copy all remaining bytes */
-    if ((number_of_bytes & 2) != 0)
+    if ((number_of_bytes & 2u) != 0u)
     {
-        from16_ptr = (const unsigned short *) from_ptr;
-        to16_ptr = (unsigned short *) to_ptr;
+        from16_ptr = (const fnet_uint16_t *) from_ptr;
+        to16_ptr = (fnet_uint16_t *) to_ptr;
 
         *to16_ptr++ = *from16_ptr++;
 
@@ -157,9 +163,9 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
         to_ptr = to16_ptr;
     } 
 
-    if ((number_of_bytes & 1) != 0) 
+    if ((number_of_bytes & 1u) != 0u) 
     {
-        * (unsigned char *) to_ptr = * (const unsigned char *) from_ptr;
+        * (fnet_uint8_t *) to_ptr = * (const fnet_uint8_t *) from_ptr;
     }
 }
 #endif
@@ -173,23 +179,10 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
 *              Used for relocate function from Flash to RAM
 *
 *************************************************************************/
-void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, unsigned to_buf_size)
+void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, fnet_size_t to_buf_size)
 {
-#if 1
+
     fnet_memcpy(to_buf_ptr, (void*)FNET_CPU_INSTRUCTION_TO_ADDR(from_func_ptr), to_buf_size);
-#endif
-#if 0
-    const short *p = (short *)from_func_ptr;
-    short *q = (short *)to_buf_ptr;
-    int n = to_buf_size;
-
-    while( n )
-    {
-        *q++ = *p++;
-
-        n-=2;
-    }
-#endif
     
     return (void*)FNET_CPU_ADDR_TO_INSTRUCTION(to_buf_ptr);
 }
@@ -200,14 +193,14 @@ void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, unsigned to_
 * DESCRIPTION: 
 *
 *************************************************************************/
-void fnet_memset( void *dest, int value, unsigned int n )
+void fnet_memset( void *dest, fnet_uint8_t value, fnet_size_t n )
 {
     /* Not optimized */
-    unsigned char *sp = (unsigned char *)dest;
+    fnet_uint8_t *sp = (fnet_uint8_t *)dest;
     
     while(n)
     {
-        *sp++ = (unsigned char)value;
+        *sp++ = (fnet_uint8_t)value;
         n--;
     }
 }
@@ -218,14 +211,14 @@ void fnet_memset( void *dest, int value, unsigned int n )
 * DESCRIPTION: Same as "fnet_memset( void *s, 0, unsigned n )"
 *
 *************************************************************************/
-void fnet_memset_zero( void *dest, unsigned int n )
+void fnet_memset_zero( void *dest, fnet_size_t n )
 {
     /* Not optimized */
-    unsigned char *sp = (unsigned char *)dest;
+    fnet_uint8_t *sp = (fnet_uint8_t *)dest;
     
     while(n)
     {
-        *sp++ = (unsigned char)0;
+        *sp++ = 0u;
         n--;
     }
 }
@@ -237,15 +230,17 @@ void fnet_memset_zero( void *dest, unsigned int n )
 *              non-zero otherwise.  If count is zero, return zero.
 *
 *************************************************************************/
-int fnet_memcmp(const void *src1, const void *src2, unsigned int count )
+fnet_int32_t fnet_memcmp(const void *src1, const void *src2, fnet_size_t count )
 {
-    const unsigned char *p1 = src1;
-    const unsigned char *p2 = src2;
+    const fnet_uint8_t *p1 = (const fnet_uint8_t *)src1;
+    const fnet_uint8_t *p2 = (const fnet_uint8_t *)src2;
 
     while(count)
     {
         if(*p1++ != *p2++)
+        {
             return 1;
+        }
         count--;
     }
 
@@ -258,22 +253,24 @@ int fnet_memcmp(const void *src1, const void *src2, unsigned int count )
 * DESCRIPTION: 
 *
 *************************************************************************/
-int fnet_strcmp( const char *str1, const char *str2 )
+fnet_int32_t fnet_strcmp( const fnet_char_t *str1, const fnet_char_t *str2 )
 {
     /* No checks for 0 */
-    const char *s1p = str1;
-    const char *s2p = str2;
+    const fnet_char_t *s1p = str1;
+    const fnet_char_t *s2p = str2;
 
     while(*s2p != '\0')
     {
         if(*s1p != *s2p)
+        {
             break;
+        }
 
         ++s1p;
         ++s2p;
     }
 
-    return (*s1p - *s2p);
+    return (fnet_int32_t)(*s1p - *s2p);
 }
 
 /************************************************************************
@@ -282,13 +279,15 @@ int fnet_strcmp( const char *str1, const char *str2 )
 * DESCRIPTION: 
 *
 *************************************************************************/
-unsigned long fnet_strlen (const char *str)
+fnet_size_t fnet_strlen (const fnet_char_t *str)
 {
-	const char      *s = str;
-	unsigned long   len = 0U;
+	const fnet_char_t  *s = str;
+	fnet_size_t         len = 0U;
 
 	if (s == 0)
+    {
 		return 0U;
+    }
 
 	while (*s++ != '\0')
     {
@@ -304,10 +303,10 @@ unsigned long fnet_strlen (const char *str)
 * DESCRIPTION: 
 *
 *************************************************************************/
-void fnet_strcat (char *dest, const char *src)
+void fnet_strcat (fnet_char_t *dest, const fnet_char_t *src)
 {
-	char        *dp;
-	const char  *sp = src;
+	fnet_char_t        *dp;
+	const fnet_char_t  *sp = src;
 
 	if ((dest != 0) && (src != 0))
 	{
@@ -327,10 +326,10 @@ void fnet_strcat (char *dest, const char *src)
 * DESCRIPTION: 
 *
 *************************************************************************/
-void fnet_strncat (char *dest, const char *src, unsigned int n)
+void fnet_strncat (fnet_char_t *dest, const fnet_char_t *src, fnet_size_t n)
 {
-	char        *dp;
-	const char  *sp = src;
+	fnet_char_t        *dp;
+	const fnet_char_t  *sp = src;
 
 	if ((dest != 0) && (src != 0) && (n > 0U))
 	{
@@ -351,10 +350,10 @@ void fnet_strncat (char *dest, const char *src, unsigned int n)
 * DESCRIPTION: 
 *
 *************************************************************************/
-void fnet_strcpy (char *dest, const char *src)
+void fnet_strcpy (fnet_char_t *dest, const fnet_char_t *src)
 {
-	char        *dp = dest;
-	const char  *sp = src;
+	fnet_char_t        *dp = dest;
+	const fnet_char_t  *sp = src;
 
 	if ((dest != 0) && (src != 0))
 	{
@@ -372,14 +371,14 @@ void fnet_strcpy (char *dest, const char *src)
 * DESCRIPTION: 
 *
 *************************************************************************/
-void fnet_strncpy( char *dest, const char *src, unsigned long n )
+void fnet_strncpy( fnet_char_t *dest, const fnet_char_t *src, fnet_size_t n )
 {
-    char        *dp = dest;
-    const char  *sp = src;
+    fnet_char_t        *dp = dest;
+    const fnet_char_t  *sp = src;
 
-    if((dest != 0) && (src != 0) && (n > 0))
+    if((dest != 0) && (src != 0) && (n > 0u))
     {
-        while((*sp != '\0') && (n-- > 0))
+        while((*sp != '\0') && (n-- > 0u))
         {
             *dp++ = *sp++;
         }
@@ -395,25 +394,29 @@ void fnet_strncpy( char *dest, const char *src, unsigned long n )
 * occurrence of chr in str, or NULL if no match is found.
 *
 *************************************************************************/
-char *fnet_strrchr(const char *str, int chr )
+fnet_char_t *fnet_strrchr(const fnet_char_t *str, fnet_char_t chr )
 {
-    char        *p = (char*)str;
-    char        *q = 0;
-    char        c = (char)chr;
-    char        ch = *p++;
+    const fnet_char_t  *p = str;
+    const fnet_char_t  *q = 0;
+    fnet_char_t        c = chr;
+    fnet_char_t        ch = *p++;
 
     while(ch)
     {
         if(ch == c)
+        {
             q = p - 1;
+        }
 
         ch = *p++;
     }
 
     if(q)
-        return (q);
+    {
+        return (fnet_char_t *)(q);
+    }
 
-    return (c ? FNET_NULL : (p - 1));
+    return (c ? FNET_NULL : (fnet_char_t *)(p - 1));
 }
 /************************************************************************
 * NAME: fnet_strchr
@@ -422,21 +425,23 @@ char *fnet_strrchr(const char *str, int chr )
 * occurence of chr in str, or 0 if chr is not found.
 *
 *************************************************************************/
-char *fnet_strchr( const char *str, int chr )
+fnet_char_t *fnet_strchr( const fnet_char_t *str, fnet_char_t chr )
 {
-    const char *p = str;
-    char c = (char)chr;
-    char ch = *p++;
+    const fnet_char_t   *p = str;
+    fnet_char_t         c = chr;
+    fnet_char_t         ch = *p++;
 
     while(ch)
     {
         if(ch == c)
-            return (char*)(p - 1);
+        {
+            return (fnet_char_t*)(p - 1);
+        }
 
         ch = *p++;
     }
 
-    return (char*)(c ? FNET_NULL : (p - 1));
+    return (fnet_char_t*)(c ? FNET_NULL : (p - 1));
 }
 
 /************************************************************************
@@ -448,14 +453,16 @@ char *fnet_strchr( const char *str, int chr )
 * simply return str.
 *
 *************************************************************************/
-char *fnet_strstr( const char *str, const char *substr )
+fnet_char_t *fnet_strstr( const fnet_char_t *str, const fnet_char_t *substr )
 {
-    const char *s1 = str;
-    const char *p1 = substr;
-    unsigned char firstc, c1, c2;
+    const fnet_char_t  *s1 = str;
+    const fnet_char_t  *p1 = substr;
+    fnet_uint8_t        firstc, c1, c2;
 
-    if((substr == 0) || (!((firstc = *p1++)!= 0)) )
-        return ((char *)str);
+    if((substr == 0) || (!((firstc = *p1++)!= 0u)) )
+    {
+        return (fnet_char_t*)(str);
+    }
 
     c1 = *s1++;
 
@@ -463,14 +470,16 @@ char *fnet_strstr( const char *str, const char *substr )
     {
         if(c1 == firstc)
         {
-            const char *s2 = s1;
-            const char *p2 = p1;
+            const fnet_char_t *s2 = s1;
+            const fnet_char_t *p2 = p1;
 
-            while((c1 = *s2++) == (c2 = *p2++) && c1)
+            while(((c1 = *s2++) == (c2 = *p2++)) && c1)
             {}
 
             if(!c2)
-                return ((char *)(s1 - 1));
+            {
+                return ((fnet_char_t *)(s1 - 1));
+            }
         }
 
         c1 = *s1++;
@@ -486,11 +495,11 @@ char *fnet_strstr( const char *str, const char *substr )
 * of str1 and str2.
 *
 *************************************************************************/
-int fnet_strncmp( const char *str1, const char *str2, unsigned int n )
+fnet_int32_t fnet_strncmp( const fnet_char_t *str1, const fnet_char_t *str2, fnet_size_t n )
 {
-    const char *p1 = str1;
-    const char *p2 = str2;
-    unsigned char c1, c2;
+    const fnet_char_t  *p1 = str1;
+    const fnet_char_t  *p2 = str2;
+    fnet_uint8_t        c1, c2;
 
     n++;
 
@@ -498,7 +507,7 @@ int fnet_strncmp( const char *str1, const char *str2, unsigned int n )
     {
         if((c1 = *p1++) != (c2 = *p2++))
         {
-            return (c1 - c2);
+            return (fnet_int32_t)(c1 - c2);
         }
         else if(!c1)
         {
@@ -517,29 +526,31 @@ int fnet_strncmp( const char *str1, const char *str2, unsigned int n )
 * DESCRIPTION: 
 *
 *************************************************************************/
-unsigned long fnet_strtoul (const char *str, char **ptr, int base)
+fnet_uint32_t fnet_strtoul (const fnet_char_t *str, fnet_char_t **ptr, fnet_size_t base)
 {
-	unsigned long   rvalue;
-	int             c, err, neg;
-	char            *endp;
-	char            *startp;
+	fnet_uint32_t   rvalue;
+    fnet_bool_t     err;
+    fnet_bool_t     neg;
+	fnet_char_t     c;
+	fnet_char_t     *endp;
+	fnet_char_t     *startp;
 
-	rvalue = 0;  
-    err = 0;
-    neg = 0;
+	rvalue = 0u;  
+    err = FNET_FALSE;
+    neg = FNET_FALSE;
 
 	/* Check for invalid arguments */
-	if ((str == 0) || (base < 0) || (base == 1) || (base > 36))
+	if ((str == 0) || (base == 1u) || (base > 36u))
 	{
 		if (ptr != 0)
 		{
-			*ptr = (char *)str;
+			*ptr = (fnet_char_t *)str;
 		}
-		return 0;
+		return 0u;
 	}
 
 	/* Skip leading white spaces */
-    for (startp = (char*)str; ((*startp == ' ') || (*startp == '\t')) ; ++startp)
+    for (startp = (fnet_char_t*)str; ((*startp == ' ') || (*startp == '\t')) ; ++startp)
     {}
 
 	/* Check for notations */
@@ -548,82 +559,89 @@ unsigned long fnet_strtoul (const char *str, char **ptr, int base)
 		case '0':
 			if ((startp[1] == 'x') || (startp[1] == 'X'))
 			{
-				if ((base == 0) || (base == 16))
+				if ((base == 0u) || (base == 16u))
 				{
-					base = 16;
+					base = 16u;
 					startp = &startp[2];
 				}
 			}
 			break;
 		case '-':
-			neg = 1;
+			neg = FNET_TRUE;
 			startp = &startp[1];
 			break;
 		default:
 			break;
 	}
 
-	if (base == 0)
-		base = 10;
+	if (base == 0u)
+    {
+		base = 10u;
+    }
 
 	/* Check for invalid chars in str */
-	for ( endp = startp; ((c = *endp) != '\0') && !((*endp == ' ') || (*endp == '\t')); ++endp)
+	for ( endp = startp; (err == FNET_FALSE) && ((c = (*endp)) != '\0') && (!((*endp == ' ') || (*endp == '\t'))); ++endp)
 	{
 		/* Check for 0..9,Aa-Zz */
 		if (!(((c >= '0') && (c <= '9')) ||
 		    ((c >= 'A') && (c <= 'Z')) ||
 		    ((c >= 'a') && (c <= 'z'))))
 		{
-			err = 1;
-			break;
+			err = FNET_TRUE;
 		}
+        else
+        {
+            /* Convert fnet_char_t to num in 0..36 */
+            if ((c >= '0') && (c <= '9')) /* Is digit.*/
+            {
+                c = c - '0';
+            }
+            else
+            {
+                if ((c >= 'A') && (c <= 'Z')) /* Is upper.*/
+                {
+                    c = c - 'A' + 10u;
+                }
+                else
+                {
+                    c = c - 'a' + 10u;
+                }
+            }
 
-		/* Convert char to num in 0..36 */
-		if ((c >= '0') && (c <= '9')) /* Is digit.*/
-		{
-			c = c - '0';
-		}
-		else
-		{
-		    if ((c >= 'A') && (c <= 'Z')) /* Is upper.*/
-			{
-				c = c - 'A' + 10;
-			}
-			else
-			{
-				c = c - 'a' + 10;
-			}
-		}
-
-		/* check c against base */
-		if (c >= base)
-		{
-			err = 1;
-			break;
-		}
-
-		if (neg)
-		{
-			rvalue = (rvalue * base) - c;
-		}
-		else
-		{
-			rvalue = (rvalue * base) + c;
-		}
+            /* check c against base */
+            if (c >= base)
+            {
+                err = FNET_TRUE;
+            }
+            else
+            {
+                if (neg)
+                {
+                    rvalue = (rvalue * base) - (fnet_uint32_t)c;
+                }
+                else
+                {
+                    rvalue = (rvalue * base) + (fnet_uint32_t)c;
+                }
+            }
+        }
 	}
 
 	/* Upon exit, endp points to the character at which valid info */
 	/* STOPS.  No chars including and beyond endp are used.        */
 
 	if (ptr != 0)
+    {
 		*ptr = endp;
+    }
 
 	if (err)
 	{
 		if (ptr != 0)
-			*ptr = (char*)str;
-		
-		return 0;
+        {
+			*ptr = (fnet_char_t*)str;
+        }
+		return 0u;
 	}
 	else
 	{
@@ -638,10 +656,12 @@ unsigned long fnet_strtoul (const char *str, char **ptr, int base)
 * lowercase letter.
 *
 *************************************************************************/
-char fnet_tolower( const char to_lower )
+fnet_char_t fnet_tolower( fnet_char_t to_lower )
 {
     if((to_lower >= 'A') && (to_lower <= 'Z'))
-        return (char)(to_lower + 0x20);
+    {
+        return (fnet_uint8_t)(to_lower + 0x20u);
+    }
 
     return to_lower;
 }
@@ -655,9 +675,9 @@ char fnet_tolower( const char to_lower )
 * respectively, to be less than, to match, or be greater than s2.
 *
 *************************************************************************/
-int fnet_strcasecmp( const char *str1, const char *str2 )
+fnet_int32_t fnet_strcasecmp( const fnet_char_t *str1, const fnet_char_t *str2 )
 {
-    char c1, c2;
+    fnet_uint8_t c1, c2;
 
     while(1)
     {
@@ -665,13 +685,19 @@ int fnet_strcasecmp( const char *str1, const char *str2 )
         c2 = fnet_tolower(*str2++);
 
         if(c1 < c2)
+        {
             return -1;
+        }
 
         if(c1 > c2)
+        {
             return 1;
+        }
 
-        if(c1 == 0)
+        if(c1 == 0u)
+        {
             return 0;
+        }
     }
 }
 
@@ -681,13 +707,13 @@ int fnet_strcasecmp( const char *str1, const char *str2 )
 * DESCRIPTION: 
 *
 *************************************************************************/
-int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter)
+fnet_int32_t fnet_strcmp_splitter( const fnet_char_t *in_str, const fnet_char_t *name, fnet_char_t splitter)
 {
-    int result;
+    fnet_int32_t result;
     
     /* No checks for 0 */
-    const char *s1p = in_str;
-    const char *s2p = name;
+    const fnet_char_t *s1p = in_str;
+    const fnet_char_t *s2p = name;
 
     while (*s1p == ' ') 
     {
@@ -698,16 +724,15 @@ int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter)
         s1p++;	/* Strip heading slash */
     }
 
-    while(*s2p != '\0')
+    while((*s2p != '\0') && (*s1p == *s2p))
     {
-        if(*s1p != *s2p)
-            break;
-
         ++s1p;
         ++s2p;
         
         if (*s1p == splitter)
+        {
             break; /* next element */
+        }
     }
     
     if(*s1p == splitter)
@@ -716,7 +741,7 @@ int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter)
     }
     else
     {
-        result = (*s1p - *s2p);
+        result = (fnet_int32_t )(*s1p - *s2p);
     }
 
     return result;
@@ -728,28 +753,33 @@ int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter)
 * DESCRIPTION: Breaks a string into a sequence of tokens. 
 *
 *************************************************************************/
-char * fnet_strtok_r(char *str, const char *delimiter, char **last)
+fnet_char_t * fnet_strtok_r(fnet_char_t *str, const fnet_char_t *delimiter, fnet_char_t **last)
 {
-	const char *spanp;
-	int         c, sc;
-	char        *tok;
+	const fnet_char_t  *spanp;
+	fnet_char_t        c;
+    fnet_char_t        sc;
+	fnet_char_t        *tok;
 
-	if (str == FNET_NULL && (str = *last) == FNET_NULL)
+	if ((str == FNET_NULL) && ((str = *last) == FNET_NULL))
+    {
 		return (FNET_NULL);
+    }
 
 	/*
 	 * Skip leading delimiters.
 	 */
-cont:
-	c = *str++;
+CONT:
+	c = (*str++);
     spanp = delimiter;
-	while( (sc = *spanp++) != 0)
+	while( (sc = (*spanp++)) != 0u)
 	{
 		if (c == sc)
-			goto cont;
+        {
+			goto CONT;
+        }
 	}
 
-	if (c == 0) /* No non-delimiter characters */
+	if (c == 0u) /* No non-delimiter characters */
 	{		
 		*last = FNET_NULL;
 		return (FNET_NULL);
@@ -761,20 +791,24 @@ cont:
 	 */
 	for (;;) 
 	{
-		c = *str++;
+		c = (*str++);
 		spanp = delimiter;
 		do 
 		{
-			if ((sc = *spanp++) == c)
+			if ((sc = (*spanp++)) == c)
 			{
-				if (c == 0)
-					str = FNET_NULL;
+				if (c == 0u)
+                {
+					str = FNET_NULL;    
+                }
 				else
-					str[-1] = 0;
+                {
+					str[-1] = 0u;
+                }
 				*last = str;
 				return (tok);
 			}
-		} while (sc != 0);
+		} while (sc != 0u);
 	}
 	/* Not reached.*/
 }

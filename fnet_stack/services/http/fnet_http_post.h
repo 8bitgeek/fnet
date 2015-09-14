@@ -45,7 +45,7 @@
 #include "fnet_config.h"
 
 
-#if (FNET_CFG_HTTP && FNET_CFG_HTTP_POST)|| defined(__DOXYGEN__)
+#if (FNET_CFG_HTTP && FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR)|| defined(__DOXYGEN__)
 
 
 #include "fnet.h"
@@ -81,7 +81,7 @@
  * blank string.
  * 
  ******************************************************************************/ 
-typedef int(*fnet_http_post_handle_t)(char * query, long *cookie);
+typedef fnet_int32_t(*fnet_http_post_handle_t)(fnet_char_t * query, fnet_uint32_t *cookie);
 
 /**************************************************************************/ /*!
  * @brief Callback function prototype of the POST-method receive function.
@@ -113,7 +113,7 @@ typedef int(*fnet_http_post_handle_t)(char * query, long *cookie);
  * @ref fnet_http_post_handle_t function.
  * 
  ******************************************************************************/ 
-typedef int(*fnet_http_post_receive_t)(char * buffer, unsigned long buffer_size, long *cookie);
+typedef fnet_int32_t(*fnet_http_post_receive_t)(fnet_uint8_t * buffer, fnet_size_t buffer_size, fnet_uint32_t *cookie);
 
 /**************************************************************************/ /*!
  * @brief Callback function prototype of the POST-method response function.
@@ -124,10 +124,10 @@ typedef int(*fnet_http_post_receive_t)(char * buffer, unsigned long buffer_size,
  *                         It's defined by the @ref FNET_CFG_HTTP_REQUEST_SIZE_MAX parameter.
  *
  * @param eof              Condition flag:
- *                         - @c 0 =  there is still more data to send.
+ *                         - @c FNET_FALSE =  there is still more data to send.
  *                           The @ref fnet_http_post_send_t function will be called 
  *                           during the next iteration again.
- *                         - @c 1 =  no more data is available for the POST response.
+ *                         - @c FNET_TRUE =  no more data is available for the POST response.
  *                           It was the last call of the @ref fnet_http_post_send_t 
  *                           function for the current POST response.
  *
@@ -152,7 +152,7 @@ typedef int(*fnet_http_post_receive_t)(char * buffer, unsigned long buffer_size,
  * till the @c eof will be set to @c 1 or the return result is set to @c 0.
  * 
  ******************************************************************************/ 
-typedef unsigned long(*fnet_http_post_send_t)(char * buffer, unsigned long buffer_size, char * eof, long *cookie);
+typedef fnet_size_t (*fnet_http_post_send_t)(fnet_uint8_t * buffer, fnet_size_t buffer_size, fnet_bool_t * eof, fnet_uint32_t *cookie);
 
 /**************************************************************************/ /*!
  * @brief POST-method callback function table.
@@ -166,12 +166,12 @@ typedef unsigned long(*fnet_http_post_send_t)(char * buffer, unsigned long buffe
  ******************************************************************************/
 struct fnet_http_post
 {
-	char *name;				            /**< @brief File name associated with the POST-request. */
-	fnet_http_post_handle_t handle;     /**< @brief Pointer to the POST query handler. It's optional. */
-	fnet_http_post_receive_t receive;   /**< @brief Pointer to the POST receive function. It's optional.@n 
+	fnet_char_t *name;		                 /**< @brief File name associated with the POST-request. */
+	fnet_http_post_handle_t post_handle;     /**< @brief Pointer to the POST query handler. It's optional. */
+	fnet_http_post_receive_t post_receive;   /**< @brief Pointer to the POST receive function. It's optional.@n 
 	                                     * This function can be invoked multiple times to process 
 	                                     * all received data.*/
-    fnet_http_post_send_t send;         /**< @brief Pointer to the POST response function. It's optional.@n 
+    fnet_http_post_send_t post_send;         /**< @brief Pointer to the POST response function. It's optional.@n 
                                          * This function actually creates dynamic content of
                                          * the POST response.  */
                                         					

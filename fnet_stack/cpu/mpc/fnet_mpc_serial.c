@@ -50,7 +50,7 @@
 #include "fnet_cpu.h"
 
 /********************************************************************/
-void fnet_cpu_serial_putchar( long port_number, int character)
+void fnet_cpu_serial_putchar (fnet_index_t port_number, fnet_char_t character)
 {
 #if FNET_CFG_CPU_MPC5744P
     /* Send the character */
@@ -95,7 +95,7 @@ void fnet_cpu_serial_putchar( long port_number, int character)
 }
 
 /********************************************************************/
-int fnet_cpu_serial_getchar( long port_number )
+fnet_int32_t fnet_cpu_serial_getchar (fnet_index_t port_number)
 {
   
 #if FNET_CFG_CPU_MPC5668G
@@ -211,10 +211,9 @@ static inline void fnet_cpu_serial_gpio_init(long port_number)
 }
 
 /********************************************************************/
-void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
+void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
 {
-    int lfdivx16;
-    
+   
 	/*
 	 * Initialize UART for serial communications
 	 */
@@ -231,29 +230,32 @@ void fnet_cpu_serial_init(long port_number, unsigned long baud_rate)
 #endif	
 
 #if FNET_CFG_CPU_MPC564xBC || FNET_CFG_CPU_MPC5744P
-	/*
-	 * Reset Transmitter - set sleep = 0 and init = 1
-	 */
-	FNET_MPC_LIN_CR1(port_number) = (FNET_MPC_LIN_CR1(port_number) & 0x0000FFFC) | 0x00000001;
-	FNET_MPC_LIN_UARTCR(port_number) = 0x0001;	/* Turn on UART mode so settings can be... set.*/
-	FNET_MPC_LIN_UARTCR(port_number) = 0x0033;
+    { 
+        int lfdivx16;   
+    	/*
+    	 * Reset Transmitter - set sleep = 0 and init = 1
+    	 */
+    	FNET_MPC_LIN_CR1(port_number) = (FNET_MPC_LIN_CR1(port_number) & 0x0000FFFC) | 0x00000001;
+    	FNET_MPC_LIN_UARTCR(port_number) = 0x0001;	/* Turn on UART mode so settings can be... set.*/
+    	FNET_MPC_LIN_UARTCR(port_number) = 0x0033;
 
-#if FNET_CFG_CPU_MPC5744P    
-	/* Calculate LINIBRR and LINFBRR based on baud rate, assumes 200MHz and /2 on HALFSYS_CLK on Panther
-			
-	*/
-	lfdivx16 = (FNET_CFG_CPU_CLOCK_HZ / 2) / baud_rate;
-#else
-    /* Calculate LINIBRR and LINFBRR based on baud rate, assumes 120MHz and /4 on Peripheral Set 1 on B3M
-            
-    */
-    lfdivx16 = (FNET_CFG_CPU_CLOCK_HZ / 4) / baud_rate;   
-#endif
-    
-	FNET_MPC_LIN_LINIBRR(port_number) = lfdivx16 / 16;	
-	FNET_MPC_LIN_LINFBRR(port_number) = lfdivx16 % 16;
-	
-	FNET_MPC_LIN_CR1(port_number) = FNET_MPC_LIN_CR1(port_number) & 0x0000FFFE;
+    #if FNET_CFG_CPU_MPC5744P    
+    	/* Calculate LINIBRR and LINFBRR based on baud rate, assumes 200MHz and /2 on HALFSYS_CLK on Panther
+    			
+    	*/
+    	lfdivx16 = (FNET_CFG_CPU_CLOCK_HZ / 2) / baud_rate;
+    #else
+        /* Calculate LINIBRR and LINFBRR based on baud rate, assumes 120MHz and /4 on Peripheral Set 1 on B3M
+                
+        */
+        lfdivx16 = (FNET_CFG_CPU_CLOCK_HZ / 4) / baud_rate;   
+    #endif
+        
+    	FNET_MPC_LIN_LINIBRR(port_number) = lfdivx16 / 16;	
+    	FNET_MPC_LIN_LINFBRR(port_number) = lfdivx16 % 16;
+    	
+    	FNET_MPC_LIN_CR1(port_number) = FNET_MPC_LIN_CR1(port_number) & 0x0000FFFE;
+    }	
 #endif
 }
 

@@ -129,7 +129,7 @@
 * Link-Local Multicast Name Resolution (LLMNR) server/responder support.
 ******************************************************************************/
 #define FNET_CFG_LLMNR                      (1)
-#define FNET_CFG_LLMNR_HOSTNAME_TTL         (2)
+#define FNET_CFG_LLMNR_HOSTNAME_TTL         (2u)
 
 /*****************************************************************************
 * PING service support.
@@ -139,7 +139,7 @@
 /*****************************************************************************
 *  FRDMK64F board uses the default port number 0.
 ******************************************************************************/
-#define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (0) 
+#define FNET_CFG_CPU_SERIAL_PORT_DEFAULT    (0u) 
 
 #endif /* _FNET_USER_CONFIG_H_ */
 

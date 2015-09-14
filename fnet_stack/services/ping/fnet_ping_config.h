@@ -59,12 +59,6 @@
     #define FNET_CFG_PING           (0)
 #endif
 
-#if FNET_CFG_PING 
-    /* Force RAW sockets, if PING is defined. */
-    #undef FNET_CFG_RAW
-    #define FNET_CFG_RAW            (1)
-#endif
-
 /**************************************************************************/ /*!
  * @def     FNET_CFG_PING_PACKET_MAX
  * @brief   The maximum size of the echo request packet. It defines send 

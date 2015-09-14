@@ -49,17 +49,17 @@
 struct fnet_net_timer
 {
     struct fnet_net_timer *next; /* Next timer in list.*/
-    unsigned long timer_cnt;     /* Timer counter. */
-    unsigned long timer_rv;      /* Timer reference value. */
-    void (*handler)(void *cookie);   /* Timer handler. */
-    void *cookie;                /* Handler Cookie. */
+    fnet_time_t timer_cnt;     /* Timer counter. */
+    fnet_time_t timer_rv;      /* Timer reference value. */
+    void (*handler)(fnet_uint32_t cookie);   /* Timer handler. */
+    fnet_uint32_t cookie;                /* Handler Cookie. */
 };
 
 static struct fnet_net_timer *fnet_tl_head = 0;
 
-volatile static unsigned long fnet_current_time;
+volatile static fnet_time_t fnet_current_time;
 
-#if FNET_CFG_DEBUG_TIMER    
+#if FNET_CFG_DEBUG_TIMER && FNET_CFG_DEBUG   
     #define FNET_DEBUG_TIMER   FNET_DEBUG
 #else
     #define FNET_DEBUG_TIMER(...)
@@ -70,11 +70,11 @@ volatile static unsigned long fnet_current_time;
 *
 * DESCRIPTION: Starts TCP/IP hardware timer. delay_ms - period of timer (ms)
 *************************************************************************/
-int fnet_timer_init( unsigned int period_ms )
+fnet_return_t fnet_timer_init( fnet_time_t period_ms )
 {
-   int result;
+   fnet_return_t result;
    
-   fnet_current_time = 0;           /* Reset RTC counter. */
+   fnet_current_time = 0u;           /* Reset RTC counter. */
    result = FNET_HW_TIMER_INIT(period_ms);  /* Start HW timer. */
    
    return result;
@@ -107,7 +107,7 @@ void fnet_timer_release( void )
 *
 * DESCRIPTION: This function returns current value of the timer in ticks. 
 *************************************************************************/
-unsigned long fnet_timer_ticks( void )
+fnet_time_t fnet_timer_ticks( void )
 {
     return fnet_current_time;
 }
@@ -117,7 +117,7 @@ unsigned long fnet_timer_ticks( void )
 *
 * DESCRIPTION: This function returns current value of the timer in seconds. 
 *************************************************************************/
-unsigned long fnet_timer_seconds( void )
+fnet_time_t fnet_timer_seconds( void )
 {
     return (fnet_current_time/FNET_TIMER_TICK_IN_SEC);
 }
@@ -128,7 +128,7 @@ unsigned long fnet_timer_seconds( void )
 * DESCRIPTION: This function returns current value of the timer 
 * in milliseconds. 
 *************************************************************************/
-unsigned long fnet_timer_ms( void )
+fnet_time_t fnet_timer_ms( void )
 {
     return (fnet_current_time*FNET_TIMER_PERIOD_MS);
 }
@@ -142,7 +142,7 @@ void fnet_timer_ticks_inc( void )
 {
     fnet_current_time++; 
     
-#if FNET_CFG_DEBUG_TIMER
+#if FNET_CFG_DEBUG_TIMER && FNET_CFG_DEBUG
    if((fnet_current_time%10) == 0)    
 	    FNET_DEBUG_TIMER("!");
 #endif	    
@@ -154,7 +154,7 @@ void fnet_timer_ticks_inc( void )
 * DESCRIPTION: Handles timer interrupts 
 *              
 *************************************************************************/
-void fnet_timer_handler_bottom(void *cookie)
+void fnet_timer_handler_bottom(fnet_uint32_t cookie)
 {
     struct fnet_net_timer *timer = fnet_tl_head;
     
@@ -167,7 +167,9 @@ void fnet_timer_handler_bottom(void *cookie)
             timer->timer_cnt = fnet_current_time;
 
             if(timer->handler)
+            {
                 timer->handler(timer->cookie);
+            }
         }
 
         timer = timer->next;
@@ -180,7 +182,7 @@ void fnet_timer_handler_bottom(void *cookie)
 * DESCRIPTION: Creates new software timer with the period 
 *              
 *************************************************************************/
-fnet_timer_desc_t fnet_timer_new( unsigned long period_ticks, void (*handler)(void *cookie), void *cookie )
+fnet_timer_desc_t fnet_timer_new( fnet_time_t period_ticks, void (*handler)(fnet_uint32_t cookie), fnet_uint32_t cookie )
 {
     struct fnet_net_timer *timer = FNET_NULL;
 
@@ -211,13 +213,15 @@ fnet_timer_desc_t fnet_timer_new( unsigned long period_ticks, void (*handler)(vo
 *************************************************************************/
 void fnet_timer_free( fnet_timer_desc_t timer )
 {
-    struct fnet_net_timer *tl = timer;
+    struct fnet_net_timer *tl = (struct fnet_net_timer *)timer;
     struct fnet_net_timer *tl_temp;
 
     if(tl)
     {
         if(tl == fnet_tl_head)
+        {
             fnet_tl_head = fnet_tl_head->next;
+        }
         else
         {
             tl_temp = fnet_tl_head;
@@ -259,12 +263,16 @@ void fnet_timer_reset_all( void )
 * DESCRIPTION: Calaculates an interval between two moments of time
 *              
 *************************************************************************/
-unsigned long fnet_timer_get_interval( unsigned long start, unsigned long end )
+fnet_time_t fnet_timer_get_interval( fnet_time_t start, fnet_time_t end )
 {
     if(start <= end)
+    {
         return (end - start);
+    }
     else
-        return (0xffffffffu - start + end + 1);
+    {
+        return (0xffffffffu - start + end + 1u);
+    }
 }
 
 /************************************************************************
@@ -273,9 +281,9 @@ unsigned long fnet_timer_get_interval( unsigned long start, unsigned long end )
 * DESCRIPTION: Do delay for a given number of timer ticks.
 *              
 *************************************************************************/
-void fnet_timer_delay( unsigned long delay_ticks )
+void fnet_timer_delay( fnet_time_t delay_ticks )
 {
-    unsigned long start_ticks = fnet_current_time;
+    fnet_time_t start_ticks = fnet_current_time;
 
     while(fnet_timer_get_interval(start_ticks, fnet_timer_ticks()) < delay_ticks)
     {}
@@ -287,7 +295,7 @@ void fnet_timer_delay( unsigned long delay_ticks )
 * DESCRIPTION: Convert milliseconds to timer ticks.
 *              
 *************************************************************************/
-unsigned long fnet_timer_ms2ticks( unsigned long time_ms )
+fnet_time_t fnet_timer_ms2ticks( fnet_time_t time_ms )
 {
     return time_ms / FNET_TIMER_PERIOD_MS;
 }

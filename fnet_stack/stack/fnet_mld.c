@@ -61,7 +61,7 @@ static const fnet_mld_ra_option_header_t mld_ra_option ={FNET_IP_PROTOCOL_ICMP6 
                                                         ,{FNET_IP6_OPTION_TYPE_PADN, 0}};       /* Padding. */                                                 
 
 
-static void fnet_mld_send( fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, unsigned char type);
+static void fnet_mld_send( fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, fnet_uint8_t type);
 
 /************************************************************************
 * NAME: fnet_mld_join
@@ -91,12 +91,12 @@ void fnet_mld_leave(fnet_netif_t *netif, fnet_ip6_addr_t  *group_addr)
 *************************************************************************/
 void fnet_mld_report_all(fnet_netif_t *netif)
 {
-    int i;
+    fnet_index_t i;
     
     /* Find existing entries for the interface.*/
     for(i=0; i < FNET_CFG_MULTICAST_MAX; i++)
     {
-        if((fnet_ip6_multicast_list[i].user_counter > 0) 
+        if((fnet_ip6_multicast_list[i].user_counter > 0u) 
             && (fnet_ip6_multicast_list[i].netif == netif))
         {
             /* Send report.*/
@@ -111,13 +111,13 @@ void fnet_mld_report_all(fnet_netif_t *netif)
 * DESCRIPTION: Sends MLD message defined by type:
 *        FNET_ICMP6_TYPE_MULTICAST_LISTENER_REPORT or FNET_ICMP6_TYPE_MULTICAST_LISTENER_DONE 
 *************************************************************************/
-static void fnet_mld_send(fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, unsigned char type)
+static void fnet_mld_send(fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, fnet_uint8_t type)
 { 
     fnet_netbuf_t                       *nb;
     fnet_netbuf_t                       *nb_option;
     fnet_mld_header_t                   *mld_header;
     fnet_mld_ra_option_header_t         *ra_option_header;
-    FNET_COMP_PACKED_VAR unsigned short *checksum_p;
+    FNET_COMP_PACKED_VAR fnet_uint16_t  *checksum_p;
     fnet_ip6_addr_t                     *ip_src;
     fnet_ip6_addr_t                     *ip_dst;
     
@@ -143,7 +143,7 @@ static void fnet_mld_send(fnet_netif_t *netif, fnet_ip6_addr_t *group_addr, unsi
                      
                 /* Checksum calculation.*/
                 mld_header->icmp6_header.checksum = 0;
-                mld_header->icmp6_header.checksum = fnet_checksum_pseudo_start(nb, FNET_HTONS((unsigned short)FNET_IP_PROTOCOL_ICMP6), (unsigned short)nb->total_length);
+                mld_header->icmp6_header.checksum = fnet_checksum_pseudo_start(nb, FNET_HTONS((fnet_uint16_t)FNET_IP_PROTOCOL_ICMP6), (fnet_uint16_t)nb->total_length);
                 checksum_p = &mld_header->icmp6_header.checksum;
                 
                 /* Concatanate Hop-by_Hop Options with MLD header. */
@@ -199,7 +199,7 @@ void fnet_mld_query_receive(fnet_netif_t *netif, fnet_ip6_addr_t *src_ip, fnet_i
 {
 
     fnet_mld_header_t               *mld_packet = nb->data_ptr;
-    unsigned long                   mld_packet_size = nb->total_length;
+    fnet_size_t                     mld_packet_size = nb->total_length;
     fnet_ip6_header_t               *ip6_packet = (fnet_ip6_header_t *)ip6_nb->data_ptr;
     
     FNET_COMP_UNUSED_ARG(dest_ip);

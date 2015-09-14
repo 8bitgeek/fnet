@@ -46,20 +46,18 @@
 #include "fnet_fs_root.h"
 
 
-#define FNET_FS_ROOTDIR_ID          ((unsigned long)(-1))   /* Root dir ID */
+#define FNET_FS_ROOTDIR_ID          ((fnet_uint32_t)(-1))   /* Root dir ID */
 
 /* Root FS */
 
-int fnet_fs_root_opendir( struct fnet_fs_desc *dir, const char *name);
-int fnet_fs_root_readdir(struct fnet_fs_desc *dir, struct fnet_fs_dirent* dirent);
+static fnet_return_t fnet_fs_root_opendir( struct fnet_fs_desc *dir, const fnet_char_t *name);
+static fnet_return_t fnet_fs_root_readdir(struct fnet_fs_desc *dir, struct fnet_fs_dirent* dirent);
 
 static const struct fnet_fs_dir_operations fnet_fs_root_dir_operations =
 {
     fnet_fs_root_opendir,
     fnet_fs_root_readdir
 };
-
-
 
 static struct fnet_fs fnet_fs_root =
 {
@@ -72,7 +70,7 @@ static struct fnet_fs fnet_fs_root =
 };
 
 
-static int fnet_fs_root_registered;  /* Flag that ROM FS is registered or not.*/
+static fnet_bool_t fnet_fs_root_registered;  /* Flag that ROM FS is registered or not.*/
 
 /************************************************************************
 * NAME: fnet_fs_root_register
@@ -81,10 +79,10 @@ static int fnet_fs_root_registered;  /* Flag that ROM FS is registered or not.*/
 *************************************************************************/
 void fnet_fs_root_register( void )
 {
-    if(fnet_fs_root_registered == 0)
+    if(fnet_fs_root_registered == FNET_FALSE)
     {
         fnet_fs_register(&fnet_fs_root);
-        fnet_fs_root_registered = 1;
+        fnet_fs_root_registered = FNET_TRUE;
     }
 }
 
@@ -95,10 +93,10 @@ void fnet_fs_root_register( void )
 *************************************************************************/
 void fnet_fs_root_unregister( void )
 {
-    if(fnet_fs_root_registered == 1)
+    if(fnet_fs_root_registered == FNET_TRUE)
     {
         fnet_fs_unregister(&fnet_fs_root);
-        fnet_fs_root_registered = 0;
+        fnet_fs_root_registered = FNET_FALSE;
     }
 }
 
@@ -107,9 +105,9 @@ void fnet_fs_root_unregister( void )
 *
 * DESCRIPTION: Open DIR stream for the ROOT FS.
 *************************************************************************/
-int fnet_fs_root_opendir( struct fnet_fs_desc *dir, const char *name)
+static fnet_return_t fnet_fs_root_opendir( struct fnet_fs_desc *dir, const fnet_char_t *name)
 {
-    int result = FNET_ERR;
+    fnet_return_t result = FNET_ERR;
 
     FNET_COMP_UNUSED_ARG(name);
     
@@ -119,7 +117,9 @@ int fnet_fs_root_opendir( struct fnet_fs_desc *dir, const char *name)
         result = FNET_OK;
     }
     else
+    {        
         result = FNET_ERR;    
+    }
         
     return result;
 }
@@ -129,35 +129,36 @@ int fnet_fs_root_opendir( struct fnet_fs_desc *dir, const char *name)
 *
 * DESCRIPTION: Read DIR stream for the ROOT FS.
 *************************************************************************/
-int fnet_fs_root_readdir(struct fnet_fs_desc *dir, struct fnet_fs_dirent* dirent)
+static fnet_return_t fnet_fs_root_readdir(struct fnet_fs_desc *dir, struct fnet_fs_dirent* dirent)
 {
-    int result = FNET_ERR;
-    unsigned long i;
-    struct fnet_fs_mount_point *tmp;
+    fnet_return_t               result = FNET_ERR;
+    fnet_index_t                i;
+    struct fnet_fs_mount_point  *tmp;
     
-    if(dir && (dir->id == FNET_FS_ROOTDIR_ID) && (dir->pos != (unsigned long)FNET_FS_EOF) && dirent)
+    if(dir && (dir->id == FNET_FS_ROOTDIR_ID) && (dir->pos != (fnet_uint32_t)FNET_FS_EOF) && dirent)
     {
         for(i=dir->pos; i<FNET_CFG_FS_MOUNT_MAX; i++)
         {
             tmp = &fnet_fs_mount_list[i];
             if(tmp->fs) /* Found next mount - dir */
             {
-                dir->pos = i+1; /* incriment next dir index */
+                dir->pos = i+1u; /* incriment next dir index */
                 if(fnet_strcmp(tmp->fs->name, FNET_FS_ROOT_NAME ) )/* It's not ROOT FS mount. */
                 {
                     /*fill ident */
-                    dirent->d_ino = (unsigned long) tmp; /* File serial number. */
+                    dirent->d_ino = (fnet_uint32_t) tmp; /* File serial number. */
                     dirent->d_type = DT_DIR;
                     dirent->d_name = tmp->name;
-                    dirent->d_size = 0;
+                    dirent->d_size = 0u;
                     result = FNET_OK;
                     break;
                 }
             }
         }
         if (result == FNET_ERR)
-             dir->pos = (unsigned long)FNET_FS_EOF; /* End of the directory is encountered */
-    
+        {
+             dir->pos = (fnet_uint32_t)FNET_FS_EOF; /* End of the directory is encountered */
+        }
     }
     
     return result;

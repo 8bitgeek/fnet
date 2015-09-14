@@ -42,9 +42,21 @@
 #ifndef _FAPP_FS_H_
 #define _FAPP_FS_H_
 
-#include "fapp_config.h"
+#include "fapp.h"
+
+/************************************************************************
+*     File System Image
+*************************************************************************/
+#if FNET_CFG_FS && FNET_CFG_FS_ROM
+extern const struct fnet_fs_rom_image fnet_fs_image;
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #if FAPP_CFG_EXP_CMD || FAPP_CFG_HTTP_CMD
+
 #define FAPP_FS_MOUNT_NAME       "rom"
 
 void fapp_fs_mount(void);
@@ -52,7 +64,11 @@ void fapp_fs_unmount(void);
 #endif
 
 #if FAPP_CFG_EXP_CMD 
-extern struct fnet_shell fapp_fs_shell;
+extern const struct fnet_shell fapp_fs_shell;
+#endif
+
+#if defined(__cplusplus)
+}
 #endif
 
 #endif

@@ -63,12 +63,12 @@ void fapp_llmnr_release(void)
 *
 * DESCRIPTION: Run LLMNR server.
 *************************************************************************/
-void fapp_llmnr_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_llmnr_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     struct fnet_llmnr_params    params;
     fnet_llmnr_desc_t           llmnr_desc;
 
-    if(argc == 1) /* By default is "init".*/
+    if(argc == 1u) /* By default is "init".*/
     {
         /* Init parameters.*/
         fnet_memset_zero(&params, sizeof(params));
@@ -91,7 +91,7 @@ void fapp_llmnr_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
             fnet_shell_println(desc, FAPP_INIT_ERR, "LLMNR");
         }
     }
-    else if(argc == 2 && fnet_strcasecmp(&FAPP_COMMAND_RELEASE[0], argv[1]) == 0) /* [release] */
+    else if((argc == 2u) && (fnet_strcasecmp(&FAPP_COMMAND_RELEASE[0], argv[1]) == 0)) /* [release] */
     {
         fapp_llmnr_release();
     }

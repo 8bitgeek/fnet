@@ -41,50 +41,14 @@
 
 #define _FNET_STDLIB_H_
 
-
-
 /*! @addtogroup fnet_stdlib
 * The standard library defines general purpose functions, including string converting, searching and other data manipulations.
 */
 
 /*! @{ */
 
-#include <stdarg.h>
-/**************************************************************************/ /*!
- * @brief Type to hold information about variable arguments.
- * @showinitializer
- ******************************************************************************/
-#define fnet_va_list                va_list                             
-#define fnet_va_start(ap, parm)     va_start(ap, parm)  /* Initialize a variable argument list.*/
-#define fnet_va_end(ap)             va_end(ap)          /* End using variable argument list.*/
-#define fnet_va_arg(ap, type)       va_arg(ap, type)    /* Retrieve next argument.*/
-
-#if 0 /* To be deleted as it is fully compiler dependant */ /* For MCF CW */
-    /* Type to hold information about variable arguments. */
-    typedef char *fnet_va_list;
-    /* Initialize a variable argument list.*/
-    #define fnet_va_start(ap, parm) ap = (char *)(&parm + 1)
-    /* End using variable argument list.*/
-    #define fnet_va_end(ap)         ((void)0)
-    /* Retrieve next argument.*/
-    #define fnet_va_arg(ap, type)   (*(type *)((ap += (sizeof(type) + 3U) & ~3U) - (sizeof(type))))
-#endif
-
+#include <stdarg.h> /* For va_list etc.*/
 #include "fnet.h"
-
-/**************************************************************************/ /*!
- * @def FNET_TRUE
- * @brief TRUE Boolean value.
- * @showinitializer 
- ******************************************************************************/
-#define FNET_TRUE       (1)
-
-/**************************************************************************/ /*!
- * @def FNET_FALSE
- * @brief FALSE Boolean value.
- * @showinitializer 
- ******************************************************************************/
-#define FNET_FALSE      (0)
 
 /**************************************************************************/ /*!
  * @def FNET_NULL
@@ -93,6 +57,39 @@
  ******************************************************************************/
 #define FNET_NULL       (0)
 
+/**************************************************************************/ /*!
+ * @brief Unsigned integer type representing the size in bytes.
+ ******************************************************************************/ 
+typedef unsigned long fnet_size_t;
+
+/**************************************************************************/ /*!
+ * @brief Unsigned integer type representing the bit flag.
+ ******************************************************************************/ 
+typedef unsigned int fnet_flag_t;
+
+/**************************************************************************/ /*!
+ * @brief Unsigned integer type representing the index.
+ ******************************************************************************/ 
+typedef unsigned int fnet_index_t;
+
+/**************************************************************************/ /*!
+ * @brief Type representing the charecter.
+ ******************************************************************************/ 
+typedef char fnet_char_t;
+
+
+/**************************************************************************/ /*!
+ * @brief Boolean type.
+ ******************************************************************************/ 
+typedef enum
+{
+    FNET_FALSE = 0, /**< @brief FALSE Boolean value.*/
+    FNET_TRUE  = 1  /**< @brief TRUE Boolean value.*/
+} fnet_bool_t;
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -110,7 +107,7 @@
  * memory area pointed by @c from_ptr to memory area pointed by @c to_ptr.
  *
  ******************************************************************************/
-void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const void *from_ptr, unsigned number_of_bytes);
+void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const void *from_ptr, fnet_size_t number_of_bytes);
 
 /***************************************************************************/ /*!
  *
@@ -130,7 +127,7 @@ void fnet_memcpy(FNET_COMP_PACKED_VAR void *to_ptr, FNET_COMP_PACKED_VAR const v
  * It is used for a function relocation from Flash to RAM.
  *
  ******************************************************************************/
-void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, unsigned to_buf_size);
+void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, fnet_size_t to_buf_size);
 
 /***************************************************************************/ /*!
  *
@@ -140,7 +137,7 @@ void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, unsigned to_
  *
  * @param value     Value to be set. @n
  *                  The value is passed as an @c int, but the function converts 
- *                  it to an @c unsigned @c char.
+ *                  it to @c fnet_uint8_t.
  *
  * @param n         Number of bytes to be set.
  *
@@ -152,7 +149,7 @@ void *fnet_memcpy_func(void *to_buf_ptr, const void *from_func_ptr, unsigned to_
  * @c dest with the constant byte @c value.
  *
  ******************************************************************************/
-void fnet_memset(void *dest, int value, unsigned int n);
+void fnet_memset(void *dest, fnet_uint8_t value, fnet_size_t n);
 
 /***************************************************************************/ /*!
  *
@@ -170,7 +167,7 @@ void fnet_memset(void *dest, int value, unsigned int n);
  * @c dest with zeros.
  *
  ******************************************************************************/
-void fnet_memset_zero(void *dest, unsigned int n );
+void fnet_memset_zero(void *dest, fnet_size_t n );
 
 /***************************************************************************/ /*!
  *
@@ -192,7 +189,7 @@ void fnet_memset_zero(void *dest, unsigned int n );
  * they all match, otherwise returns @c 1.
  *
  ******************************************************************************/
-int fnet_memcmp(const void *src1, const void *src2, unsigned int count );
+fnet_int32_t fnet_memcmp(const void *src1, const void *src2, fnet_size_t count );
 
 /***************************************************************************/ /*!
  *
@@ -208,7 +205,7 @@ int fnet_memcmp(const void *src1, const void *src2, unsigned int count );
  * points, not including the terminating null byte.
  *
  ******************************************************************************/
-unsigned long fnet_strlen (const char *str);
+fnet_size_t fnet_strlen (const fnet_char_t *str);
 
 /***************************************************************************/ /*!
  *
@@ -226,7 +223,7 @@ unsigned long fnet_strlen (const char *str);
  * The resulting string is null-terminated. 
  *
  ******************************************************************************/
-void fnet_strcat (char *dest, const char *src);
+void fnet_strcat (fnet_char_t *dest, const fnet_char_t *src);
 
 /***************************************************************************/ /*!
  *
@@ -248,7 +245,7 @@ void fnet_strcat (char *dest, const char *src);
  * The resulting string is null-terminated. 
  *
  ******************************************************************************/
-void fnet_strncat (char *dest, const char *src, unsigned int n);
+void fnet_strncat (fnet_char_t *dest, const fnet_char_t *src, fnet_size_t n);
 
 /***************************************************************************/ /*!
  *
@@ -265,7 +262,7 @@ void fnet_strncat (char *dest, const char *src, unsigned int n);
  * by @c dest, including the terminating null character.
  *
  ******************************************************************************/
-void fnet_strcpy (char *dest, const char *src);
+void fnet_strcpy (fnet_char_t *dest, const fnet_char_t *src);
 
 /***************************************************************************/ /*!
  *
@@ -285,7 +282,7 @@ void fnet_strcpy (char *dest, const char *src);
  * The result string is null-terminated.
  *
  ******************************************************************************/
-void fnet_strncpy( char *dest, const char *src, unsigned long n );
+void fnet_strncpy( fnet_char_t *dest, const fnet_char_t *src, fnet_size_t n );
 
 /***************************************************************************/ /*!
  *
@@ -304,7 +301,7 @@ void fnet_strncpy( char *dest, const char *src, unsigned long n );
  * in the string pointed to by @c str..
  *
  ******************************************************************************/
-char *fnet_strrchr( const char *str, int chr );
+fnet_char_t *fnet_strrchr( const fnet_char_t *str, fnet_char_t chr );
 
 /***************************************************************************/ /*!
  *
@@ -323,7 +320,7 @@ char *fnet_strrchr( const char *str, int chr );
  * in the string pointed to by @c str.
  *
  ******************************************************************************/
-char *fnet_strchr(const char *str, int chr );
+fnet_char_t *fnet_strchr(const fnet_char_t *str, fnet_char_t chr );
 
 /***************************************************************************/ /*!
  *
@@ -343,7 +340,7 @@ char *fnet_strchr(const char *str, int chr );
  * (excluding the terminating null byte) in the string @c str. 
  *
  ******************************************************************************/
-char *fnet_strstr( const char *str, const char *substr );
+fnet_char_t *fnet_strstr( const fnet_char_t *str, const fnet_char_t *substr );
 
 /***************************************************************************/ /*!
  *
@@ -363,7 +360,7 @@ char *fnet_strstr( const char *str, const char *substr );
  * they all match or the difference between the first two differing characters.
  *
  ******************************************************************************/
-int fnet_strcmp( const char *str1, const char *str2 );
+fnet_int32_t fnet_strcmp( const fnet_char_t *str1, const fnet_char_t *str2 );
 
 /***************************************************************************/ /*!
  *
@@ -388,7 +385,7 @@ int fnet_strcmp( const char *str1, const char *str2 );
  * the first two differing characters.
  *
  ******************************************************************************/
-int fnet_strncmp( const char *str1, const char *str2, unsigned int n );
+fnet_int32_t fnet_strncmp( const fnet_char_t *str1, const fnet_char_t *str2, fnet_size_t n );
 
 /***************************************************************************/ /*!
  *
@@ -411,13 +408,13 @@ int fnet_strncmp( const char *str1, const char *str2, unsigned int n );
  * respectively, to be less than, to match, or be greater than @c str2.
  *
  ******************************************************************************/
-int fnet_strcasecmp( const char *str1, const char *str2 );
+fnet_int32_t fnet_strcasecmp( const fnet_char_t *str1, const fnet_char_t *str2 );
 
 /***************************************************************************/ /*!
  *
  * @brief           Compares two strings, with additional terminator.
  *
- * @param in_str      Pointer to the null or @c splitter terminated string to be compared.
+ * @param in_str    Pointer to the null or @c splitter terminated string to be compared.
  *
  * @param name      Pointer to the null-terminated string to be compared.
  *
@@ -434,7 +431,7 @@ int fnet_strcasecmp( const char *str1, const char *str2 );
  * The @c name string can be terminated by null or @c splitter character.
  *
  ******************************************************************************/
-int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter);
+fnet_int32_t fnet_strcmp_splitter( const fnet_char_t *in_str, const fnet_char_t *name, fnet_char_t splitter);
 
 /***************************************************************************/ /*!
  *
@@ -462,7 +459,7 @@ int fnet_strcmp_splitter( const char *in_str, const char *name, char splitter);
  * digits greater than 9. 
  *
  ******************************************************************************/
-unsigned long fnet_strtoul (const char *str, char **ptr, int base);
+fnet_uint32_t fnet_strtoul (const fnet_char_t *str, fnet_char_t **ptr, fnet_size_t base);
 
 /***************************************************************************/ /*!
  *
@@ -494,7 +491,7 @@ unsigned long fnet_strtoul (const char *str, char **ptr, int base);
  * The @c delimiter string may be different for each call.
  *
  ******************************************************************************/
-char * fnet_strtok_r(char *str, const char *delimiter, char **last);
+fnet_char_t *fnet_strtok_r(fnet_char_t *str, const fnet_char_t *delimiter, fnet_char_t **last);
 
 /***************************************************************************/ /*!
  *
@@ -510,7 +507,11 @@ char * fnet_strtok_r(char *str, const char *delimiter, char **last);
  * lowercase letter. 
  *
  ******************************************************************************/
-char fnet_tolower( const char to_lower );
+fnet_char_t fnet_tolower( fnet_char_t to_lower );
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 /*! @} */

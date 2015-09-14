@@ -72,7 +72,7 @@
 /**************************************************************************
  *  Maximum Timer number that is avaiable on the used platform.
  ******************************************************************************/
-#define  FNET_CFG_CPU_TIMER_NUMBER_MAX              (3)
+#define  FNET_CFG_CPU_TIMER_NUMBER_MAX              (3u)
 
 
 /******************************************************************************
@@ -102,7 +102,6 @@
 /*****************************************************************************
  *  Byte order is little endian. 
  ******************************************************************************/ 
-#undef FNET_CFG_CPU_LITTLE_ENDIAN
 #define FNET_CFG_CPU_LITTLE_ENDIAN                      (1)
 
 /*****************************************************************************
@@ -117,7 +116,7 @@
  ******************************************************************************/ 
 #if FNET_CFG_CPU_SRAM_SIZE
 #ifndef FNET_CFG_CPU_SRAM_ADDRESS 
-    #define FNET_CFG_CPU_SRAM_ADDRESS   ((unsigned long)(0x20000000U - (FNET_CFG_CPU_SRAM_SIZE/2U))) /* SRAM_L = [0x2000_0000–(SRAM_size/2)]*/
+    #define FNET_CFG_CPU_SRAM_ADDRESS   ((fnet_uint32_t)(0x20000000U - (FNET_CFG_CPU_SRAM_SIZE/2U))) /* SRAM_L = [0x2000_0000–(SRAM_size/2)]*/
 #endif
 #endif
 

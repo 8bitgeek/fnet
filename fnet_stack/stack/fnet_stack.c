@@ -44,18 +44,17 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-static int fnet_stack_init( void );
+static fnet_return_t fnet_stack_init( void );
 static void fnet_stack_release( void );
-
 
 /************************************************************************
 * NAME: fnet_init
 *
 * DESCRIPTION: 
 *************************************************************************/
-int fnet_init( struct fnet_init_params *init_params )
+fnet_return_t fnet_init( struct fnet_init_params *init_params )
 {
-    int result = FNET_ERR;
+    fnet_return_t result = FNET_ERR;
 
     if(init_params 
         && (fnet_os_mutex_init() == FNET_OK)
@@ -63,11 +62,15 @@ int fnet_init( struct fnet_init_params *init_params )
     {
         fnet_os_mutex_lock();
 
-        if(fnet_enabled == 0) /* Is enabled already?. */
+        if(_fnet_enabled == FNET_FALSE) /* Is enabled already?. */
         {
             if((result = fnet_heap_init(init_params->netheap_ptr, init_params->netheap_size)) == FNET_OK )
-              if((result = fnet_stack_init()) == FNET_OK)
-                fnet_enabled = 1; /* Mark the stack is enabled. */
+            {
+                if((result = fnet_stack_init()) == FNET_OK)
+                {
+                    _fnet_enabled = FNET_TRUE; /* Mark the stack is enabled. */
+                }
+            }
         }
 
         fnet_os_mutex_unlock();
@@ -81,9 +84,9 @@ int fnet_init( struct fnet_init_params *init_params )
 *
 * DESCRIPTION: 
 *************************************************************************/
-int fnet_init_static(void)
+fnet_return_t fnet_init_static(void)
 {
-    static unsigned char heap[FNET_CFG_HEAP_SIZE];
+    static fnet_uint8_t heap[FNET_CFG_HEAP_SIZE];
     struct fnet_init_params init_params;
 
     init_params.netheap_ptr = heap;
@@ -101,10 +104,10 @@ void fnet_release(void)
 {
     fnet_os_mutex_lock();
 
-    if(fnet_enabled)
+    if(_fnet_enabled)
     {
         fnet_stack_release();
-        fnet_enabled = 0;
+        _fnet_enabled = FNET_FALSE;
     }
 
     fnet_os_mutex_unlock();
@@ -117,24 +120,30 @@ void fnet_release(void)
 *
 * DESCRIPTION: TCP/IP Stack initialization.
 ************************************************************************/
-static int fnet_stack_init( void )
+static fnet_return_t fnet_stack_init( void )
 {
     fnet_isr_init();
    
     if (fnet_timer_init(FNET_TIMER_PERIOD_MS) == FNET_ERR)
+    {
         goto ERROR;
+    }
 
-#if FNET_CFG_DEBUG_STARTUP_MS
+#if FNET_CFG_DEBUG_STARTUP_MS && FNET_CFG_DEBUG
 	fnet_println("\n Waiting %d Seconds...", FNET_CFG_DEBUG_STARTUP_MS/1000);
 	fnet_timer_delay(fnet_timer_ms2ticks(FNET_CFG_DEBUG_STARTUP_MS));
 #endif
  
     if(fnet_prot_init() == FNET_ERR)
+    {
         goto ERROR;
+    }
     fnet_socket_init();
 
     if(fnet_netif_init_all() == FNET_ERR)
+    {
         goto ERROR;
+    }
 
     return (FNET_OK);
 ERROR:

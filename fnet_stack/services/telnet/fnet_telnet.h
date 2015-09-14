@@ -133,7 +133,11 @@ struct fnet_telnet_params
  * @brief Telnet server descriptor.
  * @see fnet_telnet_init()
  ******************************************************************************/
-typedef long fnet_telnet_desc_t;
+typedef fnet_int32_t fnet_telnet_desc_t;
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -208,7 +212,11 @@ void fnet_telnet_close_session(fnet_telnet_desc_t desc);
  * This function detects if the Telnet Server service is initialized or is released.
  *
  ******************************************************************************/
-int fnet_telnet_enabled(fnet_telnet_desc_t desc);
+fnet_bool_t fnet_telnet_enabled(fnet_telnet_desc_t desc);
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

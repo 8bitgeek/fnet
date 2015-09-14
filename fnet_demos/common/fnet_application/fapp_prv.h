@@ -50,43 +50,51 @@
 /************************************************************************
 *    Definitions.
 *************************************************************************/
-extern const char FAPP_HELP_STR[];
-extern const char FAPP_DELIMITER_STR[];
-extern const char FAPP_CANCELLED_STR[];
-extern const char FAPP_TOCANCEL_STR[];
-extern const char FAPP_COMMAND_RELEASE[]; /* Service release command */
+extern const fnet_char_t FAPP_HELP_STR[];
+extern const fnet_char_t FAPP_DELIMITER_STR[];
+extern const fnet_char_t FAPP_CANCELLED_STR[];
+extern const fnet_char_t FAPP_TOCANCEL_STR[];
+extern const fnet_char_t FAPP_COMMAND_RELEASE[]; /* Service release command */
 
-extern const char FAPP_PARAM_ERR[];
-/*DM extern const char FAPP_NET_ERR[] */
-extern const char FAPP_INIT_ERR[];
+extern const fnet_char_t FAPP_PARAM_ERR[];
+/*DM extern const fnet_char_t FAPP_NET_ERR[] */
+extern const fnet_char_t FAPP_INIT_ERR[];
 
-extern const char FAPP_SHELL_INFO_FORMAT_S[];
-extern const char FAPP_SHELL_INFO_FORMAT_D[];
-extern const char FAPP_SHELL_INFO_ENABLED[];
-extern const char FAPP_SHELL_INFO_DISABLED[];
-extern const char FAPP_SHELL_CANCELED_CTRL_C[];
-
-/************************************************************************
-*     Function Prototypes
-*************************************************************************/
-void fapp_help_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
-void fapp_shell_init( fnet_shell_desc_t desc );
-void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif );
-void fapp_go_cmd ( fnet_shell_desc_t desc, int argc, char ** argv );
-void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family, fnet_netif_desc_t netif, int print_type);
-extern fnet_netif_desc_t fapp_default_netif;
-extern const struct fnet_shell_command fapp_cmd_table [];
+extern const fnet_char_t FAPP_SHELL_INFO_FORMAT_S[];
+extern const fnet_char_t FAPP_SHELL_INFO_FORMAT_D[];
+extern const fnet_char_t FAPP_SHELL_INFO_ENABLED[];
+extern const fnet_char_t FAPP_SHELL_INFO_DISABLED[];
+extern const fnet_char_t FAPP_SHELL_CANCELED_CTRL_C[];
 
 /* Boot mode structure. */
 struct boot_mode
 {
-    unsigned char index;
-    char * name;
+    fapp_params_boot_mode_t index;
+    fnet_char_t                    *name;
     void(* handler)(fnet_shell_desc_t desc);
 };
 
-const struct boot_mode *fapp_boot_mode_by_name (char *name);
-const struct boot_mode *fapp_boot_mode_by_index (unsigned long index);
+extern fnet_netif_desc_t fapp_default_netif;
+extern const struct fnet_shell_command fapp_cmd_table [];
 
+/************************************************************************
+*     Function Prototypes
+*************************************************************************/
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+void fapp_help_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+void fapp_shell_init( fnet_shell_desc_t desc );
+void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif );
+void fapp_go_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+void fapp_netif_addr_print(fnet_shell_desc_t desc, fnet_address_family_t family, fnet_netif_desc_t netif, fnet_bool_t print_type);
+const struct boot_mode *fapp_boot_mode_by_name (fnet_char_t *name);
+const struct boot_mode *fapp_boot_mode_by_index (fapp_params_boot_mode_t index);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

@@ -110,7 +110,7 @@ typedef enum
 struct fnet_dns_resolved_addr
 {
     struct sockaddr             resolved_addr;      /**< @brief Socket address of the resolved host name.*/
-    unsigned long               resolved_addr_ttl;  /**< @brief Specifies the time interval (in seconds) that the 
+    fnet_uint32_t               resolved_addr_ttl;  /**< @brief Specifies the time interval (in seconds) that the 
                                                     * resolved address may be cached before it should be discarded.*/
 };
 
@@ -128,7 +128,7 @@ struct fnet_dns_resolved_addr
  *
  * @see fnet_dns_resolve(), fnet_dns_params
  ******************************************************************************/  
-typedef void(*fnet_dns_handler_resolved_t)(const struct fnet_dns_resolved_addr *addr_list, int addr_list_size, long cookie);
+typedef void(*fnet_dns_handler_resolved_t)(const struct fnet_dns_resolved_addr *addr_list, fnet_size_t addr_list_size, fnet_uint32_t cookie);
 
 /**************************************************************************/ /*!
  * @brief Initialization parameters for the @ref fnet_dns_init() function.
@@ -137,15 +137,19 @@ struct fnet_dns_params
 {
     struct sockaddr             dns_server_addr;    /**< @brief Socket address of the remote DNS server to 
                                                     * connect to. */
-    char                        *host_name;         /**< @brief Host name to resolve (null-terminated string). */
+    fnet_char_t                       *host_name;         /**< @brief Host name to resolve (null-terminated string). */
     fnet_address_family_t       addr_family;        /**< @brief Family of the IP Address which is queried.*/
     fnet_dns_handler_resolved_t handler;            /**< @brief Pointer to the callback function defined by 
                                                     * @ref fnet_dns_handler_resolved_t. It is called when the 
                                                     * DNS-client resolving is finished or an error is occurred. */
-    long                        cookie;             /**< @brief Optional application-specific parameter. @n 
+    fnet_uint32_t               cookie;             /**< @brief Optional application-specific parameter. @n 
                                                     * It's passed to the @c handler callback 
                                                     * function as input parameter. */
 };
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -173,7 +177,7 @@ struct fnet_dns_params
  * resolving is finished or an error is occurred.
  *
  ******************************************************************************/
-int fnet_dns_init( struct fnet_dns_params *params );
+fnet_return_t fnet_dns_init( struct fnet_dns_params *params );
 
 /***************************************************************************/ /*!
  *
@@ -208,6 +212,10 @@ void fnet_dns_release(void);
  *
  ******************************************************************************/
 fnet_dns_state_t fnet_dns_state(void);
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

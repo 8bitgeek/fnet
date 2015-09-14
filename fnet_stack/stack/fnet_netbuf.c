@@ -65,7 +65,7 @@ fnet_netbuf_t *dm_nb;
 * DESCRIPTION: Creates a new net_buf and allocates memory
 *              for a new data buffer. 
 *************************************************************************/
-fnet_netbuf_t *fnet_netbuf_new( unsigned int len, int drain )
+fnet_netbuf_t *fnet_netbuf_new( fnet_size_t len, fnet_bool_t drain )
 {
     fnet_netbuf_t   *nb;
     void            *nb_d;
@@ -83,15 +83,13 @@ fnet_netbuf_t *fnet_netbuf_new( unsigned int len, int drain )
         return (fnet_netbuf_t *)0;
     }
 
-
-    nb_d = fnet_malloc_netbuf((unsigned int)len + sizeof(int)/* For reference_counter */);
+    nb_d = fnet_malloc_netbuf(len + sizeof(fnet_uint32_t)/* For reference_counter */);
 
     if((nb_d == 0) && drain )
     {
         fnet_prot_drain();
-        nb_d = fnet_malloc_netbuf((unsigned int)len + sizeof(int)/* For reference_counter */);
+        nb_d = fnet_malloc_netbuf(len + sizeof(fnet_uint32_t)/* For reference_counter */);
     }
-
 
     if(nb_d == 0) /* If FNET_NETBUF_MALLOC_NOWAIT and no free memory for data.*/
     {
@@ -104,12 +102,12 @@ fnet_netbuf_t *fnet_netbuf_new( unsigned int len, int drain )
 
     /* In memory net_buf's data is after the descriptor "data".*/
     
-    ((int *)nb_d)[0] = 1; /* First element is used by the reference_counter.*/
-    nb->data = &((int *)nb_d)[0];
-    nb->data_ptr = &((int *)nb_d)[1];
-    nb->length = (unsigned long)len;
-    nb->total_length = (unsigned long)len;
-    nb->flags = 0;
+    ((fnet_uint32_t *)nb_d)[0] = 1u; /* First element is used by the reference_counter.*/
+    nb->data = &((fnet_uint32_t *)nb_d)[0];
+    nb->data_ptr = &((fnet_uint32_t *)nb_d)[1];
+    nb->length = len;
+    nb->total_length = len;
+    nb->flags = 0u;
 
     return (nb);
 }
@@ -120,37 +118,33 @@ fnet_netbuf_t *fnet_netbuf_new( unsigned int len, int drain )
 * DESCRIPTION: Creates a new net_buf using data buffer, 
 *              which was created before for another net_buf. 
 *************************************************************************/
-fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, int offset, int len, int drain )
+fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, fnet_size_t offset, fnet_size_t len, fnet_bool_t drain )
 {
-    fnet_netbuf_t *loc_nb, *loc_nb_head, *tmp_nb;
-    long tot_len = 0, tot_offset = 0;
+    fnet_netbuf_t   *loc_nb, *loc_nb_head, *tmp_nb;
+    fnet_int32_t    tot_len = 0;
+    fnet_size_t     tot_offset = 0u;
 
     tmp_nb = nb;
 
     do /* Calculate the total length of the buf for current net_buf chain.*/
     {
-        tot_len += tmp_nb->length;
+        tot_len += (fnet_int32_t)tmp_nb->length;
         tmp_nb = tmp_nb->next;
     } while (tmp_nb);
 
     if(len == FNET_NETBUF_COPYALL)
     {
-        tot_len -= offset;
-        len = tot_len;
+        tot_len -= (fnet_int32_t)offset;
+        len = (fnet_size_t)tot_len;
     }
     else
     {
-        if((len > tot_len - offset) || (tot_len - offset < 0))
+        if(((len + offset) > (fnet_size_t)tot_len ) || ((fnet_size_t)tot_len < offset))
         {
             return (fnet_netbuf_t *)0;
         }    
     }
     /* In tot_len finally - the size of required net_buf data*/
-
-    if(offset < 0)
-    {
-        return (fnet_netbuf_t *)0;
-    }
 
     tmp_nb = nb;
 
@@ -170,7 +164,7 @@ fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, int offset, int len, int dra
 
     loc_nb_head = loc_nb; /* Save the head of net_buf chain.*/
     loc_nb->next_chain = (fnet_netbuf_t *)0;
-    loc_nb->total_length = (unsigned long)len;
+    loc_nb->total_length = (fnet_size_t)len;
     loc_nb->flags = nb->flags;
 
     if(tmp_nb->length > offset) /* If offset less than size of 1st net_buf.*/
@@ -184,19 +178,21 @@ fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, int offset, int len, int dra
             tmp_nb = tmp_nb->next;
         }
 
-        tot_offset = (long)(tmp_nb->length + offset - tot_offset);
+        tot_offset = (tmp_nb->length + offset - tot_offset);
     }
 
     loc_nb->data = tmp_nb->data;
 
-    loc_nb->data_ptr = (unsigned char *)tmp_nb->data_ptr + tot_offset;
+    loc_nb->data_ptr = (fnet_uint8_t *)tmp_nb->data_ptr + tot_offset;
     
-    ((int *)loc_nb->data)[0] = ((int *)loc_nb->data)[0] + 1;    /* Increment the the reference_counter.*/
+    ((fnet_uint32_t *)loc_nb->data)[0] = ((fnet_uint32_t *)loc_nb->data)[0] + 1u;    /* Increment the the reference_counter.*/
     
-    tot_len = (long)(len - (tmp_nb->length - tot_offset));
+    tot_len = (fnet_int32_t)(len - (tmp_nb->length - tot_offset));
 
     if(tot_len <= 0) /* If only one net_buf required.*/
-        loc_nb->length = (unsigned long)len;
+    {
+        loc_nb->length = (fnet_size_t)len;
+    }
     else
     {
         loc_nb->length = tmp_nb->length - tot_offset;
@@ -233,16 +229,20 @@ fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, int offset, int len, int dra
             loc_nb->data = tmp_nb->data;
             loc_nb->flags = tmp_nb->flags; 
 
-            ((int *)loc_nb->data)[0] = ((int *)loc_nb->data)[0] + 1; /* Increment the the reference_counter.*/
+            ((fnet_uint32_t *)loc_nb->data)[0] = ((fnet_uint32_t *)loc_nb->data)[0] + 1u; /* Increment the the reference_counter.*/
 
             loc_nb->data_ptr = tmp_nb->data_ptr;
 
-            tot_len -= tmp_nb->length;
+            tot_len -= (fnet_int32_t)tmp_nb->length;
 
             if(tot_len < 0) /* for correct calculation of length */
-                loc_nb->length = tot_len + tmp_nb->length;
+            {
+                loc_nb->length = (fnet_size_t)(tot_len + (fnet_int32_t)tmp_nb->length);
+            }
             else
+            {
                 loc_nb->length = tmp_nb->length;
+            }
         } 
         while (tot_len > 0);
     }
@@ -258,14 +258,16 @@ fnet_netbuf_t *fnet_netbuf_copy( fnet_netbuf_t *nb, int offset, int len, int dra
 * DESCRIPTION: Creates a new net_buf and fills it by a content of 
 *              the external data buffer. 
 *************************************************************************/
-fnet_netbuf_t *fnet_netbuf_from_buf( void *data_ptr, int len, int drain )
+fnet_netbuf_t *fnet_netbuf_from_buf( void *data_ptr, fnet_size_t len, fnet_bool_t drain )
 {
     fnet_netbuf_t *nb;
     
     nb = fnet_netbuf_new(len, drain);
 
     if(nb)
-        fnet_memcpy(nb->data_ptr, data_ptr, (unsigned int)len);
+    {
+        fnet_memcpy(nb->data_ptr, data_ptr, len);
+    }
 
     return (nb);
 }
@@ -277,16 +279,23 @@ fnet_netbuf_t *fnet_netbuf_from_buf( void *data_ptr, int len, int drain )
 *              info from all net buffers of the current chain. 
 *************************************************************************/
 
-void fnet_netbuf_to_buf( fnet_netbuf_t *nb, int offset, int len, void *data_ptr )
+void fnet_netbuf_to_buf( fnet_netbuf_t *nb, fnet_size_t offset, fnet_size_t len, void *data_ptr )
 {
-    unsigned char *u_buf;
-    fnet_netbuf_t *tmp_nb;
-    long tot_len = 0, tot_offset = 0, cur_len;
+    fnet_uint8_t    *u_buf;
+    fnet_netbuf_t   *tmp_nb;
+    fnet_size_t     tot_len = 0u;
+    fnet_size_t     tot_offset = 0u;
+    fnet_size_t     cur_len;
 
-    u_buf = data_ptr;
+    u_buf = (fnet_uint8_t *)data_ptr;
+
+    if(len == 0u)
+    {
+        return; /* if input params aren't correct. */
+    }
+
 
     tmp_nb = nb;
-
     /* This part is similar to the corresponding part in fnet_netbuf_copy */
     do
     {
@@ -297,22 +306,17 @@ void fnet_netbuf_to_buf( fnet_netbuf_t *nb, int offset, int len, void *data_ptr 
     if(len == FNET_NETBUF_COPYALL) /* If buffer should contain info from all net buffers */
     {
         tot_len -= offset;
-        len = tot_len;
+        len = (fnet_size_t)tot_len;
     }
     else
     {
-        if((len > tot_len - offset) || (tot_len - offset < 0))
+        if(((len + offset) > tot_len) || (tot_len < offset))
         {
        
             return; /* if input params aren't correct. */
         }
     }
 
-    if((offset < 0) || (len == 0))
-    {
-    
-        return; /* if input params aren't correct. */
-    }
 
     tmp_nb = nb;
 
@@ -327,7 +331,7 @@ void fnet_netbuf_to_buf( fnet_netbuf_t *nb, int offset, int len, void *data_ptr 
             tmp_nb = tmp_nb->next;
         }
 
-        tot_offset = (long)(tmp_nb->length + offset - tot_offset);
+        tot_offset = (tmp_nb->length + offset - tot_offset);
     }
 
     tot_len = len;
@@ -335,16 +339,16 @@ void fnet_netbuf_to_buf( fnet_netbuf_t *nb, int offset, int len, void *data_ptr 
     do
     {
         /* Calculate the quantity of bytes we copy from the current net_buf*/
-        cur_len = (long)((tmp_nb->length - tot_offset > tot_len) ? tot_len : tmp_nb->length - tot_offset);
+        cur_len = ((tmp_nb->length - tot_offset > tot_len) ? tot_len : tmp_nb->length - tot_offset);
         /* and substract from the total quantity of bytes we copy */
         tot_len -= cur_len;
 
-        fnet_memcpy(u_buf, (unsigned char *)tmp_nb->data_ptr + tot_offset, (unsigned int)cur_len);
-        tot_offset = 0;          /* offset is only for the first peace of data*/
+        fnet_memcpy(u_buf, (fnet_uint8_t *)tmp_nb->data_ptr + tot_offset, (fnet_size_t)cur_len);
+        tot_offset = 0u;          /* offset is only for the first peace of data*/
 
         u_buf = u_buf + cur_len; /* move the pointer for the next copy */
         tmp_nb = tmp_nb->next;   /* go to the next net_buf in the chain */     
-    } while (tot_len > 0);
+    } while (tot_len);
     
 }
 
@@ -360,11 +364,14 @@ fnet_netbuf_t *fnet_netbuf_free( fnet_netbuf_t *nb )
    
     if(nb != 0)
     {
-        
-        if(((int *)nb->data)[0] == 1)   /* If nobody uses this data buffer. */
+        if(((fnet_uint32_t *)nb->data)[0] == 1u)   /* If nobody uses this data buffer. */
+        {
             fnet_free_netbuf(nb->data);
+        }
         else                           /* else decrement reference counter */
-            ((int *)nb->data)[0] = ((int *)nb->data)[0] - 1;
+        {
+            ((fnet_uint32_t *)nb->data)[0] = ((fnet_uint32_t *)nb->data)[0] - 1u;
+        }
 
         tmp_nb = nb->next;
 
@@ -392,11 +399,14 @@ void fnet_netbuf_free_chain( fnet_netbuf_t *nb )
     {
         tmp_nb = nb->next;
         
-        if(((int *)nb->data)[0] == 1)   /* If nobody uses this data buffer. */
+        if(((fnet_uint32_t *)nb->data)[0] == 1u)   /* If nobody uses this data buffer. */
+        {
             fnet_free_netbuf(nb->data);
+        }
         else                            /* Else decrement reference counter */
-            ((int *)nb->data)[0] = ((int *)nb->data)[0] - 1;
-
+        {
+            ((fnet_uint32_t *)nb->data)[0] = ((fnet_uint32_t *)nb->data)[0] - 1u;
+        }
 
         fnet_free_netbuf(nb);
 
@@ -410,61 +420,70 @@ void fnet_netbuf_free_chain( fnet_netbuf_t *nb )
 * DESCRIPTION: Create a data buffer for the first net_buf with the 
 *              length len 
 *************************************************************************/
-fnet_netbuf_t *fnet_netbuf_pullup( fnet_netbuf_t *nb, int len)
+fnet_return_t fnet_netbuf_pullup( fnet_netbuf_t **nb_ptr, fnet_size_t len)
 {
-    unsigned long   tot_len = 0;
-    unsigned long   offset;
+    fnet_netbuf_t   *nb = *nb_ptr;
+    fnet_size_t     tot_len = 0u;
+    fnet_size_t     offset;
     fnet_netbuf_t   *tmp_nb;
     fnet_netbuf_t   *nb_run;
     void            *new_buf;
     
     /* Check length*/
     if(nb->total_length < len)
-        return FNET_NULL;
+    {
+        return FNET_OK;
+    }
     
-    if((nb->length >= len) || (len <= 0) || (nb == 0))
+    if((nb->length >= len) || (len == 0u) || (nb == 0))
+    {
         /* if function shouldn't do anything*/
-        return (nb);
+        return FNET_OK;
+    }
 
     tmp_nb = nb;
 
     tot_len += tmp_nb->length;
 
     /* search of the last buffer, from which the data have to be copied*/
-    while(tot_len < len && tmp_nb)
+    while((tot_len < len) && tmp_nb)
     {
         tmp_nb = tmp_nb->next;
         tot_len += tmp_nb->length;
     }
 
-    new_buf = (struct net_buf_data *)fnet_malloc_netbuf((unsigned int)len + sizeof(int)/* For reference_counter */);
+    new_buf = (struct net_buf_data *)fnet_malloc_netbuf((fnet_size_t)len + sizeof(fnet_uint32_t)/* For reference_counter */);
 
     if(new_buf == 0)
     {
-        return (FNET_NULL);
+        return FNET_ERR;
     }
        
-    ((int *)new_buf)[0] = 1; /* First element is used by the reference_counter.*/
+    ((fnet_uint32_t *)new_buf)[0] = 1u; /* First element is used by the reference_counter.*/
 
     /* Copy into it the contents of first data buffer. Skip the reference counter (placed in the first bytes). */
-    fnet_memcpy(&((int *)new_buf)[1], nb->data_ptr, nb->length);
+    fnet_memcpy(&((fnet_uint32_t *)new_buf)[1], nb->data_ptr, nb->length);
     offset = nb->length;
 
     /* Free old data buffer (for the first net_buf) */
-    if(((int *)nb->data)[0] == 1)   /* If nobody uses this data buffer. */
+    if(((fnet_uint32_t *)nb->data)[0] == 1u)   /* If nobody uses this data buffer. */
+    {
         fnet_free_netbuf(nb->data);
+    }
     else                            /* Else decrement reference counter */
-        ((int *)nb->data)[0] = ((int *)nb->data)[0] - 1;
+    {
+        ((fnet_uint32_t *)nb->data)[0] = ((fnet_uint32_t *)nb->data)[0] - 1u;
+    }
 
     /* Currently data buffer contains the contents of the first buffer */
-    nb->data = &((int *)new_buf)[0];
-    nb->data_ptr = &((int *)new_buf)[1];
+    nb->data = &((fnet_uint32_t *)new_buf)[0];
+    nb->data_ptr = &((fnet_uint32_t *)new_buf)[1];
 
     nb_run = nb->next;      /* Let's start from the next buffer */
 
     while(nb_run != tmp_nb) /* Copy full data buffers */
     {
-        fnet_memcpy((unsigned char *)nb->data_ptr + offset, nb_run->data_ptr, nb_run->length);
+        fnet_memcpy((fnet_uint8_t *)nb->data_ptr + offset, nb_run->data_ptr, nb_run->length);
 
         if(nb_run != tmp_nb)
         {
@@ -478,23 +497,27 @@ fnet_netbuf_t *fnet_netbuf_pullup( fnet_netbuf_t *nb, int len)
     /* Copy the remaining part and change data pointer and length of the 
      * last net_buf, which is the source for the first net_buf */
 
-    fnet_memcpy((unsigned char *)nb->data_ptr + offset, nb_run->data_ptr, tot_len);
+    fnet_memcpy((fnet_uint8_t *)nb->data_ptr + offset, nb_run->data_ptr, tot_len);
 
     nb_run->length -= tot_len;
 
-    if(nb_run->length == 0)
+    if(nb_run->length == 0u)
     {
         nb_run = fnet_netbuf_free(nb_run);
     }
     else
-        nb_run->data_ptr = (unsigned char *)nb_run->data_ptr + tot_len;
+    {
+        nb_run->data_ptr = (fnet_uint8_t *)nb_run->data_ptr + tot_len;
+    }
 
     /* Setting up the params of the first net_buf.*/
     nb->next = nb_run;
 
-    nb->length = (unsigned long)len;
+    nb->length = (fnet_size_t)len;
 
-    return (nb);
+    *nb_ptr = nb;
+
+    return FNET_OK;
 }
 
 
@@ -505,32 +528,36 @@ fnet_netbuf_t *fnet_netbuf_pullup( fnet_netbuf_t *nb, int len)
 *              is positive. Otherwise len bytes should be trimmed from the
 *              end of net_buf buffer. If len=0 - do nothing
 *************************************************************************/
-void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, int len )
+void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, fnet_int32_t len )
 {
     fnet_netbuf_t   *head_nb;
     fnet_netbuf_t   *nb;
-    long            tot_len;
-    long            total_rem;
+    fnet_size_t     tot_len;
+    fnet_size_t     total_rem;
     fnet_netbuf_t   *tmp_nb;
     
 
     if(len == 0)
+    {
         return;
+    }
     
     tmp_nb = (fnet_netbuf_t *) *nb_ptr;
     nb = (fnet_netbuf_t *) *nb_ptr;
     head_nb = nb;
 
     /* If the quantity of trimmed bytes is greater than net_buf size - do nothing.*/
-    if((nb->total_length < (len > 0 ? len : -len)) || nb == 0)
+    if((nb->total_length < (fnet_size_t)(len > 0 ? len : -len)) || (nb == 0))
+    {
         return;
+    }
 
-    tot_len = (long)nb->length;
-    total_rem = (long)nb->total_length;
+    tot_len = nb->length;
+    total_rem = nb->total_length;
 
     if(len > 0) /* Trim len bytes from the begin of the buffer.*/
     {
-        while(nb != 0 && len >= tot_len)
+        while((nb != 0) && ((fnet_size_t)len >= tot_len))
         {
             *nb_ptr = nb->next;
             
@@ -543,15 +570,15 @@ void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, int len )
 
         if(nb != 0)
         {
-            nb->data_ptr = (unsigned char *)nb->data_ptr + /* Or change pointer. */
-                            nb->length - (tot_len - len);
-            nb->length = (unsigned long)(tot_len - len);
+            nb->data_ptr = (fnet_uint8_t *)nb->data_ptr + /* Or change pointer. */
+                            nb->length - (tot_len - (fnet_size_t)len);
+            nb->length = tot_len - (fnet_size_t)len;
             nb->flags = tmp_nb->flags; 
         }
     }
     else /* Trim len bytes from the end of the buffer. */
     {
-        while(nb != 0 && (total_rem + len > tot_len))
+        while((nb != 0) && ((fnet_int32_t)total_rem + len > (fnet_int32_t)tot_len))
         {
             nb = nb->next;         /* Run up to the first net_buf, which points */
                                     /* to the data, which should be erased.*/
@@ -564,15 +591,17 @@ void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, int len )
         /* Cut the part of the first net_buf, which should be modified.*/
         if(nb != 0)
         {
-            nb->length += (len + total_rem - tot_len);
+            nb->length += ((fnet_size_t)len + total_rem - tot_len);
 
             while(nb->next != 0) /* Cut the redundant net_bufs. */
             {
                 nb->next = fnet_netbuf_free(nb->next);
             }
 
-            if(nb->length == 0)  /* if |len| == total_length */
+            if(nb->length == 0u)  /* if |len| == total_length */
+            {
                 head_nb = fnet_netbuf_free(nb);
+            }
 
             nb = head_nb;
         }
@@ -580,7 +609,7 @@ void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, int len )
 
     if(nb != 0)
     {
-        nb->total_length = (unsigned long)(total_rem - (len > 0 ? len : -len));
+        nb->total_length = (total_rem - (fnet_size_t)(len > 0 ? len : -len));
     }
 
     *nb_ptr = nb;
@@ -593,22 +622,26 @@ void fnet_netbuf_trim( fnet_netbuf_t **nb_ptr, int len )
 * DESCRIPTION: Cuts len bytes in net_buf queue starting from offset "offset"
 *
 *************************************************************************/
-fnet_netbuf_t *fnet_netbuf_cut_center( fnet_netbuf_t ** nb_ptr, int offset, int len )
+fnet_netbuf_t *fnet_netbuf_cut_center( fnet_netbuf_t ** nb_ptr, fnet_size_t offset, fnet_size_t len )
 {
-    fnet_netbuf_t *head_nb, *tmp_nb, *nb;
-    long tot_len;
+    fnet_netbuf_t   *head_nb, *tmp_nb, *nb;
+    fnet_size_t     tot_len;
 
-    if(len == 0)
+    if(len == 0u)
+    {
         return (0);
+    }
 
     nb = (fnet_netbuf_t *) *nb_ptr;
 
     if((nb->total_length < (len + offset)) || (nb == 0))
-        return (0);
-
-    if(offset == 0) /* The first case - when we cut from the begin of buffer.*/
     {
-        fnet_netbuf_trim(&nb, len);
+        return (0);
+    }
+
+    if(offset == 0u) /* The first case - when we cut from the begin of buffer.*/
+    {
+        fnet_netbuf_trim(&nb, (fnet_int32_t)len);
         *nb_ptr = nb;
         return (nb);
     }
@@ -617,21 +650,23 @@ fnet_netbuf_t *fnet_netbuf_cut_center( fnet_netbuf_t ** nb_ptr, int offset, int 
 
     tmp_nb = nb;
 
-    tot_len = (long)nb->length;
+    tot_len = nb->length;
 
-    while(nb != 0 && (offset >= tot_len))
+    while((nb != 0) && (offset >= tot_len))
     {
         nb = nb->next;                             /* Run up th the first net_buf, which points */
         tot_len += nb->length;                     /* to the data, which should be erased.*/ 
 
         if((nb != 0) && (offset >= tot_len))
+        {
             tmp_nb = nb;                          /* To store previous pointer. */
+        }
     }
 
     if(tot_len - nb->length == offset)            /* If we start cut from the begin of buffer. */
     {
         nb->total_length = head_nb->total_length; /* For correct fnet_netbuf_trim execution.*/
-        fnet_netbuf_trim(&tmp_nb->next, len);
+        fnet_netbuf_trim(&tmp_nb->next, (fnet_int32_t)len);
         head_nb->total_length -= len;
         
         return ((fnet_netbuf_t *) *nb_ptr);
@@ -643,11 +678,11 @@ fnet_netbuf_t *fnet_netbuf_cut_center( fnet_netbuf_t ** nb_ptr, int offset, int 
         head_nb->total_length -= len;
 
         /* Split one net_uf into two.*/
-        if(((int *)nb->data)[0] == 1) /* If we can simply erase them (reference_counter == 1).*/
+        if(((fnet_uint32_t *)nb->data)[0] == 1u) /* If we can simply erase them (reference_counter == 1).*/
         {
-            fnet_memcpy((unsigned char *)nb->data_ptr + nb->length - tot_len + offset,
-                        (unsigned char *)nb->data_ptr + nb->length - tot_len + offset + len,
-                        (unsigned long)(tot_len - offset - len));
+            fnet_memcpy((fnet_uint8_t *)nb->data_ptr + nb->length - tot_len + offset,
+                        (fnet_uint8_t *)nb->data_ptr + nb->length - tot_len + offset + len,
+                        (fnet_size_t)(tot_len - offset - len));
             nb->length -= len;
         }
         else
@@ -662,8 +697,8 @@ fnet_netbuf_t *fnet_netbuf_cut_center( fnet_netbuf_t ** nb_ptr, int offset, int 
             }
 
             fnet_memcpy(head_nb->data_ptr,
-                        (unsigned char *)nb->data_ptr + nb->length - tot_len + offset + len,
-                        (unsigned long)(tot_len - offset - len));
+                        (fnet_uint8_t *)nb->data_ptr + nb->length - tot_len + offset + len,
+                        (fnet_size_t)(tot_len - offset - len));
 
             head_nb->next = nb->next;
 
@@ -688,7 +723,7 @@ fnet_netbuf_t *fnet_netbuf_cut_center( fnet_netbuf_t ** nb_ptr, int offset, int 
         nb->length -= tot_len - offset;
 
         nb->next->total_length = head_nb->total_length; /* For correct fnet_netbuf_trim execution. */
-        fnet_netbuf_trim(&nb->next, len - (tot_len - offset));
+        fnet_netbuf_trim(&nb->next, (fnet_int32_t)(len - (tot_len - offset)));
 
         head_nb->total_length -= len;
 
@@ -708,10 +743,14 @@ fnet_netbuf_t *fnet_netbuf_concat( fnet_netbuf_t *nb1, fnet_netbuf_t *nb2 )
     fnet_netbuf_t *head_nb;
 
     if(nb1 == 0)
+    {
         return nb2;
+    }
 
     if(nb2 == 0)
+    {
         return nb1;
+    }
 
     head_nb = nb1;
 
@@ -801,25 +840,27 @@ void fnet_netbuf_del_chain( fnet_netbuf_t ** nb_ptr, fnet_netbuf_t *nb_chain )
 * DESCRIPTION: Heap init
 *              
 *************************************************************************/
-int fnet_heap_init( unsigned char *heap_ptr, unsigned long heap_size )
+fnet_return_t fnet_heap_init( void *heap_ptr, fnet_size_t heap_size )
 {
-    int result;
-
+    fnet_return_t result;
 
 /* Init memory pools. */
 #if FNET_HEAP_SPLIT
     if(((fnet_mempool_main = fnet_mempool_init( heap_ptr, heap_size, FNET_MEMPOOL_ALIGN_8 )) != 0) &&
-       ((fnet_mempool_netbuf = fnet_mempool_init( (void*)((unsigned long)fnet_malloc( FNET_NETBUF_MEMPOOL_SIZE(heap_size))), 
+       ((fnet_mempool_netbuf = fnet_mempool_init( (void*)((fnet_uint32_t)fnet_malloc( FNET_NETBUF_MEMPOOL_SIZE(heap_size))), 
                                                     FNET_NETBUF_MEMPOOL_SIZE(heap_size), FNET_MEMPOOL_ALIGN_8 )) != 0) )
 
 #else
      if((fnet_mempool_main = fnet_mempool_init( heap_ptr, heap_size, FNET_MEMPOOL_ALIGN_8 )) != 0)
 #endif
+    {
         result = FNET_OK;
-     else
+    }
+    else
+    {
         result = FNET_ERR;  
-                                                             
-   
+    }
+
     return result;
 }
 
@@ -841,7 +882,7 @@ void fnet_free_netbuf( void *ap )
 * DESCRIPTION: Allocates memory in heap for TCP/IP
 *              
 *************************************************************************/
-void *fnet_malloc_netbuf( unsigned nbytes )
+void *fnet_malloc_netbuf( fnet_size_t nbytes )
 {
     return fnet_mempool_malloc( fnet_mempool_netbuf, nbytes );
 }
@@ -852,7 +893,7 @@ void *fnet_malloc_netbuf( unsigned nbytes )
 * DESCRIPTION: Returns a quantity of free memory (for debug needs)
 *              
 *************************************************************************/
-unsigned long fnet_free_mem_status_netbuf( void )
+fnet_size_t fnet_free_mem_status_netbuf( void )
 {
     return fnet_mempool_free_mem_status( fnet_mempool_netbuf );
 }
@@ -863,7 +904,7 @@ unsigned long fnet_free_mem_status_netbuf( void )
 * DESCRIPTION: Returns a maximum size of posible allocated memory chunk.
 *              
 *************************************************************************/
-unsigned long fnet_malloc_max_netbuf( void )
+fnet_size_t fnet_malloc_max_netbuf( void )
 {
     return fnet_mempool_malloc_max( fnet_mempool_netbuf  );
 }
@@ -897,7 +938,7 @@ void fnet_free( void *ap )
 * DESCRIPTION: Allocates memory in heap for TCP/IP
 *              
 *************************************************************************/
-void *fnet_malloc( unsigned nbytes )
+void *fnet_malloc( fnet_size_t nbytes )
 {
     return fnet_mempool_malloc( fnet_mempool_main, nbytes );
 }
@@ -908,7 +949,7 @@ void *fnet_malloc( unsigned nbytes )
 * DESCRIPTION: Allocates memory in heap for TCP/IP
 *              
 *************************************************************************/
-void *fnet_malloc_zero( unsigned nbytes )
+void *fnet_malloc_zero( fnet_size_t nbytes )
 {
     void *result;
 
@@ -927,7 +968,7 @@ void *fnet_malloc_zero( unsigned nbytes )
 * DESCRIPTION: Returns a quantity of free memory (for debug needs)
 *              
 *************************************************************************/
-unsigned long fnet_free_mem_status( void )
+fnet_size_t fnet_free_mem_status( void )
 {
     return fnet_mempool_free_mem_status( fnet_mempool_main );
 }
@@ -938,7 +979,7 @@ unsigned long fnet_free_mem_status( void )
 * DESCRIPTION: Returns a maximum size of posible allocated memory chunk.
 *              
 *************************************************************************/
-unsigned long fnet_malloc_max( void )
+fnet_size_t fnet_malloc_max( void )
 {
     return fnet_mempool_malloc_max( fnet_mempool_main  );
 }
@@ -955,21 +996,21 @@ void fnet_mem_release( void )
 }
 
 #if 0 /* For Debug needs.*/
-int fnet_netbuf_mempool_check( void ) 
+fnet_return_t fnet_netbuf_mempool_check( void ) 
 {
     return fnet_mempool_check(fnet_mempool_netbuf);
 }
 
-void FNET_DEBUG_NETBUF_print_chain( fnet_netbuf_t *nb, char *str, int max)
+void FNET_DEBUG_NETBUF_print_chain( fnet_netbuf_t *nb, fnet_uint8_t *str, fnet_index_t max)
 {
-    int i = 0;
-    fnet_println("== %s nb = 0x%08X ==", str, (unsigned long)nb);
+    fnet_index_t i = 0u;
+    fnet_println("== %s nb = 0x%08X ==", str, (fnet_uint32_t)nb);
     
     while(nb->next && i<max)
     {
           nb = nb->next;
           i++;
-          fnet_println("\t(%d) next = 0x%08X", i, (unsigned long)nb);
+          fnet_println("\t(%d) next = 0x%08X", i, (fnet_uint32_t)nb);
     }
 }
 #endif

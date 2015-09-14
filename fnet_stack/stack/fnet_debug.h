@@ -43,20 +43,27 @@
 
 #include "fnet.h"
 
-#if FNET_CFG_DEBUG
-
-
-#define FNET_DEBUG(...) fnet_println(__VA_ARGS__)
-
-#if FNET_CFG_DEBUG_STACK
-    extern unsigned long fnet_dbg_stack_max;
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
+#if FNET_CFG_DEBUG
+
+    #define FNET_DEBUG(...) fnet_println(__VA_ARGS__)
+
+    #if FNET_CFG_DEBUG_STACK && FNET_CFG_DEBUG
+        extern fnet_size_t fnet_dbg_stack_max;
+    #endif
 
 #else
 
-#define FNET_DEBUG(...) do{}while(0)
+    #define FNET_DEBUG(...) do{}while(0)
 
 #endif
+
+#if defined(__cplusplus)
+}
+#endif
+
 
 #endif

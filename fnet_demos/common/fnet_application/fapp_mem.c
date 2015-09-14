@@ -53,9 +53,9 @@
 /* Flash regions should be aligned to logical border. */
 struct fapp_mem_region_reserved
 {
-    char *description;
-    unsigned long address;
-    unsigned long size;
+    fnet_char_t    *description;
+    fnet_uint32_t   address;
+    fnet_size_t     size;
 };
 
 
@@ -91,10 +91,10 @@ static const struct fapp_mem_region_reserved fapp_mem_regions_reserved[] =
 #define FAPP_MEM_ERROR_WRITEFAILED  "\n ERR: Writing %d bytes to 0x%08X failed!"
 #define FAPP_MEM_ERROR_NOTERASED    "\n ERR: Memory is not erased!"
 
-static const struct fapp_mem_region *fapp_mem_region_find( unsigned long start, unsigned long n);
+static const struct fapp_mem_region *fapp_mem_region_find( fnet_uint32_t start, fnet_size_t n);
 
 #if FAPP_CFG_ERASE_CMD
-static int fapp_mem_erase( void *addr, unsigned n);
+static fnet_return_t fapp_mem_erase( void *addr, fnet_size_t n);
 #endif
 
 /************************************************************************
@@ -102,16 +102,16 @@ static int fapp_mem_erase( void *addr, unsigned n);
 *
 * DESCRIPTION: 
 ************************************************************************/
-int fapp_mem_region_is_protected( unsigned long start, unsigned long n)
+fnet_bool_t fapp_mem_region_is_protected( fnet_uint32_t start, fnet_size_t n)
 {
-    int result = 0;
-    const struct fapp_mem_region_reserved *region_reserved = fapp_mem_regions_reserved;
+    fnet_bool_t                             result = FNET_FALSE;
+    const struct fapp_mem_region_reserved   *region_reserved = fapp_mem_regions_reserved;
 
    	while(region_reserved->description)
 	{
-	    if((region_reserved->address < (start+n))&&( start <= (region_reserved->address + region_reserved->size - 1)))
+	    if((region_reserved->address < (start+n))&&( start <= (region_reserved->address + region_reserved->size - 1u)))
 	 	{
-	        result = 1;
+	        result = FNET_TRUE;
 	        break;
 	    }
 	    region_reserved++;
@@ -125,7 +125,7 @@ int fapp_mem_region_is_protected( unsigned long start, unsigned long n)
 *
 * DESCRIPTION: 
 ************************************************************************/
-static const struct fapp_mem_region *fapp_mem_region_find( unsigned long start, unsigned long n)
+static const struct fapp_mem_region *fapp_mem_region_find( fnet_uint32_t start, fnet_size_t n)
 {
     const struct fapp_mem_region *result = 0;
     const struct fapp_mem_region *region = fapp_mem_regions;
@@ -148,25 +148,25 @@ static const struct fapp_mem_region *fapp_mem_region_find( unsigned long start, 
 *
 * DESCRIPTION: 
 ************************************************************************/
-int fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, unsigned n )
+fnet_return_t fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, fnet_size_t n )
 {
-    int             i;
+    fnet_size_t     i;
     const struct    fapp_mem_region *region;
 	
-	if(fapp_mem_region_is_protected( (unsigned long)dest, n) == 0)
+	if(fapp_mem_region_is_protected( (fnet_uint32_t)dest, n) == FNET_FALSE)
 	{
     	/* Find memory region.*/
-        region = fapp_mem_region_find( (unsigned long) dest, n);
+        region = fapp_mem_region_find( (fnet_uint32_t)dest, n);
         
-        if(region && region->memcpy)
+        if(region && (region->memcpy))
         {
         #if FAPP_CFG_CHECK_FLASH_BEFORE_WRITE
             if(region->erase)
             {
                 /* Check if memory is erased.*/
-                for(i=0; i<n; i++)
+                for(i=0u; i<n; i++)
                 {
-                    if(((unsigned char *)dest)[i] != 0xFF)
+                    if(((fnet_uint8_t *)dest)[i] != 0xFFu)
                     {
                         fnet_shell_println(desc, FAPP_MEM_ERROR_NOTERASED);
                         goto FAIL;
@@ -182,7 +182,7 @@ int fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, unsign
         #if 0 /* Old code.*/
             for(i=0; i<n; i++)
             {
-                if(((volatile char *)dest)[i] !=((char *)src)[i])
+                if(((volatile fnet_uint8_t *)dest)[i] !=((fnet_uint8_t *)src)[i])
                 {
                     goto FAIL;   
                 }
@@ -190,14 +190,14 @@ int fapp_mem_memcpy (fnet_shell_desc_t desc, void *dest, const void *src, unsign
         #else
             /* Workaround of the Flash cache issue discovered on K60.*/
             /* Delay.  fnet_timer_delay(1); is too big - 100ms.*/
-            for(i=0; i<100000000; i++)
+            for(i=0u; i<100000000u; i++)
             {
                 if(fnet_memcmp(dest, src, n) == 0)
                 {
                     break;
                 }
             }
-            if(i==100000000)
+            if(i==100000000u)
             {
                 goto FAIL;
             }
@@ -219,7 +219,7 @@ FAIL:
 * Also shows the memory regions are reserved for FNET (protected).
 ************************************************************************/
 #if FAPP_CFG_MEM_CMD
-void fapp_mem_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_mem_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **argv )
 {
     const struct fapp_mem_region *mem = fapp_mem_regions;
 	const struct fapp_mem_region_reserved *region_reserved = fapp_mem_regions_reserved;
@@ -234,7 +234,7 @@ void fapp_mem_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 	while(mem->description)
 	{
 	    fnet_shell_println(desc, MEM_STR, mem->description, mem->address,	
-					        mem->address + mem->size - 1);
+					        mem->address + mem->size - 1u);
 	    mem++;
 	}
 
@@ -244,7 +244,7 @@ void fapp_mem_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 	while(region_reserved->description)
 	{
 	    fnet_shell_println(desc, MEM_STR, region_reserved->description, region_reserved->address,	
-									region_reserved->address + region_reserved->size - 1);
+									region_reserved->address + region_reserved->size - 1u);
 	    region_reserved++;
 	}
     fnet_shell_println(desc, "");	
@@ -259,15 +259,15 @@ void fapp_mem_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fapp_mem_erase( void *addr, unsigned n)
+static fnet_return_t fapp_mem_erase( void *addr, fnet_size_t n)
 {
-    int result = FNET_ERR;
-    const struct fapp_mem_region *region;
+    fnet_return_t                   result = FNET_ERR;
+    const struct fapp_mem_region    *region;
     
-    if(fapp_mem_region_is_protected( (unsigned long)addr, n) == 0)
+    if(fapp_mem_region_is_protected( (fnet_uint32_t)addr, n) == FNET_FALSE)
 	{
     	/* Find memory region.*/
-        region = fapp_mem_region_find( (unsigned long)addr, n);
+        region = fapp_mem_region_find( (fnet_uint32_t)addr, n);
         
         if(region)
         {
@@ -288,23 +288,23 @@ static int fapp_mem_erase( void *addr, unsigned n)
 ************************************************************************/
 void fapp_mem_erase_all(fnet_shell_desc_t desc)
 {
-    unsigned long addr;
-    const struct fapp_mem_region *region = fapp_mem_regions;
+    fnet_uint32_t                   addr;
+    const struct fapp_mem_region    *region = fapp_mem_regions;
     
-    unsigned long log_start_addr;
-    unsigned long log_erase_size;
-    unsigned long log_skip_size;
+    fnet_uint32_t log_start_addr;
+    fnet_size_t   log_erase_size;
+    fnet_size_t   log_skip_size;
 
    	/* Check all regions if it has erase function. */
    	while(region->description)
 	{
-        if(region->erase && region->erase_size)
+        if((region->erase) && (region->erase_size))
         {
             addr = region->address;
             
             log_start_addr = addr;
-            log_erase_size = 0;
-            log_skip_size = 0;
+            log_erase_size = 0u;
+            log_skip_size = 0u;
             
             while(addr < (region->address+region->size)) 
             {
@@ -312,8 +312,8 @@ void fapp_mem_erase_all(fnet_shell_desc_t desc)
                 {
                     if(log_skip_size)
                     {
-                        fnet_shell_println(desc, FAPP_MEM_ERASE_SKIPPED, log_start_addr, log_start_addr+log_skip_size-1); 
-                        log_skip_size = 0;
+                        fnet_shell_println(desc, FAPP_MEM_ERASE_SKIPPED, log_start_addr, log_start_addr+log_skip_size-1u); 
+                        log_skip_size = 0u;
                         log_start_addr = addr;
                     }
                     
@@ -323,8 +323,8 @@ void fapp_mem_erase_all(fnet_shell_desc_t desc)
                 {
                     if(log_erase_size)
                     {
-                        fnet_shell_println(desc, FAPP_MEM_ERASE_ERASED, log_start_addr, log_start_addr+log_erase_size-1); 
-                        log_erase_size = 0;
+                        fnet_shell_println(desc, FAPP_MEM_ERASE_ERASED, log_start_addr, log_start_addr+log_erase_size-1u); 
+                        log_erase_size = 0u;
                         log_start_addr = addr;
                     }
                     
@@ -334,9 +334,13 @@ void fapp_mem_erase_all(fnet_shell_desc_t desc)
             }
             
             if(log_erase_size)
-                fnet_shell_println(desc, FAPP_MEM_ERASE_ERASED, log_start_addr, log_start_addr+log_erase_size-1);
+            {
+                fnet_shell_println(desc, FAPP_MEM_ERASE_ERASED, log_start_addr, log_start_addr+log_erase_size-1u);
+            }
             else
-                fnet_shell_println(desc, FAPP_MEM_ERASE_SKIPPED, log_start_addr, log_start_addr+log_skip_size-1); 
+            {
+                fnet_shell_println(desc, FAPP_MEM_ERASE_SKIPPED, log_start_addr, log_start_addr+log_skip_size-1u); 
+            }
     	}
     	region++;
 	}
@@ -347,28 +351,28 @@ void fapp_mem_erase_all(fnet_shell_desc_t desc)
 *
 * DESCRIPTION:  
 ************************************************************************/
-void fapp_mem_erase_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_mem_erase_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
-	unsigned long address;
-	unsigned long size;
-	char *p;
-	int result;
+	fnet_uint32_t   address;
+	fnet_size_t     size;
+	fnet_char_t     *p;
+	fnet_return_t   result;
 
     FNET_COMP_UNUSED_ARG(desc);
 	
 	fnet_shell_println(desc, "Erasing...");
 	
-	if (argc == 3)
+	if (argc == 3u)
 	{
-		address = fnet_strtoul(argv[1],&p,16);
-		if ((address == 0) && (p == argv[1]))
+		address = fnet_strtoul(argv[1],&p,16u);
+		if ((address == 0u) && (p == argv[1]))
         {
             fnet_shell_println(desc, FAPP_PARAM_ERR, argv[1] );     
             return;
         }
         
-        size = fnet_strtoul(argv[2],&p,10);
-		if ((size == 0) && (p == argv[2]))
+        size = fnet_strtoul(argv[2],&p,10u);
+		if ((size == 0u) && (p == argv[2]))
         {
             fnet_shell_println(desc, FAPP_PARAM_ERR, argv[2] );     
             return;
@@ -376,12 +380,15 @@ void fapp_mem_erase_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
         
         result = fapp_mem_erase( (void *)address, size);
         if( result == FNET_OK)
-            fnet_shell_println(desc, FAPP_MEM_ERASE_ERASED, address, address+size-1 );
+        {
+            fnet_shell_println(desc, FAPP_MEM_ERASE_ERASED, address, address+size-1u );
+        }
         else
-            fnet_shell_println(desc, FAPP_MEM_ERASE_FAILED, address, address+size-1 );
-        
+        {
+            fnet_shell_println(desc, FAPP_MEM_ERASE_FAILED, address, address+size-1u );
+        }
     }
-    else if ((argc == 2) && fnet_strcasecmp(FAPP_MEM_ERASE_ALL, argv[1]) == 0) /* Erase all */
+    else if ((argc == 2u) && (fnet_strcasecmp(FAPP_MEM_ERASE_ALL, argv[1]) == 0)) /* Erase all */
     {
         fapp_mem_erase_all(desc);
     }

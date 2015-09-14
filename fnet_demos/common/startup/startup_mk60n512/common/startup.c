@@ -10,6 +10,11 @@
 
 #include "common.h"
 
+#if !FNET_CFG_COMP_UV
+/* Vector table address. Defined in linker file.*/
+extern fnet_uint32_t FNET_CFG_CPU_VECTOR_TABLE [1];
+#endif
+
 #if FNET_CFG_COMP_IAR
 #pragma section = ".data"
 #pragma section = ".data_init"

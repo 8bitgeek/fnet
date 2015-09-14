@@ -34,6 +34,9 @@
 /*******************************************************************************
  * API
  ******************************************************************************/
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /*!
  * @brief Make necessary initializations for RAM.
@@ -43,6 +46,10 @@
  * - Copy the vector table from ROM to RAM. This could be an option.  
  */
 void init_data_bss(void);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* _STARTUP_H_*/
 /*******************************************************************************

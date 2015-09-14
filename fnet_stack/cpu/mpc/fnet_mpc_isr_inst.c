@@ -52,16 +52,19 @@
 #include "fnet_netbuf.h"
 #include "fnet_mpc.h"
 
+/* Vector table address. Defined in linker file.*/
+extern fnet_uint32_t FNET_CFG_CPU_VECTOR_TABLE [];
+
 
 /************************************************************************
 * NAME: fnet_cpu_isr_install
 *
 * DESCRIPTION: 
 *************************************************************************/
-int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority)
+fnet_return_t fnet_cpu_isr_install(fnet_uint32_t vector_number, fnet_uint32_t priority)
 {
-    int result;
-    unsigned long *irq_vec;
+    fnet_return_t result;
+    fnet_uint32_t *irq_vec;
 
 	irq_vec = (unsigned long *) (FNET_CFG_CPU_VECTOR_TABLE)+vector_number;
 	

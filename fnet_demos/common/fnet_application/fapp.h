@@ -46,14 +46,20 @@
 #include "fapp_config.h"
 #include "fnet.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /**************************************************************************/ /*!
  * @def FAPP_VERSION
  * @brief Current version number of the FNET Demoi Application.
  *        The resulting value format is xx.xx.xx = major.minor.revision, as a 
  *        string.
  ******************************************************************************/
-
 void fapp_main( void ); /* Main entry point of the shell demo. */
 
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

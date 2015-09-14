@@ -51,12 +51,6 @@
 
 #define FNET_LOOP_MTU        (FNET_CFG_LOOPBACK_MTU) /* The loopback MTU.*/
 
-#if (FNET_LOOP_MTU <200)
-
-#undef FNET_LOOP_MTU
-#define FNET_LOOP_MTU  (200)
-
-#endif
 
 /************************************************************************
 *     Global Data Structures
@@ -69,10 +63,17 @@ extern fnet_netif_t fnet_loop_if;
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 void fnet_loop_output_ip4(fnet_netif_t *netif, fnet_ip4_addr_t dest_ip_addr, fnet_netbuf_t *nb);
 void fnet_loop_output_ip6(struct fnet_netif *netif, fnet_ip6_addr_t *src_ip_addr,  fnet_ip6_addr_t *dest_ip_addr, fnet_netbuf_t* nb);
 
+#if defined(__cplusplus)
+}
 #endif
 
-#endif
+#endif /* FNET_CFG_LOOPBACK */
+
+#endif /* _FNET_LOOP_H_*/

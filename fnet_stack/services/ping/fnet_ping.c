@@ -47,10 +47,14 @@
 #include "stack/fnet_icmp.h"
 #include "stack/fnet_ip6_prv.h"
 
-#if FNET_CFG_DEBUG_PING    
+#if FNET_CFG_DEBUG_PING && FNET_CFG_DEBUG   
     #define FNET_DEBUG_PING   FNET_DEBUG
 #else
     #define FNET_DEBUG_PING(...)    do{}while(0)
+#endif
+
+#if FNET_CFG_RAW == 0
+    #error "FNET_CFG_RAW must be enabled for PING"
 #endif
 
 /************************************************************************
@@ -75,19 +79,19 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p);
 *************************************************************************/
 typedef struct
 {
-    SOCKET                  socket_foreign;     /* Foreign socket.*/
+    fnet_socket_t                  socket_foreign;                 /* Foreign socket.*/
     fnet_address_family_t   family;
-    unsigned short          sequence_number;
+    fnet_uint16_t           sequence_number;
     fnet_poll_desc_t        service_descriptor;
-    fnet_ping_state_t       state;              /* Current state. */
-    fnet_ping_handler_t     handler;            /* Callback function. */
-    long                    handler_cookie;                 /* Callback-handler specific parameter. */
-    char                    buffer[FNET_PING_BUFFER_SIZE];  /* Message buffer. */
-    unsigned long           timeout_clk;        /* Timeout value in clocks, that ping request waits for reply.*/
-    unsigned long           send_time;          /* Last send time, used for timeout detection. */
-    unsigned int            packet_count;       /* Number of packets to be sent.*/
-    unsigned long           packet_size;
-    unsigned char           pattern;
+    fnet_ping_state_t       state;                          /* Current state. */
+    fnet_ping_handler_t     handler;                        /* Callback function. */
+    fnet_uint32_t           handler_cookie;                 /* Callback-handler specific parameter. */
+    fnet_uint8_t            buffer[FNET_PING_BUFFER_SIZE];  /* Message buffer. */
+    fnet_time_t             timeout_clk;                    /* Timeout value in clocks, that ping request waits for reply.*/
+    fnet_time_t             send_time;                      /* Last send time, used for timeout detection. */
+    fnet_index_t            packet_count;                   /* Number of packets to be sent.*/
+    fnet_size_t             packet_size;
+    fnet_uint8_t            pattern;
     struct sockaddr         target_addr; 
 } 
 fnet_ping_if_t;
@@ -101,12 +105,12 @@ static fnet_ping_if_t fnet_ping_if;
 *
 * DESCRIPTION: Initializes PING service.
 ************************************************************************/
-int fnet_ping_request( struct fnet_ping_params *params )
+fnet_return_t fnet_ping_request( struct fnet_ping_params *params )
 {
-    const unsigned long bufsize_option = FNET_PING_BUFFER_SIZE;
+    const fnet_size_t bufsize_option = FNET_PING_BUFFER_SIZE;
 
     /* Check input parameters. */
-    if((params == 0) || (params->packet_count==0) || fnet_socket_addr_is_unspecified(&params->target_addr))
+    if((params == 0) || (params->packet_count == 0u) || (fnet_socket_addr_is_unspecified(&params->target_addr)))
     {
         FNET_DEBUG_PING(FNET_PING_ERR_PARAMS);
         goto ERROR;
@@ -124,18 +128,22 @@ int fnet_ping_request( struct fnet_ping_params *params )
     fnet_ping_if.handler = params->handler;
     fnet_ping_if.handler_cookie = params->cookie;
     fnet_ping_if.timeout_clk = params->timeout/FNET_TIMER_PERIOD_MS;
-    if(fnet_ping_if.timeout_clk == 0)
-        fnet_ping_if.timeout_clk = 1;
+    if(fnet_ping_if.timeout_clk == 0u)
+    {
+        fnet_ping_if.timeout_clk = 1u;
+    }
     fnet_ping_if.family = params->target_addr.sa_family;
     fnet_ping_if.packet_count = params->packet_count;
     fnet_ping_if.pattern = params->pattern;
     fnet_ping_if.packet_size = params->packet_size;
     if(fnet_ping_if.packet_size > FNET_CFG_PING_PACKET_MAX)
+    {
         fnet_ping_if.packet_size = FNET_CFG_PING_PACKET_MAX;
+    }
     fnet_ping_if.target_addr  = params->target_addr; 
        
     /* Create socket */
-    if((fnet_ping_if.socket_foreign = socket(fnet_ping_if.family, SOCK_RAW, (params->target_addr.sa_family == AF_INET) ? IPPROTO_ICMP : IPPROTO_ICMPV6)) == SOCKET_INVALID)
+    if((fnet_ping_if.socket_foreign = fnet_socket(fnet_ping_if.family, SOCK_RAW, (fnet_uint32_t)((params->target_addr.sa_family == AF_INET) ? IPPROTO_ICMP : IPPROTO_ICMPV6))) == FNET_ERR)
     {
         FNET_DEBUG_PING(FNET_PING_ERR_SOCKET_CREATION);
         goto ERROR;
@@ -143,17 +151,21 @@ int fnet_ping_request( struct fnet_ping_params *params )
     
     /* Set Socket options. */
 #if FNET_CFG_IP4    
-    if(fnet_ping_if.family == AF_INET)    
-        setsockopt(fnet_ping_if.socket_foreign, IPPROTO_IP, IP_TTL, (char *) &params->ttl, sizeof(params->ttl));
+    if(fnet_ping_if.family == AF_INET) 
+    {
+        fnet_socket_setopt(fnet_ping_if.socket_foreign, IPPROTO_IP, IP_TTL, (fnet_uint8_t *) &params->ttl, sizeof(params->ttl));
+    }
 #endif
 
 #if FNET_CFG_IP6        
     if(fnet_ping_if.family == AF_INET6)
-        setsockopt(fnet_ping_if.socket_foreign, IPPROTO_IPV6, IPV6_UNICAST_HOPS, (char *) &params->ttl, sizeof(params->ttl));
+    {
+        fnet_socket_setopt(fnet_ping_if.socket_foreign, IPPROTO_IPV6, IPV6_UNICAST_HOPS, (fnet_uint8_t *) &params->ttl, sizeof(params->ttl));
+    }
 #endif        
             
-    setsockopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_RCVBUF, &bufsize_option, sizeof(bufsize_option));
-    setsockopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_SNDBUF, &bufsize_option, sizeof(bufsize_option));
+    fnet_socket_setopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_RCVBUF, &bufsize_option, sizeof(bufsize_option));
+    fnet_socket_setopt(fnet_ping_if.socket_foreign, SOL_SOCKET, SO_SNDBUF, &bufsize_option, sizeof(bufsize_option));
 
     /* Register PING service. */
     fnet_ping_if.service_descriptor = fnet_poll_service_register(fnet_ping_state_machine, (void *) &fnet_ping_if);
@@ -168,7 +180,7 @@ int fnet_ping_request( struct fnet_ping_params *params )
     return FNET_OK;
     
 ERROR_1:
-    closesocket(fnet_ping_if.socket_foreign);
+    fnet_socket_close(fnet_ping_if.socket_foreign);
 
 ERROR:
     return FNET_ERR;
@@ -181,11 +193,11 @@ ERROR:
 ************************************************************************/
 static void fnet_ping_state_machine(void *fnet_ping_if_p)
 {
-    int                     received;    
+    fnet_int32_t            received;    
     fnet_icmp_echo_header_t *hdr;
     fnet_ping_if_t          *ping_if = (fnet_ping_if_t *)fnet_ping_if_p;
     struct sockaddr         addr;
-    unsigned int            addr_len = sizeof(addr);
+    fnet_size_t             addr_len = sizeof(addr);
 
     switch(ping_if->state)
     {
@@ -196,7 +208,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
 
             /* Fill ICMP Echo request header.*/
             fnet_memset_zero(hdr, sizeof(*hdr));
-            hdr->header.type = (unsigned char)((fnet_ping_if.family == AF_INET) ? FNET_ICMP_ECHO: FNET_ICMP6_TYPE_ECHO_REQ);
+            hdr->header.type = (fnet_uint8_t)((fnet_ping_if.family == AF_INET) ? FNET_ICMP_ECHO: FNET_ICMP6_TYPE_ECHO_REQ);
             hdr->identifier = FNET_CFG_PING_IDENTIFIER;
             fnet_ping_if.sequence_number++;
             hdr->sequence_number = fnet_htons(fnet_ping_if.sequence_number);
@@ -208,7 +220,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
 #if FNET_CFG_IP4
             if(ping_if->family == AF_INET)
             {
-                hdr->header.checksum = fnet_checksum_buf(&fnet_ping_if.buffer[0], (int)(sizeof(*hdr) + ping_if->packet_size));
+                hdr->header.checksum = fnet_checksum_buf(&fnet_ping_if.buffer[0], (sizeof(*hdr) + ping_if->packet_size));
             }
             else
 #endif  
@@ -218,9 +230,9 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
                 const fnet_ip6_addr_t   *src_ip = fnet_ip6_select_src_addr(FNET_NULL, (fnet_ip6_addr_t *)ping_if->target_addr.sa_data); /*TBD  Check result.*/
 
                 hdr->header.checksum = fnet_checksum_pseudo_buf(&fnet_ping_if.buffer[0], 
-                                                                (unsigned short)(sizeof(*hdr) + ping_if->packet_size), 
-                                                                FNET_HTONS(IPPROTO_ICMPV6), 
-                                                                (const char *)src_ip,
+                                                                (fnet_uint16_t)(sizeof(*hdr) + ping_if->packet_size), 
+                                                                FNET_HTONS((fnet_uint16_t)IPPROTO_ICMPV6), 
+                                                                (const fnet_uint8_t *)src_ip,
                                                                 ping_if->target_addr.sa_data, 
                                                                 sizeof(fnet_ip6_addr_t));
             }
@@ -229,7 +241,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
             {}
             
             /* Send request.*/    
-            sendto(fnet_ping_if.socket_foreign, (char*)(&fnet_ping_if.buffer[0]), (int)(sizeof(*hdr) + ping_if->packet_size), 0,  &ping_if->target_addr, sizeof(ping_if->target_addr));
+            fnet_socket_sendto(fnet_ping_if.socket_foreign, (fnet_uint8_t*)(&fnet_ping_if.buffer[0]), (sizeof(*hdr) + ping_if->packet_size), 0u,  &ping_if->target_addr, sizeof(ping_if->target_addr));
             ping_if->packet_count--;
            
             fnet_ping_if.send_time = fnet_timer_ticks();        
@@ -240,11 +252,11 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
         case  FNET_PING_STATE_WAITING_REPLY:
             /* Receive data */
             
-            received = recvfrom(ping_if->socket_foreign, (char*)(&ping_if->buffer[0]), FNET_PING_BUFFER_SIZE, 0, &addr, &addr_len );
+            received = fnet_socket_recvfrom(ping_if->socket_foreign, (fnet_uint8_t*)(&ping_if->buffer[0]), FNET_PING_BUFFER_SIZE, 0u, &addr, &addr_len );
             
             if(received > 0 )
             {
-                unsigned short  checksum = 0;
+                fnet_uint16_t  checksum = 0u;
                 
                 hdr = (fnet_icmp_echo_header_t *)(ping_if->buffer);
                 
@@ -253,7 +265,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
 #if FNET_CFG_IP4
                 if(ping_if->family == AF_INET)
                 {
-                    checksum = fnet_checksum_buf(&fnet_ping_if.buffer[0], received);
+                    checksum = fnet_checksum_buf(&fnet_ping_if.buffer[0], (fnet_size_t)received);
                 }
                 else
 #endif  
@@ -261,7 +273,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
                 if(ping_if->family == AF_INET6)
                 {
                      checksum = fnet_checksum_pseudo_buf(&fnet_ping_if.buffer[0], 
-                                                                (unsigned short)(received), 
+                                                                (fnet_uint16_t)(received), 
                                                                 IPPROTO_ICMPV6, 
                                                                 ping_if->local_addr.sa_data,
                                                                 ping_if->target_addr.sa_data, 
@@ -273,7 +285,7 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
  
                 /* Check header.*/
                 if( checksum
-                    ||(hdr->header.type != (addr.sa_family == AF_INET) ? FNET_ICMP_ECHOREPLY: FNET_ICMP6_TYPE_ECHO_REPLY)
+                    ||(hdr->header.type != ((addr.sa_family == AF_INET) ? FNET_ICMP_ECHOREPLY: FNET_ICMP6_TYPE_ECHO_REPLY))
                     ||(hdr->identifier != FNET_CFG_PING_IDENTIFIER)
                     ||(hdr->sequence_number != fnet_htons(ping_if->sequence_number)) )
                 {
@@ -281,35 +293,43 @@ static void fnet_ping_state_machine(void *fnet_ping_if_p)
                 }     
                 
                 /* Call handler.*/
-                if(ping_if->handler)                 
-                    ping_if->handler(FNET_OK, ping_if->packet_count, &addr, ping_if->handler_cookie);
+                if(ping_if->handler)   
+                {
+                    ping_if->handler(FNET_ERR_OK, ping_if->packet_count, &addr, ping_if->handler_cookie);
+                }
                     
                 if(ping_if->packet_count)
+                {
                     ping_if->state = FNET_PING_STATE_WAITING_TIMEOUT;
+                }
                 else
+                {
                     fnet_ping_release();              
+                }
             }
-            else if(received == SOCKET_ERROR)
+            else if(received == FNET_ERR)
             {
                 /* Call handler.*/
                 if(ping_if->handler)
                 {
-                    int             sock_err ;
-                    unsigned int    option_len;
+                    fnet_error_t    sock_err ;
+                    fnet_size_t     option_len;
                     
                     /* Get socket error.*/
                     option_len = sizeof(sock_err); 
-                    getsockopt(ping_if->socket_foreign, SOL_SOCKET, SO_ERROR, (char*)&sock_err, &option_len);
+                    fnet_socket_getopt(ping_if->socket_foreign, SOL_SOCKET, SO_ERROR, (fnet_uint8_t*)&sock_err, &option_len);
                                  
                     ping_if->handler(sock_err, ping_if->packet_count, FNET_NULL, ping_if->handler_cookie);
                 }
-                
-                
+               
                 if(ping_if->packet_count)
+                {
                     ping_if->state = FNET_PING_STATE_WAITING_TIMEOUT;
+                }
                 else
-                    fnet_ping_release();
-                    
+                {
+                    fnet_ping_release();    
+                }
             }
             else /* No data. Check timeout */
             {
@@ -317,13 +337,19 @@ NO_DATA:
                 if(fnet_timer_get_interval(fnet_ping_if.send_time, fnet_timer_ticks()) > fnet_ping_if.timeout_clk)
                 {
                     /* Call handler.*/
-                    if(ping_if->handler)                 
+                    if(ping_if->handler)   
+                    {
                         ping_if->handler(FNET_ERR_TIMEDOUT, ping_if->packet_count, FNET_NULL, ping_if->handler_cookie);
+                    }
                         
                     if(ping_if->packet_count)
+                    {
                         ping_if->state = FNET_PING_STATE_SENDING_REQUEST;
+                    }
                     else
+                    {
                         fnet_ping_release();    
+                    }
                 }
             }
             break;
@@ -350,7 +376,7 @@ void fnet_ping_release( void )
     if(fnet_ping_if.state != FNET_PING_STATE_DISABLED)
     {
         /* Close socket. */
-        closesocket(fnet_ping_if.socket_foreign);
+        fnet_socket_close(fnet_ping_if.socket_foreign);
     
         /* Unregister the tftp service. */
         fnet_poll_service_unregister(fnet_ping_if.service_descriptor);

@@ -70,9 +70,9 @@
 <booleanAttribute key="com.freescale.cdt.debug.cw.core.settings.ConnectionCommonData.TargetConnectionLost.TerminateConnectionOn" value="false"/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.core.settings.ConnectionCommonData.TargetConnectionLost.promptUserActionOn" value="true"/>
 <stringAttribute key="com.freescale.cdt.debug.cw.core.settings.DebuggerCommonData.Connection Protocol Plugin Name" value="ARM GDI"/>
-<stringAttribute key="com.freescale.cdt.debug.cw.core.settings.DebuggerCommonData.Connection Type" value="com.freescale.mcu.debug.connections.jlink.arm"/>
+<stringAttribute key="com.freescale.cdt.debug.cw.core.settings.DebuggerCommonData.Connection Type" value="com.pemicro.mcu.debug.connections.pne.arm"/>
 <stringAttribute key="com.freescale.cdt.debug.cw.core.settings.DebuggerCommonData.Processor Attr Name" value="com.freescale.cdt.debug.cw.CW_SHADOWED_PREF.ARM Debugger.processor"/>
-<stringAttribute key="com.freescale.cdt.debug.cw.core.settings.GdiConnection.Common.PhysicalConnectionAttributeBase" value="com.freescale.mcu.debug.connections.jlink.arm."/>
+<stringAttribute key="com.freescale.cdt.debug.cw.core.settings.GdiConnection.Common.PhysicalConnectionAttributeBase" value="com.pemicro.mcu.debug.connections.pne.arm."/>
 <stringAttribute key="com.freescale.cdt.debug.cw.core.settings.GdiConnection.Common.SimulatorConnectionAttributeBase" value=""/>
 <booleanAttribute key="com.freescale.cdt.debug.cw.core.settings.GdiConnection.Common.logData" value="false"/>
 <stringAttribute key="com.freescale.cdt.debug.cw.core.settings.rseSystemId" value="com.freescale.cdt.debug.cw.core.ui.rse.systemtype.bareboard.hardware.111209151135+0100.1"/>
@@ -235,7 +235,19 @@
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.PEDEBUG_PRESERVE3_ACTIVE" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.PEDEBUG_PRESERVE3_END" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.PEDEBUG_PRESERVE3_START" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_CyclonePro_PowerDownDelay" value="250"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_CyclonePro_PowerUpDelay" value="250"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_CyclonePro_currentvoltage" value="128"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_CyclonePro_poweroffonexit" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FORCE_MASS_ERASE" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_CYCLONE" value="3"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_FX" value="4"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_NORMAL" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_OPENSDA" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_OSJTAG" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_FREQ_TRACELINK" value="3"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_Multilink_PowerDownDelay" value="250"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_Multilink_PowerUpDelay" value="1000"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_PCI_DELAY" value="1"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_PORT" value="21"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_RESET_DELAY" value="0"/>
@@ -243,14 +255,17 @@
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_SPECIFY_IP_ENABLED" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_SPECIFY_NETWORKCARD" value="127.0.0.1"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_SPECIFY_NETWORKCARD_ENABLED" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_TraceLink_MaxBufferSize" value="1"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_TraceLink_PowerDownDelay" value="250"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_TraceLink_PowerUpDelay" value="250"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_TraceLink_currentvoltage" value="255"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_TraceLink_poweroffonexit" value="1"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_USE_CJTAG" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_USE_CYCLONEPRO_RELAYS" value="0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_USE_SWD" value="0"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_USE_TRACELINK_RELAYS" value="1"/>
 <stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.STARTUP_interface_selection" value="1"/>
-<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.UUID" value="139883e0-50f2-4488-b241-58df6f5bc0d0"/>
+<stringAttribute key="com.pemicro.mcu.debug.connections.pne.arm.UUID" value="494ca9cc-3621-4653-b578-a30f2df3452b"/>
 <booleanAttribute key="forceShellDownload" value="false"/>
 <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="com.freescale.cdt.debug.cw.arm.ArmDebugger"/>

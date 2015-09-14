@@ -82,7 +82,7 @@
  * @showinitializer 
  ******************************************************************************/ 
 #ifndef FNET_CFG_TFTP_CLN_PORT
-    #define FNET_CFG_TFTP_CLN_PORT              (FNET_HTONS(69))
+    #define FNET_CFG_TFTP_CLN_PORT              (FNET_HTONS(69u))
 #endif
 
 /**************************************************************************/ /*!
@@ -94,7 +94,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_TFTP_CLN_TIMEOUT
-    #define FNET_CFG_TFTP_CLN_TIMEOUT           (10) /*sec*/
+    #define FNET_CFG_TFTP_CLN_TIMEOUT           (10u) /*sec*/
 #endif
 
 /****************************************************************************** 
@@ -111,7 +111,7 @@
  ******************************************************************************/ 
 
 #ifndef FNET_CFG_TFTP_SRV_PORT
-    #define FNET_CFG_TFTP_SRV_PORT              (FNET_HTONS(69))
+    #define FNET_CFG_TFTP_SRV_PORT              (FNET_HTONS(69u))
 #endif
 
 /**************************************************************************/ /*!
@@ -121,7 +121,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_TFTP_SRV_MAX
-    #define FNET_CFG_TFTP_SRV_MAX               (1)
+    #define FNET_CFG_TFTP_SRV_MAX               (1u)
 #endif
 
 /**************************************************************************/ /*!
@@ -135,7 +135,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_TFTP_SRV_TIMEOUT
-    #define FNET_CFG_TFTP_SRV_TIMEOUT           (3) /*sec*/
+    #define FNET_CFG_TFTP_SRV_TIMEOUT           (3u) /*sec*/
 #endif
 
 /**************************************************************************/ /*!
@@ -150,7 +150,7 @@
  * @showinitializer 
  ******************************************************************************/
 #ifndef FNET_CFG_TFTP_SRV_RETRANSMIT_MAX
-    #define FNET_CFG_TFTP_SRV_RETRANSMIT_MAX    (4) 
+    #define FNET_CFG_TFTP_SRV_RETRANSMIT_MAX    (4u) 
 #endif
 
 

@@ -89,7 +89,7 @@
  * blank string.
  * 
  ******************************************************************************/
-typedef int(*fnet_http_ssi_handle_t)(char * query, long *cookie);	
+typedef fnet_return_t(*fnet_http_ssi_handle_t)(fnet_char_t * query, fnet_uint32_t *cookie);	
 
 /**************************************************************************/ /*!
  * @brief Callback function prototype of the SSI include function.
@@ -99,10 +99,10 @@ typedef int(*fnet_http_ssi_handle_t)(char * query, long *cookie);
  * @param buffer_size      Size of the output @c buffer.
  *
  * @param eof              Condition flag:
- *                         - @c 0 =  there is still more data to include.
+ *                         - @c FNET_FALSE =  there is still more data to include.
  *                           The @ref fnet_http_ssi_send_t function will be called 
  *                           during the next iteration again.
- *                         - @c 1 =  no more data is available for the SSI to include.
+ *                         - @c FNET_TRUE =  no more data is available for the SSI to include.
  *                           It was the last call of the @ref fnet_http_ssi_send_t 
  *                           function for the current SSI.
  * @param cookie    This parameter points to the value,
@@ -126,7 +126,7 @@ typedef int(*fnet_http_ssi_handle_t)(char * query, long *cookie);
  * till the @c eof will be set to @c 1 or the return result is set to @c 0.
  * 
  ******************************************************************************/
-typedef unsigned long(*fnet_http_ssi_send_t)(char * buffer, unsigned long buffer_size, char * eof, long *cookie);
+typedef fnet_size_t (*fnet_http_ssi_send_t)(fnet_uint8_t *buffer, fnet_size_t buffer_size, fnet_bool_t * eof, fnet_uint32_t *cookie);
 
 /**************************************************************************/ /*!
  * @brief SSI callback function table.
@@ -148,10 +148,10 @@ typedef unsigned long(*fnet_http_ssi_send_t)(char * buffer, unsigned long buffer
  ******************************************************************************/
 struct fnet_http_ssi
 {
-	char *name;				            /**< @brief SSI command name. */
+	fnet_char_t                 *name;	    /**< @brief SSI command name. */
 	fnet_http_ssi_handle_t handle;      /**< @brief Pointer to the SSI parameters 
 	                                     *   handler. It's optional. */
-    fnet_http_ssi_send_t send;          /**< @brief Pointer to the SSI include function. 
+    fnet_http_ssi_send_t    send;       /**< @brief Pointer to the SSI include function. 
                                          * This function actually inserts dynamic content to
                                          * an existing HTML page. It's optional. */							
 };

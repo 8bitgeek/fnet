@@ -71,10 +71,12 @@ void fnet_poll_services( void )
 {
     fnet_poll_desc_t i;
 
-    for (i = 0; i < fnet_poll_if.last; i++)
+    for (i = 0u; i < fnet_poll_if.last; i++)
     {
         if(fnet_poll_if.list[i].service)
-            fnet_poll_if.list[i].service(fnet_poll_if.list[i].service_param);
+        {
+            fnet_poll_if.list[i].service(fnet_poll_if.list[i].service_param);   
+        }
     }
 }
 
@@ -96,12 +98,12 @@ void fnet_poll_services_release( void )
 *************************************************************************/
 fnet_poll_desc_t fnet_poll_service_register( fnet_poll_service_t service, void *service_param )
 {
-    fnet_poll_desc_t i = 0;
+    fnet_poll_desc_t i = 0u;
     fnet_poll_desc_t result = (fnet_poll_desc_t)FNET_ERR;
 
     if(service)
     {
-        while(fnet_poll_if.list[i].service && i < FNET_CFG_POLL_MAX)
+        while((fnet_poll_if.list[i].service) && (i < FNET_CFG_POLL_MAX))
         {
             i++;
         }
@@ -113,7 +115,9 @@ fnet_poll_desc_t fnet_poll_service_register( fnet_poll_service_t service, void *
             result = i;
 
             if(result >= fnet_poll_if.last)
-                fnet_poll_if.last = result + 1;
+            {
+                fnet_poll_if.last = result + 1u;
+            }
         }
     }
 
@@ -125,9 +129,9 @@ fnet_poll_desc_t fnet_poll_service_register( fnet_poll_service_t service, void *
 *
 * DESCRIPTION: This function removes service routine from the polling list.
 *************************************************************************/
-int fnet_poll_service_unregister( fnet_poll_desc_t desc )
+fnet_return_t fnet_poll_service_unregister( fnet_poll_desc_t desc )
 {
-    int result;
+    fnet_return_t result;
 
     if(desc < FNET_CFG_POLL_MAX)
     {
@@ -135,7 +139,9 @@ int fnet_poll_service_unregister( fnet_poll_desc_t desc )
         result = FNET_OK;
     }
     else
+    {
         result = FNET_ERR;
+    }
 
     return result;
 }

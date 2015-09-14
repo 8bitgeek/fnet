@@ -46,7 +46,17 @@
 #include "fapp_config.h"
 
 #if FAPP_CFG_DNS_CMD
-void fapp_dns_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+void fapp_dns_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+
+#if defined(__cplusplus)
+}
+#endif
+
 #endif
 
 

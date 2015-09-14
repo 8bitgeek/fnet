@@ -105,12 +105,12 @@ void fapp_telnet_release(void)
 *
 * DESCRIPTION: Run Telnet server.
 *************************************************************************/
-void fapp_telnet_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+void fapp_telnet_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     struct fnet_telnet_params   params;
     fnet_telnet_desc_t          telnet_desc;
 
-    if(argc == 1) /* By default is "init".*/
+    if(argc == 1u) /* By default is "init".*/
     {
         fnet_memset_zero(&params, sizeof(struct fnet_telnet_params));
         params.shell= &fapp_telnet_shell;
@@ -132,7 +132,7 @@ void fapp_telnet_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
         }
        
     }
-    else if(argc == 2 && fnet_strcasecmp(&FAPP_COMMAND_RELEASE[0], argv[1]) == 0) /* [release] */
+    else if((argc == 2u) && (fnet_strcasecmp(&FAPP_COMMAND_RELEASE[0], argv[1]) == 0)) /* [release] */
     {
         fapp_telnet_release();
     }
@@ -148,7 +148,7 @@ void fapp_telnet_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 * DESCRIPTION: 
 ************************************************************************/
 #if 0
-static void fapp_telnet_exit_cmd ( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_telnet_exit_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     FNET_COMP_UNUSED_ARG(desc);
     FNET_COMP_UNUSED_ARG(argc);
@@ -179,14 +179,8 @@ void fapp_telnet_info(fnet_shell_desc_t desc)
 ************************************************************************/
 void fapp_telnet_test_cmd( fnet_shell_desc_t desc )
 {
-	//char szBuf[40];
-	//int i;
-
-	//fnet_strcpy (szBuf, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    //for (i = 0; i < 15000; i++)
     while(1)
 	{
-		//fnet_shell_printf(desc, "%s", szBuf);
 		fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "Free Heap", fnet_free_mem_status());
 		fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "MAX Heap", fnet_malloc_max());
 	}

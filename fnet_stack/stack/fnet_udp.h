@@ -53,14 +53,14 @@
 /************************************************************************
 *     UDP definitions
 *************************************************************************/
-#define FNET_UDP_TTL            (64)                        /* Default TTL.*/
-#define FNET_UDP_TTL_MULTICAST  (1)                         /* Default TTL for Multicast datagrams.
+#define FNET_UDP_TTL            (64u)                       /* Default TTL.*/
+#define FNET_UDP_TTL_MULTICAST  (1u)                        /* Default TTL for Multicast datagrams.
                                                              * RFC112 6.1: If the upper-layer protocol
                                                              * chooses not to specify a time-to-live, it should
                                                              * default to 1 for all multicast IP datagrams, so that an explicit
                                                              * choice is required to multicast beyond a single network.
                                                              */
-#define FNET_UDP_DF             (0)                         /* DF flag.*/
+#define FNET_UDP_DF             (FNET_FALSE)                       /* DF flag.*/
 #define FNET_UDP_TX_BUF_MAX     (FNET_CFG_SOCKET_UDP_TX_BUF_SIZE) /* Default maximum size for send socket buffer.*/
 #define FNET_UDP_RX_BUF_MAX     (FNET_CFG_SOCKET_UDP_RX_BUF_SIZE) /* Default maximum size for receive socket buffer.*/
 
@@ -73,10 +73,10 @@ extern fnet_prot_if_t fnet_udp_prot_if;
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned short source_port FNET_COMP_PACKED;      /* Source port number.*/
-    unsigned short destination_port FNET_COMP_PACKED; /* Destination port number.*/
-    unsigned short length FNET_COMP_PACKED;           /* Length.*/
-    unsigned short checksum FNET_COMP_PACKED;         /* Checksum.*/
+    fnet_uint16_t source_port FNET_COMP_PACKED;      /* Source port number.*/
+    fnet_uint16_t destination_port FNET_COMP_PACKED; /* Destination port number.*/
+    fnet_uint16_t length FNET_COMP_PACKED;           /* Length.*/
+    fnet_uint16_t checksum FNET_COMP_PACKED;         /* Checksum.*/
 } fnet_udp_header_t;
 FNET_COMP_PACKED_END
 

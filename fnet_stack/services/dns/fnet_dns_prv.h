@@ -82,19 +82,19 @@
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned short id FNET_COMP_PACKED;         /* A 16 bit identifier assigned by the program that
+    fnet_uint16_t id FNET_COMP_PACKED;         /* A 16 bit identifier assigned by the program that
                                                 * generates any kind of query. This identifier is copied
                                                 * the corresponding reply and can be used by the requester
                                                 * to match up replies to outstanding queries. */
-    unsigned short flags FNET_COMP_PACKED;      /* Flags.*/
-    unsigned short qdcount FNET_COMP_PACKED;    /* An unsigned 16 bit integer specifying the number of
+    fnet_uint16_t flags FNET_COMP_PACKED;      /* Flags.*/
+    fnet_uint16_t qdcount FNET_COMP_PACKED;    /* An unsigned 16 bit integer specifying the number of
                                                 * entries in the question section.*/
-    unsigned short ancount FNET_COMP_PACKED;    /* An unsigned 16 bit integer specifying the number of
+    fnet_uint16_t ancount FNET_COMP_PACKED;    /* An unsigned 16 bit integer specifying the number of
                                                 * resource records in the answer section.*/
-    unsigned short nscount FNET_COMP_PACKED;    /* an unsigned 16 bit integer specifying the number of name
+    fnet_uint16_t nscount FNET_COMP_PACKED;    /* an unsigned 16 bit integer specifying the number of name
                                                 * server resource records in the authority records
                                                 * section.*/
-    unsigned short arcount FNET_COMP_PACKED;    /* An unsigned 16 bit integer specifying the number of
+    fnet_uint16_t arcount FNET_COMP_PACKED;    /* An unsigned 16 bit integer specifying the number of
                                                 * resource records in the additional records section.*/
 
 } fnet_dns_header_t;
@@ -124,10 +124,10 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned char   zero_length FNET_COMP_PACKED;   /* The domain name terminates with the
+    fnet_uint8_t   zero_length FNET_COMP_PACKED;   /* The domain name terminates with the
                                                     * zero length octet for the null label of the root. */
-    unsigned short  qtype FNET_COMP_PACKED;         /* Specifies the type of the query.*/
-    unsigned short  qclass FNET_COMP_PACKED;        /* Specifies the class of the query.*/
+    fnet_uint16_t  qtype FNET_COMP_PACKED;         /* Specifies the type of the query.*/
+    fnet_uint16_t  qclass FNET_COMP_PACKED;        /* Specifies the class of the query.*/
 
 } fnet_dns_q_tail_t;
 FNET_COMP_PACKED_END
@@ -161,20 +161,20 @@ FNET_COMP_PACKED_BEGIN
 typedef struct
 {
     union {
-        unsigned char   name_ptr_c[2] FNET_COMP_PACKED; /* A domain name to which this resource record pertains.
+        fnet_uint8_t   name_ptr_c[2] FNET_COMP_PACKED; /* A domain name to which this resource record pertains.
                                                         * For compression, it is replaced with a pointer to a prior occurance
                                                         * of the same name */
-        unsigned short  name_ptr FNET_COMP_PACKED;
+        fnet_uint16_t  name_ptr FNET_COMP_PACKED;
     };
-    unsigned short  type FNET_COMP_PACKED;          /* This field specifies the meaning of the data in the RDATA
+    fnet_uint16_t   type FNET_COMP_PACKED;          /* This field specifies the meaning of the data in the RDATA
                                                     * field.*/
-    unsigned short  rr_class FNET_COMP_PACKED;     /* An unsigned 16 bit integer specifying the number of
+    fnet_uint16_t   rr_class FNET_COMP_PACKED;     /* An unsigned 16 bit integer specifying the number of
                                                     * entries in the question section.*/
-    unsigned long   ttl FNET_COMP_PACKED;           /* Specifies the time interval (in seconds) that the 
+    fnet_uint32_t   ttl FNET_COMP_PACKED;           /* Specifies the time interval (in seconds) that the 
                                                     * resource record may be
                                                     * cached before it should be discarded.*/
-    unsigned short  rdlength FNET_COMP_PACKED;      /* Length in octets of the RDATA field.*/
-    unsigned long   rdata FNET_COMP_PACKED;         /* The format of this information varies
+    fnet_uint16_t   rdlength FNET_COMP_PACKED;      /* Length in octets of the RDATA field.*/
+    fnet_uint32_t   rdata FNET_COMP_PACKED;         /* The format of this information varies
                                                     * according to the TYPE and CLASS of the resource record. 
                                                     * If the TYPE is A and the CLASS is IN,
                                                     * the RDATA field is a 4 octet ARPA Internet address.*/

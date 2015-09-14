@@ -203,11 +203,6 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Sources/fnet_stack/os/brtos</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
 			<name>Sources/fnet_stack/os/fnet_os.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/fnet_os.h</locationURI>
@@ -216,16 +211,6 @@
 			<name>Sources/fnet_stack/os/fnet_os_config.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/fnet_os_config.h</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/freertos</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/ucosIII</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
 			<name>Sources/fnet_stack/services/dhcp</name>
@@ -841,41 +826,6 @@
 			<name>Sources/fnet_stack/cpu/mpc/fnet_mpc_timer.c</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/mpc/fnet_mpc_timer.c</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/brtos/fnet_brtos.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/brtos/fnet_brtos.c</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/brtos/fnet_brtos_config.h</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/brtos/fnet_brtos_config.h</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/freertos/fnet_freertos.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/freertos/fnet_freertos.c</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/freertos/fnet_freertos_config.h</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/freertos/fnet_freertos_config.h</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/ucosIII/fnet_ucosIII.c</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/ucosIII/fnet_ucosIII.c</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/ucosIII/fnet_ucosIII_config.h</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/ucosIII/fnet_ucosIII_config.h</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/os/ucosIII/fnet_ucosIII_isr.s</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/os/ucosIII/fnet_ucosIII_isr.s</locationURI>
 		</link>
 		<link>
 			<name>Sources/fnet_stack/services/dhcp/fnet_dhcp.c</name>

@@ -104,12 +104,12 @@
  *
  * @see fnet_tftp_srv_init(), fnet_tftp_srv_params
  ******************************************************************************/ 
-typedef int(*fnet_tftp_srv_request_handler_t)(fnet_tftp_request_t request_type,
+typedef fnet_return_t(*fnet_tftp_srv_request_handler_t)(fnet_tftp_request_t request_type,
                                                 const struct sockaddr *address,
-                                                char *filename,        /* null-terminated.*/
-                                                char *mode,            /* null-terminated.*/
+                                                fnet_char_t *filename,        /* null-terminated.*/
+                                                fnet_char_t *mode,            /* null-terminated.*/
                                                 fnet_tftp_error_t *error_code,     /* error code [0-7] RFC783, if result==FNET_ERR*/
-                                                char* *error_message, /* optinal, if result==FNET_ERR*/
+                                                fnet_char_t* *error_message, /* optinal, if result==FNET_ERR*/
                                                 void *handler_param); 
 
 /**************************************************************************/ /*!
@@ -163,11 +163,11 @@ typedef int(*fnet_tftp_srv_request_handler_t)(fnet_tftp_request_t request_type,
  *
  * @see fnet_tftp_srv_init(), fnet_tftp_srv_params
  ******************************************************************************/ 
-typedef int(*fnet_tftp_srv_data_handler_t)(fnet_tftp_request_t request,
-                                        unsigned char *data, 
-                                        unsigned short data_size, 
+typedef fnet_int32_t(*fnet_tftp_srv_data_handler_t)(fnet_tftp_request_t request,
+                                        fnet_uint8_t *data, 
+                                        fnet_size_t data_size, 
                                         fnet_tftp_error_t *error_code,
-                                        char* *error_message,
+                                        fnet_char_t* *error_message,
                                         void *handler_param);
 
 /**************************************************************************/ /*!
@@ -185,7 +185,7 @@ typedef int(*fnet_tftp_srv_data_handler_t)(fnet_tftp_request_t request,
  * @see fnet_tftp_srv_init(), fnet_tftp_srv_params
  ******************************************************************************/                                        
 typedef void(*fnet_tftp_srv_complete_handler_t)(fnet_tftp_request_t request,
-                                                int status,
+                                                fnet_return_t status,
                                                 void *handler_param);                                       
 
 /**************************************************************************/ /*!
@@ -214,13 +214,13 @@ struct fnet_tftp_srv_params
                                      * and @c complete_handler  callback 
                                      * functions as an input parameter.
                                      */
-    unsigned long timeout;          /**< @brief Timeout for the TFTP client response in seconds. @n
+    fnet_time_t  timeout;          /**< @brief Timeout for the TFTP client response in seconds. @n
                                      * If no response from a TFTP client is received during this timeout,
                                      * the last packet is retransmitted to the TFTP client automatically. @n
                                      * If it is set to @c 0 the default timeout will be 
                                      * used, that is defined by the @ref FNET_CFG_TFTP_SRV_TIMEOUT parameter.
                                      */
-    unsigned int retransmit_max;    /**< @brief Maximum number of retransmissions. @n
+    fnet_index_t retransmit_max;    /**< @brief Maximum number of retransmissions. @n
                                      * If no response from a TFTP client is received
                                      * till maximum retransmission number is reached, 
                                      * the TFTP server cancels the data transfer.@n
@@ -253,6 +253,10 @@ typedef enum
                                              * or received error, or terminated by the application.
                                              */                                     
 } fnet_tftp_srv_state_t;
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 /***************************************************************************/ /*!
  *
@@ -311,6 +315,10 @@ void fnet_tftp_srv_release(fnet_tftp_srv_desc_t desc);
  *
  ******************************************************************************/
 fnet_tftp_srv_state_t fnet_tftp_srv_state(fnet_tftp_srv_desc_t desc);
+
+#if defined(__cplusplus)
+}
+#endif
 
 /*! @} */
 

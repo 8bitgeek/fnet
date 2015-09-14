@@ -47,13 +47,6 @@
 
 #if FAPP_CFG_EXP_CMD || FAPP_CFG_HTTP_CMD
 
-
-/************************************************************************
-*     File System Image
-*************************************************************************/
-extern const struct fnet_fs_rom_image fnet_fs_image;
-
-
 /************************************************************************
 *     Definitions.
 *************************************************************************/
@@ -74,11 +67,11 @@ extern const struct fnet_fs_rom_image fnet_fs_image;
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-void fapp_fs_init( fnet_shell_desc_t desc );
-void fapp_fs_dir_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
-void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
-void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
-
+static void fapp_fs_init( fnet_shell_desc_t desc );
+static void fapp_fs_dir_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+static void fapp_fs_cd_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+static void fapp_fs_view_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+static void fapp_fs_exit_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **argv );
 
 /************************************************************************
 *     File Explorer definitions.
@@ -87,35 +80,33 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
 #define FAPP_FS_DIR_PATH_MAX     (50U) 
 
 /* Explorer shell prompt */
-static const char FAPP_FS_PROMPT_STR_HEADER[]="EXP:";
-static const char FAPP_FS_PROMPT_STR_TRAILER[]="> ";
-static char FAPP_FS_PROMPT_STR [FAPP_FS_DIR_PATH_MAX+
+static const fnet_char_t FAPP_FS_PROMPT_STR_HEADER[]="EXP:";
+static const fnet_char_t FAPP_FS_PROMPT_STR_TRAILER[]="> ";
+static fnet_char_t FAPP_FS_PROMPT_STR [FAPP_FS_DIR_PATH_MAX+
                                    sizeof(FAPP_FS_PROMPT_STR_HEADER)+
                                    sizeof(FAPP_FS_PROMPT_STR_TRAILER)];
 
 
 /* Current path */
-static char fapp_fs_current_path[FAPP_FS_DIR_PATH_MAX+1U] = {FNET_FS_SPLITTER,'\0',0};
+static fnet_char_t fapp_fs_current_path[FAPP_FS_DIR_PATH_MAX+1U] = {FNET_FS_SPLITTER,'\0',0};
 
 /************************************************************************
 *     The table of the File Explorer commands.
 *************************************************************************/
 static const struct fnet_shell_command fapp_fs_cmd_tab [] =
 {
-    { FNET_SHELL_CMD_TYPE_NORMAL, "help", 0, 0, (void *)fapp_help_cmd,  "Display this help message.", ""},
-    { FNET_SHELL_CMD_TYPE_NORMAL, "dir", 0, 0, (void *)fapp_fs_dir_cmd,     "Display a list of files & directories.", ""},
-    { FNET_SHELL_CMD_TYPE_NORMAL, "cd", 1, 1, (void *)fapp_fs_cd_cmd,       "Change the current directory.", "<directory>"},
-    { FNET_SHELL_CMD_TYPE_NORMAL, "view", 1, 1, (void *)fapp_fs_view_cmd,   "View a text file.", "<file>"},  
-    { FNET_SHELL_CMD_TYPE_QUIT, "exit", 0, 0, 0,    "Exit from the file explorer.", ""},
-    { FNET_SHELL_CMD_TYPE_END, 0, 0, 0, 0, 0, 0}    
+    { "help", 0, 0, fapp_help_cmd,      "Display this help message.", ""},
+    { "dir", 0, 0, fapp_fs_dir_cmd,     "Display a list of files & directories.", ""},
+    { "cd", 1, 1, fapp_fs_cd_cmd,       "Change the current directory.", "<directory>"},
+    { "view", 1, 1, fapp_fs_view_cmd,   "View a text file.", "<file>"},
+    { "exit", 0, 0, fapp_fs_exit_cmd,   "Exit from the file explorer.", ""},
+    { 0, 0, 0, 0, 0, 0}
 };
-
-
 
 /************************************************************************
 *     The File Explorer control data structure.
 *************************************************************************/
-struct fnet_shell fapp_fs_shell =
+const struct fnet_shell fapp_fs_shell =
 {
   fapp_fs_cmd_tab,                   /* cmd_table */
   FAPP_FS_PROMPT_STR,                /* prompt_str */
@@ -127,7 +118,7 @@ struct fnet_shell fapp_fs_shell =
 *
 * DESCRIPTION: File Explorer initialization function.
 ************************************************************************/
-void fapp_fs_init( fnet_shell_desc_t desc )
+static void fapp_fs_init( fnet_shell_desc_t desc )
 {
     /* Format exp shell prompt */
     fnet_snprintf( FAPP_FS_PROMPT_STR, sizeof(FAPP_FS_PROMPT_STR), "%s%s%s",
@@ -147,7 +138,7 @@ void fapp_fs_init( fnet_shell_desc_t desc )
 *
 * DESCRIPTION: Displays a list of files and subdirectories in a directory.
 *************************************************************************/
-void fapp_fs_dir_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_fs_dir_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **argv )
 {
     struct fnet_fs_dirent ep;
     FNET_FS_DIR dir;
@@ -169,7 +160,9 @@ void fapp_fs_dir_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
         fnet_fs_closedir(dir);    
     }
     else
+    {
         fnet_shell_println(desc, FAPP_FS_DIR_ERR);
+    }
 }
 
 
@@ -178,14 +171,14 @@ void fapp_fs_dir_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 *
 * DESCRIPTION: Change the current directory.
 *************************************************************************/
-void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_fs_cd_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
-    FNET_FS_DIR dir;
-    char * path = argv[1];
-    char * path_end;
-    unsigned long size_cd = fnet_strlen (fapp_fs_current_path);
-    unsigned long size_path;
-    char splitter[] = {FNET_FS_SPLITTER,'\0'};    
+    FNET_FS_DIR     dir;
+    fnet_char_t    *path = argv[1];
+    fnet_char_t    *path_end;
+    fnet_size_t     size_cd = fnet_strlen (fapp_fs_current_path);
+    fnet_size_t     size_path;
+    fnet_char_t    splitter[] = {FNET_FS_SPLITTER,'\0'};    
 
     FNET_COMP_UNUSED_ARG(argc);
         
@@ -193,7 +186,9 @@ void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 	{
 	    /* Add splitter if not yet.*/
 	    if(fapp_fs_current_path[size_cd-1U] != FNET_FS_SPLITTER) 
+        {
 	        fnet_strncat( &fapp_fs_current_path[0], splitter, FAPP_FS_DIR_PATH_MAX);
+        }
 	        
 	    fnet_strncat( &fapp_fs_current_path[0], path, FAPP_FS_DIR_PATH_MAX);
 	    path = fapp_fs_current_path; 
@@ -226,7 +221,9 @@ void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
         /* Update cur path. */
         fnet_strncpy( &fapp_fs_current_path[0], path, FAPP_FS_DIR_PATH_MAX);
         if(fapp_fs_current_path[0] == '\0') /* root dir */
+        {
             fnet_strncat( &fapp_fs_current_path[0], splitter, FAPP_FS_DIR_PATH_MAX);
+        }
     
         /* Change shell prompt. */
         fnet_sprintf( FAPP_FS_PROMPT_STR, "%s%s%s", 
@@ -251,15 +248,15 @@ void fapp_fs_cd_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 *
 * DESCRIPTION: 
 *************************************************************************/
-void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
+static void fapp_fs_view_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
     FNET_FS_FILE    file;
-    char            *path = argv[1];
-    char            *path_end;
-    unsigned long   size_cd = fnet_strlen (fapp_fs_current_path);
-    unsigned long   size_path;
-    char            splitter[] = {FNET_FS_SPLITTER,'\0'};
-    char            data;
+    fnet_char_t    *path = argv[1];
+    fnet_char_t    *path_end;
+    fnet_size_t     size_cd = fnet_strlen (fapp_fs_current_path);
+    fnet_size_t     size_path;
+    fnet_char_t    splitter[] = {FNET_FS_SPLITTER,'\0'};
+    fnet_uint8_t    data;
     struct          fnet_fs_dirent dirent;    
 
     FNET_COMP_UNUSED_ARG(desc);
@@ -269,7 +266,9 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
 	{
 	    /* Add splitter if not yet.*/
 	    if(fapp_fs_current_path[size_cd-1U] != FNET_FS_SPLITTER) 
+        {
 	        fnet_strncat( &fapp_fs_current_path[0], splitter, FAPP_FS_DIR_PATH_MAX);
+        }
 	        
 	    fnet_strncat( &fapp_fs_current_path[0], path, FAPP_FS_DIR_PATH_MAX);
 	    path = fapp_fs_current_path; 
@@ -306,7 +305,7 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
         
         while(fnet_fs_fread(&data, sizeof(data), file))
         {
-            fnet_shell_putchar(desc, (int)data);
+            fnet_shell_putchar(desc, data);
         }
                   
         /* Close file. */    
@@ -321,6 +320,21 @@ void fapp_fs_view_cmd( fnet_shell_desc_t desc, int argc, char ** argv )
     fapp_fs_current_path[size_cd] = '\0'; 
                  
 }
+
+/************************************************************************
+* NAME: fapp_fs_exit_cmd
+*
+* DESCRIPTION: Exit from the file explorer.
+*************************************************************************/
+static void fapp_fs_exit_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **argv )
+{
+    FNET_COMP_UNUSED_ARG(argc);
+    FNET_COMP_UNUSED_ARG(argv);
+
+    fnet_shell_switch(desc, FNET_NULL);
+}
+
+
 #endif /* FAPP_CFG_EXP_CMD */
 
 
@@ -340,7 +354,9 @@ void fapp_fs_mount(void)
  
         /* Mount the FNET ROM FS image. */
         if( fnet_fs_mount( FNET_FS_ROM_NAME, FAPP_FS_MOUNT_NAME, &fnet_fs_image ) == FNET_ERR )
+        {
             fnet_printf(FAPP_FS_FSMOUNT_ERR);
+        }
     }
     else
     {

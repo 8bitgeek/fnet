@@ -45,27 +45,6 @@
 
 #include "fnet_config.h"
 
-
-/************************************************************************
-*     Events
-*************************************************************************/
-typedef long fnet_event_desc_t;
-
-extern unsigned long fnet_locked;
-
-/************************************************************************
-*     Function Prototypes
-*************************************************************************/
-int fnet_isr_vector_init( unsigned int vector_number, void (*handler_top)(void *cookie), void (*handler_bottom)(void *cookie), unsigned int priority, void *cookie );
-fnet_event_desc_t fnet_event_init(void (*event_handler)(void *cookie), void *cookie);
-void fnet_event_raise(fnet_event_desc_t event_number);                                   
-void fnet_isr_vector_release(unsigned int vector_number);
-void fnet_isr_lock(void);
-void fnet_isr_unlock(void);
-void fnet_isr_init(void);
-void fnet_isr_handler(int vector_number);
-int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority);
-
 #if FNET_CFG_OS_ISR
     #define FNET_ISR_HANDLER    fnet_os_isr
 #else /* By default */
@@ -74,5 +53,31 @@ int fnet_cpu_isr_install(unsigned int vector_number, unsigned int priority);
 
 /* Defines number of the first event handler. MUST be higher than any HW-vector number. */
 #define FNET_EVENT_VECTOR_NUMBER (1025) 
+
+/************************************************************************
+*     Events
+*************************************************************************/
+typedef fnet_int32_t fnet_event_desc_t;
+
+/************************************************************************
+*     Function Prototypes
+*************************************************************************/
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+fnet_return_t fnet_isr_vector_init( fnet_uint32_t vector_number, void (*handler_top)(fnet_uint32_t cookie), void (*handler_bottom)(fnet_uint32_t cookie), fnet_uint32_t priority, fnet_uint32_t cookie );
+fnet_event_desc_t fnet_event_init(void (*event_handler)(fnet_uint32_t cookie), fnet_uint32_t cookie);
+void fnet_event_raise(fnet_event_desc_t event_number);                                   
+void fnet_isr_vector_release(fnet_uint32_t vector_number);
+void fnet_isr_lock(void);
+void fnet_isr_unlock(void);
+void fnet_isr_init(void);
+void fnet_isr_handler(fnet_uint32_t vector_number);
+fnet_return_t fnet_cpu_isr_install(fnet_uint32_t vector_number, fnet_uint32_t priority);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

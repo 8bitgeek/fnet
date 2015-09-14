@@ -72,18 +72,17 @@
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned short hard_type FNET_COMP_PACKED;           /**< The type of hardware address (=1 for Ethernet).*/
-    unsigned short prot_type FNET_COMP_PACKED;           /**< The type of protocol address (=0x0800 for IP).*/
-    unsigned char hard_size FNET_COMP_PACKED;            /**< The size in bytes of the hardware address (=6).*/
-    unsigned char prot_size FNET_COMP_PACKED;            /**< The size in bytes of the protocol address (=4).*/
-    unsigned short op FNET_COMP_PACKED;                  /**< Opcode.*/
-    fnet_mac_addr_t sender_hard_addr FNET_COMP_PACKED;   /**< Hardware address of sender of this packet.*/
-    fnet_ip4_addr_t sender_prot_addr FNET_COMP_PACKED;    /**< Protocol address of sender of this packet.*/
-    fnet_mac_addr_t target_hard_addr FNET_COMP_PACKED;   /**< Hardware address of target of this packet.*/
-    fnet_ip4_addr_t targer_prot_addr FNET_COMP_PACKED;    /**< Protocol address of target of this packet.*/
+    fnet_uint16_t   hard_type FNET_COMP_PACKED;         /**< The type of hardware address (=1 for Ethernet).*/
+    fnet_uint16_t   prot_type FNET_COMP_PACKED;         /**< The type of protocol address (=0x0800 for IP).*/
+    fnet_uint8_t    hard_size FNET_COMP_PACKED;         /**< The size in bytes of the hardware address (=6).*/
+    fnet_uint8_t    prot_size FNET_COMP_PACKED;         /**< The size in bytes of the protocol address (=4).*/
+    fnet_uint16_t   op FNET_COMP_PACKED;                /**< Opcode.*/
+    fnet_mac_addr_t sender_hard_addr FNET_COMP_PACKED;  /**< Hardware address of sender of this packet.*/
+    fnet_ip4_addr_t sender_prot_addr FNET_COMP_PACKED;  /**< Protocol address of sender of this packet.*/
+    fnet_mac_addr_t target_hard_addr FNET_COMP_PACKED;  /**< Hardware address of target of this packet.*/
+    fnet_ip4_addr_t targer_prot_addr FNET_COMP_PACKED;  /**< Protocol address of target of this packet.*/
 } fnet_arp_header_t;
 FNET_COMP_PACKED_END
-
 
 /**************************************************************************/ /*!
  * @internal
@@ -93,9 +92,9 @@ typedef struct
 {
     fnet_mac_addr_t hard_addr;  /**< Hardware address.*/
     fnet_ip4_addr_t prot_addr;   /**< Protocol address.*/
-    unsigned long cr_time;      /**< Time of entry creation.*/
-    fnet_netbuf_t *hold;        /**< Last packet until resolved/timeout.*/
-    unsigned long hold_time;    /**< Time of the last request.*/
+    fnet_time_t     cr_time;      /**< Time of entry creation.*/
+    fnet_netbuf_t   *hold;        /**< Last packet until resolved/timeout.*/
+    fnet_time_t     hold_time;    /**< Time of the last request.*/
 } fnet_arp_entry_t;
 
 typedef struct
@@ -108,13 +107,21 @@ typedef struct
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-int fnet_arp_init( fnet_netif_t *netif );
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+fnet_return_t fnet_arp_init( fnet_netif_t *netif );
 void fnet_arp_release( fnet_netif_t *netif );
 void fnet_arp_request( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr );
 fnet_mac_addr_t *fnet_arp_lookup( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr );
 void fnet_arp_resolve( fnet_netif_t *netif, fnet_ip4_addr_t ipaddr, fnet_netbuf_t *nb );
 void fnet_arp_input( fnet_netif_t *netif, fnet_netbuf_t *nb );
 void fnet_arp_drain( fnet_netif_t *netif );
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

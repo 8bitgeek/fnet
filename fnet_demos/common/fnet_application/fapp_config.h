@@ -504,35 +504,10 @@
 #endif
 
 
-#if !FAPP_CFG_TFTP_CMD && !FAPP_CFG_TFTPUP_CMD && !FAPP_CFG_TFTPS_CMD
-    #undef FAPP_CFG_TFTP_RX_RAW
-    #undef FAPP_CFG_TFTP_TX_RAW
-    #undef FAPP_CFG_TFTP_RX_BIN
-    #undef FAPP_CFG_TFTP_TX_BIN
-    #undef FAPP_CFG_TFTP_RX_SREC
-    #undef FAPP_CFG_TFTP_TX_SREC
-    #define FAPP_CFG_TFTP_RX_RAW            (0)
-    #define FAPP_CFG_TFTP_TX_RAW            (0)
-    #define FAPP_CFG_TFTP_RX_BIN            (0)
-    #define FAPP_CFG_TFTP_TX_BIN            (0)
-    #define FAPP_CFG_TFTP_RX_SREC           (0)
-    #define FAPP_CFG_TFTP_TX_SREC           (0)
-#endif
-
-
 /************************************************************************/
 #ifndef FAPP_CFG_SHELL_MAX_LINE_LENGTH
     #define FAPP_CFG_SHELL_MAX_LINE_LENGTH  (60)
 #endif 
-
-
-/************************************************************************
-*    Check conflict of FNET and FAPP parameters.
-*************************************************************************/
-#if !FNET_CFG_FLASH 
-    #undef FAPP_CFG_SAVE_CMD
-    #define FAPP_CFG_SAVE_CMD   (0)
-#endif
 
 /************************************************************************
 *    Memory parameters

@@ -43,7 +43,7 @@
 
 #define _FAPP_BENCH_H_
 
-#include "fapp_config.h"
+#include "fapp.h"
 
 #if FAPP_CFG_BENCH_CMD
 
@@ -57,9 +57,17 @@
 #define FAPP_BENCH_TX_ITERATION_NUMBER_DEFAULT  (1)
 #define FAPP_BENCH_TX_ITERATION_NUMBER_MAX      (10000)
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-void fapp_benchrx_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
-void fapp_benchtx_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+void fapp_benchrx_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+void fapp_benchtx_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv );
+
+#if defined(__cplusplus)
+}
+#endif
+
 #endif
 
 

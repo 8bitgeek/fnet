@@ -57,12 +57,6 @@
 
 #define FNET_IP6_MAX_PACKET             (FNET_CFG_IP_MAX_PACKET)
 
-/* Check max. values.*/
-#if (FNET_IP6_MAX_PACKET > 65535U)
-    #undef FNET_IP6_MAX_PACKET
-    #define FNET_IP6_MAX_PACKET         (65535U)
-#endif
-
 /************************************************************************
 *    IP implementation parameters.
 *************************************************************************/
@@ -96,7 +90,7 @@
 #define FNET_IP6_ADDR_SCOPE_ORGLOCAL       (0x08)
 #define FNET_IP6_ADDR_SCOPE_GLOBAL         (0x0e)
 
-#define FNET_IP6_ADDR_MULTICAST_SCOPE(a) ((a)->addr[1] & 0x0f)
+#define FNET_IP6_ADDR_MULTICAST_SCOPE(a) ((a)->addr[1] & 0x0fu)
 
 /**************************************************************************/ /*!
  * @internal
@@ -105,8 +99,8 @@
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned char   hops_unicast   FNET_COMP_PACKED;   /**< Unicast hop limit.*/
-    unsigned char   hops_multicast FNET_COMP_PACKED;   /**< Multicast hop limit.*/
+    fnet_uint8_t   hops_unicast   FNET_COMP_PACKED;   /**< Unicast hop limit.*/
+    fnet_uint8_t   hops_multicast FNET_COMP_PACKED;   /**< Multicast hop limit.*/
 } fnet_ip6_sockopt_t;
 FNET_COMP_PACKED_END
 
@@ -138,17 +132,17 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct
 {
-    unsigned char   version__tclass     FNET_COMP_PACKED;   /* 4-bit Internet Protocol version number = 6, 8-bit traffic class field. */    
-    unsigned char   tclass__flowl       FNET_COMP_PACKED;   /* 20-bit flow label. */
-    unsigned short  flowl               FNET_COMP_PACKED;
-    unsigned short  length              FNET_COMP_PACKED;   /* Length of the IPv6
+    fnet_uint8_t   version__tclass     FNET_COMP_PACKED;   /* 4-bit Internet Protocol version number = 6, 8-bit traffic class field. */    
+    fnet_uint8_t   tclass__flowl       FNET_COMP_PACKED;   /* 20-bit flow label. */
+    fnet_uint16_t   flowl               FNET_COMP_PACKED;
+    fnet_uint16_t   length              FNET_COMP_PACKED;   /* Length of the IPv6
 								                             * payload, i.e., the rest of the packet following
 							                                 * this IPv6 header, in octets. */
-    unsigned char   next_header         FNET_COMP_PACKED;   /* Identifies the type of header
+    fnet_uint8_t   next_header         FNET_COMP_PACKED;   /* Identifies the type of header
                         	    	                         * immediately following the IPv6 header.  Uses the
                         		                             * same values as the IPv4 Protocol field [RFC-1700
                         		                             * et seq.].*/
-    unsigned char   hop_limit           FNET_COMP_PACKED;   /* Decremented by 1 by
+    fnet_uint8_t   hop_limit           FNET_COMP_PACKED;   /* Decremented by 1 by
                         		                             * each node that forwards the packet. The packet
                         		                             * is discarded if Hop Limit is decremented to
                         		                             * zero. */
@@ -159,7 +153,7 @@ typedef struct
 } fnet_ip6_header_t;
 FNET_COMP_PACKED_END
 
-#define FNET_IP6_HEADER_GET_VERSION(x)                   ((x->version__tclass & 0xF0)>>4)
+#define FNET_IP6_HEADER_GET_VERSION(x)                   (((x)->version__tclass & 0xF0u)>>4)
 
 /******************************************************************
 * Extension header types
@@ -201,13 +195,13 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct fnet_ip6_options_header
 {
-    unsigned char   next_header     FNET_COMP_PACKED;   /* 8-bit selector. Identifies the type of header
+    fnet_uint8_t   next_header     FNET_COMP_PACKED;   /* 8-bit selector. Identifies the type of header
                                                          * immediately following the Options
                                                          * header. */
-    unsigned char   hdr_ext_length  FNET_COMP_PACKED;   /* 8-bit unsigned integer. Length of the Hop-by-
+    fnet_uint8_t   hdr_ext_length  FNET_COMP_PACKED;   /* 8-bit unsigned integer. Length of the Hop-by-
                                                          * Hop Options header in 8-octet units, not
                                                          * including the first 8 octets. */
-    unsigned char   options[6]      FNET_COMP_PACKED;   /* Variable-length field, of length such that the
+    fnet_uint8_t   options[6]      FNET_COMP_PACKED;   /* Variable-length field, of length such that the
                                                          * complete Options header is an integer
                                                          * multiple of 8 octets long. */
 } fnet_ip6_options_header_t;
@@ -224,8 +218,8 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct fnet_ip6_option_header
 {
-    unsigned char    type           FNET_COMP_PACKED;   /* 8-bit identifier of the type of option. */
-    unsigned char    data_length    FNET_COMP_PACKED;   /* 8-bit unsigned integer. Length of the Option
+    fnet_uint8_t    type           FNET_COMP_PACKED;   /* 8-bit identifier of the type of option. */
+    fnet_uint8_t    data_length    FNET_COMP_PACKED;   /* 8-bit unsigned integer. Length of the Option
                                                          * Data field of this option, in octets. */
 } fnet_ip6_option_header_t;
 FNET_COMP_PACKED_END
@@ -234,32 +228,32 @@ FNET_COMP_PACKED_END
  * subsequent options and to pad out the containing header to a multiple
  * of 8 octets in length. */
 
-#define FNET_IP6_OPTION_TYPE_PAD1   (0x00)  /* The Pad1 option is used to insert 
+#define FNET_IP6_OPTION_TYPE_PAD1   (0x00u)  /* The Pad1 option is used to insert 
                                              * one octet of padding into the Options area of a header.*/
-#define FNET_IP6_OPTION_TYPE_PADN   (0x01)  /* The PadN option is used to insert two or more octets of padding
+#define FNET_IP6_OPTION_TYPE_PADN   (0x01u)  /* The PadN option is used to insert two or more octets of padding
                                              * into the Options area of a header. For N octets of padding, the
                                              * Opt Data Len field contains the value N-2, and the Option Data
                                              * consists of N-2 zero-valued octets. */
 
-#define FNET_IP6_OPTION_TYPE_ROUTER_ALERT   (0x05) /* RFC2711:The presence of this option in an IPv6 datagram informs the router
+#define FNET_IP6_OPTION_TYPE_ROUTER_ALERT   (0x05u) /* RFC2711:The presence of this option in an IPv6 datagram informs the router
                                                     * that the contents of this datagram is of interest to the router and
                                                     * to handle any control data accordingly.*/
-#define FNET_IP6_OPTION_TYPE_ROUTER_ALERT_VALUE_MLD (0x0000)    /* RFC2711: Datagram contains a Multicast 
+#define FNET_IP6_OPTION_TYPE_ROUTER_ALERT_VALUE_MLD (0x0000u)    /* RFC2711: Datagram contains a Multicast 
                                                                  * Listener Discovery message [RFC-2710].*/
 
 
 /* RFC 2460: The Option Type identifiers are internally encoded such that their
  * highest-order two bits specify the action that must be taken if the
  * processing IPv6 node does not recognize the Option Type:*/
-#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_MASK          (0xC0)
+#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_MASK          (0xC0u)
 
-#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_SKIP          (0x00)  /* 00 - skip over this option and continue processing the header.*/
-#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_DISCARD       (0x40)  /* 01 - discard the packet. */
-#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_DISCARD_ICMP  (0x80)  /* 10 - discard the packet and, regardless of whether or not the
+#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_SKIP          (0x00u)  /* 00 - skip over this option and continue processing the header.*/
+#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_DISCARD       (0x40u)  /* 01 - discard the packet. */
+#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_DISCARD_ICMP  (0x80u)  /* 10 - discard the packet and, regardless of whether or not the
                                                                  * packet’s Destination Address was a multicast address, send an
                                                                  * ICMP Parameter Problem, Code 2, message to the packet’s
                                                                  * Source Address, pointing to the unrecognized Option Type.*/
-#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_DISCARD_UICMP (0xC0)  /* 11 - discard the packet and, only if the packet’s Destination
+#define FNET_IP6_OPTION_TYPE_UNRECOGNIZED_DISCARD_UICMP (0xC0u)  /* 11 - discard the packet and, only if the packet’s Destination
                                                                  * Address was not a multicast address, send an ICMP Parameter
                                                                  * Problem, Code 2, message to the packet’s Source Address,
                                                                  * pointing to the unrecognized Option Type.*/
@@ -285,19 +279,19 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct fnet_ip6_routing_header
 {
-    unsigned char   next_header     FNET_COMP_PACKED;   /* 8-bit selector. Identifies the type of header
+    fnet_uint8_t   next_header     FNET_COMP_PACKED;   /* 8-bit selector. Identifies the type of header
                                                          * immediately following the Options
                                                          * header. */
-    unsigned char   hdr_ext_length  FNET_COMP_PACKED;   /* 8-bit unsigned integer. Length of the Hop-by-
+    fnet_uint8_t   hdr_ext_length  FNET_COMP_PACKED;   /* 8-bit unsigned integer. Length of the Hop-by-
                                                          * Hop Options header in 8-octet units, not
                                                          * including the first 8 octets. */
-    unsigned char   routing_type    FNET_COMP_PACKED;   /* 8-bit identifier of a particular Routing header
+    fnet_uint8_t   routing_type    FNET_COMP_PACKED;   /* 8-bit identifier of a particular Routing header
                                                          * variant.*/ 
-    unsigned char   segments_left   FNET_COMP_PACKED;   /* 8-bit unsigned integer. Number of route
+    fnet_uint8_t   segments_left   FNET_COMP_PACKED;   /* 8-bit unsigned integer. Number of route
                                                          * segments remaining, i.e., number of explicitly
                                                          * listed intermediate nodes still to be visited
                                                          * before reaching the final destination.*/                                                                
-    unsigned char   data[4]         FNET_COMP_PACKED;   /* Variable-length field, of format determined by
+    fnet_uint8_t    data[4]         FNET_COMP_PACKED;   /* Variable-length field, of format determined by
                                                          * the Routing Type, and of length such that the
                                                          * complete Routing header is an integer multiple
                                                          * of 8 octets long. */
@@ -327,26 +321,26 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct fnet_ip6_fragment_header
 {
-    unsigned char    next_header    FNET_COMP_PACKED;   /* 8-bit selector.  Identifies the initial header
+    fnet_uint8_t    next_header    FNET_COMP_PACKED;   /* 8-bit selector.  Identifies the initial header
                                                          * type of the Fragmentable Part of the original
                                                          * packet (defined below).  Uses the same values as
                                                          * the IPv4 Protocol field [RFC-1700 et seq.]. */
-    unsigned char    _reserved      FNET_COMP_PACKED;   /* Initialized to zero for
+    fnet_uint8_t    _reserved      FNET_COMP_PACKED;   /* Initialized to zero for
                                                          * transmission; ignored on reception. */
-    unsigned short   offset_more    FNET_COMP_PACKED;   /* @ 13-bit unsigned integer.  The offset, in 8-octet
+    fnet_uint16_t    offset_more    FNET_COMP_PACKED;   /* @ 13-bit unsigned integer.  The offset, in 8-octet
                                                          * units, of the data following this header,
                                                          * relative to the start of the Fragmentable Part
                                                          * of the original packet.
                                                          * @ 2-bit reserved field.  Initialized to zero for
                                                          * transmission; ignored on reception.
                                                          * @ 1 = more fragments; 0 = last fragment.*/       
-    unsigned long    id             FNET_COMP_PACKED;   /* Identification. */
+    fnet_uint32_t    id             FNET_COMP_PACKED;   /* Identification. */
 } fnet_ip6_fragment_header_t;
 FNET_COMP_PACKED_END
 
-#define FNET_IP6_FRAGMENT_MF_MASK               (0x1)     /* If 1, this is not last fragment */
+#define FNET_IP6_FRAGMENT_MF_MASK               (0x1u)     /* If 1, this is not last fragment */
 #define FNET_IP6_FRAGMENT_MF(offset_more)       (fnet_ntohs(offset_more)&FNET_IP6_FRAGMENT_MF_MASK)
-#define FNET_IP6_FRAGMENT_OFFSET_MASK           (0xFFF8)  /* The offset of frag in dgram */
+#define FNET_IP6_FRAGMENT_OFFSET_MASK           (0xFFF8u)  /* The offset of frag in dgram */
 #define FNET_IP6_FRAGMENT_OFFSET(offset_more)   (fnet_ntohs(offset_more)&FNET_IP6_FRAGMENT_OFFSET_MASK)        /* The offset of frag in dgram */
 
 /**************************************************************************/ /*!
@@ -356,10 +350,10 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct fnet_ip6_frag_header
 {
-    unsigned char   mf                        FNET_COMP_PACKED;
-    unsigned short  total_length             FNET_COMP_PACKED;   /**< data-payload total length (Host endian)*/
-    unsigned short  offset                   FNET_COMP_PACKED;   /**< offset field (measured in 8-byte order). (Host endian)*/
-    fnet_netbuf_t   *nb                       FNET_COMP_PACKED;
+    fnet_uint8_t    mf                      FNET_COMP_PACKED;
+    fnet_uint16_t   total_length            FNET_COMP_PACKED;   /**< data-payload total length (Host endian)*/
+    fnet_uint16_t   offset                  FNET_COMP_PACKED;   /**< offset field (measured in 8-byte order). (Host endian)*/
+    fnet_netbuf_t   *nb                     FNET_COMP_PACKED;
     struct fnet_ip6_frag_header *next       FNET_COMP_PACKED;   /**< Pointer to the next fragment.*/
     struct fnet_ip6_frag_header *prev       FNET_COMP_PACKED;   /**< Pointer to the previous fragment.*/
 } fnet_ip6_frag_header_t;
@@ -372,16 +366,16 @@ FNET_COMP_PACKED_END
 FNET_COMP_PACKED_BEGIN
 typedef struct fnet_ip6_frag_list
 {
-    struct fnet_ip6_frag_list   *next      FNET_COMP_PACKED;   /**< Pointer to the next reassembly list.*/
-    struct fnet_ip6_frag_list   *prev      FNET_COMP_PACKED;   /**< Pointer to the previous reassembly list.*/
-    unsigned char               ttl                 FNET_COMP_PACKED;   /**< TTL for reassembly.*/
-    unsigned char               next_header         FNET_COMP_PACKED;   /**< protocol.*/
-    unsigned long               id                  FNET_COMP_PACKED;   /**< identification.*/
+    struct fnet_ip6_frag_list   *next               FNET_COMP_PACKED;   /**< Pointer to the next reassembly list.*/
+    struct fnet_ip6_frag_list   *prev               FNET_COMP_PACKED;   /**< Pointer to the previous reassembly list.*/
+    fnet_uint8_t                ttl                 FNET_COMP_PACKED;   /**< TTL for reassembly.*/
+    fnet_uint8_t                next_header         FNET_COMP_PACKED;   /**< protocol.*/
+    fnet_uint32_t               id                  FNET_COMP_PACKED;   /**< identification.*/
     fnet_ip6_addr_t             source_addr         FNET_COMP_PACKED;   /**< source address.*/
     fnet_ip6_addr_t             destination_addr    FNET_COMP_PACKED;   /**< destination address.*/
-    unsigned short              hdr_length          FNET_COMP_PACKED;   /* Length of the IPv6 payload of first packet (for ICMPv6 error). //PFI*/
-	unsigned char               hdr_hop_limit       FNET_COMP_PACKED;							                            
-	fnet_netif_t                *netif;
+    fnet_uint16_t               hdr_length          FNET_COMP_PACKED;   /* Length of the IPv6 payload of first packet (for ICMPv6 error). //PFI*/
+	fnet_uint8_t                hdr_hop_limit       FNET_COMP_PACKED;							                            
+	fnet_netif_t                *netif              FNET_COMP_PACKED;
     fnet_ip6_frag_header_t      *frag_ptr           FNET_COMP_PACKED;   /**< Pointer to the first fragment of the list.*/
 } fnet_ip6_frag_list_t;
 FNET_COMP_PACKED_END
@@ -395,7 +389,7 @@ typedef struct fnet_ip6_multicast_list_entry
 {
     fnet_netif_t    *netif;         /* Interface to join on. */
     fnet_ip6_addr_t group_addr;     /* IPv6 address of joined multicast group. */
-    int             user_counter;   /* User counter. Keeps a reference count of the number 
+    fnet_index_t    user_counter;   /* User counter. Keeps a reference count of the number 
                                      * of requests to join a particular host group. */
 } fnet_ip6_multicast_list_entry_t;
 
@@ -406,31 +400,36 @@ extern fnet_ip6_multicast_list_entry_t fnet_ip6_multicast_list[FNET_CFG_MULTICAS
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
-int fnet_ip6_init(void);
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+fnet_return_t fnet_ip6_init(void);
 void fnet_ip6_release(void);
 void fnet_ip6_input(fnet_netif_t *netif, fnet_netbuf_t *nb);
 void fnet_ip6_get_solicited_multicast_addr(const fnet_ip6_addr_t *ip_addr, fnet_ip6_addr_t *solicited_multicast_addr);
-int fnet_ip6_addr_scope(const fnet_ip6_addr_t *ip_addr);
-int fnet_ip6_addr_pefix_cmp(const fnet_ip6_addr_t *addr_1, const fnet_ip6_addr_t *addr_2, unsigned long prefix_length);
-int fnet_ip6_common_prefix_length(const fnet_ip6_addr_t *ip_addr_1, const fnet_ip6_addr_t *ip_addr_2);
-unsigned long fnet_ip6_policy_label(const fnet_ip6_addr_t *addr);
+fnet_int32_t fnet_ip6_addr_scope(const fnet_ip6_addr_t *ip_addr);
+fnet_bool_t fnet_ip6_addr_pefix_cmp(const fnet_ip6_addr_t *addr_1, const fnet_ip6_addr_t *addr_2, fnet_size_t prefix_length);
+fnet_size_t fnet_ip6_common_prefix_length(const fnet_ip6_addr_t *ip_addr_1, const fnet_ip6_addr_t *ip_addr_2);
 const fnet_ip6_addr_t *fnet_ip6_select_src_addr(fnet_netif_t *netif /* Optional.*/, const fnet_ip6_addr_t *dest_addr); 
-int fnet_ip6_output(fnet_netif_t *netif /*optional*/, const fnet_ip6_addr_t *src_ip /*optional*/, const fnet_ip6_addr_t *dest_ip,
-                    unsigned char protocol, unsigned char hop_limit /*optional*/, fnet_netbuf_t *nb, FNET_COMP_PACKED_VAR unsigned short *checksum); 
+fnet_error_t fnet_ip6_output(fnet_netif_t *netif /*optional*/, const fnet_ip6_addr_t *src_ip /*optional*/, const fnet_ip6_addr_t *dest_ip,
+                    fnet_uint8_t protocol, fnet_uint8_t hop_limit /*optional*/, fnet_netbuf_t *nb, FNET_COMP_PACKED_VAR fnet_uint16_t *checksum); 
 void fnet_ip6_drain(void);
-unsigned long fnet_ip6_mtu(fnet_netif_t *netif);      
+fnet_size_t fnet_ip6_mtu(fnet_netif_t *netif);      
 fnet_netif_t *fnet_ip6_route(const fnet_ip6_addr_t *src_ip /*optional*/, const fnet_ip6_addr_t *dest_ip);    
-int fnet_ip6_will_fragment( fnet_netif_t *netif, unsigned long protocol_message_size);
-
-struct _socket; /* Forward declaration.*/
-int fnet_ip6_getsockopt(struct _socket *sock, int optname, void *optval, unsigned int *optlen); 
-int fnet_ip6_setsockopt(struct _socket *sock, int optname, const void *optval, unsigned int optlen );      
-
+fnet_bool_t fnet_ip6_will_fragment( fnet_netif_t *netif, fnet_size_t protocol_message_size);
+struct _fnet_socket_if_t; /* Forward declaration.*/
+fnet_error_t fnet_ip6_getsockopt(struct _fnet_socket_if_t *sock, fnet_socket_options_t optname, void *optval, fnet_size_t *optlen); 
+fnet_error_t fnet_ip6_setsockopt(struct _fnet_socket_if_t *sock, fnet_socket_options_t optname, const void *optval, fnet_size_t optlen );      
 fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_join(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr);
 void fnet_ip6_multicast_leave_entry(fnet_ip6_multicast_list_entry_t *multicastentry); 
 void fnet_ip6_multicast_leave(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr); 
 fnet_ip6_multicast_list_entry_t *fnet_ip6_multicast_find_entry(fnet_netif_t *netif, const fnet_ip6_addr_t *group_addr);
 void fnet_ip6_multicast_leave_all(fnet_netif_t *netif);
 void fnet_ip6_set_socket_addr(fnet_netif_t *netif, fnet_ip6_header_t *ip_hdr, struct sockaddr *src_addr,  struct sockaddr *dest_addr );
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* _FNET_IP6_PRV_H_ */

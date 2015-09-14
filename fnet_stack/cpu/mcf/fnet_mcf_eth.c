@@ -40,8 +40,8 @@
 
 #include "fnet.h"
 #if FNET_MCF && (FNET_CFG_CPU_ETH0 ||FNET_CFG_CPU_ETH1)
-#include "fnet_fec.h"
-#include "fnet_eth_prv.h"
+#include "cpu/common/fnet_fec.h"
+//DM #include "stack/fnet_eth_prv.h"
 
 
 #if FNET_CFG_CPU_ETH0
@@ -200,19 +200,19 @@ void fnet_eth_phy_init(fnet_fec_if_t *ethif)
    
     #if FNET_CFG_CPU_MCF52235 
         #if 1
-            fnet_uint16 reg_value;
+            fnet_uint16_t reg_value;
             /* Enable EPHY module, Enable auto_neg at start-up, Let PHY PLLs be determined by PHY.*/
-            FNET_MCF_EPHY_EPHYCTL0 = (fnet_uint8)(FNET_MCF_EPHY_EPHYCTL0_EPHYEN);
+            FNET_MCF_EPHY_EPHYCTL0 = (fnet_uint8_t)(FNET_MCF_EPHY_EPHYCTL0_EPHYEN);
      
             /* Start-up Delay for Kirin2 = 350uS */
             fnet_timer_delay(1); /* Delay for 1 timer tick (100ms) */
              
             /* Disable ANE that causes problems with some routers.  Enable full-duplex and 100Mbps */
             fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_CR, &reg_value);
-            fnet_fec_mii_write(ethif, FNET_FEC_MII_REG_CR, (fnet_uint16)(reg_value & (~FNET_FEC_MII_REG_CR_ANE)|FNET_FEC_MII_REG_CR_DPLX|FNET_FEC_MII_REG_CR_DATARATE));
+            fnet_fec_mii_write(ethif, FNET_FEC_MII_REG_CR, (fnet_uint16_t)(reg_value & (~FNET_FEC_MII_REG_CR_ANE)|FNET_FEC_MII_REG_CR_DPLX|FNET_FEC_MII_REG_CR_DATARATE));
         
         #else /* Old version, just in case.*/ 
-            fnet_uint16 reg_value;
+            fnet_uint16_t reg_value;
              
             /* Set phy address */
             FNET_MCF_EPHY_EPHYCTL1 = (fnet_uint8)FNET_MCF_EPHY_EPHYCTL1_PHYADD(ethif->phy_addr);
@@ -250,8 +250,8 @@ void fnet_eth_phy_init(fnet_fec_if_t *ethif)
     #endif
     
     #if FNET_CFG_CPU_MCF52259
-        fnet_uint8 tmp_ptipar;
-        fnet_uint8 tmp_ptjpar;
+        fnet_uint8_t tmp_ptipar;
+        fnet_uint8_t tmp_ptjpar;
         
         fnet_timer_delay(3);
         /* Workaround for PHY reset */
@@ -278,14 +278,14 @@ void fnet_eth_phy_init(fnet_fec_if_t *ethif)
     #endif
     
     {/* Check if the PHY is powered down or isolated, before using it.*/
-        fnet_uint16 reg_value;
+        fnet_uint16_t reg_value;
        
         if (fnet_fec_mii_read(ethif, FNET_FEC_MII_REG_CR, &reg_value) == FNET_OK)
         {
             if(reg_value & (FNET_FEC_MII_REG_CR_PDWN | FNET_FEC_MII_REG_CR_ISOL))
             {
                 reg_value &= ~(FNET_FEC_MII_REG_CR_PDWN | FNET_FEC_MII_REG_CR_ISOL);
-                fnet_fec_mii_write(ethif, FNET_FEC_MII_REG_CR, reg_value);
+                fnet_fec_mii_write(ethif, FNET_FEC_MII_REG_CR, reg_value); 
             }
         }
     }

@@ -41,16 +41,16 @@
 
 #include "fnet.h"
 
-#if FNET_CFG_HTTP && FNET_CFG_HTTP_POST
+#if FNET_CFG_HTTP && FNET_CFG_HTTP_POST && FNET_CFG_HTTP_VERSION_MAJOR
 
 #include "fnet_http_prv.h"
 #include "fnet_http_post.h"
 
 
 /* Prototypes */
-static int fnet_http_post_handle(struct fnet_http_if * http, struct fnet_http_uri * uri);
-static int fnet_http_post_receive(struct fnet_http_if * http);
-static int fnet_http_post_send(struct fnet_http_if * http);
+static fnet_int32_t fnet_http_post_handle(struct fnet_http_if * http, struct fnet_http_uri * uri);
+static fnet_int32_t fnet_http_post_receive(struct fnet_http_if * http);
+static fnet_return_t fnet_http_post_send(struct fnet_http_if * http);
 
 /* POST method. */
 const struct fnet_http_method fnet_http_method_post =
@@ -67,17 +67,17 @@ const struct fnet_http_method fnet_http_method_post =
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fnet_http_post_handle(struct fnet_http_if * http, struct fnet_http_uri * uri)
+static fnet_int32_t fnet_http_post_handle(struct fnet_http_if * http, struct fnet_http_uri * uri)
 {
     struct fnet_http_session_if *session =  http->session_active;
-    int                         result = FNET_ERR;
+    fnet_int32_t                result = FNET_ERR;
     const struct fnet_http_post *post_ptr;
     
     if(http->post_table)
     /* POST table is initialized.*/
     {
         /* Skip first '/' and ' ' */
-        while(*uri->path == '/' || *uri->path == ' ')
+        while((*uri->path == '/') || (*uri->path == ' '))
         {
             uri->path++;
         }
@@ -90,10 +90,14 @@ static int fnet_http_post_handle(struct fnet_http_if * http, struct fnet_http_ur
     	    if (!fnet_strcmp(uri->path, post_ptr->name)) 
     		{				 
     		    session->send_param.data_ptr = post_ptr;
-    		    if(post_ptr->handle)
-    		        result = post_ptr->handle(uri->query, &session->response.cookie);
+    		    if(post_ptr->post_handle)
+                {
+    		        result = post_ptr->post_handle(uri->query, &session->response.cookie);
+                }
     		    else
+                {
     		        result = FNET_OK;
+                }
     		        
     	        break;
     	    }
@@ -107,20 +111,24 @@ static int fnet_http_post_handle(struct fnet_http_if * http, struct fnet_http_ur
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fnet_http_post_receive(struct fnet_http_if * http)
+static fnet_int32_t fnet_http_post_receive(struct fnet_http_if * http)
 {
     struct fnet_http_session_if *session =  http->session_active;    
-    int                         result = FNET_ERR;
+    fnet_int32_t                result = FNET_ERR;
     const struct fnet_http_post * post_ptr;
     
     if(session->send_param.data_ptr)
     {
         post_ptr = (const struct fnet_http_post *)session->send_param.data_ptr;
         
-        if(post_ptr->receive)
-            result = post_ptr->receive(session->buffer, session->buffer_actual_size, &session->response.cookie);
+        if(post_ptr->post_receive)
+        {
+            result = post_ptr->post_receive(session->buffer, session->buffer_actual_size, &session->response.cookie);
+        }
         else
+        {
             result = FNET_OK;
+        }
     }
     
     return result;
@@ -131,15 +139,17 @@ static int fnet_http_post_receive(struct fnet_http_if * http)
 *
 * DESCRIPTION: 
 ************************************************************************/
-static int fnet_http_post_send(struct fnet_http_if * http)
+static fnet_return_t fnet_http_post_send(struct fnet_http_if * http)
 {
     struct fnet_http_session_if *session =  http->session_active; 
-    int                         result = FNET_ERR;
+    fnet_return_t               result = FNET_ERR;
     const struct fnet_http_post *post_ptr = (const struct fnet_http_post *) session->send_param.data_ptr;
     
-    if(post_ptr && post_ptr->send)
-        if(post_ptr->send(session->buffer, sizeof(session->buffer), &session->response.send_eof, &session->response.cookie) > 0)
-                result = FNET_OK;
+    if(post_ptr && (post_ptr->post_send)
+        &&(post_ptr->post_send(session->buffer, sizeof(session->buffer), &session->response.send_eof, &session->response.cookie) > 0u) )
+    {
+        result = FNET_OK;
+    }
         
     return result;
 }

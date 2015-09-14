@@ -68,7 +68,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_TELNET_MAX
-    #define FNET_CFG_TELNET_MAX                 (1)
+    #define FNET_CFG_TELNET_MAX                 (1u)
 #endif
 
 /**************************************************************************/ /*!
@@ -79,7 +79,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_TELNET_SESSION_MAX
-    #define FNET_CFG_TELNET_SESSION_MAX         (1)
+    #define FNET_CFG_TELNET_SESSION_MAX         (1u)
 #endif
 
 /**************************************************************************/ /*!
@@ -91,7 +91,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_TELNET_PORT
-    #define FNET_CFG_TELNET_PORT                (FNET_HTONS(23))
+    #define FNET_CFG_TELNET_PORT                (FNET_HTONS(23u))
 #endif
 
 /**************************************************************************/ /*!
@@ -112,7 +112,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_TELNET_SOCKET_BUF_SIZE
-    #define FNET_CFG_TELNET_SOCKET_BUF_SIZE     (60)
+    #define FNET_CFG_TELNET_SOCKET_BUF_SIZE     (60u)
 #endif
 
 /**************************************************************************/ /*!
@@ -123,7 +123,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_TELNET_CMD_LINE_BUF_SIZE
-    #define FNET_CFG_TELNET_CMD_LINE_BUF_SIZE   (60)
+    #define FNET_CFG_TELNET_CMD_LINE_BUF_SIZE   (60u)
 #endif
 
 

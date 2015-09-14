@@ -76,7 +76,7 @@
 #if FNET_CFG_COMP_UV || FNET_CFG_COMP_GNUC
 __attribute__((section(".fapp_params")))
 #endif
-   const struct fapp_params_flash fapp_params_config 
+   static const struct fapp_params_flash fapp_params_config 
 #if FNET_CFG_COMP_UV || FNET_CFG_COMP_GNUC
 __attribute__((used))
 #endif	 
@@ -109,7 +109,7 @@ __attribute__((used))
 /* Local confiruration parameters.
 * Will be overwritten by parameters from flash if FAPP_CFG_PARAMS_READ_FLASH set to 1.
 */
-char fapp_params_host_name[FAPP_PARAMS_HOST_NAME_SIZE] = FAPP_CFG_PARAMS_HOST_NAME;
+fnet_char_t fapp_params_host_name[FAPP_PARAMS_HOST_NAME_SIZE] = FAPP_CFG_PARAMS_HOST_NAME;
 
 #if FAPP_CFG_PARAMS_BOOT 
 struct fapp_params_boot fapp_params_boot_config =
@@ -137,8 +137,8 @@ struct fapp_params_tftp fapp_params_tftp_config =
 *
 * DESCRIPTION: Save current configuration parameters to the flash.
 ************************************************************************/
-#if FAPP_CFG_SAVE_CMD 
-int fapp_params_to_flash(void)
+#if FAPP_CFG_SAVE_CMD && FNET_CFG_FLASH
+fnet_return_t fapp_params_to_flash(void)
 {
     struct fapp_params_fnet     fnet_params;
     struct fapp_params_flash    *fapp_params = (struct fapp_params_flash *)FAPP_FLASH_PARAMS_ADDRESS;
@@ -146,7 +146,7 @@ int fapp_params_to_flash(void)
 
 #if FNET_CFG_IP4    
     /* Save IP address only if it was allocated manually/statically. */
-    if(fnet_netif_get_ip4_addr_automatic(netif) != 0)
+    if(fnet_netif_get_ip4_addr_automatic(netif) != FNET_FALSE)
     {
         fnet_params.address = fapp_params->fnet_params.address; /* Preserve the old value.*/
     }
@@ -191,7 +191,9 @@ int fapp_params_to_flash(void)
         
         /* Simple check if it was written. */
         if( fnet_memcmp((void *)(fapp_params), FAPP_PARAMS_SIGNATURE, sizeof(FAPP_PARAMS_SIGNATURE)) == 0 )
+        {
             return FNET_OK;
+        }
     }
     
     return FNET_ERR;
@@ -204,10 +206,10 @@ int fapp_params_to_flash(void)
 * DESCRIPTION: Load configuration parameters from flash.
 ************************************************************************/
 #if FAPP_CFG_PARAMS_READ_FLASH
-int fapp_params_from_flash(void)
+fnet_return_t fapp_params_from_flash(void)
 {
     struct fapp_params_flash *fnet_params = (struct fapp_params_flash *)FAPP_FLASH_PARAMS_ADDRESS;
-    int result;
+    fnet_return_t result;
     fnet_netif_desc_t netif = fapp_default_netif;
     
     /* Check signature. */
@@ -235,7 +237,9 @@ int fapp_params_from_flash(void)
         result = FNET_OK;
     }
     else
+    {
         result = FNET_ERR;
+    }
     
     return result;
   

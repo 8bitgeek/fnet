@@ -40,12 +40,16 @@
 *
 ***************************************************************************/
 
-#include "fnet_config.h" 
+#include "fnet.h" 
 #if FNET_CFG_LOOPBACK
 
 #include "fnet_loop.h"
 #include "fnet_ip_prv.h"
 #include "fnet_ip6_prv.h"
+
+#if (FNET_LOOP_MTU < 200)
+ #error  "FNET_LOOP_MTU must be more than 200."
+#endif
 
 /************************************************************************
 *     Global Data Structures

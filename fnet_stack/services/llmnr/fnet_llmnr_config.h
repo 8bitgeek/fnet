@@ -59,12 +59,6 @@
     #define FNET_CFG_LLMNR                      (0)
 #endif
 
-#if FNET_CFG_LLMNR
-    /* LLMNR requires multicast support.*/
-    #undef FNET_CFG_MULTICAST
-    #define  FNET_CFG_MULTICAST             (1)
-#endif
-
 /**************************************************************************/ /*!
  * @def     FNET_CFG_LLMNR_MAX
  * @brief   Maximum number of the LLMNR Servers that can be run simultaneously. @n
@@ -72,7 +66,7 @@
  * @showinitializer
  ******************************************************************************/
 #ifndef FNET_CFG_LLMNR_MAX
-    #define FNET_CFG_LLMNR_MAX                 (1)
+    #define FNET_CFG_LLMNR_MAX                 (1u)
 #endif
 
 /**************************************************************************/ /*!
@@ -85,7 +79,7 @@
  * @showinitializer 
  ******************************************************************************/  
 #ifndef FNET_CFG_LLMNR_PORT
-    #define FNET_CFG_LLMNR_PORT                 (FNET_HTONS(5355))
+    #define FNET_CFG_LLMNR_PORT                 (FNET_HTONS(5355u))
 #endif
 
 /**************************************************************************/ /*!

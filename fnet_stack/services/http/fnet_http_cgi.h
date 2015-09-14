@@ -94,7 +94,7 @@
  * blank string.
  * 
  ******************************************************************************/ 
-typedef int(*fnet_http_cgi_handle_t)(char * query, long *cookie);
+typedef fnet_return_t(*fnet_http_cgi_handle_t)(fnet_char_t *query, fnet_uint32_t *cookie);
  
 
 /**************************************************************************/ /*!
@@ -106,10 +106,10 @@ typedef int(*fnet_http_cgi_handle_t)(char * query, long *cookie);
  *                         It's defined by the @ref FNET_CFG_HTTP_REQUEST_SIZE_MAX parameter.
  *
  * @param eof              Condition flag:
- *                         - @c 0 =  there is still more data to send.
+ *                         - @c FNET_FALSE =  there is still more data to send.
  *                           The @ref fnet_http_cgi_send_t function will be called 
  *                           during the next iteration again.
- *                         - @c 1 =  no more data is available for the CGI response.
+ *                         - @c FNET_FALSE =  no more data is available for the CGI response.
  *                           It was the last call of the @ref fnet_http_cgi_send_t 
  *                           function for the current CGI response.
  * @param cookie    This parameter points to the value, initially set to zero,
@@ -133,7 +133,7 @@ typedef int(*fnet_http_cgi_handle_t)(char * query, long *cookie);
  * till the @c eof will be set to @c 1 or the return result is set to @c 0.
  * 
  ******************************************************************************/ 
-typedef unsigned long(*fnet_http_cgi_send_t)(char * buffer, unsigned long buffer_size, char * eof, long *cookie);
+typedef fnet_size_t (*fnet_http_cgi_send_t)(fnet_uint8_t * buffer, fnet_size_t buffer_size, fnet_bool_t *eof, fnet_uint32_t *cookie);
 
 /**************************************************************************/ /*!
  * @brief CGI callback function table.
@@ -148,9 +148,9 @@ typedef unsigned long(*fnet_http_cgi_send_t)(char * buffer, unsigned long buffer
  ******************************************************************************/
 struct fnet_http_cgi
 {
-	char *name;				            /**< @brief CGI file name. */
-	fnet_http_cgi_handle_t handle;      /**< @brief Pointer to the CGI query handler. It's optional. */
-    fnet_http_cgi_send_t send;    /**< @brief Pointer to the CGI response function. 
+	fnet_char_t                   *name;      /**< @brief CGI file name. */
+	fnet_http_cgi_handle_t  handle;     /**< @brief Pointer to the CGI query handler. It's optional. */
+    fnet_http_cgi_send_t    send;       /**< @brief Pointer to the CGI response function. 
                                          * This function actually creates dynamic content of
                                          * the CGI response. It's optional. */
 };

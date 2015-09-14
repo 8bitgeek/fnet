@@ -66,7 +66,7 @@
  * long, the transferred data block is not the last block of data. If it is from 
  * zero to 511 bytes long, it signals the end of transfer.
  ******************************************************************************/
-#define FNET_TFTP_DATA_SIZE_MAX         (512)
+#define FNET_TFTP_DATA_SIZE_MAX         (512u)
 
 /**************************************************************************/ /*!
  * @brief The TFTP request type. It defines a TFTP service behavior, 

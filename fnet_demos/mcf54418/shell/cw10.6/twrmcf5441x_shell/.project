@@ -188,11 +188,6 @@
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/fnet_cpu_config.h</locationURI>
 		</link>
 		<link>
-			<name>Sources/fnet_stack/cpu/fnet_cpu_config.h~RF1073ec67.TMP</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/fnet_cpu_config.h~RF1073ec67.TMP</locationURI>
-		</link>
-		<link>
 			<name>Sources/fnet_stack/cpu/fnet_cpu_config.h~RFbbb5196.TMP</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/fnet_cpu_config.h~RFbbb5196.TMP</locationURI>
@@ -641,11 +636,6 @@
 			<name>Sources/fnet_stack/cpu/common/fnet_fec.h</name>
 			<type>1</type>
 			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/common/fnet_fec.h</locationURI>
-		</link>
-		<link>
-			<name>Sources/fnet_stack/cpu/mcf/MFC1D32.tmp</name>
-			<type>1</type>
-			<locationURI>PARENT-5-PROJECT_LOC/fnet_stack/cpu/mcf/MFC1D32.tmp</locationURI>
 		</link>
 		<link>
 			<name>Sources/fnet_stack/cpu/mcf/fnet_mcf.c</name>

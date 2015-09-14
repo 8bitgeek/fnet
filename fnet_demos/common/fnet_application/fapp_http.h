@@ -52,9 +52,18 @@
 #define FAPP_HTTP_MOUNT_NAME   FAPP_FS_MOUNT_NAME
 #define FAPP_HTTP_INDEX_FILE   "index.html"
 
-void fapp_http_cmd( fnet_shell_desc_t desc, int argc, char ** argv );
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+void fapp_http_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **argv );
 void fapp_http_info(fnet_shell_desc_t desc);
 void fapp_http_release(void);
+
+#if defined(__cplusplus)
+}
+#endif
+
 #endif
 
 #endif
