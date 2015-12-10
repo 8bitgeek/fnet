@@ -41,6 +41,11 @@
  ******************************************************************************/
 #define  FNET_CFG_CPU_TIMER_NUMBER_MAX  (4)
 
+/*****************************************************************************
+ *  Max priority. 
+ ******************************************************************************/ 
+#define FNET_CFG_CPU_VECTOR_PRIORITY_MAX                (31)
+
 
 /* Size of the internal static heap buffer. */
 #ifndef FNET_CFG_HEAP_SIZE
@@ -68,10 +73,10 @@
 #endif
 
 /* On-chip Flash size.*/
-#define FNET_CFG_CPU_FLASH_SIZE         (1024 * 1024 * 2)   /* 2 MB*/
+#define FNET_CFG_CPU_FLASH_SIZE         (1024 * 1024 * 5 / 2)   /* 2.5 MB*/
 
 /* SRAM size.*/
-#define FNET_CFG_CPU_SRAM_SIZE          (1024 * 512)        /* 512 KB */  
+#define FNET_CFG_CPU_SRAM_SIZE          (1024 * 384)        /* 384 KB */  
 
 /* PIT channel to use as timer */
 #ifndef FNET_CFG_CPU_TIMER_NUMBER

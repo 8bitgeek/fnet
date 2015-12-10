@@ -5,32 +5,21 @@
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_ip.c
 *
@@ -83,6 +72,7 @@ static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_
 static void fnet_ip_input_low(fnet_uint32_t cookie );
 static fnet_error_t fnet_ip4_getsockopt(fnet_socket_if_t *sock, fnet_socket_options_t optname, void *optval, fnet_size_t *optlen );
 static fnet_error_t fnet_ip4_setsockopt( fnet_socket_if_t *sock, fnet_socket_options_t optname, const void *optval, fnet_size_t optlen ); 
+static fnet_bool_t fnet_ip_addr_is_onlink(fnet_netif_t *netif, fnet_ip4_addr_t addr);
 
 #if FNET_CFG_IP4_FRAGMENTATION
     static fnet_netbuf_t *fnet_ip_reassembly( fnet_netbuf_t ** nb_ptr );
@@ -455,7 +445,7 @@ static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_
     }
     else
     {
-        if(!((do_not_route) || ((dest_ip_addr & netif->ip4_addr.subnetmask) == (netif->ip4_addr.address & netif->ip4_addr.subnetmask))))
+        if(!((do_not_route) || (fnet_ip_addr_is_onlink(netif, dest_ip_addr) == FNET_TRUE)))
         {
             /* Use the default router as the address to send.*/
             dest_ip_addr = netif->ip4_addr.gateway;
@@ -467,18 +457,46 @@ static void fnet_ip_netif_output(struct fnet_netif *netif, fnet_ip4_addr_t dest_
 }
 
 /************************************************************************
+* NAME: fnet_ip_addr_is_onlink
+*
+* DESCRIPTION: Checks if the address is on-link. 
+*              Returns FNET_TRUE if it is on-line, FNET_FALSE otherwise.
+*************************************************************************/
+static fnet_bool_t fnet_ip_addr_is_onlink(fnet_netif_t *netif, fnet_ip4_addr_t addr)
+{
+    fnet_bool_t on_link;
+    if(((addr & netif->ip4_addr.subnetmask) == (netif->ip4_addr.address & netif->ip4_addr.subnetmask))
+        /* RFC3927: If the destination address is in the 169.254/16 prefix, then the sender
+            MUST send its packet directly to the destination on the same physical link.  This MUST be
+            done whether the interface is configured with a Link-Local or a routable IPv4 address.    */
+       || ((addr & FNET_IP4_ADDR_LINK_LOCAL_PREFIX) == (FNET_IP4_ADDR_LINK_LOCAL_PREFIX)))
+
+    {
+        on_link = FNET_TRUE;
+    }
+    else
+    {
+        on_link = FNET_FALSE;
+    }
+    return on_link;
+}
+
+/************************************************************************
 * NAME: fnet_ip_set_socket_addr
 *
 * DESCRIPTION: Prepare sockets addreses for upper protocol.
 *************************************************************************/
-void fnet_ip_set_socket_addr(fnet_ip_header_t *ip_hdr, struct sockaddr *src_addr,  struct sockaddr *dest_addr )
+void fnet_ip_set_socket_addr(fnet_netif_t *netif, fnet_ip_header_t *ip_hdr, struct sockaddr *src_addr,  struct sockaddr *dest_addr )
 {
     fnet_memset_zero(src_addr, sizeof(struct sockaddr));
     src_addr->sa_family = AF_INET;
+    src_addr->sa_scope_id = netif->scope_id;
     ((struct sockaddr_in*)(src_addr))->sin_addr.s_addr = ip_hdr->source_addr;
+
     
     fnet_memset_zero(dest_addr, sizeof(struct sockaddr));
     dest_addr->sa_family = AF_INET;
+    dest_addr->sa_scope_id = netif->scope_id;
     ((struct sockaddr_in*)(dest_addr))->sin_addr.s_addr = ip_hdr->desination_addr;
 }
 
@@ -558,7 +576,8 @@ static void fnet_ip_input_low(fnet_uint32_t cookie )
                 || (fnet_ip_addr_is_broadcast(destination_addr, netif))
     #if FNET_CFG_MULTICAST                
                 || (FNET_IP4_ADDR_IS_MULTICAST(destination_addr))
-    #endif                
+    #endif       
+                || (netif->api->type == FNET_NETIF_TYPE_LOOPBACK) 
                 ) 
         )
         {   
@@ -611,7 +630,7 @@ static void fnet_ip_input_low(fnet_uint32_t cookie )
              **************************************/
 
             /* Prepare addreses for upper protocol.*/
-            fnet_ip_set_socket_addr(hdr, &src_addr,  &dest_addr );
+            fnet_ip_set_socket_addr(netif, hdr, &src_addr,  &dest_addr );
 
     #if FNET_CFG_RAW
             /* RAW Sockets inpput.*/
@@ -1121,7 +1140,9 @@ fnet_bool_t fnet_ip_addr_is_broadcast( fnet_ip4_addr_t addr, fnet_netif_t *netif
     fnet_netif_ip4_addr_t   *netif_addr;
     fnet_bool_t             result = FNET_FALSE;
     
-    if((addr == INADDR_BROADCAST) || (addr == INADDR_ANY)) /* Limited broadcast */
+    if((addr == INADDR_BROADCAST)                   /* Limited broadcast */
+        || (addr == INADDR_ANY) 
+        || (addr == FNET_IP4_ADDR_LINK_LOCAL_BROADCAST) )/* Link-local broadcast (RFC3927)*/
     {
         result = FNET_TRUE;
     }
@@ -1297,13 +1318,13 @@ static fnet_error_t fnet_ip4_setsockopt( fnet_socket_if_t *sock, fnet_socket_opt
             fnet_netif_t                    *netif;
                         
                         
-            if(mreq->imr_interface.s_addr == INADDR_ANY)
+            if(mreq->imr_interface == 0u)
             {
                 netif = (fnet_netif_t *)fnet_netif_get_default();
             }
             else
             {
-                netif = (fnet_netif_t *)fnet_netif_get_by_ip4_addr(mreq->imr_interface.s_addr);
+                netif = (fnet_netif_t *)fnet_netif_get_by_scope_id(mreq->imr_interface);
             }
                         
             if((optlen != sizeof(struct ip_mreq)) /* Check size.*/

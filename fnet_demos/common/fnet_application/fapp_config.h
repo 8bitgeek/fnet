@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fapp_config.h
 *
@@ -146,7 +135,21 @@
 /************************************************************************
 * Default application parameters (allocated in the Flash memory).
 *************************************************************************/
-/* FNET TCP/IP stack default parameters ROM. */
+/* FNET-Application TCP/IP stack default parameters. */
+
+#ifndef FAPP_CFG_PARAMS_NETIF_NAME
+	#if FNET_CFG_CPU_ETH0
+		#define FAPP_CFG_PARAMS_NETIF_NAME             FNET_CFG_CPU_ETH0_NAME
+	#elif FNET_CFG_CPU_ETH1
+		#define FAPP_CFG_PARAMS_NETIF_NAME             FNET_CFG_CPU_ETH1_NAME
+	#elif FNET_CFG_LOOPBACK
+		#define FAPP_CFG_PARAMS_NETIF_NAME             FNET_CFG_LOOPBACK_NAME
+	#else
+		#define FAPP_CFG_PARAMS_NETIF_NAME             ""
+	#endif
+#endif
+
+
 #ifndef FAPP_CFG_PARAMS_IP_ADDR
     #define FAPP_CFG_PARAMS_IP_ADDR             FNET_CFG_ETH0_IP4_ADDR    /* Defined by FNET */
 #endif
@@ -190,7 +193,7 @@
 
 /* TFTP parameters */
 #ifndef FAPP_CFG_PARAMS_TFTP_SERVER
-    #define FAPP_CFG_PARAMS_TFTP_SERVER         {0,0,{0}} 
+    #define FAPP_CFG_PARAMS_TFTP_SERVER         {0,0,0,{0}}
 #endif
 
 #ifndef FAPP_CFG_PARAMS_TFTP_FILE_TYPE
@@ -394,6 +397,9 @@
 *    "set/get" command.
 *************************************************************************/
 /* FNET TCP/IP stack set/get parameters. */
+#ifndef FAPP_CFG_SETGET_CMD_NETIF
+    #define FAPP_CFG_SETGET_CMD_NETIF       (0)
+#endif
 #ifndef FAPP_CFG_SETGET_CMD_IP
     #define FAPP_CFG_SETGET_CMD_IP          (0)
 #endif
@@ -480,19 +486,19 @@
 *    TFTP data handlers
 *************************************************************************/
 #ifndef FAPP_CFG_TFTP_RX_RAW
-    #define FAPP_CFG_TFTP_RX_RAW            (1)
+    #define FAPP_CFG_TFTP_RX_RAW            (0)
 #endif
 
 #ifndef FAPP_CFG_TFTP_TX_RAW
-    #define FAPP_CFG_TFTP_TX_RAW            (1)
+    #define FAPP_CFG_TFTP_TX_RAW            (0)
 #endif
 
 #ifndef FAPP_CFG_TFTP_RX_BIN
-    #define FAPP_CFG_TFTP_RX_BIN            (1)
+    #define FAPP_CFG_TFTP_RX_BIN            (0)
 #endif
 
 #ifndef FAPP_CFG_TFTP_TX_BIN
-    #define FAPP_CFG_TFTP_TX_BIN            (1)
+    #define FAPP_CFG_TFTP_TX_BIN            (0)
 #endif
 
 #ifndef FAPP_CFG_TFTP_RX_SREC
@@ -503,6 +509,13 @@
     #define FAPP_CFG_TFTP_TX_SREC           (1)
 #endif
 
+#ifndef FAPP_CFG_TFTP_RX_HEX
+    #define FAPP_CFG_TFTP_RX_HEX            (0)
+#endif
+
+#ifndef FAPP_CFG_TFTP_TX_HEX
+    #define FAPP_CFG_TFTP_TX_HEX            (0)
+#endif
 
 /************************************************************************/
 #ifndef FAPP_CFG_SHELL_MAX_LINE_LENGTH

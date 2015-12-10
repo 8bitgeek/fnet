@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fapp_tftp.h
 *
@@ -129,7 +118,6 @@ FNET_COMP_PACKED_END
 
 /********************** SREC **************************************/
 
-
 /* SREC Tx Handler states */ 
 typedef enum 
 {
@@ -199,20 +187,102 @@ struct fapp_tftp_tx_handler_srec_context
 };
 FNET_COMP_PACKED_END
 
+/********************** HEX **************************************/
+
+/* HEX Rx Handler states */
+typedef enum
+{
+    FAPP_TFTP_RX_HANDLER_HEX_STATE_INIT = 0,
+    FAPP_TFTP_RX_HANDLER_HEX_STATE_GETCOLON,
+    FAPP_TFTP_RX_HANDLER_HEX_STATE_GETHEAD,
+    FAPP_TFTP_RX_HANDLER_HEX_STATE_GETDATA,
+    FAPP_TFTP_RX_HANDLER_HEX_STATE_IGNOREALL
+}
+fapp_tftp_rx_handler_hex_state_t;
+
+/* HEX Tx Handler states */
+typedef enum
+{
+    FAPP_TFTP_TX_HANDLER_HEX_STATE_INIT = 0,
+    FAPP_TFTP_TX_HANDLER_HEX_STATE_EXADDR,
+    FAPP_TFTP_TX_HANDLER_HEX_STATE_DATA,
+    FAPP_TFTP_TX_HANDLER_HEX_STATE_EOB,
+    FAPP_TFTP_TX_HANDLER_HEX_STATE_END
+}
+fapp_tftp_tx_handler_hex_state_t;
+
+
+/*
+DATA RECORD:
++-----------------------------------------//--------------------------+
+| : | count=XX | address=XXXX  | 00 |         data      | checksum=XX |
++-----------------------------------------//--------------------------+
+
+EOF RECORD:
++-------------------------------------------------+
+| : | count=00 | address=0000  | 01 | checksum=FF |
++-------------------------------------------------+
+
+EXTENDED SEGMENT ADDRESS RECORD (offset=bits[19-4] of 20-bit segment base address added to subsequent data addresses)
++---------------------------------------------------------------+
+| : | count=02 | address=0000  | 02 | offset=XXXX | checksum=XX |
++---------------------------------------------------------------+
+
+EXTENDED LINEAR ADDRESS RECORD (offset=bits[31-16] of 32-bit linear base address added to subsequent data addresses)
++---------------------------------------------------------------+
+| : | count=02 | address=0000  | 04 | offset=XXXX | checksum=XX |
++---------------------------------------------------------------+
+*/
+
+/* TFTP HEX handler control structure. */
+FNET_COMP_PACKED_BEGIN
+struct fapp_tftp_rx_handler_hex_context
+{
+    fapp_tftp_rx_handler_hex_state_t state FNET_COMP_PACKED;
+    fnet_index_t index           					FNET_COMP_PACKED;
+    fnet_index_t todo            					FNET_COMP_PACKED;
+    fnet_uint8_t bcount					FNET_COMP_PACKED;	/* data byte count */
+    fnet_uint8_t type 						FNET_COMP_PACKED;	/* record type */
+    fnet_uint8_t csum 						FNET_COMP_PACKED;   /* checksum */
+    fnet_uint16_t addr   					FNET_COMP_PACKED;   /* 16bit addr from the record */
+    fnet_uint32_t addr_base 				FNET_COMP_PACKED;   /* 32bit addr base */
+    fnet_uint8_t data[255]					FNET_COMP_PACKED;   /* data buffer */
+};
+FNET_COMP_PACKED_END
+/* TFTP HEX TX handler control structure. */
+#define FAPP_TFTP_HEX_DATA_MAX     (16u)
+FNET_COMP_PACKED_BEGIN
+struct fapp_tftp_tx_handler_hex_context
+{
+    fapp_tftp_tx_handler_hex_state_t state	FNET_COMP_PACKED;
+    struct
+    {
+        fnet_uint8_t  head[9]  	FNET_COMP_PACKED;
+        fnet_uint16_t data[FAPP_TFTP_HEX_DATA_MAX + 1u/*checksum*/ +1u/*\r\n*/+ 1u/*eol*/] FNET_COMP_PACKED;
+    } hex_line 		FNET_COMP_PACKED;
+    fnet_size_t hex_line_size 	FNET_COMP_PACKED;
+    fnet_uint8_t *hex_line_cur  FNET_COMP_PACKED;
+    fnet_uint8_t* data_start FNET_COMP_PACKED;
+    fnet_uint8_t* data_end 	 FNET_COMP_PACKED;
+};
+FNET_COMP_PACKED_END
+
 
 /******* TFTP handler control structure. ******/
 typedef struct  
 {
     union
     {
-        struct fapp_tftp_rx_handler_raw_context rx_raw;
-        struct fapp_tftp_tx_handler_raw_context tx_raw;
-        struct fapp_tftp_rx_handler_bin_context rx_bin;
-        struct fapp_tftp_tx_handler_bin_context tx_bin;
+        struct fapp_tftp_rx_handler_raw_context  rx_raw;
+        struct fapp_tftp_tx_handler_raw_context  tx_raw;
+        struct fapp_tftp_rx_handler_bin_context  rx_bin;
+        struct fapp_tftp_tx_handler_bin_context  tx_bin;
         struct fapp_tftp_rx_handler_srec_context rx_srec;
         struct fapp_tftp_tx_handler_srec_context tx_srec;
+        struct fapp_tftp_rx_handler_hex_context  rx_hex;
+        struct fapp_tftp_tx_handler_hex_context  tx_hex;
     };
-    struct image_type *current_type;
+    const struct image_type *current_type;
     fnet_size_t image_size;
 } fapp_tftp_handler_control_t; 
 
@@ -225,8 +295,8 @@ struct image_type
     fnet_int32_t(* tx_handler)(fapp_tftp_handler_control_t *tftp_handler, fnet_shell_desc_t desc, fnet_uint8_t *data, fnet_size_t n);
 };
 
-struct image_type *fapp_tftp_image_type_by_index (fapp_params_tftp_file_type_t index);
-struct image_type *fapp_tftp_image_type_by_name (fnet_char_t *name);
+const struct image_type *fapp_tftp_image_type_by_index (fapp_params_tftp_file_type_t index);
+const struct image_type *fapp_tftp_image_type_by_name (fnet_char_t *name);
 #endif
 
 #if FAPP_CFG_TFTP_CMD || FAPP_CFG_TFTPUP_CMD || FAPP_CFG_TFTPS_CMD

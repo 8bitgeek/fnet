@@ -11,7 +11,7 @@
 /*! 
 @mainpage FNET Overview
 
-The FNET is a free, open-source, dual TCP/IPv4 and IPv6 Stack (under @ref fnet_license "GNU LGPLv3 license with the linking exception"), for building embedded communication software on 32bit MCUs.
+The FNET is a free, open-source, dual TCP/IPv4 and IPv6 Stack (under @ref fnet_license "Apache v2.0 license"), for building embedded communication software on 32bit MCUs.
 @n
 @n
 Useful links:
@@ -26,10 +26,11 @@ Useful links:
 The FNET Overview is divided into the following sections:
 - @subpage key_features
 - @subpage structure 
-- @subpage appendix 
+- @subpage fnet_license 
+- @subpage fnet_history  
 @n
 @n
-NOTE: This document was generated from the project source code by @ref fnet_documentation "Doxygen tool".  
+NOTE: This document was generated from the project source code by "Doxygen tool".  
 */
 
 
@@ -143,8 +144,9 @@ fnet                      - FNET root directory.
 |    |    |-- http              - HTTP Server service.
 |    |    |-- poll              - Polling Mechanism library.
 |    |    |-- ping              - PING service.
-|    |    |-- shell             - Command Shell service.
+|    |    |-- llmnr             - LLMNR Server/Responder.
 |    |    |-- serial            - Serial Input/Output driver.
+|    |    |-- shell             - Command Shell service.
 |    |    |-- telnet            - TELNET server service.
 |    |    |-- tftp              - TFTP server and client services.
 |    |-- cpu                  - FNET platform-specific source code.
@@ -221,26 +223,26 @@ The following table summarizes the supported demo applications, platforms and co
 </tr>
 <tr>
  <td class="fnet_td_grey">MK64FN1M (Kinetis)</td>
- <td ALIGN=CENTER>IAR7.4<br/>KDS3.0</td>
- <td ALIGN=CENTER>IAR7.4<br/>KDS3.0</td>
- <td ALIGN=CENTER>IAR7.4</td>
+ <td ALIGN=CENTER>IAR7.5<br/>KDS3.0</td>
+ <td ALIGN=CENTER>IAR7.5<br/>KDS3.0</td>
+ <td ALIGN=CENTER>IAR7.5</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK60N512 (Kinetis)</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.2<br/>uV4.7</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.2<br/>uV4.7</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.2<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.5<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.5<br/>uV4.7</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.5<br/>uV4.7</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK70FN1M (Kinetis)</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.2</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.2</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.5</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.5</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
  <td class="fnet_td_grey">MK60FN1M (Kinetis)</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.4</td>
- <td ALIGN=CENTER>CW10.6<br/>IAR7.4</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.5</td>
+ <td ALIGN=CENTER>CW10.6<br/>IAR7.5</td>
  <td ALIGN=CENTER>x</td>
  </tr>
 <tr>
@@ -316,8 +318,6 @@ Parameters loaded from Flash.
  FNET TCP/IP Stack for MK64FN1
  Version 2.7.0
  Built Nov 19 2014 at 14:04:02 by IAR
- Copyright by FNET Community
- GNU LGPLv3
 ************************************************
  Interface        : eth0
  IPv4 Address     : 192.168.0.22 <manual>
@@ -618,8 +618,6 @@ Parameters loaded from Flash.
  FNET TCP/IP Stack for MCF52259
  Version 2.0.0
  Built Oct 12 2012 at 15:00:04 by CW
- Copyright by FNET Community
- GNU LGPLv3
 ************************************************
  Interface        : eth0
  IPv4 Address     : 192.168.0.22 <manual>
@@ -717,8 +715,9 @@ NOTE: This parameter is updated by the TFTP loader automatically if the type par
 	- @c image : This is the default file name to download if no file name is provided for the @c tftp shell command.
 	- @c type : Type of the file to download by the TFTP loader:
 		- @c srec = S-record file (default type). This file format contains both the address data as well as the entry point information.
-		- @c bin = CodeWarrior binary file. This file format contains only the address data. The entry point @c go parameter must be set additionally.
-		- @c raw = Raw binary file. For this type of file, the @c raw parameter must be set before the TFTP loader start.
+		- @c hex = Intel HEX file. This file format does not contain the entry point, so @c go parameter must be set additionally.
+		- @c bin = CodeWarrior binary file. This file format does not contain the entry point, so @c go parameter must be set additionally
+		- @c raw = Raw binary file. For this type of file, the @c raw parameter (load address) must be set before the TFTP loader start.
 	- @c raw : Load address for a raw-binary file used by the TFTP loader. It's used only if the type parameter is set to the @c raw value.
 - Check if the parameter values are set correctly to suit your needs. Most probably, you will have a different TFTP server IP address. For example, to change it to the 10.171.89.219 address, enter:
 @verbatim
@@ -787,8 +786,6 @@ Parameters loaded from Flash.
  FNET TCP/IP Stack for MCF52259
  Version 2.0.0
  Built Oct 12 2012 at 15:00:04 by CW
- Copyright by FNET Community
- GNU LGPLv3
 ************************************************
  Interface        : eth0
  IPv4 Address     : 192.168.0.22 <manual>
@@ -841,8 +838,6 @@ Parameters loaded from Flash.
  FNET TCP/IP Stack for MCF52259
  Version 2.0.0
  Built Oct  5 2012 at 13:52:57 by CW
- Copyright by FNET Community
- GNU LGPLv3
 ************************************************
  Interface        : eth0
  IPv4 Address     : 192.168.0.22 <manual>
@@ -942,8 +937,6 @@ Parameters loaded from Flash.
  FNET TCP/IP Stack for MCF52259
  Version 2.0.0
  Built Oct  5 2012 at 13:52:57 by CW
- Copyright by FNET Community
- GNU LGPLv3
 ************************************************
  Interface        : eth0
  IPv4 Address     : 192.168.0.22 <manual>
@@ -1096,8 +1089,6 @@ Parameters loaded from Flash.
  FNET TCP/IP Stack for MCF52259
  Version 2.0.0
  Built Oct 12 2012 at 15:49:35 by CW
- Copyright by FNET Community
- GNU LGPLv3
 ************************************************
  Interface        : eth0
  IPv4 Address     : 192.168.0.22 <manual>
@@ -1272,12 +1263,6 @@ The amount of data, received by the remote side, is putted to square brackets. I
 @note The benchmark application supports IPv6 too.
 
 */
-
-
-
-
-
-
 
 
 /*!
@@ -1505,21 +1490,6 @@ Press any key to continue . . .
 @endverbatim
 */
 
-
-
-
-
-//***********************************************************************
-//************************** APPENDIX ***********************************
-//***********************************************************************
-
-/*!
-* @page appendix Appendix
-*- @subpage fnet_license 
-*- @subpage fnet_documentation 
-*- @subpage fnet_history  
-*/
-
 //***********************************************************************
 //************************** Version History ****************************
 //***********************************************************************
@@ -1528,6 +1498,27 @@ Press any key to continue . . .
 * @page fnet_history FNET Change Log
 
 FNET public releases:
+
+- Version 3.0.0:
+	- Released under the Apache License Version 2.0 (https://en.wikipedia.org/wiki/Apache_License). This is more permissible license than previous one and compatible with GPL 3.0.
+	- Added possibility to run several instances of DHCP client for multi-interface systems, controlled by the FNET_CFG_DHCP_MAX parameter. 
+	- Added support of the Intel HEX file format by the TFTP Boot-loader (enabled by FAPP_CFG_TFTP_RX_HEX/FAPP_CFG_TFTP_TX_HEX). Thanks to Michal Hanak.
+	- Added support of IPv4 link-local (169.254/16 prefix) unicast and broadcast as destination address, according to RFC3927.
+	- Added scope_id to IPv4 socket address structure (same as for IPv6), to eliminate IPv4 address ambiguity in multi-home systems.
+	- Changed IPv4 multicast group ip_mreq.imr_interface from Interface IPv4 address to Interface Index (same as for IPv6).
+	- Added fnet_scope_id_t type.
+	- Added the default-interface parameter to the FNET application parameter get/set list.
+	- Added FNET_CFG_<interface>_NAME configuration parameter.
+	- Added fnet_rand() pseudo-random generator. Thanks to Catalin Petrescu.
+	- Moved port-clock enabling from Kinetis start-up to the driver initialization code.
+	- Added FNET_CFG_CPU_VECTOR_PRIORITY_MAX configuration parameter.
+	- Renamed FNET_FS_DIR, FNET_FS_FILE types to fnet_fs_dir_t, fnet_fs_file_t.
+	- Fixed potential spurious retransmission issue in TCP. Thanks to Vinay.
+	- Fixed loop-back interface.
+	- Fixed fnet_isr_vector_init().
+	- Fixed FBENCH tool stuck during UDP sending.
+	- Other minor changes.
+
 - Version 2.9.0:
 	- Added fnet_size_t, fnet_index_t, fnet_bool_t, fnet_time_t fnet_uint32_t, fnet_uint16_t and fnet_uint8_t and other types.
 	- Fixed "MISRA-C:2004 6.3 Typedefs that indicate size and signedness should be used in place of the basic types."
@@ -2023,60 +2014,22 @@ FNET public releases:
 	- A lot of other fixes.
 */
 
-
-//----------------------Documentation-------------------------------------
-/*!
-* @page fnet_documentation FNET Doxygen Documentation 
-
-The FNET Documentation is built automatically from the project source code and service files:
-- @c fnet\fnet_doc\doxygen\fnet_gen_doc.in = Doxygen configuration file.
-- @c fnet\fnet_doc\doxygen\fnet_doc.dox = Doxygen documentation framework.
-- @c fnet\fnet_doc\doxygen\fnet_layout.xml = Doxygen layout file.
-
- 
-@n
-To generate the documentation on your own, please install the following tools: 
-- Doxygen 1.8.3.1:@n http://www.stack.nl/~dimitri/doxygen/download.html#latestsrc
-- Microsoft HTML Help Workshop (if you want to get CHM documentation):@n
- http://download.microsoft.com/download/0/a/9/0a939ef6-e31c-430f-a3df-dfae7960d564/htmlhelp.exe
-
-To generate the HTML/CHM documentation you should run @c fnet_doc\doxygen\fnet_gen_doc.bat file.@n
-
-*/
-
 //----------------------COPYRIGHT-------------------------------------
 /*!
 * @page fnet_license FNET License 
 * @n
-* @image html fnet_lgplv3b.png 
+* @image html fnet_apache2.png 
 * @n
 * This project is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public 
-* License Version 3 or later (the "LGPL").@n
+* it under the terms of the Apache Version 2.@n
 * @n
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.@n
-* An independent module is a module which is not derived from or based 
-* on this library.@n 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version. @n
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. @n
-* @n
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this project.
-* If not, see <http://www.gnu.org/licenses/>.
+*  You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+*  @n Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 */
-
-
 
 
 //***********************************************************************

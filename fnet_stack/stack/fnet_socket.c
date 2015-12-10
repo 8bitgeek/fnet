@@ -5,30 +5,18 @@
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
 **********************************************************************/ /*!
 *
@@ -265,7 +253,7 @@ fnet_socket_if_t *fnet_socket_lookup( fnet_socket_if_t *head,  struct sockaddr *
 
     for (sock = head; sock != 0; sock = sock->next)
     {
-        /* Compare local port number.*/
+        /* Compare protocol number.*/
         if(sock->protocol_number != protocol_number)
         {
             continue; /* Ignore. */
@@ -275,6 +263,15 @@ fnet_socket_if_t *fnet_socket_lookup( fnet_socket_if_t *head,  struct sockaddr *
         if(sock->local_addr.sa_port != local_addr->sa_port)
         {
             continue; /* Ignore. */
+        }
+
+        /* Compare scope_id, if set.*/
+        if(sock->local_addr.sa_scope_id)
+        {
+            if(sock->local_addr.sa_scope_id != local_addr->sa_scope_id)
+            {
+                continue; /* Ignore. */
+            }
         }
 
         wildcard = 0u;
@@ -348,7 +345,9 @@ fnet_socket_if_t *fnet_socket_lookup( fnet_socket_if_t *head,  struct sockaddr *
 fnet_uint16_t fnet_socket_get_uniqueport( fnet_socket_if_t *head, struct sockaddr *local_addr )
 {
     fnet_uint16_t   local_port = fnet_port_last; 
-    struct sockaddr local_addr_tmp = *local_addr;
+    struct sockaddr local_addr_tmp;
+
+    fnet_memcpy(&local_addr_tmp, local_addr, sizeof(local_addr_tmp));
 
     fnet_isr_lock();
 
@@ -542,9 +541,8 @@ fnet_return_t fnet_socket_connect( fnet_socket_t s, struct sockaddr *name, fnet_
             error = FNET_ERR_ADDRNOTAVAIL; /* Can't assign requested port.*/
             goto ERROR_SOCK;
         }
-        
-        local_addr_tmp = sock->local_addr; 
-        
+
+        fnet_memcpy(&local_addr_tmp, &sock->local_addr, sizeof(local_addr_tmp));
 
         if (fnet_socket_addr_is_unspecified(&local_addr_tmp))
         {
@@ -593,7 +591,6 @@ fnet_return_t fnet_socket_connect( fnet_socket_t s, struct sockaddr *name, fnet_
             local_addr_tmp.sa_port = fnet_socket_get_uniqueport(sock->protocol_interface->head,
                                                 &local_addr_tmp); /* Get ephemeral port.*/
         }
-  
             
         if(fnet_socket_conflict(sock->protocol_interface->head, &local_addr_tmp, &foreign_addr, FNET_TRUE))
         {
@@ -601,7 +598,7 @@ fnet_return_t fnet_socket_connect( fnet_socket_t s, struct sockaddr *name, fnet_
             goto ERROR_SOCK;
         }
 
-        sock->local_addr = local_addr_tmp;
+        fnet_memcpy(&sock->local_addr, &local_addr_tmp, sizeof(sock->local_addr));
         
         /* Start the appropriate protocol connection.*/
         if(sock->protocol_interface->socket_api->prot_connect)
@@ -1611,7 +1608,7 @@ fnet_return_t fnet_socket_buffer_append_address( fnet_socket_buffer_t *sb, fnet_
 
     sb_address = (fnet_socket_buffer_addr_t *)nb_addr->data_ptr;
 
-    sb_address->addr_s = *addr;
+    fnet_memcpy(&sb_address->addr_s, addr, sizeof(sb_address->addr_s));
 
     sb->count += nb->total_length;
 
@@ -1690,7 +1687,7 @@ fnet_int32_t fnet_socket_buffer_read_address( fnet_socket_buffer_t *sb, fnet_uin
             len = 0u;
         }
         
-        *foreign_addr = ((fnet_socket_buffer_addr_t *)(nb_addr->data_ptr))->addr_s;
+        fnet_memcpy(foreign_addr, &((fnet_socket_buffer_addr_t *)(nb_addr->data_ptr))->addr_s, sizeof(*foreign_addr));
         
         if(len < (nb_addr->total_length - sizeof(fnet_socket_buffer_addr_t)))
         {

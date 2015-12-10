@@ -3,32 +3,21 @@
 * Copyright 2011-2015 by Andrey Butok. FNET Community.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_raw.c
 *
@@ -118,8 +107,7 @@ static fnet_error_t fnet_raw_output(  struct sockaddr *src_addr, const struct so
 {
     fnet_error_t error =  FNET_ERR_OK;
     
-    fnet_netif_t *netif = FNET_NULL;
-
+    fnet_netif_t *netif =  (fnet_netif_t *)fnet_netif_get_by_scope_id( dest_addr->sa_scope_id );
 
 #if FNET_CFG_IP4
     if(dest_addr->sa_family == AF_INET)
@@ -142,9 +130,6 @@ static fnet_error_t fnet_raw_output(  struct sockaddr *src_addr, const struct so
 #if FNET_CFG_IP6    
     if(dest_addr->sa_family == AF_INET6)
     {
-        /* Check Scope ID.*/
-        netif = (fnet_netif_t *)fnet_netif_get_by_scope_id( ((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id );
-        
         error = fnet_ip6_output( netif, 
                                 fnet_socket_addr_is_unspecified(src_addr)? FNET_NULL : &((struct sockaddr_in6 *)(src_addr))->sin6_addr.s6_addr, 
                                 &((const struct sockaddr_in6 *)(dest_addr))->sin6_addr.s6_addr, 
@@ -402,8 +387,8 @@ static fnet_return_t fnet_raw_shutdown( fnet_socket_if_t *sk, fnet_sd_flags_t ho
 static fnet_return_t fnet_raw_connect( fnet_socket_if_t *sk, struct sockaddr *foreign_addr)
 {
     fnet_isr_lock();
-    
-    sk->foreign_addr = *foreign_addr;
+
+    fnet_memcpy(&sk->foreign_addr, foreign_addr, sizeof(sk->foreign_addr));
     sk->local_addr.sa_port = 0u;
     sk->foreign_addr.sa_port = 0u;
     sk->state = SS_CONNECTED;

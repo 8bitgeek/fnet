@@ -5,32 +5,21 @@
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_serial.c
 *
@@ -235,13 +224,13 @@ fnet_size_t fnet_serial_vprintf(fnet_serial_stream_t stream, const fnet_char_t *
     fnet_char_t         c;
     fnet_char_t         vstr[33];
     fnet_char_t         *vstrp;
-    fnet_size_t         vlen;
+    fnet_size_t         vlen = 0u;
     fnet_bool_t         done;
     fnet_size_t         count = 0u;
     fnet_flag_t         flags_used;
     fnet_size_t         field_width;
-		fnet_bool_t         cont_xd = FNET_FALSE;
-		fnet_bool_t         cont_u = FNET_FALSE;
+    fnet_bool_t         cont_xd = FNET_FALSE;
+    fnet_bool_t         cont_u = FNET_FALSE;
 
 #if 0
     fnet_bool_t precision_used;

@@ -5,32 +5,21 @@
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_udp.c
 *
@@ -132,29 +121,18 @@ static fnet_error_t fnet_udp_output(  struct sockaddr *src_addr, const struct so
     fnet_error_t                            error =  FNET_ERR_OK;
     FNET_COMP_PACKED_VAR fnet_uint16_t      *checksum_p;
     fnet_netif_t                            *netif = FNET_NULL;
+    fnet_scope_id_t                         scope_id = 0u;
 
-#if FNET_CFG_IP6    
-    if(dest_addr->sa_family == AF_INET6)
+    /* Check Scope ID.*/
+    if(dest_addr->sa_scope_id) /* Take scope id from destination address.*/
     {
-        fnet_uint32_t scope_id = 0u;
-        /* Check Scope ID.*/
-        if(((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id) /* Take scope id from destination address.*/
-        {
-            scope_id = ((const struct sockaddr_in6 *)dest_addr)->sin6_scope_id;
-        }
-        else if(((struct sockaddr_in6 *)src_addr)->sin6_scope_id) /* Take scope id from source address.*/
-        {
-            scope_id = ((struct sockaddr_in6 *)src_addr)->sin6_scope_id;
-        }
-        else
-        {}
-        
-        if(scope_id)
-        {
-            netif = (fnet_netif_t *)fnet_netif_get_by_scope_id(scope_id);
-        }
+        scope_id = dest_addr->sa_scope_id;
     }
-#endif
+    else  /* Take scope id from source address.*/
+    {
+        scope_id = src_addr->sa_scope_id;
+    }
+    netif = (fnet_netif_t *)fnet_netif_get_by_scope_id(scope_id); /* It can be FNET_NULL, in case scope_id is 0.*/
 
     /* Construct UDP header.*/
     if((nb_header = fnet_netbuf_new(sizeof(fnet_udp_header_t), FNET_TRUE)) == 0)
@@ -318,7 +296,6 @@ static void fnet_udp_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  
                     #if FNET_CFG_IP4                        
                         if(local_addr->sa_family == AF_INET)
                         {
-                        
                             for(m = 0u; m < FNET_CFG_MULTICAST_SOCKET_MAX; m++)
                             {
                                 if(sock->ip4_multicast_entry[m])
@@ -330,6 +307,7 @@ static void fnet_udp_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  
                                 }
                             }
                         }
+                        else
                      #endif    
                      #if FNET_CFG_IP6
                         if(local_addr->sa_family == AF_INET6) 
@@ -346,8 +324,10 @@ static void fnet_udp_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  
                                 }
                             }
                         }
+                        else
                      #endif   
-                        
+                        {}
+
                         if(for_us == FNET_FALSE)
                         {
                             continue;
@@ -356,7 +336,6 @@ static void fnet_udp_input(fnet_netif_t *netif, struct sockaddr *foreign_addr,  
                     else
                 #endif /* FNET_CFG_MULTICAST */                   
                     {
-
                         /* Compare local address.*/
                         if(!fnet_socket_addr_is_unspecified(&sock->local_addr))
                         {
@@ -526,8 +505,8 @@ static fnet_return_t fnet_udp_shutdown( fnet_socket_if_t *sk, fnet_sd_flags_t ho
 static fnet_return_t fnet_udp_connect( fnet_socket_if_t *sk, struct sockaddr *foreign_addr)
 {
     fnet_isr_lock();
-    
-    sk->foreign_addr = *foreign_addr;
+
+    fnet_memcpy(&sk->foreign_addr, foreign_addr, sizeof(sk->foreign_addr));
     sk->state = SS_CONNECTED;
     fnet_socket_buffer_release(&sk->receive_buffer);
 

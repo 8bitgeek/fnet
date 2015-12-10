@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/
+/*!
 *
 * @file fapp_dhcp.c
 *
@@ -51,15 +40,16 @@
 #define FAPP_DHCP_NEWIP_STR         " DHCP has updated/renewed parameters:"
 #define FAPP_DHCP_COMMAND_REBOOT    "reboot"
 
-static fnet_int32_t fapp_dhcp_discover_counter;
-static fnet_ip4_addr_t fapp_dhcp_ip_old;
+static fnet_int32_t     fapp_dhcp_discover_counter;
+static fnet_ip4_addr_t  fapp_dhcp_ip_old;
+static fnet_dhcp_desc_t fapp_dhcp_desc = 0; /* Telnet descriptor. */
 
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
 static void fapp_dhcp_on_ctrlc(fnet_shell_desc_t desc);
-static void fapp_dhcp_handler_updated(fnet_netif_desc_t netif, void *shl_desc);
-static void fapp_dhcp_handler_discover(fnet_netif_desc_t netif,void *shl_desc);
+static void fapp_dhcp_handler_updated(fnet_dhcp_desc_t dhcp_desc, fnet_netif_desc_t netif, void *shl_desc);
+static void fapp_dhcp_handler_discover(fnet_dhcp_desc_t dhcp_desc, fnet_netif_desc_t netif,void *shl_desc);
 
 /************************************************************************
 * NAME: fapp_dhcp_on_ctrlc
@@ -71,7 +61,7 @@ static void fapp_dhcp_on_ctrlc(fnet_shell_desc_t desc)
     /* Release DHCP. */
     fapp_dhcp_release();
     /* Restore old ip address, as DHCP set it to zero. */
-    fnet_netif_set_ip4_addr( fapp_default_netif, fapp_dhcp_ip_old );
+    fnet_netif_set_ip4_addr( fnet_netif_get_default(), fapp_dhcp_ip_old );
     fnet_shell_println( desc, FAPP_CANCELLED_STR);  
 }
 
@@ -80,7 +70,7 @@ static void fapp_dhcp_on_ctrlc(fnet_shell_desc_t desc)
 *
 * DESCRIPTION: Event handler on new IP from DHCP client. 
 ************************************************************************/
-static void fapp_dhcp_handler_updated( fnet_netif_desc_t netif, void *shl_desc )
+static void fapp_dhcp_handler_updated(fnet_dhcp_desc_t dhcp_desc, fnet_netif_desc_t netif, void *shl_desc )
 {
     fnet_shell_desc_t desc = (fnet_shell_desc_t) shl_desc;
 
@@ -88,8 +78,8 @@ static void fapp_dhcp_handler_updated( fnet_netif_desc_t netif, void *shl_desc )
     
     /* Optionally, unregister DHCP event handlers, just to do not 
      * disturb a user. */
-    fnet_dhcp_handler_updated_set(0, 0);
-    fnet_dhcp_handler_discover_set(0, 0);
+    fnet_dhcp_handler_updated_set(dhcp_desc, 0, 0);
+    fnet_dhcp_handler_discover_set(dhcp_desc, 0, 0);
     
     fnet_shell_unblock((fnet_shell_desc_t)shl_desc); /* Unblock the shell. */
    
@@ -99,7 +89,6 @@ static void fapp_dhcp_handler_updated( fnet_netif_desc_t netif, void *shl_desc )
     fnet_shell_println( desc, FAPP_DELIMITER_STR);
 
     fapp_netif_info_print( desc, netif );   
-  
 }
 
 /************************************************************************
@@ -107,18 +96,21 @@ static void fapp_dhcp_handler_updated( fnet_netif_desc_t netif, void *shl_desc )
 *
 * DESCRIPTION: Event handler on new IP from DHCP client. 
 ************************************************************************/
-static void fapp_dhcp_handler_discover( fnet_netif_desc_t netif,void *shl_desc )
+static void fapp_dhcp_handler_discover(fnet_dhcp_desc_t dhcp_desc, fnet_netif_desc_t netif, void *shl_desc )
 {
     fnet_shell_desc_t desc = (fnet_shell_desc_t) shl_desc;
+
     FNET_COMP_UNUSED_ARG(netif);
+    FNET_COMP_UNUSED_ARG(dhcp_desc);
     
-    if((fapp_dhcp_discover_counter--) == 0)
+    if(fapp_dhcp_discover_counter == 0)
     {
         fnet_shell_unblock((fnet_shell_desc_t)shl_desc);
         fapp_dhcp_on_ctrlc((fnet_shell_desc_t)shl_desc); /* Cancel DHCP.*/
     }
     else
     {
+        fapp_dhcp_discover_counter--;
         fnet_shell_println(desc, FAPP_DHCP_DISCOVER_STR);
     }
 }
@@ -130,7 +122,8 @@ static void fapp_dhcp_handler_discover( fnet_netif_desc_t netif,void *shl_desc )
 *************************************************************************/
 void fapp_dhcp_release(void)
 {
-    fnet_dhcp_release();
+    fnet_dhcp_release(fapp_dhcp_desc);
+    fapp_dhcp_desc = 0;  
 }
 
 /************************************************************************
@@ -140,8 +133,9 @@ void fapp_dhcp_release(void)
 ************************************************************************/
 void fapp_dhcp_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
-    struct fnet_dhcp_params dhcp_params;
-    fnet_netif_desc_t netif = fapp_default_netif;
+    struct              fnet_dhcp_params dhcp_params;
+    fnet_dhcp_desc_t    dhcp_desc;
+    fnet_netif_desc_t   netif = fnet_netif_get_default();
 
     if(argc == 1u    /* By default is "init".*/
 #if 0 /* DHCP reboot feature not used too much. */
@@ -162,11 +156,14 @@ void fapp_dhcp_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** ar
         fapp_dhcp_ip_old = fnet_netif_get_ip4_addr(netif); /* Save ip to restore if cancelled. */
         
         /* Enable DHCP client */
-        if(fnet_dhcp_init(netif, &dhcp_params) != FNET_ERR)
+        dhcp_desc = fnet_dhcp_init(netif, &dhcp_params);
+        if(dhcp_desc != FNET_ERR)
         {
+            fapp_dhcp_desc = dhcp_desc;
+
             /* Register DHCP event handlers. */
-            fnet_dhcp_handler_updated_set(fapp_dhcp_handler_updated, (void *)desc);
-            fnet_dhcp_handler_discover_set(fapp_dhcp_handler_discover, (void *)desc);
+            fnet_dhcp_handler_updated_set(fapp_dhcp_desc, fapp_dhcp_handler_updated, (void *)desc);
+            fnet_dhcp_handler_discover_set(fapp_dhcp_desc, fapp_dhcp_handler_discover, (void *)desc);
             
             fnet_shell_println(desc, FAPP_TOCANCEL_STR);
             fnet_shell_block(desc, fapp_dhcp_on_ctrlc); /* Block shell. */
@@ -193,21 +190,20 @@ void fapp_dhcp_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** ar
 *************************************************************************/
 void fapp_dhcp_info(fnet_shell_desc_t desc)
 {
-    fnet_char_t            ip_str[FNET_IP4_ADDR_STR_SIZE];
-    fnet_bool_t     dhcp_enabled = ((fnet_dhcp_state() != FNET_DHCP_STATE_DISABLED))?FNET_TRUE:FNET_FALSE;
-    fnet_bool_t     address_automatic = fnet_netif_get_ip4_addr_automatic(fapp_default_netif);
+    fnet_char_t     ip_str[FNET_IP4_ADDR_STR_SIZE];
+    fnet_bool_t     dhcp_enabled = fnet_dhcp_enabled(fapp_dhcp_desc);
+    fnet_bool_t     address_automatic = fnet_netif_get_ip4_addr_automatic(fnet_netif_get_default());
     
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "DHCP Client", dhcp_enabled ? FAPP_SHELL_INFO_ENABLED : FAPP_SHELL_INFO_DISABLED);
 
     if(dhcp_enabled && address_automatic)
     {
         struct fnet_dhcp_options options;
-        fnet_dhcp_get_options(&options);
+
+        fnet_dhcp_get_options(fapp_dhcp_desc, &options);
 
         fnet_inet_ntoa(*(struct in_addr *)( &options.dhcp_server), ip_str);
-        
         fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "DHCP Server", ip_str);
-        
         fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "Lease Time", fnet_ntohl(options.lease_time));
     }
 }

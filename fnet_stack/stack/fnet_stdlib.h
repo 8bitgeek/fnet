@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_stdlib.h
 *
@@ -56,6 +45,13 @@
  * @showinitializer 
  ******************************************************************************/
 #define FNET_NULL       (0)
+
+/**************************************************************************/ /*!
+ * @def FNET_RAND_MAX
+ * @brief The maximum number returned by @ref fnet_rand().
+ * @showinitializer
+ ******************************************************************************/
+#define FNET_RAND_MAX (32767u)
 
 /**************************************************************************/ /*!
  * @brief Unsigned integer type representing the size in bytes.
@@ -86,6 +82,8 @@ typedef enum
     FNET_FALSE = 0, /**< @brief FALSE Boolean value.*/
     FNET_TRUE  = 1  /**< @brief TRUE Boolean value.*/
 } fnet_bool_t;
+
+
 
 #if defined(__cplusplus)
 extern "C" {
@@ -508,6 +506,34 @@ fnet_char_t *fnet_strtok_r(fnet_char_t *str, const fnet_char_t *delimiter, fnet_
  *
  ******************************************************************************/
 fnet_char_t fnet_tolower( fnet_char_t to_lower );
+
+/***************************************************************************/ /*!
+ *
+ * @brief           Generates a pseudo-random number
+ *
+ * @return          Pseudo-random number in the range betwenn 0 to @ref FNET_RAND_MAX
+ *
+ ******************************************************************************
+ *
+ *  This function generates a pseudo-random number in the range betwenn 0 to @ref FNET_RAND_MAX
+ *
+ ******************************************************************************/
+fnet_uint32_t fnet_rand( void );
+
+
+/***************************************************************************/ /*!
+ *
+ * @brief           Initializes the pseudo-random number generator
+ *
+ * @param seed      Seed for the pseudo-random number generator
+ *
+ ******************************************************************************
+ *
+ *  This function initializes the pseudo-random generator with the seed argument
+ *
+ ******************************************************************************/
+void fnet_srand( fnet_uint32_t seed );
+
 
 #if defined(__cplusplus)
 }

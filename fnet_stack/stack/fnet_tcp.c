@@ -5,19 +5,21 @@
 * Copyright 2003 by Alexey Shervashidze, Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-**********************************************************************/ /*!
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+*
+**********************************************************************/ 
+/*!
 *
 * @file fnet_tcp.c
 *
@@ -294,15 +296,13 @@ static void fnet_tcp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  stru
         goto DROP;
     }
     
-   
-    
     sk = fnet_tcp_findsk(src_addr,  dest_addr);
 
     if(sk)
     {
         if(sk->state == SS_LISTENING)
         {
-            sk->foreign_addr = *src_addr;
+            fnet_memcpy(&sk->foreign_addr, src_addr, sizeof(sk->foreign_addr));
         }
 
         nb->next_chain = 0;
@@ -1800,7 +1800,7 @@ static fnet_bool_t fnet_tcp_inputsk( fnet_socket_if_t *sk, fnet_netbuf_t *insegm
             }
 
             /* Set the local address.*/
-            psk->local_addr = *dest_addr;
+            fnet_memcpy(&psk->local_addr, dest_addr, sizeof(psk->local_addr));
 
             /* Create the control block.*/
             pcb = (fnet_tcp_control_t *)fnet_malloc_zero(sizeof(fnet_tcp_control_t));
@@ -2000,16 +2000,27 @@ static fnet_bool_t fnet_tcp_dataprocess( fnet_socket_if_t *sk, fnet_netbuf_t *in
     if(cb->tcpcb_rcvack == tcp_ack)
     {
         /* If unacknowledged data is present.*/
-        if((cb->tcpcb_sndseq != cb->tcpcb_rcvack) && (sk->send_buffer.count))
+        /*
+        DUPLICATE ACKNOWLEDGMENT: An acknowledgment is considered a
+              "duplicate" in the following algorithms when (a) the receiver of
+              the ACK has outstanding data, (b) the incoming acknowledgment
+              carries no data, (c) the SYN and FIN bits are both off, (d) the
+              acknowledgment number is equal to the greatest acknowledgment
+              received on the given connection (TCP.UNA from [RFC793]) and (e)-TBD
+              the advertised window in the incoming acknowledgment equals the
+              advertised window in the last incoming acknowledgment.*/
+        if((cb->tcpcb_sndseq != cb->tcpcb_rcvack) && (sk->send_buffer.count != 0u) && 
+            ((insegment->total_length - (fnet_size_t)FNET_TCP_LENGTH(insegment)) == 0u) &&
+            ((FNET_TCP_FLAGS(insegment) & (FNET_TCP_SGT_FIN | FNET_TCP_SGT_SYN)) == 0u))
         {
-            /* Increase the timer of rpeated acknowledgments.*/
+            /* Increase the timer of repeated acknowledgments.*/
             cb->tcpcb_fastretrcounter++;
 
             /* If the number of repeated acknowledgments is FNET_TCP_NUMBER_FOR_FAST_RET,
              * process the fast retransmission.*/
             if(cb->tcpcb_fastretrcounter == FNET_TCP_NUMBER_FOR_FAST_RET)
             {
-                /* Increase the timer of rpeated acknowledgments.*/  
+                /* Increase the timer of repeated acknowledgments.*/  
                 cb->tcpcb_fastretrcounter++;
 
                 /* Recalculate the congestion window and slow start threshold values.*/
@@ -3152,8 +3163,10 @@ static void fnet_tcp_ktimeo( fnet_socket_if_t *sk )
 
     /* Send the segment.*/
     segment.sockoption = &sk->options; 
-    segment.src_addr = sk->local_addr;
-    segment.dest_addr = sk->foreign_addr;
+    /* segment.src_addr = sk->local_addr */
+    fnet_memcpy(&segment.src_addr, &sk->local_addr, sizeof(segment.src_addr));
+    /* segment.dest_addr = sk->foreign_addr */
+    fnet_memcpy(&segment.dest_addr, &sk->foreign_addr, sizeof(segment.dest_addr));
     segment.seq = cb->tcpcb_rcvack - 1u;
     segment.ack = cb->tcpcb_sndack;
     segment.flags = FNET_TCP_SGT_ACK;
@@ -3241,17 +3254,7 @@ static fnet_error_t fnet_tcp_sendseg(struct fnet_tcp_segment *segment)
     fnet_netif_t                            *netif;
     FNET_COMP_PACKED_VAR fnet_uint16_t      *checksum_p;
 
-#if FNET_CFG_IP6    
-    if(segment->dest_addr.sa_family == AF_INET6)
-    {
-        /* Check Scope ID.*/
-        netif = (fnet_netif_t *)fnet_netif_get_by_scope_id( ((struct sockaddr_in6 *)(&segment->dest_addr))->sin6_scope_id );
-    }
-    else
-#endif
-    {
-        netif = FNET_NULL;  
-    }
+    netif = (fnet_netif_t *)fnet_netif_get_by_scope_id( segment->dest_addr.sa_scope_id );
 
     /* Create the header.*/
     nb = fnet_netbuf_new(FNET_TCP_SIZE_HEADER, FNET_FALSE);
@@ -3458,8 +3461,8 @@ static fnet_error_t fnet_tcp_sendheadseg( fnet_socket_if_t *sk, fnet_uint8_t fla
 
     /* Send the segment.*/ 
     segment.sockoption = &sk->options; 
-    segment.src_addr = sk->local_addr;
-    segment.dest_addr = sk->foreign_addr;
+    fnet_memcpy(&segment.src_addr, &sk->local_addr, sizeof(segment.src_addr));
+    fnet_memcpy(&segment.dest_addr, &sk->foreign_addr, sizeof(segment.dest_addr));
     segment.seq = cb->tcpcb_sndseq;
     segment.ack = ack;
     segment.flags = flags;
@@ -3612,8 +3615,8 @@ static fnet_error_t fnet_tcp_senddataseg( fnet_socket_if_t *sk, void *options, f
 
     /* Send the segment.*/
     segment.sockoption = &sk->options; 
-    segment.src_addr = sk->local_addr;
-    segment.dest_addr = sk->foreign_addr;    
+    fnet_memcpy(&segment.src_addr, &sk->local_addr, sizeof(segment.src_addr));
+    fnet_memcpy(&segment.dest_addr, &sk->foreign_addr, sizeof(segment.dest_addr));
     segment.seq = cb->tcpcb_sndseq;
     segment.ack = cb->tcpcb_sndack;
     segment.flags = flags;
@@ -3729,8 +3732,8 @@ static void fnet_tcp_sendrst( fnet_socket_option_t *sockoption, fnet_netbuf_t *i
     } 
     
     segment.sockoption = sockoption; 
-    segment.src_addr = *src_addr;
-    segment.dest_addr = *dest_addr;
+    fnet_memcpy(&segment.src_addr, src_addr, sizeof(segment.src_addr));
+    fnet_memcpy(&segment.dest_addr, dest_addr, sizeof(segment.dest_addr));
     segment.wnd = 0u;
     segment.urgpointer = 0u;
     segment.options = 0;
@@ -3749,7 +3752,6 @@ static void fnet_tcp_sendrst( fnet_socket_option_t *sockoption, fnet_netbuf_t *i
 *************************************************************************/
 static void fnet_tcp_sendrstsk( fnet_socket_if_t *sk )
 {
-
     struct fnet_tcp_segment segment;
     
     /* Initialize the pointer to the control block.*/
@@ -3774,8 +3776,8 @@ static void fnet_tcp_sendrstsk( fnet_socket_if_t *sk )
         } 
   
         segment.sockoption = &sk->options; 
-        segment.src_addr = sk->local_addr;
-        segment.dest_addr = sk->foreign_addr;
+        fnet_memcpy(&segment.src_addr, &sk->local_addr, sizeof(segment.src_addr));
+        fnet_memcpy(&segment.dest_addr, &sk->foreign_addr, sizeof(segment.dest_addr));
         segment.wnd = 0u;
         segment.urgpointer = 0u;
         segment.options = 0;

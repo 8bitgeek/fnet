@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fapp.c
 *
@@ -131,9 +120,6 @@ const fnet_char_t FAPP_COMMAND_RELEASE [] = "release";
 #define FAPP_PARAMS_LOAD_STR    "\n\nParameters loaded from Flash.\n"
 
 #define FAPP_DUP_IP_WARN        "\n%s: %s has IP address conflict with another system on the network!\n"
-
-
-fnet_netif_desc_t fapp_default_netif; /* Default netif. */
 
 /************************************************************************
 *     Function Prototypes
@@ -458,7 +444,7 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** a
 
     /* Put here you debugging information.*/
 #if 0
-    fnet_fec_debug_mii_print_regs(fapp_default_netif);
+    fnet_fec_debug_mii_print_regs(fnet_netif_get_default());
 #endif
 
 #if 0
@@ -467,7 +453,7 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** a
         fnet_ip6_addr_t addr_dns;
         fnet_uint8_t    ip_str[FNET_IP_ADDR_STR_SIZE]={0};
         
-        while(fnet_netif_get_ip6_dns(fapp_default_netif, i, &addr_dns ) == FNET_TRUE)
+        while(fnet_netif_get_ip6_dns(fnet_netif_get_default(), i, &addr_dns ) == FNET_TRUE)
         {
             fnet_inet_ntop(AF_INET6, (fnet_uint8_t*)(&addr_dns), ip_str, sizeof(ip_str));
             fnet_shell_println(desc, "DNS[%d]=%s", i, ip_str);
@@ -492,11 +478,11 @@ void fapp_debug_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** a
 #if FNET_CFG_IP4
 static void fapp_dup_ip_handler( fnet_netif_desc_t netif )
 {
-    fnet_char_t name[FNET_NETIF_NAMELEN];
-    fnet_char_t ip_str[FNET_IP4_ADDR_STR_SIZE];
+    fnet_char_t     name[FNET_NETIF_NAMELEN];
+    fnet_char_t     ip_str[FNET_IP4_ADDR_STR_SIZE];
     fnet_ip4_addr_t addr;
     
-    fnet_netif_get_name( netif, name, FNET_NETIF_NAMELEN );
+    fnet_netif_get_name( netif, name, sizeof(name) );
     addr = fnet_netif_get_ip4_addr( netif );
     fnet_inet_ntoa(*(struct in_addr *)( &addr), ip_str);
 
@@ -528,11 +514,6 @@ static void fapp_init(void)
     /* Init FNET stack */
     if(fnet_init(&init_params) != FNET_ERR)
     {
-        if((fapp_default_netif = fnet_netif_get_default()) == FNET_NULL)
-        {
-            fnet_printf(FAPP_NET_ERR);
-        }
-
     #if FAPP_CFG_PARAMS_READ_FLASH
         /* During bootup, the most recently stored customer configuration data will be read and used to configure the interfaces.*/
         if(fapp_params_from_flash() == FNET_OK)
@@ -540,6 +521,11 @@ static void fapp_init(void)
             fnet_printf(FAPP_PARAMS_LOAD_STR);
         }
     #endif
+
+        if(fnet_netif_get_default() == FNET_NULL)
+        {
+            fnet_printf(FAPP_NET_ERR);
+        }
             
     #if (FAPP_CFG_EXP_CMD && FNET_CFG_FS) || (FAPP_CFG_HTTP_CMD && FNET_CFG_HTTP)   
         fapp_fs_mount(); /* Init FS and mount FS Image. */
@@ -632,14 +618,14 @@ void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif)
 {
     fnet_char_t name[FNET_NETIF_NAMELEN];
 
-    fnet_netif_get_name(netif, name, FNET_NETIF_NAMELEN);
+    fnet_netif_get_name(netif, name, sizeof(name));
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Interface", name);
     
     fapp_netif_addr_print(desc, AF_SUPPORTED, netif, FNET_TRUE);
 #if FNET_CFG_IP4
     {    
         fnet_ip4_addr_t ip_addr;
-        fnet_char_t            ip_str[FNET_IP4_ADDR_STR_SIZE];
+        fnet_char_t     ip_str[FNET_IP4_ADDR_STR_SIZE];
           
         ip_addr = fnet_netif_get_ip4_subnet_mask(netif);
         fnet_inet_ntoa(*(struct in_addr *)( &ip_addr), ip_str);
@@ -648,7 +634,6 @@ void fapp_netif_info_print( fnet_shell_desc_t desc, fnet_netif_desc_t netif)
         ip_addr = fnet_netif_get_ip4_gateway(netif);
         fnet_inet_ntoa(*(struct in_addr *)( &ip_addr), ip_str);
         fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "IPv4 Gateway", ip_str);
-
       
     #if FNET_CFG_DNS
         ip_addr = fnet_netif_get_ip4_dns(netif);    
@@ -732,7 +717,7 @@ static void fapp_info_print( fnet_shell_desc_t desc )
 {
     fnet_char_t                mac_str[FNET_MAC_ADDR_STR_SIZE];
     fnet_mac_addr_t     macaddr;
-    fnet_netif_desc_t   netif = fapp_default_netif;         
+    fnet_netif_desc_t   netif = fnet_netif_get_default();         
 
     fapp_netif_info_print(desc, netif);
 
@@ -789,8 +774,8 @@ static void fapp_info_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_
 #if FAPP_CFG_STAT_CMD
 static void fapp_stat_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
-    struct fnet_netif_statistics statistics;
-    fnet_netif_desc_t netif = fapp_default_netif;  
+    struct fnet_netif_statistics    statistics;
+    fnet_netif_desc_t               netif = fnet_netif_get_default();  
 
     FNET_COMP_UNUSED_ARG(argc);
     FNET_COMP_UNUSED_ARG(argv);
@@ -853,8 +838,10 @@ void fapp_shell_init( fnet_shell_desc_t desc )
     fnet_shell_println(desc, " %s for %s", FNET_DESCRIPTION, FNET_CPU_STR);
     fnet_shell_println(desc, " Version %s", FNET_VERSION);
     fnet_shell_println(desc, " Built %s by %s", FNET_BUILD_DATE, FNET_COMP_STR);
+#if 0 /* Optional information */
     fnet_shell_println(desc, " %s", FNET_COPYRIGHT);
     fnet_shell_println(desc, " %s", FNET_LICENSE);
+#endif
     fnet_shell_println(desc, FAPP_DELIMITER_STR);
     fapp_info_print(desc);
     fnet_shell_println(desc, "\n Enter 'help' for command list.");
@@ -976,7 +963,7 @@ void fapp_reinit_cmd ( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **
 #if FAPP_CFG_BIND_CMD && FNET_CFG_IP6
 static void fapp_bind_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
-    fnet_netif_desc_t   netif = fapp_default_netif;
+    fnet_netif_desc_t   netif = fnet_netif_get_default();
     fnet_ip6_addr_t     addr;
     
     FNET_COMP_UNUSED_ARG(argc);
@@ -1000,7 +987,7 @@ static void fapp_bind_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_
 #if FAPP_CFG_UNBIND_CMD && FNET_CFG_IP6
 static void fapp_unbind_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t ** argv )
 {
-    fnet_netif_desc_t   netif = fapp_default_netif;
+    fnet_netif_desc_t   netif = fnet_netif_get_default();
     fnet_ip6_addr_t     addr;
     
     FNET_COMP_UNUSED_ARG(argc);

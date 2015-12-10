@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_ip6.h
 *
@@ -52,15 +41,13 @@
  * @brief 128-bit IPv6 address type.
  ******************************************************************************/
 FNET_COMP_PACKED_BEGIN 
-typedef struct 
+/* 128-bit IP6 address */
+typedef union 
 {
-    union 
-    {
-        fnet_uint8_t   addr[16];
-        fnet_uint16_t  addr16[8];
-        fnet_uint32_t  addr32[4];
-    };  /* 128-bit IP6 address */
-} fnet_ip6_addr_t;
+    fnet_uint8_t   addr[16];
+    fnet_uint16_t  addr16[8];
+    fnet_uint32_t  addr32[4];
+}fnet_ip6_addr_t;
 FNET_COMP_PACKED_END
 
 /**************************************************************************/ /*!
@@ -77,7 +64,7 @@ FNET_COMP_PACKED_END
 /******************************************************************
 * Constants
 *******************************************************************/
-#define FNET_IP6_HEADSIZE        40u     /*                 */
+#define FNET_IP6_HEADSIZE        40u     /* IPv6 Header size.  */
 
 #define FNET_IP6_DEFAULT_MTU     1280u   /* Minimum IPv6 datagram size which    
                                          * must be supported by all IPv6 hosts */
@@ -88,36 +75,19 @@ FNET_COMP_PACKED_END
  *
  *****************************************************************/
 #define FNET_IP6_ADDR_INIT(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16)      \
-                            {{{ (a1), (a2), (a3), (a4), (a5), (a6), (a7), (a8),           \
-                              (a9), (a10), (a11), (a12), (a13), (a14), (a15), (a16) }}}
+                            {{ (a1), (a2), (a3), (a4), (a5), (a6), (a7), (a8), (a9), (a10), (a11), (a12), (a13), (a14), (a15), (a16) }}
 
 /*
- * Definition of some useful macros to handle IP6 addresses (BSD-like)
+ * Definition of some useful macros to handle IP6 addresses
  */
-#define FNET_IP6_ADDR_ANY_INIT                                  \
-        {{{ 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,     \
-            0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u }}}
-#define FNET_IP6_ADDR_LOOPBACK_INIT                             \
-        {{{ 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,     \
-            0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u }}}
-#define FNET_IP6_ADDR_NODELOCAL_ALLNODES_INIT                   \
-        {{{ 0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     \
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }}}
-#define FNET_IP6_ADDR_INTFACELOCAL_ALLNODES_INIT                \
-        {{{ 0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     \
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }}}
-#define FNET_IP6_ADDR_LINKLOCAL_ALLNODES_INIT                   \
-        {{{ 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     \
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }}}
-#define FNET_IP6_ADDR_LINKLOCAL_ALLROUTERS_INIT                 \
-        {{{ 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     \
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02 }}}
-#define FNET_IP6_ADDR_LINKLOCAL_ALLV2ROUTERS_INIT               \
-        {{{ 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,     \
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16 }}}
-#define FNET_IP6_ADDR_LINKLOCAL_PREFIX_INIT                      \
-        {{{ 0xFE,0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,      \
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }}}            
+#define FNET_IP6_ADDR_ANY_INIT                      FNET_IP6_ADDR_INIT(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+#define FNET_IP6_ADDR_LOOPBACK_INIT                 FNET_IP6_ADDR_INIT(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01)
+#define FNET_IP6_ADDR_NODELOCAL_ALLNODES_INIT       FNET_IP6_ADDR_INIT(0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01)
+#define FNET_IP6_ADDR_INTFACELOCAL_ALLNODES_INIT    FNET_IP6_ADDR_INIT(0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01)
+#define FNET_IP6_ADDR_LINKLOCAL_ALLNODES_INIT       FNET_IP6_ADDR_INIT(0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01)
+#define FNET_IP6_ADDR_LINKLOCAL_ALLROUTERS_INIT     FNET_IP6_ADDR_INIT(0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02)
+#define FNET_IP6_ADDR_LINKLOCAL_ALLV2ROUTERS_INIT   FNET_IP6_ADDR_INIT(0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16)
+#define FNET_IP6_ADDR_LINKLOCAL_PREFIX_INIT         FNET_IP6_ADDR_INIT(0xFE, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
             
 
 extern const fnet_ip6_addr_t fnet_ip6_addr_any;

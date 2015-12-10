@@ -3,32 +3,21 @@
 * Copyright 2011-2015 by Andrey Butok. FNET Community.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_mk_serial.c
 *
@@ -99,16 +88,22 @@ void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
     {  
         case 0: /* UART0 */
 		#if FNET_CFG_CPU_MK70FN1
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTF_MASK;
             /* Enable the UART0_TXD function on PTF18 */
         	FNET_MK_PORTF_PCR18 = FNET_MK_PORT_PCR_MUX(0x4); /* UART is alt4 function for this pin.*/
             /* Enable the UART0_RXD function on PTF17 */
         	FNET_MK_PORTF_PCR17 = FNET_MK_PORT_PCR_MUX(0x4); /* UART is alt4 function for this pin.*/
 		#elif FNET_CFG_CPU_MK64FN1
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTB_MASK;
             /* Enable the UART0_TXD  */
         	FNET_MK_PORTB_PCR16 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART0_RXD */
         	FNET_MK_PORTB_PCR17 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
 		#else /* K60 */
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTD_MASK;
             /* Enable the UART0_TXD function on PTD6 */
             FNET_MK_PORTD_PCR6 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin. */
             /* Enable the UART0_RXD function on PTD7 */
@@ -119,11 +114,15 @@ void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
             break;
         case 1:
 		#if FNET_CFG_CPU_MK70FN1
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTE_MASK;
         	/* Enable the UART1_TXD function on PTE0 */
         	FNET_MK_PORTE_PCR0 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
         	/* Enable the UART1_RXD function on PTE1 */
         	FNET_MK_PORTE_PCR1 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
 		#else /* K60 */      	
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTC_MASK;
             /* Enable the UART1_TXD function on PTC4 */
             FNET_MK_PORTC_PCR4 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART1_RXD function on PTC3 */
@@ -134,11 +133,15 @@ void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
             break;
         case 2:
 		#if FNET_CFG_CPU_MK70FN1
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTE_MASK;
         	/* Enable the UART2_TXD function  */
         	FNET_MK_PORTE_PCR16 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
         	/* Enable the UART2_RXD function  */
         	FNET_MK_PORTE_PCR17 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
-		#else /* K60 */            
+		#else /* K60 */    
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTD_MASK;        
         	/* Enable the UART2_TXD function on PTD3 */
             FNET_MK_PORTD_PCR3 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART2_RXD function on PTD2 */
@@ -149,11 +152,15 @@ void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
             break;
         case 3:
         #if FNET_CFG_CPU_MK70FN1
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTB_MASK;
             /* Enable the UART3_TXD function  */
             FNET_MK_PORTB_PCR11 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART3_RXD function */
             FNET_MK_PORTB_PCR10 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
         #else /* others */
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTC_MASK;
         	/* Enable the UART3_TXD function on PTC17 */
             FNET_MK_PORTC_PCR17 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART3_RXD function on PTC16 */
@@ -164,11 +171,15 @@ void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
             break;
         case 4:
         #if FNET_CFG_CPU_MK64FN1
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTC_MASK;
             /* Enable the UART4_TXD function on PTC14 */
             FNET_MK_PORTC_PCR14 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART4_RXD function on PTC15 */
             FNET_MK_PORTC_PCR15 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
         #else
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTE_MASK;
             /* Enable the UART4_TXD function on PTC17 */
             FNET_MK_PORTE_PCR24 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART4_RXD function on PTC16 */
@@ -179,6 +190,8 @@ void fnet_cpu_serial_init(fnet_index_t port_number, fnet_uint32_t baud_rate)
             break;
         default:
         /* case 5:*/
+            /* Enable clock */
+            FNET_MK_SIM_SCGC5 |= FNET_MK_SIM_SCGC5_PORTE_MASK;
             /* Enable the UART3_TXD function on PTC17 */
             FNET_MK_PORTE_PCR8 = FNET_MK_PORT_PCR_MUX(0x3); /* UART is alt3 function for this pin.*/
             /* Enable the UART3_RXD function on PTC16 */

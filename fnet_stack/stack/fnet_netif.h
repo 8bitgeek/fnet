@@ -5,32 +5,21 @@
 * Copyright 2003 by Andrey Butok, Alexey Shervashidze. Motorola SPS
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_netif.h
 *
@@ -808,7 +797,7 @@ fnet_bool_t fnet_netif_get_ip6_dns( fnet_netif_desc_t netif_desc, fnet_index_t n
  *            according to [RFC2464]. 
  *
  ******************************************************************************/
-fnet_return_t fnet_netif_bind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr, fnet_netif_ip6_addr_type_t addr_type);
+fnet_return_t fnet_netif_bind_ip6_addr(fnet_netif_desc_t netif_desc, const fnet_ip6_addr_t *addr, fnet_netif_ip6_addr_type_t addr_type);
 
 /***************************************************************************/ /*!
  *
@@ -829,7 +818,7 @@ fnet_return_t fnet_netif_bind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_ad
  * This function unbinds the IPv6 address from the @c netif interface.
  *
  ******************************************************************************/
-fnet_return_t fnet_netif_unbind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr);
+fnet_return_t fnet_netif_unbind_ip6_addr(fnet_netif_desc_t netif_desc, const fnet_ip6_addr_t *addr);
 
 /***************************************************************************/ /*!
  *
@@ -894,7 +883,7 @@ fnet_bool_t fnet_netif_get_ip6_neighbor_cache(fnet_netif_desc_t netif_desc, fnet
  * This function is used to retrieve Scope ID assigned to the given interface.
  *
  ******************************************************************************/
-fnet_uint32_t fnet_netif_get_scope_id(fnet_netif_desc_t netif_desc);
+fnet_scope_id_t fnet_netif_get_scope_id(fnet_netif_desc_t netif_desc);
 
 /***************************************************************************/ /*!
  *
@@ -931,7 +920,7 @@ fnet_size_t fnet_netif_get_mtu(fnet_netif_desc_t netif_desc);
  * interface matching the specified Scope ID. 
  *
  ******************************************************************************/
-fnet_netif_desc_t fnet_netif_get_by_scope_id(fnet_uint32_t scope_id);
+fnet_netif_desc_t fnet_netif_get_by_scope_id(fnet_scope_id_t scope_id);
 
 /***************************************************************************/ /*!
  *

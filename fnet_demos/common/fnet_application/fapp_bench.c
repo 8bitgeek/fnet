@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fapp_bench.c
 *
@@ -124,14 +113,14 @@ static void fapp_bench_print_results (fnet_shell_desc_t desc)
     
     if(fapp_bench.remote_bytes == 0)
     {
-        fnet_shell_println(desc, "\t%d bytes in %d.%d seconds = %d Kbits/sec\n", fapp_bench.bytes, 
+        fnet_shell_println(desc, "\t%u bytes in %u.%u seconds = %u Kbits/sec\n", fapp_bench.bytes, 
             ((interval*FNET_TIMER_PERIOD_MS)/1000),
             ((interval*FNET_TIMER_PERIOD_MS)%1000)/100,
             (interval == 0) ? (fnet_size_t)-1 : (fnet_size_t)((fapp_bench.bytes*8/**(1000*//FNET_TIMER_PERIOD_MS/*)*/)/interval)/*/1000*/); 
     }
     else /* UDP TX only */
     {
-        fnet_shell_println(desc, "\t%d [%d] bytes in %d.%d seconds = %d [%d] Kbits/sec\n", fapp_bench.bytes, fapp_bench.remote_bytes, 
+        fnet_shell_println(desc, "\t%u [%u] bytes in %u.%u seconds = %u [%u] Kbits/sec\n", fapp_bench.bytes, fapp_bench.remote_bytes, 
             ((interval*FNET_TIMER_PERIOD_MS)/1000),
             ((interval*FNET_TIMER_PERIOD_MS)%1000)/100,
             (interval == 0) ? (fnet_size_t)-1 : (fnet_size_t)((fapp_bench.bytes*8/**(1000*//FNET_TIMER_PERIOD_MS/*)*/)/interval)/*/1000*/,
@@ -213,7 +202,7 @@ static void fapp_bench_tcp_rx (fnet_shell_desc_t desc, fnet_address_family_t fam
     fnet_shell_println(desc, FAPP_DELIMITER_STR);
     fnet_shell_println(desc, " TCP RX Test");
     fnet_shell_println(desc, FAPP_DELIMITER_STR);
-    fapp_netif_addr_print(desc, family, fapp_default_netif, FNET_FALSE);
+    fapp_netif_addr_print(desc, family, fnet_netif_get_default(), FNET_FALSE);
     fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_D, "Local Port", FNET_NTOHS(FAPP_BENCH_PORT));
     fnet_shell_println(desc, FAPP_TOCANCEL_STR);
     fnet_shell_println(desc, FAPP_DELIMITER_STR);
@@ -337,7 +326,7 @@ static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t fam
             struct ip_mreq mreq; /* Multicast group information.*/
             
             mreq.imr_multiaddr.s_addr = ((struct sockaddr_in*)multicast_address)->sin_addr.s_addr;
-            mreq.imr_interface.s_addr = FNET_HTONL(INADDR_ANY); /* Default Interface.*/
+            mreq.imr_interface = 0; /* Default Interface.*/
             
             /* Join multicast group. */
             if(fnet_socket_setopt(fapp_bench.socket_listen, IPPROTO_IP, IP_ADD_MEMBERSHIP, (fnet_uint8_t *)&mreq, sizeof(mreq)) == FNET_ERR) 
@@ -370,7 +359,7 @@ static void fapp_bench_udp_rx (fnet_shell_desc_t desc, fnet_address_family_t fam
     fnet_shell_println(desc, FAPP_DELIMITER_STR);
     fnet_shell_println(desc, " UDP RX Test" );
     fnet_shell_println(desc, FAPP_DELIMITER_STR);
-    fapp_netif_addr_print(desc, family, fapp_default_netif, FNET_FALSE);
+    fapp_netif_addr_print(desc, family, fnet_netif_get_default(), FNET_FALSE);
     if(multicast_address)
     {
         fnet_shell_println(desc, FAPP_SHELL_INFO_FORMAT_S, "Multicast Group", fnet_inet_ntop(multicast_address->sa_family, (fnet_uint8_t*)(multicast_address->sa_data), ip_str, sizeof(ip_str)) );
@@ -514,7 +503,7 @@ void fapp_benchrx_cmd( fnet_shell_desc_t desc, fnet_index_t argc, fnet_char_t **
 static void fapp_bench_tcp_tx (struct fapp_bench_tx_params *params)
 {
     fnet_int32_t            send_result;
-    fnet_char_t            ip_str[FNET_IP_ADDR_STR_SIZE];
+    fnet_char_t             ip_str[FNET_IP_ADDR_STR_SIZE];
     const struct linger     linger_option ={FNET_TRUE, /*l_onoff*/
                                             4  /*l_linger*/};
     const fnet_size_t       bufsize_option = FAPP_BENCH_SOCKET_BUF_SIZE;
@@ -587,7 +576,7 @@ static void fapp_bench_tcp_tx (struct fapp_bench_tx_params *params)
         /* Connect to the server.*/
         fnet_shell_println(desc,"Connecting.");
 
-        foreign_addr = params->foreign_addr;
+        fnet_memcpy(&foreign_addr, &params->foreign_addr, sizeof(foreign_addr));
         
         fnet_socket_connect(fapp_bench.socket_foreign, (struct sockaddr *)(&foreign_addr), sizeof(foreign_addr)); 
         
@@ -736,7 +725,7 @@ static void fapp_bench_udp_tx (struct fapp_bench_tx_params *params)
         /* Bind to the server.*/
         fnet_shell_println(desc,"Connecting.");
 
-        foreign_addr = params->foreign_addr;
+        fnet_memcpy(&foreign_addr, &params->foreign_addr, sizeof(foreign_addr));
         
         if(fnet_socket_connect(fapp_bench.socket_foreign, &foreign_addr, sizeof(foreign_addr))== FNET_ERR) 
         {

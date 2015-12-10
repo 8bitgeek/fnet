@@ -28,6 +28,9 @@
 /*  "info" command. */
 #define FAPP_CFG_INFO_CMD               (1)
 
+/*  "stat" command.*/
+#define FAPP_CFG_STAT_CMD               (1)
+
 /*  "http" command.*/
 #define FAPP_CFG_HTTP_CMD               (1)
 

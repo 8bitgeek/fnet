@@ -5,32 +5,21 @@
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_socket.h
 *
@@ -156,6 +145,11 @@
 typedef fnet_uint16_t fnet_address_family_t;
 
 /**************************************************************************/ /*!
+ * @brief cope zone index type, defining network interface.
+ ******************************************************************************/
+typedef fnet_uint32_t   fnet_scope_id_t;  
+
+/**************************************************************************/ /*!
  * @brief Unspecified address family.
  ******************************************************************************/
 #define AF_UNSPEC   (0U) 
@@ -175,7 +169,7 @@ typedef fnet_uint16_t fnet_address_family_t;
  
 /* Size of sa_data[]*/
 #if FNET_CFG_IP6
-    #define FNET_SA_DATA_SIZE   (20U) /* To cover sockaddr_in and sockaddr_in6. */
+    #define FNET_SA_DATA_SIZE   (16U) /* To cover sockaddr_in and sockaddr_in6. */
 #else /* IPv4 */
    #define FNET_SA_DATA_SIZE    (4U)
 #endif
@@ -207,18 +201,16 @@ typedef fnet_uint16_t fnet_address_family_t;
  ******************************************************************************/
 struct sockaddr
 {
-    fnet_address_family_t sa_family;/**< @brief Address family. Specifies the 
-                             * address family, to which the address belongs. @n
-                             * It is defined by @ref fnet_address_family_t. 
-                             */
-    fnet_uint16_t  sa_port; /**< @brief 16-bit port number used to 
-                             * demultiplex the transport-level messages
-                             * (in network byte order). 
-                             */                             
-    fnet_uint8_t sa_data[FNET_SA_DATA_SIZE];/**< @brief Address value. For the TCP/IP stack, 
-                             * it contains the destination address and port 
-                             * number for a socket.
-                             */
+    fnet_address_family_t   sa_family;      /**< @brief Address family. Specifies the 
+                                            * address family, to which the address belongs. @n
+                                            * It is defined by @ref fnet_address_family_t.*/
+    fnet_uint16_t           sa_port;        /**< @brief 16-bit port number used to 
+                                            * demultiplex the transport-level messages
+                                            * (in network byte order).*/ 
+    fnet_scope_id_t         sa_scope_id;    /**< @brief Scope zone index, defining network interface.*/  
+    fnet_uint8_t            sa_data[FNET_SA_DATA_SIZE];/**< @brief Address value. For the TCP/IP stack, 
+                                            * it contains the destination address and port 
+                                            * number for a socket.*/
 };
 
 /**************************************************************************/ /*!
@@ -245,15 +237,13 @@ struct in_addr
  ******************************************************************************/
 struct sockaddr_in
 {
-    fnet_address_family_t sin_family;   /**< @brief Specifies the address family. @n 
-                                 * It must ne set to @ref AF_INET.  
-                                 */
-    fnet_uint16_t sin_port;    /**< @brief 16-bit port number used to 
-                                 * demultiplex the transport-level messages
-                                 * (in network byte order). 
-                                 */
-    struct in_addr sin_addr;    /**< @brief 32-bit internet address. 
-                                 */
+    fnet_address_family_t   sin_family;     /**< @brief Specifies the address family. @n 
+                                            * It must ne set to @ref AF_INET.*/
+    fnet_uint16_t           sin_port;       /**< @brief 16-bit port number used to 
+                                            * demultiplex the transport-level messages
+                                            * (in network byte order).*/
+    fnet_scope_id_t         sin_scope_id;   /**< @brief Scope zone index, defining network interface.*/ 
+    struct in_addr          sin_addr;       /**< @brief 32-bit internet address.*/
 };
 
 
@@ -285,17 +275,13 @@ struct in6_addr
  ******************************************************************************/
 struct sockaddr_in6
 {
-    fnet_address_family_t   sin6_family; /**< @brief Specifies the address family. @n 
-                                         * It must ne set to @ref AF_INET6.  
-                                         */
-    fnet_uint16_t           sin6_port;  /**< @brief 16-bit port number used to 
-                                         * demultiplex the transport-level messages
-                                         * (in network byte order). 
-                                         */
-    struct in6_addr         sin6_addr;      /**< @brief 128-bit IPv6 internet address. 
-                                            */
-    fnet_uint32_t           sin6_scope_id;  /**< @brief Scope zone index, defining network interface.
-                                            */                                      
+    fnet_address_family_t   sin6_family;    /**< @brief Specifies the address family. @n 
+                                            * It must ne set to @ref AF_INET6. */
+    fnet_uint16_t           sin6_port;      /**< @brief 16-bit port number used to 
+                                            * demultiplex the transport-level messages
+                                            * (in network byte order).*/
+    fnet_scope_id_t         sin6_scope_id;  /**< @brief Scope zone index, defining network interface.*/ 
+    struct in6_addr         sin6_addr;      /**< @brief 128-bit IPv6 internet address.*/
 };
 
 /**************************************************************************/ /*!
@@ -309,12 +295,9 @@ struct sockaddr_in6
  ******************************************************************************/
 struct ip_mreq
 {
-    struct in_addr imr_multiaddr;   /**< @brief IPv4 multicast address of group. */
-    struct in_addr imr_interface;   /**< @brief Local IPv4 address of interface on which 
-                                     * the multicast group should be joined or dropped.@n
-                                     * If this member specifies an IPv4 address of 0.0.0.0 
-                                     * or @ref INADDR_ANY, 
-                                     * the default interface is used. */
+    struct in_addr  imr_multiaddr;      /**< @brief IPv4 multicast address of group. */
+    fnet_scope_id_t imr_interface;      /**< @brief Interface index. It equals to the scope zone index, defining network interface.@n
+                                         * If this member is zero, the default interface is used. */
 };
 
 /**************************************************************************/ /*!
@@ -329,7 +312,7 @@ struct ip_mreq
 struct ipv6_mreq
 {
     struct in6_addr ipv6imr_multiaddr;  /**< @brief IPv6 multicast address of group. */
-    fnet_uint32_t    ipv6imr_interface;  /**< @brief Interface index. It equals to the scope zone index, defining network interface.@n
+    fnet_scope_id_t ipv6imr_interface;  /**< @brief Interface index. It equals to the scope zone index, defining network interface.@n
                                          * If this member is zero, the default interface is used. */
 };
 

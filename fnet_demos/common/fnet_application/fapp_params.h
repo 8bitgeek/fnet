@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fapp_params.h
 *
@@ -48,7 +37,7 @@
  * @brief Parameters-version string.@n
  * It defines version of the parameter structure saved in a persistent storage.
  ******************************************************************************/
-#define FAPP_PARAMS_VERSION                 "06" /* Changed on any change in the param. structures.*/
+#define FAPP_PARAMS_VERSION                 "07" /* Changed on any change in the param. structures.*/
 
 /**************************************************************************/ /*!
  * @brief Signature string value.@n
@@ -80,6 +69,12 @@
 #define FAPP_PARAMS_HOST_NAME_SIZE          (40U)
 
 /**************************************************************************/ /*!
+ * @brief The maximum length of the @c if_name field of the 
+ * @ref fapp_params_fnet structure.
+ ******************************************************************************/
+#define FAPP_PARAMS_NETIF_NAME_SIZE          (FNET_NETIF_NAMELEN)
+
+/**************************************************************************/ /*!
  * @brief Boot mode.
  ******************************************************************************/
 typedef enum
@@ -107,7 +102,8 @@ typedef enum
 {
     FAPP_PARAMS_TFTP_FILE_TYPE_RAW  = (0),  /**< @brief Raw binary file. */
     FAPP_PARAMS_TFTP_FILE_TYPE_BIN  = (1),  /**< @brief CodeWarrior binary file.*/
-    FAPP_PARAMS_TFTP_FILE_TYPE_SREC = (2)   /**< @brief SREC file.*/
+    FAPP_PARAMS_TFTP_FILE_TYPE_SREC = (2),  /**< @brief Motorola SREC file.*/
+    FAPP_PARAMS_TFTP_FILE_TYPE_HEX  = (3)   /**< @brief Intel Hexadecimal Object file.*/
 } 
 fapp_params_tftp_file_type_t;
 
@@ -117,13 +113,14 @@ fapp_params_tftp_file_type_t;
  ******************************************************************************/
 struct fapp_params_fnet
 {
-    fnet_ip4_addr_t address;	                        /**< @brief Application IPv4 address.*/
-    fnet_ip4_addr_t netmask;	                        /**< @brief IPv4 Netmask.*/
-    fnet_ip4_addr_t gateway;	                        /**< @brief Gateway IPv4 address.*/
-    fnet_ip4_addr_t dns;		                        /**< @brief DNS IPv4 server address. */                            
-    fnet_mac_addr_t mac;                                /**< @brief Ethernet MAC address.*/
-    fnet_char_t host_name[FAPP_PARAMS_HOST_NAME_SIZE];  /**< @brief Host Name string, used by LLMNR.
-                                                        * The string must be null-terminated.*/
+    fnet_char_t     netif_name[FAPP_PARAMS_NETIF_NAME_SIZE];    /**< @brief Network interface name (e.g. "eth0", "loop"). */
+    fnet_ip4_addr_t address;	                                /**< @brief IPv4 address.*/
+    fnet_ip4_addr_t netmask;	                                /**< @brief IPv4 Netmask.*/
+    fnet_ip4_addr_t gateway;	                                /**< @brief Gateway IPv4 address.*/
+    fnet_ip4_addr_t dns;		                                /**< @brief DNS IPv4 server address. */                            
+    fnet_mac_addr_t mac;                                        /**< @brief Ethernet MAC address.*/
+    fnet_char_t     host_name[FAPP_PARAMS_HOST_NAME_SIZE];      /**< @brief Host Name string, used by LLMNR.
+                                                                * The string must be null-terminated.*/
 };
 
 /**************************************************************************/ /*!

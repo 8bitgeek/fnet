@@ -133,12 +133,12 @@ void SystemInit (void) {
      * Enable all of the port clocks. These have to be enabled to configure
      * pin muxing options, so most code will need all of these on anyway.
      */
-    SIM_SCGC5 |= (SIM_SCGC5_PORTA_MASK
+  /*  SIM_SCGC5 |= (SIM_SCGC5_PORTA_MASK
                   | SIM_SCGC5_PORTB_MASK
                   | SIM_SCGC5_PORTC_MASK
                   | SIM_SCGC5_PORTD_MASK
                   | SIM_SCGC5_PORTE_MASK 
-                  );
+                  )*/
 
   if((RCM->SRS0 & RCM_SRS0_WAKEUP_MASK) != 0x00U)
   {

@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_dhcp.h
 *
@@ -149,46 +138,6 @@ struct fnet_dhcp_params
 };
 
 /**************************************************************************/ /*!
- * @brief DHCP client states.@n
- * Used mainly for debugging purposes.
- ******************************************************************************/
-typedef enum
-{
-    FNET_DHCP_STATE_DISABLED = 0,   /**< @brief The DHCP client service is not 
-                                     * initialized.
-                                     */
-    FNET_DHCP_STATE_INIT,           /**< @brief The DHCP client service is initialized.
-                                     * Sends DHCPDISCOVER message.@n
-                                     * Signals the @ref fnet_dhcp_handler_discover_t event.
-                                     */
-    FNET_DHCP_STATE_SELECTING,      /**< @brief Waits for the DHCPOFFER message.
-                                     */
-    FNET_DHCP_STATE_REQUESTING,     /**< @brief Sends the DHCPREQUEST message.
-                                     * Waits for the DHCPACK.
-                                     */
-    FNET_DHCP_STATE_BOUND,          /**< @brief The DHCPACK message from 
-                                     * the DHCP server arrived.
-                                     * The client parameters are set.@n
-                                     * Signals the @ref fnet_dhcp_handler_updated_t event.
-                                     */
-    FNET_DHCP_STATE_RENEWING,       /**< @brief T1 expired. Send the DHCPREQUEST
-                                     * to a leasing server.
-                                     */
-    FNET_DHCP_STATE_REBINDING,      /**< @brief T2 expired. Broadcast the DHCPREQUEST.
-                                     */
-    FNET_DHCP_STATE_INIT_REBOOT,    /**< @brief The DHCP client service is initialized.
-                                     * Sends the DHCPREQUEST message.@n
-                                     * Signals the @ref fnet_dhcp_handler_discover_t event.
-                                     */
-    FNET_DHCP_STATE_REBOOTING,      /**< @brief Sends the DHCPREQUEST message.
-                                     * Waits for the DHCPACK.
-                                     */
-    FNET_DHCP_STATE_RELEASE         /**< @brief Sends the RELEASE message.
-                                     * Frees the allocated resources.
-                                     */
-} fnet_dhcp_state_t;
-
-/**************************************************************************/ /*!
  * @brief DHCP options are retrieved from a DHCP server.
  *
  * This structure is used by the @ref fnet_dhcp_get_options() function.@n
@@ -249,6 +198,12 @@ struct fnet_dhcp_options
 extern "C" {
 #endif
 
+/**************************************************************************/ /*!
+ * @brief DHCP client descriptor.
+ * @see fnet_dhcp_init()
+ ******************************************************************************/
+typedef fnet_int32_t fnet_dhcp_desc_t;
+
 /***************************************************************************/ /*!
  *
  * @brief    Initializes the DHCP client service.
@@ -258,7 +213,7 @@ extern "C" {
  * @param params     Optional initialization parameters.
  *
  * @return This function returns:
- *   - @ref FNET_OK if no error occurs.
+ *   - DHCP client descriptor if no error occurs.
  *   - @ref FNET_ERR if an error occurs.
  *
  * @see fnet_dhcp_release()
@@ -272,11 +227,13 @@ extern "C" {
  * in the background.
  *
  ******************************************************************************/
-fnet_return_t fnet_dhcp_init( fnet_netif_desc_t netif, struct fnet_dhcp_params *params );
+fnet_dhcp_desc_t fnet_dhcp_init( fnet_netif_desc_t netif, struct fnet_dhcp_params *params );
 
 /***************************************************************************/ /*!
  *
  * @brief    Releases the DHCP client service.
+ *
+ * @param desc     DHCP client descriptor to be released.
  *
  * @see fnet_dhcp_init()
  *
@@ -286,30 +243,15 @@ fnet_return_t fnet_dhcp_init( fnet_netif_desc_t netif, struct fnet_dhcp_params *
  * used by the service, and unregisters it from the polling list.
  *
  ******************************************************************************/
-void fnet_dhcp_release(void);
-
-/***************************************************************************/ /*!
- *
- * @brief    Retrieves the current state of the DHCP client service.
- *
- * @return This function returns the current state of the DHCP client service.
- *   The state is defined by the @ref fnet_dhcp_state_t.
- *
- ******************************************************************************
- *
- * This function returns the current state of the DHCP client service.
- * If the state is @ref FNET_DHCP_STATE_DISABLED, the DHCP is not initialized
- * or released.
- *
- ******************************************************************************/
-fnet_dhcp_state_t fnet_dhcp_state(void);
+void fnet_dhcp_release(fnet_dhcp_desc_t desc);
 
 /***************************************************************************/ /*!
  *
  * @brief    Retrieves the current DHCP client options retrieved from a 
  *           DHCP server.
  *
- * @param options      DHCP options received from a DHCP server.
+ * @param desc      DHCP client descriptor.
+ * @param options   DHCP options received from a DHCP server.
  *
  ******************************************************************************
  *
@@ -319,41 +261,42 @@ fnet_dhcp_state_t fnet_dhcp_state(void);
  * after the @ref fnet_dhcp_handler_updated_t event.
  *
  ******************************************************************************/
-void fnet_dhcp_get_options( struct fnet_dhcp_options *options );
+void fnet_dhcp_get_options(fnet_dhcp_desc_t desc, struct fnet_dhcp_options *options );
 
 /**************************************************************************/ /*!
  * @brief DHCP event handler callback function prototype, that is 
  * called when the DHCP client has updated the IP parameters (in BOUND state).
  *
+ * @param desc      DHCP client descriptor.
  * @param netif     Network interface descriptor which IP parameters were updated.
- *
  * @param param     User-application specific parameter. It's set during 
  *                  the DHCP service initialization as part of the 
  *                  @ref fnet_dhcp_params.
  *
  * @see fnet_dhcp_params
  ******************************************************************************/
- typedef void(*fnet_dhcp_handler_updated_t)(fnet_netif_desc_t netif, void *param);
+ typedef void(*fnet_dhcp_handler_updated_t)(fnet_dhcp_desc_t desc, fnet_netif_desc_t netif, void *param);
  
  /**************************************************************************/ /*!
  * @brief DHCP event handler callback function prototype, that is 
  * called when the DHCP client send the DHCP discover message. @n
  * A user interface program may use it for indication of retransmission attempts.
  *
+ * @param desc      DHCP client descriptor.
  * @param netif     Network interface descriptor.
- *
  * @param param     User-application specific parameter. It's set during 
  *                  the DHCP service initialization as part of the 
  *                  @ref fnet_dhcp_params.
  *
  * @see fnet_dhcp_handler_updated_set
  ******************************************************************************/
- typedef void(*fnet_dhcp_handler_discover_t)(fnet_netif_desc_t netif, void *param);
+ typedef void(*fnet_dhcp_handler_discover_t)(fnet_dhcp_desc_t desc, fnet_netif_desc_t netif, void *param);
 
 /***************************************************************************/ /*!
  *
  * @brief    Registers the "IP parameters updated" DHCP event handler.
  *
+ * @param desc      DHCP client descriptor.
  * @param handler_updated Pointer to the callback function defined by 
  *                      @ref fnet_dhcp_handler_updated_t.
  * @param param         Optional application-specific parameter. @n 
@@ -368,12 +311,13 @@ void fnet_dhcp_get_options( struct fnet_dhcp_options *options );
  * To stop the event handling, set the @c handler_updated parameter to zero value.
  *
  ******************************************************************************/
-void fnet_dhcp_handler_updated_set (fnet_dhcp_handler_updated_t handler_updated, void *param);
+void fnet_dhcp_handler_updated_set (fnet_dhcp_desc_t desc, fnet_dhcp_handler_updated_t handler_updated, void *param);
 
 /***************************************************************************/ /*!
  *
  * @brief    Registers the "Discover message sent" DHCP event handler.
  *
+ * @param desc      DHCP client descriptor.
  * @param handler_discover  Pointer to the callback function defined by 
  *                          @ref fnet_dhcp_handler_discover_t.
  * @param param             Optional application-specific parameter. @n 
@@ -388,10 +332,28 @@ void fnet_dhcp_handler_updated_set (fnet_dhcp_handler_updated_t handler_updated,
  * the "Discover message sent" event. This event occurs when 
  * the DHCP client send the DHCP discover message. A user interface program 
  * may use it for indication of retransmission attempts. @n
- * To stop the event handling, setthe @c handler_discover parameter to zero value.
+ * To stop the event handling, set the @c handler_discover parameter to zero value.
  *
  ******************************************************************************/
-void fnet_dhcp_handler_discover_set (fnet_dhcp_handler_discover_t handler_discover, void *param);
+void fnet_dhcp_handler_discover_set (fnet_dhcp_desc_t desc, fnet_dhcp_handler_discover_t handler_discover, void *param);
+
+/***************************************************************************/ /*!
+ *
+ * @brief    Detects if the DHCP Client service is enabled or disabled.
+ *
+ * @param desc     DHCP Client descriptor
+ *
+ * @return This function returns:
+ *          - @ref FNET_TRUE if the DHCP Client is successfully initialized.
+ *          - @ref FNET_FALSE if the DHCP Client is not initialized or is released.
+ *
+ ******************************************************************************
+ *
+ * This function detects if the DHCP Client service is initialized or is released.
+ *
+ ******************************************************************************/
+fnet_bool_t fnet_dhcp_enabled(fnet_dhcp_desc_t desc);
+
 
 #if defined(__cplusplus)
 }

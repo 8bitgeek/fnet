@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fapp_setget.c
 *
@@ -61,6 +50,10 @@
 /************************************************************************
 *     Function Prototypes
 *************************************************************************/
+#if FAPP_CFG_SETGET_CMD_NETIF
+static void fapp_set_cmd_netif(fnet_shell_desc_t desc, fnet_char_t *value );
+static void fapp_get_cmd_netif(fnet_shell_desc_t desc);
+#endif
 #if FAPP_CFG_SETGET_CMD_IP && FNET_CFG_IP4
 static void fapp_set_cmd_ip(fnet_shell_desc_t desc, fnet_char_t *value );
 static void fapp_get_cmd_ip(fnet_shell_desc_t desc);
@@ -140,17 +133,20 @@ fapp_setget_cmd_t;
 *************************************************************************/
 static const fapp_setget_cmd_t fapp_setget_cmd_table [] =
 {
+#if FAPP_CFG_SETGET_CMD_NETIF
+    { "netif", fapp_set_cmd_netif, fapp_get_cmd_netif, "<default-if name>" },
+#endif
 #if FAPP_CFG_SETGET_CMD_IP && FNET_CFG_IP4
-    { "ip", fapp_set_cmd_ip, fapp_get_cmd_ip, "<board IP address>" },
+    { "ip", fapp_set_cmd_ip, fapp_get_cmd_ip, "<default-if IPv4 address>" },
 #endif
 #if FAPP_CFG_SETGET_CMD_NETMASK && FNET_CFG_IP4   
-    { "netmask", fapp_set_cmd_netmask, fapp_get_cmd_netmask, "<netmask IP address>" },
+    { "netmask", fapp_set_cmd_netmask, fapp_get_cmd_netmask, "<default-if IPv4 netmask address>" },
 #endif
 #if FAPP_CFG_SETGET_CMD_GATEWAY && FNET_CFG_IP4
-    { "gateway", fapp_set_cmd_gateway, fapp_get_cmd_gateway, "<gateway IP address>" },
+    { "gateway", fapp_set_cmd_gateway, fapp_get_cmd_gateway, "<default-if IPv4 gateway address>" },
 #endif
 #if FAPP_CFG_SETGET_CMD_MAC    
-    { "mac", fapp_set_cmd_mac, fapp_get_cmd_mac, "<ethernet address>" },
+    { "mac", fapp_set_cmd_mac, fapp_get_cmd_mac, "<default-if Ethernet address>" },
 #endif
 #if FAPP_CFG_SETGET_CMD_HOSTNAME    
     { "host", fapp_set_cmd_hostname, fapp_get_cmd_hostname, "<host name>" },
@@ -193,6 +189,44 @@ static const fapp_setget_cmd_t fapp_setget_cmd_table [] =
 #define FAPP_SET_CMD_NUM  ((fnet_index_t)(sizeof(fapp_setget_cmd_table)/sizeof(fapp_setget_cmd_t)))
 
 /************************************************************************
+* NAME: fapp_set_cmd_hostname
+*
+* DESCRIPTION: Sets default interface, using its name as parameter.
+************************************************************************/
+#if FAPP_CFG_SETGET_CMD_NETIF 
+static void fapp_set_cmd_netif(fnet_shell_desc_t desc, fnet_char_t *value )
+{
+    fnet_netif_desc_t netif_desc;
+
+    netif_desc = fnet_netif_get_by_name(value);
+
+    if(netif_desc)
+    {
+        fnet_netif_set_default(netif_desc);
+    }
+    else
+    {
+        fnet_shell_println(desc, FAPP_PARAM_ERR, value);
+    }
+}
+#endif
+
+/************************************************************************
+* NAME: fapp_get_cmd_netif
+*
+* DESCRIPTION: Gets name of the default interface.
+************************************************************************/
+#if FAPP_CFG_SETGET_CMD_NETIF 
+static void fapp_get_cmd_netif(fnet_shell_desc_t desc)
+{
+    fnet_char_t name[FNET_NETIF_NAMELEN];
+
+    fnet_netif_get_name(fnet_netif_get_default(), name, sizeof(name));
+    fnet_shell_println(desc, FAPP_GET_SOPT_FORMAT, name);
+}
+#endif
+
+/************************************************************************
 * NAME: fapp_set_ip
 *
 * DESCRIPTION: Set IP address function.
@@ -204,7 +238,7 @@ static void fapp_set_ip(fnet_shell_desc_t desc, fnet_char_t *value, void (*set_i
 
     if(fnet_inet_aton(value, (struct in_addr *) &addr) == FNET_OK)
     {
-        set_ip(fapp_default_netif, addr);
+        set_ip(fnet_netif_get_default(), addr);
     }
     else
     {
@@ -224,7 +258,7 @@ static void fapp_get_ip(fnet_shell_desc_t desc, fnet_ip4_addr_t (*get_address)( 
     fnet_char_t            ip_str[FNET_IP4_ADDR_STR_SIZE];
     struct in_addr  addr;
 
-    addr.s_addr = get_address(fapp_default_netif);
+    addr.s_addr = get_address(fnet_netif_get_default());
     fnet_inet_ntoa(addr, ip_str);
     fnet_shell_println(desc, FAPP_GET_SOPT_FORMAT, ip_str);
 }
@@ -308,7 +342,7 @@ static void fapp_set_cmd_mac(fnet_shell_desc_t desc, fnet_char_t *value)
     fnet_mac_addr_t macaddr;
 
     if((fnet_str_to_mac(value, macaddr) != FNET_OK) ||
-            (fnet_netif_set_hw_addr(fapp_default_netif, macaddr, sizeof(fnet_mac_addr_t)) != FNET_OK))
+            (fnet_netif_set_hw_addr(fnet_netif_get_default(), macaddr, sizeof(fnet_mac_addr_t)) != FNET_OK))
     {
             fnet_shell_println(desc, FAPP_PARAM_ERR, value);
     }
@@ -372,10 +406,10 @@ static void fapp_set_cmd_dns(fnet_shell_desc_t desc, fnet_char_t *value)
 #if FAPP_CFG_SETGET_CMD_MAC 
 static void fapp_get_cmd_mac(fnet_shell_desc_t desc)
 {
-    fnet_char_t            mac_str[FNET_MAC_ADDR_STR_SIZE];
+    fnet_char_t     mac_str[FNET_MAC_ADDR_STR_SIZE];
     fnet_mac_addr_t macaddr;
 
-    fnet_netif_get_hw_addr(fapp_default_netif, macaddr, sizeof(fnet_mac_addr_t));
+    fnet_netif_get_hw_addr(fnet_netif_get_default(), macaddr, sizeof(fnet_mac_addr_t));
     fnet_shell_println(desc, FAPP_GET_SOPT_FORMAT, fnet_mac_to_str(macaddr, mac_str));
 }
 #endif
@@ -484,8 +518,8 @@ static void fapp_set_cmd_tftp(fnet_shell_desc_t desc, fnet_char_t *value )
     {
         fnet_shell_println(desc, FAPP_PARAM_ERR, value); /* Print error. */
     }
-    
-    fapp_params_tftp_config.server_addr = s_addr;
+
+    fnet_memcpy(&fapp_params_tftp_config.server_addr, &s_addr, sizeof(fapp_params_tftp_config.server_addr));
 }
 #endif
 /************************************************************************
@@ -532,7 +566,7 @@ static void fapp_get_cmd_image(fnet_shell_desc_t desc)
 #if FAPP_CFG_SETGET_CMD_TYPE
 static void fapp_set_cmd_image_type(fnet_shell_desc_t desc, fnet_char_t *value )
 {
-    struct image_type *type = fapp_tftp_image_type_by_name (value);
+    const struct image_type *type = fapp_tftp_image_type_by_name (value);
 
     if(type == 0)
     {
@@ -552,7 +586,7 @@ static void fapp_set_cmd_image_type(fnet_shell_desc_t desc, fnet_char_t *value )
 #if FAPP_CFG_SETGET_CMD_TYPE
 static void fapp_get_cmd_image_type(fnet_shell_desc_t desc)
 {
-    struct image_type *type = fapp_tftp_image_type_by_index(fapp_params_tftp_config.file_type);
+    const struct image_type *type = fapp_tftp_image_type_by_index(fapp_params_tftp_config.file_type);
     fnet_shell_println(desc, FAPP_GET_SOPT_FORMAT, type->name);
 }
 #endif

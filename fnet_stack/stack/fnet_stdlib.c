@@ -5,19 +5,21 @@
 * Copyright 2003 by Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-**********************************************************************/ /*!
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+*
+**********************************************************************/ 
+/*!
 *
 * @file fnet_stdlib.c
 *
@@ -26,6 +28,8 @@
 ***************************************************************************/
 
 #include "fnet.h"
+
+static fnet_uint32_t fnet_rand_value;  /* Used by fnet_rand()*/
 
 #if !FNET_CFG_OVERLOAD_MEMCPY
 /************************************************************************
@@ -811,4 +815,27 @@ CONT:
 		} while (sc != 0u);
 	}
 	/* Not reached.*/
+}
+
+/************************************************************************
+* NAME: fnet_rand
+*
+* DESCRIPTION: Generates a pseudo-random number.
+*
+*************************************************************************/
+fnet_uint32_t fnet_rand(void)
+{
+    fnet_rand_value = fnet_rand_value * 1103515245u + 12345u;
+	return((fnet_uint32_t)(fnet_rand_value/65536u) % (FNET_RAND_MAX + 1u));
+}
+
+/************************************************************************
+* NAME: fnet_srand
+*
+* DESCRIPTION: Initializes the pseudo-random number generator.
+*
+*************************************************************************/
+void fnet_srand(fnet_uint32_t seed)
+{
+	fnet_rand_value += seed;
 }

@@ -8,14 +8,16 @@ FNET project directory structure:
 	|    |-- stack                - FNET TCP/IP stack platform-independent source code.
 	|    |-- services             - FNET Services.
 	|    |    |-- dns               - DNS client/resolver service.
-	|    |    |-- dhcp              - DHCP client service.
+	|    |    |-- dhcp              - DHCP/BOOTP client service.
 	|    |    |-- flash             - Flash  Memory driver.
 	|    |    |-- fs                - File System driver.
 	|    |    |-- http              - HTTP Server service.
 	|    |    |-- poll              - Polling Mechanism library.
-	|    |    |-- shell             - Command Shell service.
+	|    |    |-- ping              - PING service.
+	|    |    |-- llmnr             - LLMNR Server/Responder.
 	|    |    |-- serial            - Serial Input/Output driver.
-	|    |    |-- telnet            - Telnet server service.
+	|    |    |-- shell             - Command Shell service.
+	|    |    |-- telnet            - TELNET server service.
 	|    |    |-- tftp              - TFTP server and client services.
 	|    |-- cpu                  - FNET platform-specific source code.
 	|    |    |-- common            - Common platform-specific source code.

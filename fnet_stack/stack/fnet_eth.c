@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_eth.c
 *
@@ -96,13 +85,13 @@ fnet_return_t fnet_str_to_mac( fnet_char_t *str_mac, fnet_mac_addr_t addr )
         {
             if((c >= '0') && (c <= '9'))
             {
-                val = (val * 16U) + (fnet_uint32_t)(c - '0');
+                val = (val * 16U) + (fnet_uint32_t)(c) - '0';
                 str_mac++;
                 continue;
             }
             else if(((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')))
             {
-                val = (val << 4U) + (fnet_uint32_t)(c + 10U - (((c >= 'a') && (c <= 'f')) ? 'a' : 'A'));
+                val = (val << 4U) + ((fnet_uint32_t)c + 10U - (((c >= 'a') && (c <= 'f')) ? (fnet_uint32_t)'a' : (fnet_uint32_t)'A'));
                 str_mac++;
                 continue;
             }

@@ -3,32 +3,21 @@
 * Copyright 2014 by Andrey Butok. FNET Community.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_llmnr.c
 *
@@ -205,10 +194,10 @@ static fnet_bool_t fnet_llmnr_hostname_cmp(const fnet_uint8_t *req_hostname, con
 struct fnet_llmnr_if
 {
     fnet_llmnr_state_t      state;                  /* Current state.*/
-    fnet_socket_t                  socket_listen;          /* Listening socket.*/
+    fnet_socket_t           socket_listen;          /* Listening socket.*/
     fnet_poll_desc_t        service_descriptor;     /* Network interface descriptor. */
     fnet_netif_desc_t       netif;                  /* Service descriptor. */
-    const fnet_char_t              *host_name;             /* Link-local host name. */
+    const fnet_char_t       *host_name;             /* Link-local host name. */
     fnet_uint32_t           host_name_ttl;          /* TTL value that indicates for how many seconds link-local host name 
                                                      * is valid for LLMNR querier, in seconds (it is optional).@n
                                                      * Default value is defined by @ref FNET_CFG_LLMNR_HOSTNAME_TTL. */
@@ -319,6 +308,7 @@ fnet_llmnr_desc_t fnet_llmnr_init( struct fnet_llmnr_params *params )
         local_addr.sa_family = AF_SUPPORTED;
     }
     local_addr.sa_port = FNET_CFG_LLMNR_PORT;
+    local_addr.sa_scope_id = fnet_netif_get_scope_id(params->netif_desc);
 
     /* Create listen socket */
     if((llmnr_if->socket_listen = fnet_socket(local_addr.sa_family, SOCK_DGRAM, 0u)) == FNET_ERR)
@@ -341,7 +331,7 @@ fnet_llmnr_desc_t fnet_llmnr_init( struct fnet_llmnr_params *params )
             struct ip_mreq mreq; /* Multicast group information.*/
             
             mreq.imr_multiaddr.s_addr = FNET_LLMNR_IP4_LINK_LOCAL_MULTICAST_ADDR;
-            mreq.imr_interface.s_addr = fnet_netif_get_ip4_addr( params->netif_desc );
+            mreq.imr_interface = fnet_netif_get_scope_id(params->netif_desc); 
             
             /* Join multicast group. */
             if(fnet_socket_setopt(llmnr_if->socket_listen, IPPROTO_IP, IP_ADD_MEMBERSHIP, (fnet_char_t *)&mreq, sizeof(mreq)) == FNET_ERR) 

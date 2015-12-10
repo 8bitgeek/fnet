@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_ip.h
 *
@@ -63,7 +52,7 @@ typedef fnet_uint32_t fnet_ip4_addr_t;
  * @brief Converts the standard dotted-decimal notation @c a.b.c.d 
  *        to an integer value, suitable for use as an Internet address (in network byte order).
  ******************************************************************************/
-#define FNET_IP4_ADDR_INIT(a, b, c, d)   (fnet_ip4_addr_t)(FNET_NTOHL(((fnet_uint32_t)((a)&0xFFUL)<< 24U) + ((fnet_uint32_t)((b)&0xFFUL)<< 16U) + ((fnet_uint32_t)((c)&0xFFUL)<< 8U ) + (fnet_uint32_t)((d)&0xFFUL)))
+#define FNET_IP4_ADDR_INIT(a, b, c, d)   (fnet_ip4_addr_t)(FNET_NTOHL((((fnet_uint32_t)(a)&0xFFUL)<< 24U) + (((fnet_uint32_t)(b)&0xFFUL)<< 16U) + (((fnet_uint32_t)(c)&0xFFUL)<< 8U ) + ((fnet_uint32_t)(d)&0xFFUL)))
 
 /**************************************************************************/ /*!
  * @def     FNET_IP4_ADDR_STR_SIZE
@@ -73,7 +62,13 @@ typedef fnet_uint32_t fnet_ip4_addr_t;
  * @see fnet_inet_ntoa, fnet_inet_ntop
  * @showinitializer 
  ******************************************************************************/
-#define FNET_IP4_ADDR_STR_SIZE       sizeof("255.255.255.255")
+#define FNET_IP4_ADDR_STR_SIZE          sizeof("255.255.255.255")
+
+/* 169.254/16 prefix that is valid for Link-Local communication. RFC3927*/
+#define FNET_IP4_ADDR_LINK_LOCAL_PREFIX      FNET_IP4_ADDR_INIT(169,254,0,0)
+
+/* IPv4 Link-Local broadcast. RFC3927*/
+#define FNET_IP4_ADDR_LINK_LOCAL_BROADCAST   FNET_IP4_ADDR_INIT(169,254,255,255)
 
 /************************************************************************
 *    Definitions for options.
@@ -145,6 +140,8 @@ typedef fnet_uint32_t fnet_ip4_addr_t;
 #define FNET_IP4_ADDR2(ipaddr)   ((fnet_uint8_t)(fnet_ntohl(ipaddr) >> 16U) & 0xffU)
 #define FNET_IP4_ADDR3(ipaddr)   ((fnet_uint8_t)(fnet_ntohl(ipaddr) >> 8U) & 0xffU)
 #define FNET_IP4_ADDR4(ipaddr)   ((fnet_uint8_t)(fnet_ntohl(ipaddr)) & 0xffU)
+
+
 
 
 /*! @} */

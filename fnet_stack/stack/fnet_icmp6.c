@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_icmp6.c
 *
@@ -281,7 +270,7 @@ static void fnet_icmp6_input(fnet_netif_t *netif, struct sockaddr *src_addr,  st
     {
 DISCARD:			
         fnet_netbuf_free_chain(ip6_nb);
-    fnet_netbuf_free_chain(nb);	
+        fnet_netbuf_free_chain(nb);	
     }
 		
 }
@@ -291,7 +280,7 @@ DISCARD:
 *
 * DESCRIPTION: ICMPv6 output function.
 *************************************************************************/
-void fnet_icmp6_output( fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip, const fnet_ip6_addr_t *dest_ip, fnet_uint8_t hop_limit, fnet_netbuf_t *nb )
+void fnet_icmp6_output( struct fnet_netif *netif, const fnet_ip6_addr_t *src_ip, const fnet_ip6_addr_t *dest_ip, fnet_uint8_t hop_limit, fnet_netbuf_t *nb )
 {
     fnet_icmp6_header_t                     *hdr = (fnet_icmp6_header_t *)nb->data_ptr;
     FNET_COMP_PACKED_VAR fnet_uint16_t      *checksum_p;
@@ -310,7 +299,7 @@ void fnet_icmp6_output( fnet_netif_t *netif, const fnet_ip6_addr_t *src_ip, cons
 *
 * DESCRIPTION: Sends ICMPv6 error message.
 *************************************************************************/
-void fnet_icmp6_error( fnet_netif_t *netif, fnet_uint8_t type, fnet_uint8_t code, fnet_uint32_t param, fnet_netbuf_t *origin_nb )
+void fnet_icmp6_error( struct fnet_netif *netif, fnet_uint8_t type, fnet_uint8_t code, fnet_uint32_t param, fnet_netbuf_t *origin_nb )
 {
     fnet_ip6_header_t       *ip6_header;
     fnet_icmp6_err_header_t *icmp6_err_header;

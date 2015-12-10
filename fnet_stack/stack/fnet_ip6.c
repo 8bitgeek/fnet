@@ -4,32 +4,21 @@
 * Copyright 2008-2010 by Andrey Butok. Freescale Semiconductor, Inc.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_ip6.c
 *
@@ -587,7 +576,6 @@ static void fnet_ip6_input_low(fnet_uint32_t cookie )
         source_addr = &hdr->source_addr; /* TBD Save copy or do ICMP copy*/
         destination_addr = &hdr->destination_addr;        
         
-        
         payload_length = fnet_ntohs(hdr->length);
 
         if(nb->total_length > (sizeof(fnet_ip6_header_t)+ (fnet_size_t)payload_length))
@@ -604,7 +592,8 @@ static void fnet_ip6_input_low(fnet_uint32_t cookie )
             && (FNET_IP6_HEADER_GET_VERSION(hdr) == 6u)                     /* Check the IP Version. */
             && (!FNET_IP6_ADDR_IS_MULTICAST(&hdr->source_addr))             /* Validate source address. */
             && ((fnet_netif_is_my_ip6_addr(netif, &hdr->destination_addr))  /* Validate destination address. */
-              || FNET_IP6_ADDR_IS_MULTICAST(&hdr->destination_addr))        /* Pass multicast destination address.*/
+              || FNET_IP6_ADDR_IS_MULTICAST(&hdr->destination_addr)        /* Pass multicast destination address.*/
+              || (netif->api->type == FNET_NETIF_TYPE_LOOPBACK) )
           )
         { 
             fnet_uint8_t    *next_header = &hdr->next_header;
@@ -1310,14 +1299,12 @@ fnet_error_t fnet_ip6_output(fnet_netif_t *netif /*optional*/, const fnet_ip6_ad
         
         ip6_id++;
         
-        
         ip6_header->next_header = FNET_IP6_TYPE_FRAGMENT_HEADER;
         
         ip6_fragment_header->id = fnet_htonl(ip6_id);
         ip6_fragment_header->_reserved = 0u;
         ip6_fragment_header->next_header = protocol;
         ip6_fragment_header->offset_more = FNET_HTONS(FNET_IP6_FRAGMENT_MF_MASK);
-        
 
         /* Go through the whole data segment after first fragment.*/
         for (offset = (header_length + frag_length); offset < total_length; offset += frag_length)
@@ -1967,7 +1954,7 @@ void fnet_ip6_drain( void )
 * DESCRIPTION: This function retrieves the current value 
 *              of IPv6 socket option.
 *************************************************************************/
-fnet_error_t fnet_ip6_getsockopt(fnet_socket_if_t *sock, fnet_socket_options_t optname, void *optval, fnet_size_t *optlen )
+fnet_error_t fnet_ip6_getsockopt(struct _fnet_socket_if_t *sock, fnet_socket_options_t optname, void *optval, fnet_size_t *optlen )
 {
     fnet_error_t result = FNET_ERR_OK;
     
@@ -2006,7 +1993,7 @@ fnet_error_t fnet_ip6_getsockopt(fnet_socket_if_t *sock, fnet_socket_options_t o
 *
 * DESCRIPTION: This function sets the value of IPv6 socket option. 
 *************************************************************************/
-fnet_error_t fnet_ip6_setsockopt( fnet_socket_if_t *sock, fnet_socket_options_t optname, const void *optval, fnet_size_t optlen )
+fnet_error_t fnet_ip6_setsockopt(struct _fnet_socket_if_t *sock, fnet_socket_options_t optname, const void *optval, fnet_size_t optlen )
 {
     fnet_error_t result = FNET_ERR_OK;
 

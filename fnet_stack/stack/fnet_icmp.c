@@ -5,32 +5,21 @@
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_icmp.c
 *
@@ -56,7 +45,7 @@
 *************************************************************************/
 static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  struct sockaddr *dest_addr, fnet_netbuf_t *nb, fnet_netbuf_t *ip4_nb);
 static void fnet_icmp_output( fnet_netif_t *netif, fnet_ip4_addr_t src_ip, fnet_ip4_addr_t dest_ip, fnet_netbuf_t *nb );
-static void fnet_icmp_notify_protocol(fnet_prot_notify_t prot_cmd, fnet_netbuf_t *nb );
+static void fnet_icmp_notify_protocol(fnet_netif_t *netif, fnet_prot_notify_t prot_cmd, fnet_netbuf_t *nb );
                         
 #if FNET_CFG_DEBUG_TRACE_ICMP && FNET_CFG_DEBUG_TRACE
 void fnet_icmp_trace(fnet_uint8_t *str, fnet_icmp_header_t *icmpp_hdr);
@@ -223,7 +212,7 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                     default:
                         goto DISCARD;
                 }
-                fnet_icmp_notify_protocol(prot_cmd, nb);  /* Protocol notification.*/
+                fnet_icmp_notify_protocol(netif, prot_cmd, nb);  /* Protocol notification.*/
                 break;
             case FNET_ICMP_TIMXCEED:
                 switch(hdr->code)
@@ -240,7 +229,7 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                         goto DISCARD;
                 }
 
-                fnet_icmp_notify_protocol(prot_cmd, nb);  /* Protocol notification.*/
+                fnet_icmp_notify_protocol(netif, prot_cmd, nb);  /* Protocol notification.*/
                 break;
             case FNET_ICMP_PARAMPROB:                       /* Parameter Problem Message.*/
                 if(hdr->code > 1u)
@@ -249,7 +238,7 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                 }
 
                 prot_cmd = FNET_PROT_NOTIFY_PARAMPROB;
-                fnet_icmp_notify_protocol(prot_cmd, nb);  /* Protocol notification.*/
+                fnet_icmp_notify_protocol(netif, prot_cmd, nb);  /* Protocol notification.*/
                 break;
             case FNET_ICMP_SOURCEQUENCH:                    /* Source Quench Message; packet lost, slow down.*/
                 if(hdr->code)
@@ -258,7 +247,7 @@ static void fnet_icmp_input(fnet_netif_t *netif, struct sockaddr *src_addr,  str
                 }
 
                 prot_cmd = FNET_PROT_NOTIFY_QUENCH;
-                fnet_icmp_notify_protocol(prot_cmd, nb);  /* Protocol notification.*/
+                fnet_icmp_notify_protocol(netif, prot_cmd, nb);  /* Protocol notification.*/
                 break;
             /************************
              * Ignore others
@@ -288,7 +277,7 @@ DISCARD:
 *
 * DESCRIPTION: Upper protocol notification..
 *************************************************************************/
-static void fnet_icmp_notify_protocol(fnet_prot_notify_t prot_cmd, fnet_netbuf_t *nb)
+static void fnet_icmp_notify_protocol(fnet_netif_t *netif, fnet_prot_notify_t prot_cmd, fnet_netbuf_t *nb)
 {
     fnet_icmp_err_header_t  *hdr_err = (fnet_icmp_err_header_t *)nb->data_ptr;
     fnet_ip_header_t        *ip_header = &hdr_err->ip;
@@ -303,7 +292,7 @@ static void fnet_icmp_notify_protocol(fnet_prot_notify_t prot_cmd, fnet_netbuf_t
 
     if(nb->total_length > hdr_err_data_length)
     {
-        fnet_netbuf_trim(&nb, (fnet_int32_t)(hdr_err_data_length - nb->total_length));
+        fnet_netbuf_trim(&nb, (fnet_int32_t)hdr_err_data_length - (fnet_int32_t)nb->total_length);
     }
 
     if(fnet_netbuf_pullup(&nb, nb->total_length) == FNET_ERR) /* The header must reside in contiguous area of memory.*/
@@ -322,7 +311,7 @@ static void fnet_icmp_notify_protocol(fnet_prot_notify_t prot_cmd, fnet_netbuf_t
             struct sockaddr     err_dest_addr;
 
             /* Prepare addreses for upper protocol.*/
-            fnet_ip_set_socket_addr(ip_header, &err_src_addr,  &err_dest_addr );
+            fnet_ip_set_socket_addr(netif, ip_header, &err_src_addr,  &err_dest_addr );
 
             fnet_netbuf_trim(&nb, (fnet_int32_t)(hdr_err_length)); /* Cut the ICMP error header.*/
 

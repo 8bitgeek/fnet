@@ -5,32 +5,21 @@
 * Copyright 2003 by Andrey Butok. Motorola SPS.
 *
 ***************************************************************************
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU Lesser General Public License Version 3 
-* or later (the "LGPL").
 *
-* As a special exception, the copyright holders of the FNET project give you
-* permission to link the FNET sources with independent modules to produce an
-* executable, regardless of the license terms of these independent modules,
-* and to copy and distribute the resulting executable under terms of your 
-* choice, provided that you also meet, for each linked independent module,
-* the terms and conditions of the license of that module.
-* An independent module is a module which is not derived from or based 
-* on this library. 
-* If you modify the FNET sources, you may extend this exception 
-* to your version of the FNET sources, but you are not obligated 
-* to do so. If you do not wish to do so, delete this
-* exception statement from your version.
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may
+*  not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
 *
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*  http://www.apache.org/licenses/LICENSE-2.0
 *
-* You should have received a copy of the GNU General Public License
-* and the GNU Lesser General Public License along with this program.
-* If not, see <http://www.gnu.org/licenses/>.
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+*  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
 *
-**********************************************************************/ /*!
+**********************************************************************/ 
+/*!
 *
 * @file fnet_netif.c
 *
@@ -124,7 +113,7 @@ fnet_return_t fnet_netif_init_all( void )
 #endif    
 #if FNET_CFG_LOOPBACK
     /* Initialise Loop-back interface.*/
-    result = fnet_netif_init(FNET_LOOP_IF, 0, 0);
+    result = fnet_netif_init(FNET_LOOP_IF, FNET_NULL, 0u);
     if(result == FNET_ERR)
     {
         goto INIT_ERR;
@@ -163,6 +152,9 @@ fnet_return_t fnet_netif_init_all( void )
 /* Set address parameters of the Loopback interface.*/
 #if FNET_CFG_LOOPBACK && FNET_CFG_IP4
     fnet_netif_set_ip4_addr(FNET_LOOP_IF, FNET_CFG_LOOPBACK_IP4_ADDR);
+#endif /* FNET_CFG_LOOPBACK */
+#if FNET_CFG_LOOPBACK && FNET_CFG_IP6
+    fnet_netif_bind_ip6_addr(FNET_LOOP_IF, &fnet_ip6_addr_loopback, FNET_NETIF_IP6_ADDR_TYPE_MANUAL);
 #endif /* FNET_CFG_LOOPBACK */
 
 INIT_ERR:
@@ -219,8 +211,8 @@ void fnet_netif_drain( void )
 *************************************************************************/
 fnet_netif_desc_t fnet_netif_get_by_name( fnet_char_t *name )
 {
-    fnet_netif_t *netif;
-    fnet_netif_desc_t result = (fnet_netif_desc_t)FNET_NULL;
+    fnet_netif_t        *netif;
+    fnet_netif_desc_t   result = (fnet_netif_desc_t)FNET_NULL;
 
     fnet_os_mutex_lock();
 
@@ -409,7 +401,7 @@ fnet_return_t fnet_netif_init( fnet_netif_t *netif, fnet_uint8_t *hw_addr, fnet_
         netif->prev = 0;
         fnet_netif_list = netif;
         
-        fnet_netif_assign_scope_id( netif ); /* Asign Scope ID.*/
+        fnet_netif_assign_scope_id( netif ); /* Assign Scope ID.*/
         
         netif->features = FNET_NETIF_FEATURE_NONE;
 
@@ -907,6 +899,12 @@ fnet_return_t fnet_netif_set_hw_addr( fnet_netif_desc_t netif_desc, fnet_uint8_t
     fnet_return_t result;
     fnet_netif_t  *netif = (fnet_netif_t *)netif_desc;
 
+    /* Seed pseudo-random generator */
+    if(hw_addr_size >= sizeof(fnet_uint32_t))
+    {
+        fnet_srand(((fnet_uint32_t)hw_addr[0] << 24u)| ((fnet_uint32_t)hw_addr[1] << 16u) | ((fnet_uint32_t)hw_addr[2] << 8u) | hw_addr[3]);
+    }
+
     fnet_os_mutex_lock();
 
     if(netif && hw_addr 
@@ -1073,7 +1071,7 @@ void fnet_netif_dupip_handler_signal(fnet_netif_desc_t netif )
 *************************************************************************/
 static void fnet_netif_assign_scope_id( fnet_netif_t *netif )
 {
-    fnet_uint32_t   scope_id;
+    fnet_scope_id_t scope_id;
     fnet_netif_t    *current;
     fnet_bool_t     try_again;
 
@@ -1103,9 +1101,9 @@ static void fnet_netif_assign_scope_id( fnet_netif_t *netif )
 *
 * DESCRIPTION: Gets Scope ID assigned to the interface.
 *************************************************************************/
-fnet_uint32_t fnet_netif_get_scope_id(fnet_netif_desc_t netif_desc)
+fnet_scope_id_t fnet_netif_get_scope_id(fnet_netif_desc_t netif_desc)
 {
-    fnet_uint32_t   result;
+    fnet_scope_id_t result;
     fnet_netif_t    *netif = (fnet_netif_t *)netif_desc;
     
     if(netif)
@@ -1150,17 +1148,20 @@ fnet_size_t fnet_netif_get_mtu(fnet_netif_desc_t netif_desc)
 *              It returns FNET_NULL if the interface with passed Scope ID 
 *              is not available.
 *************************************************************************/
-fnet_netif_desc_t fnet_netif_get_by_scope_id( fnet_uint32_t scope_id )
+fnet_netif_desc_t fnet_netif_get_by_scope_id( fnet_scope_id_t scope_id )
 {
     fnet_netif_desc_t   result = FNET_NULL;
     fnet_netif_t        *current;
-   
-    for (current = fnet_netif_list; current; current = current->next)
+    
+    if(scope_id)
     {
-        if(current->scope_id == scope_id)
+        for (current = fnet_netif_list; current; current = current->next)
         {
-            result = (fnet_netif_desc_t)current;
-            break;     
+            if(current->scope_id == scope_id)
+            {
+                result = (fnet_netif_desc_t)current;
+                break;     
+            }
         }
     }
     
@@ -1432,7 +1433,7 @@ fnet_return_t fnet_netif_set_ip6_addr_autoconf(fnet_netif_t *netif, fnet_ip6_add
 *
 * DESCRIPTION: This is USER API function binds the IPv6 address to a hardware interface.
 *************************************************************************/
-fnet_return_t fnet_netif_bind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr, fnet_netif_ip6_addr_type_t addr_type)
+fnet_return_t fnet_netif_bind_ip6_addr(fnet_netif_desc_t netif_desc, const fnet_ip6_addr_t *addr, fnet_netif_ip6_addr_type_t addr_type)
 {
     fnet_netif_t *netif = (fnet_netif_t *)netif_desc;
 
@@ -1556,7 +1557,7 @@ COMPLETE:
 *
 * DESCRIPTION: Unbinds an IPV6 address from a hardware interface.
 *************************************************************************/
-fnet_return_t fnet_netif_unbind_ip6_addr(fnet_netif_desc_t netif_desc, fnet_ip6_addr_t *addr )
+fnet_return_t fnet_netif_unbind_ip6_addr(fnet_netif_desc_t netif_desc, const fnet_ip6_addr_t *addr )
 {
     fnet_return_t           result;
     fnet_netif_t            *netif = (fnet_netif_t *)netif_desc;
